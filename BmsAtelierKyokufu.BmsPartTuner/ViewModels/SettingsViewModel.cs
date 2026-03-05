@@ -35,9 +35,10 @@ public partial class SettingsViewModel : ObservableObject
         get => _settings.MbmPlayPath;
         set
         {
-            if (_settings.MbmPlayPath != value)
+            var cleanValue = value?.Trim('"') ?? string.Empty;
+            if (_settings.MbmPlayPath != cleanValue)
             {
-                _settings.MbmPlayPath = value;
+                _settings.MbmPlayPath = cleanValue;
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(HasPlayerPath));
                 _settingsService.Save(_settings);

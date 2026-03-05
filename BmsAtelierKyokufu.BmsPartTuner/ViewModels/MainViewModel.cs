@@ -238,6 +238,8 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
             return;
         }
 
+        MediaPlayback.SetPlayerPath(playerPath);
+
         // 処理後の出力ファイルが存在する場合は優先して再生
         var outputFile = OutputPath?.Trim('"');
         if (!string.IsNullOrWhiteSpace(outputFile) && File.Exists(outputFile))
