@@ -6,7 +6,7 @@
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg?style=flat-square)](https://dotnet.microsoft.com/)
 [![C#](https://img.shields.io/badge/C%23-14.0-blue.svg?style=flat-square)](https://docs.microsoft.com/en-us/dotnet/csharp/)
 [![WPF](https://img.shields.io/badge/WPF-Material%20Design%203-blue.svg?style=flat-square&logo=materialdesign)]()
-[![Performance 800x](https://img.shields.io/badge/Performance-800x_Faster-brightgreen?style=flat-square&logo=speedtest)]()
+[![Performance 8000x](https://img.shields.io/badge/Performance-8000x_Faster-brightgreen?style=flat-square&logo=speedtest)]()
 
 # For Recruiters & Engineers (Technical Deep Dive)
 
@@ -14,7 +14,7 @@ If you are a recruiter or an engineer interested in the technical aspects of thi
 
 ## Performance Highlights
 
-- 800x Speedup: Reduced audio processing time from 1 hour to 3 seconds.
+- 8000x Speedup: Reduced audio processing time from 1 hour to 3 seconds.
 - Tech Stack: .NET 10, SIMD (Vectorization), Memory-Mapped Files, MVVM, and DI.
 
 ##  Key Documents
