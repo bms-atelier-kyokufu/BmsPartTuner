@@ -39,7 +39,7 @@ If you are a recruiter or an engineer interested in the technical aspects of thi
 1. 生成AIによる楽曲の作成  
 2. AIツールを用いたステム（パートごとの音源）の分離  
 3. BMSONエディタでの譜面構築
-4. [BMX2WAV](https://childs.squares.net/program/bmx2wav/index.html)による音切り  
+4. [BMX2WAV](https://childs.squares.net/program/bmx2wav/index.html) [BMX2WAV github](https://github.com/temtan/bmx2wav)による音切り  
 5. 本アプリケーションBMS Part Tunerによる重複定義の統合と最適化  
 6. 完成したパッケージの公開
 
