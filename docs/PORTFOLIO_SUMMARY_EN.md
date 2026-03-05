@@ -6,7 +6,7 @@ This project is not just a utility tool; it is a demonstration of **high-perform
 
 ## **1\. Optimization Engineering (The "800x" Logic)**
 
-**Source:** [02_OPTIMIZATION\_GUIDE.md](https://raw.githubusercontent.com/bms-atelier-kyokufu/BmsPartTuner/refs/heads/main/docs/02_OPTIMIZATION_GUIDE.md)
+**Source:** [02_OPTIMIZATION\_GUIDE_EN.md](https://raw.githubusercontent.com/bms-atelier-kyokufu/BmsPartTuner/refs/heads/main/docs/02_OPTIMIZATION_GUIDE_EN.md)
 
 I achieved an **800x performance boost** (1 hour → 3 seconds) by resolving critical bottlenecks in file I/O and audio processing.
 
@@ -18,7 +18,7 @@ I achieved an **800x performance boost** (1 hour → 3 seconds) by resolving cri
 
 * ##  2. System Architecture (Scalability & Maintainability)
 
-**Source:** [00_ARCHITECTURE.md](https://raw.githubusercontent.com/bms-atelier-kyokufu/BmsPartTuner/refs/heads/main/docs/00_ARCHITECTURE_EN.md)
+**Source:** [00_ARCHITECTURE_EN.md](https://raw.githubusercontent.com/bms-atelier-kyokufu/BmsPartTuner/refs/heads/main/docs/00_ARCHITECTURE_EN.md)
 
 Designed with **Clean Architecture** principles to ensure the application is testable, maintainable, and scalable.
 
@@ -27,7 +27,7 @@ Designed with **Clean Architecture** principles to ensure the application is tes
 
 ## **3\. Quality Assurance Strategy**
 
-**Source:** [04_TEST\_STRATEGY.md](https://raw.githubusercontent.com/bms-atelier-kyokufu/BmsPartTuner/refs/heads/main/docs/04_TEST_STRATEGY.md)
+**Source:** [04_TEST\_STRATEGY_EN.md](https://raw.githubusercontent.com/bms-atelier-kyokufu/BmsPartTuner/refs/heads/main/docs/04_TEST_STRATEGY_EN.md)
 
 Quality is not an afterthought. I implemented a robust testing pyramid to guarantee stability.
 
