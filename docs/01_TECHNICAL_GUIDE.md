@@ -75,13 +75,13 @@ $$r = \frac{\sum_{i=1}^{n} x_i y_i}{E_x \cdot E_y}$$
 
 詳細な仕様や設計方針については、以下のドキュメントを参照してください。
 
-* [ARCHITECTURE.md](ARCHITECTURE.md)
+* [00\_ARCHITECTURE\_JP](./00_ARCHITECTURE_H.md)
   システム全体のコンポーネント構成とクラス設計の概要。  
-* [OPTIMIZATION\_GUIDE.md](OPTIMIZATION_GUIDE.md)
+* [02_OPTIMIZATION_GUIDE_JP.md](./02_OPTIMIZATION_GUIDE_JP.md)
   最適化ロジックの適用範囲と具体的な処理フロー。  
-* [COMMIT\_MESSAGE\_GUIDE.md](COMMIT_MESSAGE_GUIDE.md)
+* [COMMIT\_MESSAGE\_GUIDE.md](./COMMIT_MESSAGE_GUIDE.md)
   開発に参加する際のコミット規約。
-* [TEST\_DESIGN.md](TEST_DESIGN.md)
+* [TEST\_DESIGN.md](./04_TEST_DESIGN_JP.md)
   ユニットテストおよびミューテーションテストの設計方針。  
 
 BMS Part Tunerは、技術の力でクリエイターの創造性を支えるためのクリエイター向けツールです。このエンジニアリングの成果が、より洗練されたBMS作品の誕生に寄与することを願っています。
