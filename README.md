@@ -1,6 +1,6 @@
 # BMS Part Tuner
 
-[![BMS Part Tuner Logo](https://github.com/rian-eimu/BmsPartTuner/raw/refs/heads/develop/BmsAtelierKyokufu.BmsPartTuner/Properties/Resources/BmpPartTunerLogo_dark.svg)](https://github.com/rian-eimu/BmsPartTuner/)
+[![BMS Part Tuner Logo](https://github.com/bms-atelier-kyokufu/BmsPartTuner/raw/refs/heads/develop/BmsAtelierKyokufu.BmsPartTuner/Properties/Resources/BmpPartTunerLogo_dark.svg)](https://github.com/bms-atelier-kyokufu/BmsPartTuner/)
 
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg?style=flat-square)](https://dotnet.microsoft.com/)
 [![C#](https://img.shields.io/badge/C%23-14.0-blue.svg?style=flat-square)](https://docs.microsoft.com/en-us/dotnet/csharp/)
@@ -54,10 +54,10 @@ If you are a recruiter or an engineer interested in the technical aspects of thi
 
 ## **ライセンス**
 
-本プロジェクトは[BMS Part Tuner ソフトウェア使用許諾ライセンス](https://github.com/rian-eimu/BmsPartTuner/blob/develop/LICENSE.md) のもとで公開されています。詳細は同梱のLICENSEファイルをご確認ください。
+本プロジェクトは[BMS Part Tuner ソフトウェア使用許諾ライセンス](https://github.com/bms-atelier-kyokufu/BmsPartTuner/blob/develop/LICENSE.md) のもとで公開されています。詳細は同梱のLICENSEファイルをご確認ください。
 
 ## **開発・サポート**
 本ソフトウェアは[BMSアトリエ【極譜】](https://bms-atelier-kyokufu.blogspot.com/) によって開発・提供されています。
-バグ報告や機能要望は、GitHubの[Issues](https://github.com/rian-eimu/BmsPartTuner/issues)で受け付けています。
+バグ報告や機能要望は、GitHubの[Issues](https://github.com/bms-atelier-kyokufu/BmsPartTuner/issues)で受け付けています。
 
 開発者の方は[docs/Technical Guide.md](docs/TECHNICAL_GUIDE.md)をご覧ください。内部の仕組みを詳しく解説しています。

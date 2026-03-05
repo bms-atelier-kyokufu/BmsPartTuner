@@ -110,7 +110,7 @@ public partial class SettingsViewModel : ObservableObject
         get
         {
             Assembly assembly = Assembly.GetExecutingAssembly();
-            var version = assembly.GetName().Version;
+            Version? version = assembly.GetName().Version;
             return version != null ? $"v{version.Major}.{version.Minor}.{version.Build}" : "v0.0.0";
         }
     }
@@ -123,7 +123,7 @@ public partial class SettingsViewModel : ObservableObject
         get
         {
             Assembly assembly = Assembly.GetExecutingAssembly();
-            var titleAttr = assembly.GetCustomAttribute<AssemblyTitleAttribute>();
+            AssemblyTitleAttribute? titleAttr = assembly.GetCustomAttribute<AssemblyTitleAttribute>();
             return titleAttr?.Title ?? "BMS Part Tuner";
         }
     }
@@ -136,7 +136,7 @@ public partial class SettingsViewModel : ObservableObject
         get
         {
             Assembly assembly = Assembly.GetExecutingAssembly();
-            var companyAttr = assembly.GetCustomAttribute<AssemblyCompanyAttribute>();
+            AssemblyCompanyAttribute? companyAttr = assembly.GetCustomAttribute<AssemblyCompanyAttribute>();
             return companyAttr?.Company ?? "BMSアトリエ【極譜】(おちあP & L-Mys)";
         }
     }
@@ -149,8 +149,8 @@ public partial class SettingsViewModel : ObservableObject
         get
         {
             Assembly assembly = Assembly.GetExecutingAssembly();
-            var descriptionAttr = assembly.GetCustomAttribute<AssemblyDescriptionAttribute>();
-            return descriptionAttr?.Description ?? "https://github.com/rian-eimu/BmsPartTuner";
+            AssemblyDescriptionAttribute? descriptionAttr = assembly.GetCustomAttribute<AssemblyDescriptionAttribute>();
+            return descriptionAttr?.Description ?? "https://github.com/bms-atelier-kyokufu/BmsPartTuner";
         }
     }
 
@@ -194,9 +194,9 @@ public partial class SettingsViewModel : ObservableObject
 
     private void LoadLicenses()
     {
-        var licenses = _licenseLoaderService.LoadLicenses();
+        IEnumerable<LicenseInfo> licenses = _licenseLoaderService.LoadLicenses();
         Licenses.Clear();
-        foreach (var license in licenses)
+        foreach (LicenseInfo license in licenses)
         {
             Licenses.Add(license);
         }
@@ -252,7 +252,7 @@ public partial class SettingsViewModel : ObservableObject
     [RelayCommand]
     private void OpenGitHubIssues()
     {
-        OpenUrl("https://github.com/rian-eimu/BmsPartTuner/issues");
+        OpenUrl("https://github.com/bms-atelier-kyokufu/BmsPartTuner/issues");
     }
 
     /// <summary>

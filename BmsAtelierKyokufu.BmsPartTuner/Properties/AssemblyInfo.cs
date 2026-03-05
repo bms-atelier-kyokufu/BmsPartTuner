@@ -8,7 +8,7 @@ using System.Windows;
 [assembly: AssemblyTitle("BMS Part Tuner")]
 [assembly: AssemblyProduct("BMS Part Tuner")]
 [assembly: AssemblyCompany("BMSアトリエ【極譜】(おちあP & L-Mys)")]
-[assembly: AssemblyDescription("https://github.com/rian-eimu/BmsPartTuner")]
+[assembly: AssemblyDescription("https://github.com/bms-atelier-kyokufu/BmsPartTuner")]
 [assembly: SupportedOSPlatform("windows7.0")]
 [assembly: ThemeInfo(ResourceDictionaryLocation.None, ResourceDictionaryLocation.SourceAssembly)]
 

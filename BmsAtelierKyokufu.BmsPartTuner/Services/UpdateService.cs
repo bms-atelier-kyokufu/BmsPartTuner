@@ -23,7 +23,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Services;
 /// </remarks>
 public class UpdateService : IDisposable
 {
-    private const string GitHubApiUrl = "https://api.github.com/repos/rian-eimu/BmsPartTuner/releases/latest";
+    private const string GitHubApiUrl = "https://api.github.com/repos/bms-atelier-kyokufu/BmsPartTuner/releases/latest";
     private const string UserAgent = "BmsPartTuner-UpdateChecker";
 
     private readonly HttpClient _httpClient;
@@ -147,7 +147,7 @@ public class UpdateService : IDisposable
         {
             Debug.WriteLine($"Downloading installer: {installerAsset.Name}");
 
-            var tempPath = Path.Combine(Path.GetTempPath(), installerAsset.Name);
+            string tempPath = Path.Combine(Path.GetTempPath(), installerAsset.Name);
 
             using HttpResponseMessage response = await _httpClient.GetAsync(installerAsset.BrowserDownloadUrl);
             response.EnsureSuccessStatusCode();
@@ -204,7 +204,7 @@ public class UpdateService : IDisposable
             return null;
 
         // "v" プレフィックスを除去
-        var versionString = tagName.TrimStart('v', 'V');
+        string versionString = tagName.TrimStart('v', 'V');
 
         return Version.TryParse(versionString, out Version? version) ? version : null;
     }
