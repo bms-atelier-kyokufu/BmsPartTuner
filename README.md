@@ -55,7 +55,7 @@ If you are a recruiter or an engineer interested in the technical aspects of thi
 
 ## **ライセンス**
 
-本プロジェクトは[BMS Part Tuner ソフトウェア使用許諾ライセンス](https://github.com/bms-atelier-kyokufu/BmsPartTuner/blob/develop/LICENSE.md) のもとで公開されています。詳細は同梱のLICENSEファイルをご確認ください。
+本プロジェクトは[BMS Part Tuner ソフトウェア使用許諾ライセンス](./LICENSE.md) のもとで公開されています。詳細は同梱のLICENSEファイルをご確認ください。
 
 ## **開発・サポート**
 本ソフトウェアは[BMSアトリエ【極譜】](https://bms-atelier-kyokufu.blogspot.com/) によって開発・提供されています。
