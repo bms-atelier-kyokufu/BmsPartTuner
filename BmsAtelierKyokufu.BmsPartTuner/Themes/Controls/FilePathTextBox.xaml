@@ -1,0 +1,245 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converters="clr-namespace:BmsAtelierKyokufu.BmsPartTuner.Converters"
+    xmlns:ui="clr-namespace:BmsAtelierKyokufu.BmsPartTuner.Infrastructure.UI">
+
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="TextBox.xaml" />
+    </ResourceDictionary.MergedDictionaries>
+
+    <!--  Converters  -->
+    <converters:ObjectToBoolConverter x:Key="ObjectToBoolConverter" />
+
+    <!--
+        M3 FilePathTextBox Style with Floating Label and Browse Button
+        Floating Label + Trailing Icon(参照ボタン)を統合したスタイル
+    -->
+    <Style
+        x:Key="Material.Styles.TextBox.FilePath"
+        BasedOn="{StaticResource Material.Styles.TextBox.Outlined}"
+        TargetType="TextBox">
+        <Setter Property="Height" Value="Auto" />
+        <Setter Property="MinHeight" Value="56" />
+        <Setter Property="Validation.ErrorTemplate" Value="{x:Null}" />
+
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TextBox">
+                    <Grid ClipToBounds="False">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <!--  Main TextBox Container  -->
+                        <Grid
+                            Grid.Row="0"
+                            MinHeight="56"
+                            Margin="0,8,0,0">
+                            <!--  Border  -->
+                            <Border
+                                x:Name="PART_MainBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="{Binding Path=(ui:TextBoxHelper.CornerRadius), RelativeSource={RelativeSource TemplatedParent}}"
+                                SnapsToDevicePixels="True">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <!--  Leading Icon (Optional)  -->
+                                    <ContentPresenter
+                                        x:Name="PART_LeadingIcon"
+                                        Grid.Column="0"
+                                        Margin="12,0,4,0"
+                                        VerticalAlignment="Center"
+                                        Content="{Binding Path=(ui:TextBoxHelper.LeadingIcon), RelativeSource={RelativeSource TemplatedParent}}"
+                                        Visibility="Collapsed" />
+
+                                    <!--  Text Input Area  -->
+                                    <Grid
+                                        Grid.Column="1"
+                                        Margin="12,0,0,0"
+                                        VerticalAlignment="Center">
+                                        <ScrollViewer
+                                            x:Name="PART_ContentHost"
+                                            VerticalAlignment="Center"
+                                            Focusable="False"
+                                            HorizontalScrollBarVisibility="Hidden"
+                                            VerticalScrollBarVisibility="Hidden" />
+
+                                        <TextBlock
+                                            x:Name="PlaceholderText"
+                                            VerticalAlignment="Center"
+                                            Foreground="{DynamicResource M3OnSurfaceVariantBrush}"
+                                            IsHitTestVisible="False"
+                                            Text="{Binding Path=(ui:TextBoxHelper.Placeholder), RelativeSource={RelativeSource TemplatedParent}}"
+                                            Visibility="Collapsed" />
+                                    </Grid>
+
+                                    <!--  Error Icon (エラー時のみ表示)  -->
+                                    <TextBlock
+                                        x:Name="PART_ErrorIcon"
+                                        Grid.Column="2"
+                                        Margin="8,0,0,0"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        FontSize="18"
+                                        Foreground="{DynamicResource M3ErrorBrush}"
+                                        Text="❗"
+                                        Visibility="Collapsed" />
+
+                                    <!--  Browse Button (常に表示)  -->
+                                    <Button
+                                        x:Name="PART_BrowseButton"
+                                        Grid.Column="3"
+                                        Height="32"
+                                        Margin="8,0,8,0"
+                                        Padding="12,6"
+                                        Command="{Binding Path=(ui:TextBoxHelper.BrowseCommand), RelativeSource={RelativeSource TemplatedParent}}"
+                                        Content="参照..."
+                                        Style="{DynamicResource M3TextBoxButtonBase}" />
+                                </Grid>
+                            </Border>
+                        </Grid>
+
+                        <!--  Floating Label Container: ボーダーの上端に配置  -->
+                        <Border
+                            x:Name="PART_FloatingLabelContainer"
+                            Grid.Row="0"
+                            Padding="4,0"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Top"
+                            Background="{DynamicResource M3BackgroundBrush}"
+                            IsHitTestVisible="False"
+                            RenderTransformOrigin="0,0"
+                            Visibility="Collapsed">
+                            <Border.RenderTransform>
+                                <TransformGroup>
+                                    <ScaleTransform x:Name="LabelScale" ScaleX="1" ScaleY="1" />
+                                    <TranslateTransform x:Name="LabelTranslate" X="12" Y="0" />
+                                </TransformGroup>
+                            </Border.RenderTransform>
+                            <TextBlock
+                                x:Name="PART_FloatingLabel"
+                                FontSize="12"
+                                Foreground="{DynamicResource M3OnSurfaceVariantBrush}"
+                                Text="{Binding Path=(ui:TextBoxHelper.Label), RelativeSource={RelativeSource TemplatedParent}}" />
+                        </Border>
+
+                        <!--  Supporting Text (Error Messages)  -->
+                        <Grid Grid.Row="1" Margin="16,4,16,0">
+                            <!--  Supporting Text (通常時)  -->
+                            <TextBlock
+                                x:Name="PART_SupportingText"
+                                FontSize="12"
+                                Foreground="{DynamicResource M3OnSurfaceVariantBrush}"
+                                Text="{Binding Path=(ui:TextBoxHelper.SupportingText), RelativeSource={RelativeSource TemplatedParent}}"
+                                TextWrapping="Wrap"
+                                Visibility="Collapsed" />
+
+                            <!--  Error Message (エラー時)  -->
+                            <ItemsControl
+                                x:Name="PART_ErrorMessages"
+                                ItemsSource="{Binding Path=(Validation.Errors), RelativeSource={RelativeSource TemplatedParent}}"
+                                Visibility="Collapsed">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock
+                                            FontSize="12"
+                                            Foreground="{DynamicResource M3ErrorBrush}"
+                                            Text="{Binding ErrorContent}"
+                                            TextWrapping="Wrap" />
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </Grid>
+                    </Grid>
+
+                    <ControlTemplate.Triggers>
+                        <!--  Show Floating Label when has text or is focused  -->
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="Text" Value="" />
+                                <Condition Property="IsFocused" Value="False" />
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="PART_FloatingLabelContainer" Property="Visibility" Value="Collapsed" />
+                        </MultiTrigger>
+
+                        <!--  Show Floating Label if Label is set and (has text OR is focused)  -->
+                        <DataTrigger Binding="{Binding Path=(ui:TextBoxHelper.Label), RelativeSource={RelativeSource Self}, Converter={StaticResource ObjectToBoolConverter}}" Value="True">
+                            <Setter TargetName="PART_FloatingLabelContainer" Property="Visibility" Value="Visible" />
+                        </DataTrigger>
+
+                        <!--  Show Leading Icon if set  -->
+                        <DataTrigger Binding="{Binding Path=(ui:TextBoxHelper.LeadingIcon), RelativeSource={RelativeSource Self}, Converter={StaticResource ObjectToBoolConverter}}" Value="True">
+                            <Setter TargetName="PART_LeadingIcon" Property="Visibility" Value="Visible" />
+                        </DataTrigger>
+
+                        <!--  Show Supporting Text if set and no errors  -->
+                        <MultiDataTrigger>
+                            <MultiDataTrigger.Conditions>
+                                <Condition Binding="{Binding Path=(Validation.HasError), RelativeSource={RelativeSource Self}}" Value="False" />
+                                <Condition Binding="{Binding Path=(ui:TextBoxHelper.SupportingText), RelativeSource={RelativeSource Self}, Converter={StaticResource ObjectToBoolConverter}}" Value="True" />
+                            </MultiDataTrigger.Conditions>
+                            <Setter TargetName="PART_SupportingText" Property="Visibility" Value="Visible" />
+                        </MultiDataTrigger>
+
+                        <!--  Placeholder visibility  -->
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="Text" Value="" />
+                                <Condition Property="IsFocused" Value="False" />
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="PlaceholderText" Property="Visibility" Value="Visible" />
+                        </MultiTrigger>
+
+                        <!--  Hover State  -->
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="PART_MainBorder" Property="BorderBrush" Value="{DynamicResource M3OnSurfaceBrush}" />
+                        </Trigger>
+
+                        <!--  Focus State  -->
+                        <Trigger Property="IsFocused" Value="True">
+                            <Setter TargetName="PART_MainBorder" Property="BorderBrush" Value="{DynamicResource M3PrimaryBrush}" />
+                            <Setter TargetName="PART_MainBorder" Property="BorderThickness" Value="2" />
+                            <Setter TargetName="PART_FloatingLabel" Property="Foreground" Value="{DynamicResource M3PrimaryBrush}" />
+                        </Trigger>
+
+                        <!--  Error State  -->
+                        <Trigger Property="Validation.HasError" Value="True">
+                            <Setter TargetName="PART_MainBorder" Property="BorderBrush" Value="{DynamicResource M3ErrorBrush}" />
+                            <Setter TargetName="PART_MainBorder" Property="BorderThickness" Value="2" />
+                            <Setter TargetName="PART_FloatingLabel" Property="Foreground" Value="{DynamicResource M3ErrorBrush}" />
+                            <Setter TargetName="PART_ErrorIcon" Property="Visibility" Value="Visible" />
+                            <Setter TargetName="PART_ErrorMessages" Property="Visibility" Value="Visible" />
+                            <Setter TargetName="PART_SupportingText" Property="Visibility" Value="Collapsed" />
+                        </Trigger>
+
+                        <!--  Disabled State  -->
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.38" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!--  Legacy aliases  -->
+    <Style
+        x:Key="FilePathTextBox"
+        BasedOn="{StaticResource Material.Styles.TextBox.FilePath}"
+        TargetType="TextBox" />
+    <Style
+        x:Key="M3FilePathTextBox"
+        BasedOn="{StaticResource Material.Styles.TextBox.FilePath}"
+        TargetType="TextBox" />
+
+</ResourceDictionary>

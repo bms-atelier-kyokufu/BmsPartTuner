@@ -1,0 +1,23 @@
+# 最上位の設定ファイルであることを宣言
+root = true
+
+# 全てのファイルに対する基本設定
+[*]
+indent_style = space
+indent_size = 4
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# C# ファイルに対する設定
+[*.cs]
+# .NET/WPFコンパイラと最も相性が良く、Roslynでの読み込みが安定するUTF-8 BOMを指定
+charset = utf-8-bom
+
+# XAML ファイルに対する設定（WPF用）
+[*.xaml]
+charset = utf-8-bom
+
+# Markdown ファイルに対する設定
+[*.md]
+trim_trailing_whitespace = false

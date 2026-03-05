@@ -1,0 +1,108 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 248 790" width="100%" style="max-width: 248px; background-color: white; font-family: sans-serif;">
+  <style>
+    /* 共通スタイルの定義 */
+    .node-rect {
+      fill: #ffffff;
+      stroke: #28253D;
+      stroke-width: 2px;
+      filter: url(#shadow); /* 影を適用 */
+    }
+    .node-text {
+      font-family: 'Arial', sans-serif;
+      font-size: 14px;
+      fill: #28253D;
+      text-anchor: middle;
+      dominant-baseline: central;
+    }
+    .edge-path {
+      fill: none;
+      stroke: #28253D;
+      stroke-width: 2px;
+      stroke-dasharray: 4; /* 点線を再現 */
+    }
+  </style>
+
+  <!-- 定義セクション：影と矢印の形状 -->
+  <defs>
+    <!-- ドロップシャドウの定義 -->
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="2" dy="2" stdDeviation="1" flood-color="#000000" flood-opacity="0.1"/>
+    </filter>
+    <!-- 矢印の先端 -->
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#28253D" />
+    </marker>
+  </defs>
+
+  <!-- 接続線 (Edges) -->
+  <g id="edges">
+    <!-- Start -> Init -->
+    <path d="M124,53 V99" class="edge-path" marker-end="url(#arrowhead)"/>
+    <!-- Init -> Preload -->
+    <path d="M124,148 V194" class="edge-path" marker-end="url(#arrowhead)"/>
+    <!-- Preload -> Group -->
+    <path d="M124,264 V310" class="edge-path" marker-end="url(#arrowhead)"/>
+    <!-- Group -> Compare -->
+    <path d="M124,380 V426" class="edge-path" marker-end="url(#arrowhead)"/>
+    <!-- Compare -> Map -->
+    <path d="M124,496 V542" class="edge-path" marker-end="url(#arrowhead)"/>
+    <!-- Map -> Rewrite -->
+    <path d="M124,591 V637" class="edge-path" marker-end="url(#arrowhead)"/>
+    <!-- Rewrite -> Cleanup -->
+    <path d="M124,686 V732" class="edge-path" marker-end="url(#arrowhead)"/>
+  </g>
+
+  <!-- ノード (Nodes) -->
+  <g id="nodes">
+    <!-- Start -->
+    <g transform="translate(124, 30.5)">
+      <rect x="-35" y="-22.5" width="70" height="45" rx="5" class="node-rect"/>
+      <text x="0" y="0" class="node-text">Start</text>
+    </g>
+
+    <!-- Init & Range -->
+    <g transform="translate(124, 125.5)">
+      <rect x="-60" y="-22.5" width="120" height="45" rx="5" class="node-rect"/>
+      <text x="0" y="0" class="node-text">Init &amp; Range</text>
+    </g>
+
+    <!-- Audio Preload -->
+    <g transform="translate(124, 231)">
+      <rect x="-116" y="-33" width="232" height="66" rx="5" class="node-rect"/>
+      <text x="0" y="-8" class="node-text">Audio Preload</text>
+      <text x="0" y="12" class="node-text" font-size="12px">(CacheManager)</text>
+    </g>
+
+    <!-- Audio Grouping -->
+    <g transform="translate(124, 347)">
+      <rect x="-116" y="-33" width="232" height="66" rx="5" class="node-rect"/>
+      <text x="0" y="-8" class="node-text">Audio Grouping</text>
+      <text x="0" y="12" class="node-text" font-size="12px">(GroupingStrategy)</text>
+    </g>
+
+    <!-- Parallel Compare -->
+    <g transform="translate(124, 463)">
+      <rect x="-116" y="-33" width="232" height="66" rx="5" class="node-rect"/>
+      <text x="0" y="-8" class="node-text">Parallel Compare</text>
+      <text x="0" y="12" class="node-text" font-size="12px">(ParallelEngine)</text>
+    </g>
+
+    <!-- Create Replace Map -->
+    <g transform="translate(124, 568.5)">
+      <rect x="-85" y="-22.5" width="170" height="45" rx="5" class="node-rect"/>
+      <text x="0" y="0" class="node-text">Create Replace Map</text>
+    </g>
+
+    <!-- Rewrite BMS -->
+    <g transform="translate(124, 663.5)">
+      <rect x="-110" y="-22.5" width="220" height="45" rx="5" class="node-rect"/>
+      <text x="0" y="0" class="node-text">Rewrite BMS (FileRewriter)</text>
+    </g>
+
+    <!-- Cleanup Cache -->
+    <g transform="translate(124, 758.5)">
+      <rect x="-66" y="-22.5" width="132" height="45" rx="5" class="node-rect"/>
+      <text x="0" y="0" class="node-text">Cleanup Cache</text>
+    </g>
+  </g>
+</svg>

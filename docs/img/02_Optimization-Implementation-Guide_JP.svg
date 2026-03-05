@@ -1,0 +1,145 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 244 850" width="100%" style="max-width: 244px; background-color: white; font-family: 'Hiragino Kaku Gothic ProN', 'Meiryo', sans-serif;">
+  <style>
+    /* 共通スタイル定義 */
+    .node-rect {
+      fill: #ffffff;
+      stroke: #28253D;
+      stroke-width: 2px;
+      filter: url(#shadow);
+    }
+    .node-polygon {
+      fill: #ffffff;
+      stroke: #28253D;
+      stroke-width: 2px;
+      filter: url(#shadow);
+    }
+    .node-text {
+      font-size: 14px;
+      fill: #28253D;
+      text-anchor: middle;
+      dominant-baseline: central;
+      font-weight: 500;
+    }
+    .edge-path {
+      fill: none;
+      stroke: #28253D;
+      stroke-width: 2px;
+      stroke-dasharray: 4; /* 点線表現 */
+    }
+    .label-bg {
+      fill: #ffffff;
+      opacity: 0.9;
+    }
+    .label-text {
+      font-size: 12px;
+      fill: #28253D;
+      text-anchor: middle;
+      dominant-baseline: central;
+    }
+  </style>
+
+  <!-- 定義セクション -->
+  <defs>
+    <!-- ドロップシャドウ -->
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="2" dy="2" stdDeviation="1" flood-color="#000000" flood-opacity="0.1"/>
+    </filter>
+    <!-- 矢印の先端 -->
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#28253D" />
+    </marker>
+  </defs>
+
+  <!-- 接続線 (Edges) -->
+  <g id="edges">
+    <!-- A -> B -->
+    <path d="M122,53 V124" class="edge-path" marker-end="url(#arrowhead)"/>
+    <!-- B -> C -->
+    <path d="M122,169 V240" class="edge-path" marker-end="url(#arrowhead)"/>
+    <!-- C -> D -->
+    <path d="M122,358 V469" class="edge-path" marker-end="url(#arrowhead)"/>
+    <!-- D -> E -->
+    <path d="M122,514 V585" class="edge-path" marker-end="url(#arrowhead)"/>
+    <!-- E -> F -->
+    <path d="M122,630 V701" class="edge-path" marker-end="url(#arrowhead)"/>
+    <!-- F -> G -->
+    <path d="M122,746 V796" class="edge-path" marker-end="url(#arrowhead)"/>
+  </g>
+
+  <!-- エッジラベル (Edge Labels) -->
+  <!-- 視認性向上のため、白い背景矩形を文字の下に配置 -->
+  <g id="edge-labels">
+    <!-- 解析 -->
+    <g transform="translate(122, 88)">
+      <rect x="-20" y="-10" width="40" height="20" class="label-bg"/>
+      <text class="label-text">解析</text>
+    </g>
+    <!-- 検証 -->
+    <g transform="translate(122, 204)">
+      <rect x="-20" y="-10" width="40" height="20" class="label-bg"/>
+      <text class="label-text">検証</text>
+    </g>
+    <!-- OK -->
+    <g transform="translate(122, 413)">
+      <rect x="-15" y="-10" width="30" height="20" class="label-bg"/>
+      <text class="label-text">OK</text>
+    </g>
+    <!-- 縮約 -->
+    <g transform="translate(122, 549)">
+      <rect x="-20" y="-10" width="40" height="20" class="label-bg"/>
+      <text class="label-text">縮約</text>
+    </g>
+    <!-- マッピング -->
+    <g transform="translate(122, 665)">
+      <rect x="-35" y="-10" width="70" height="20" class="label-bg"/>
+      <text class="label-text">マッピング</text>
+    </g>
+  </g>
+
+  <!-- ノード (Nodes) -->
+  <g id="nodes">
+    <!-- A: 入力BMS -->
+    <g transform="translate(122, 30.5)">
+      <rect x="-44" y="-22.5" width="88" height="45" rx="5" class="node-rect"/>
+      <text y="0" class="node-text">入力BMS</text>
+    </g>
+
+    <!-- B: メモリ内モデル (角丸強め) -->
+    <g transform="translate(122, 146.5)">
+      <rect x="-65" y="-22.5" width="130" height="45" rx="12" class="node-rect"/>
+      <text y="0" class="node-text">メモリ内モデル</text>
+    </g>
+
+    <!-- C: 整合性チェック (菱形) -->
+    <!-- 中心(122, 300)あたりに配置 -->
+    <g transform="translate(122, 300)">
+      <!-- 菱形を描画: 中心から上下左右に頂点を配置 -->
+      <polygon points="0,-60 80,0 0,60 -80,0" class="node-polygon"/>
+      <text y="0" class="node-text">整合性チェック</text>
+    </g>
+
+    <!-- D: 音声グルーピング -->
+    <g transform="translate(122, 491.5)">
+      <rect x="-72" y="-22.5" width="144" height="45" rx="5" class="node-rect"/>
+      <text y="0" class="node-text">音声グルーピング</text>
+    </g>
+
+    <!-- E: 定義割り当てシミュレーション -->
+    <g transform="translate(122, 607.5)">
+      <rect x="-114" y="-22.5" width="228" height="45" rx="5" class="node-rect"/>
+      <text y="0" class="node-text">定義割り当てシミュレーション</text>
+    </g>
+
+    <!-- F: BMS書き換え -->
+    <g transform="translate(122, 723.5)">
+      <rect x="-58" y="-22.5" width="116" height="45" rx="5" class="node-rect"/>
+      <text y="0" class="node-text">BMS書き換え</text>
+    </g>
+
+    <!-- G: 出力BMS -->
+    <g transform="translate(122, 818.5)">
+      <rect x="-44" y="-22.5" width="88" height="45" rx="5" class="node-rect"/>
+      <text y="0" class="node-text">出力BMS</text>
+    </g>
+  </g>
+</svg>

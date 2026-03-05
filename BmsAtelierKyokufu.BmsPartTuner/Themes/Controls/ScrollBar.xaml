@@ -1,0 +1,160 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!--  M3 ScrollBar Style  -->
+    <Style TargetType="ScrollBar">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ScrollBar">
+                    <Grid x:Name="GridRoot" Background="{TemplateBinding Background}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <!--  Indicator Top/Left  -->
+                        <Path
+                            x:Name="ArrowUp"
+                            Grid.Row="0"
+                            Grid.Column="1"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Data="M 0 4 L 4 0 L 8 4 Z"
+                            Fill="{DynamicResource M3OnSurfaceVariantBrush}"
+                            Opacity="0"
+                            Visibility="Collapsed" />
+
+                        <Path
+                            x:Name="ArrowLeft"
+                            Grid.Row="1"
+                            Grid.Column="0"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Data="M 4 0 L 0 4 L 4 8 Z"
+                            Fill="{DynamicResource M3OnSurfaceVariantBrush}"
+                            Opacity="0"
+                            Visibility="Collapsed" />
+
+                        <!--  Track  -->
+                        <Track
+                            x:Name="PART_Track"
+                            Grid.Row="1"
+                            Grid.Column="1"
+                            Focusable="False"
+                            IsDirectionReversed="True">
+                            <Track.Thumb>
+                                <Thumb x:Name="Thumb">
+                                    <Thumb.Style>
+                                        <Style TargetType="Thumb">
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="Thumb">
+                                                        <Border
+                                                            x:Name="ThumbBorder"
+                                                            Width="6"
+                                                            Margin="0,2"
+                                                            Background="{DynamicResource M3OnSurfaceVariantBrush}"
+                                                            CornerRadius="3"
+                                                            Opacity="0.5" />
+                                                        <ControlTemplate.Triggers>
+                                                            <Trigger Property="IsMouseOver" Value="True">
+                                                                <Setter TargetName="ThumbBorder" Property="Opacity" Value="0.7" />
+                                                                <Setter TargetName="ThumbBorder" Property="Width" Value="8" />
+                                                            </Trigger>
+                                                            <Trigger Property="IsDragging" Value="True">
+                                                                <Setter TargetName="ThumbBorder" Property="Opacity" Value="0.9" />
+                                                                <Setter TargetName="ThumbBorder" Property="Width" Value="8" />
+                                                            </Trigger>
+                                                        </ControlTemplate.Triggers>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Style>
+                                    </Thumb.Style>
+                                </Thumb>
+                            </Track.Thumb>
+                        </Track>
+
+                        <!--  Indicator Bottom/Right  -->
+                        <Path
+                            x:Name="ArrowDown"
+                            Grid.Row="2"
+                            Grid.Column="1"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Data="M 0 0 L 4 4 L 8 0 Z"
+                            Fill="{DynamicResource M3OnSurfaceVariantBrush}"
+                            Opacity="0"
+                            Visibility="Collapsed" />
+
+                        <Path
+                            x:Name="ArrowRight"
+                            Grid.Row="1"
+                            Grid.Column="2"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Data="M 0 0 L 4 4 L 0 8 Z"
+                            Fill="{DynamicResource M3OnSurfaceVariantBrush}"
+                            Opacity="0"
+                            Visibility="Collapsed" />
+
+                    </Grid>
+
+                    <ControlTemplate.Triggers>
+                        <!--  Vertical Orientation  -->
+                        <Trigger Property="Orientation" Value="Vertical">
+                            <Setter TargetName="ArrowUp" Property="Visibility" Value="Visible" />
+                            <Setter TargetName="ArrowDown" Property="Visibility" Value="Visible" />
+                            <Setter TargetName="Thumb" Property="MinHeight" Value="30" />
+                        </Trigger>
+
+                        <!--  Horizontal Orientation  -->
+                        <Trigger Property="Orientation" Value="Horizontal">
+                            <Setter TargetName="PART_Track" Property="IsDirectionReversed" Value="False" />
+                            <Setter TargetName="ArrowLeft" Property="Visibility" Value="Visible" />
+                            <Setter TargetName="ArrowRight" Property="Visibility" Value="Visible" />
+                            <Setter TargetName="Thumb" Property="MinWidth" Value="30" />
+
+                            <!--  Rotate Thumb for Horizontal  -->
+                            <Setter TargetName="Thumb" Property="RenderTransform">
+                                <Setter.Value>
+                                    <RotateTransform Angle="-90" />
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+
+                        <!--  Mouse Over Triggers for Indicators  -->
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="ArrowUp" Property="Opacity" Value="0.8" />
+                            <Setter TargetName="ArrowDown" Property="Opacity" Value="0.8" />
+                            <Setter TargetName="ArrowLeft" Property="Opacity" Value="0.8" />
+                            <Setter TargetName="ArrowRight" Property="Opacity" Value="0.8" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+
+        <Style.Triggers>
+            <Trigger Property="Orientation" Value="Vertical">
+                <Setter Property="Width" Value="12" />
+                <Setter Property="MinWidth" Value="12" />
+            </Trigger>
+            <Trigger Property="Orientation" Value="Horizontal">
+                <Setter Property="Height" Value="12" />
+                <Setter Property="MinHeight" Value="12" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+</ResourceDictionary>

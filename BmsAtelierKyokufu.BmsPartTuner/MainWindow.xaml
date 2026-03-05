@@ -1,0 +1,468 @@
+﻿<Window
+    x:Class="BmsAtelierKyokufu.BmsPartTuner.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:behaviors="clr-namespace:BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Behaviors"
+    xmlns:controls="clr-namespace:BmsAtelierKyokufu.BmsPartTuner.Controls"
+    xmlns:converters="clr-namespace:BmsAtelierKyokufu.BmsPartTuner.Converters"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="clr-namespace:BmsAtelierKyokufu.BmsPartTuner.Infrastructure.UI"
+    Title="BMS Part Tuner"
+    Width="1200"
+    Height="700"
+    MinWidth="1000"
+    MinHeight="600"
+    Background="{DynamicResource M3BackgroundBrush}"
+    mc:Ignorable="d">
+    <Window.Resources>
+        <ResourceDictionary>
+            <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+            <converters:InverseBooleanConverter x:Key="InverseBooleanConverter" />
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <!--  ルートグリッド: メインコンテンツ + サイドシートオーバーレイ  -->
+    <Grid>
+        <!--  メイングリッド: 3カラムレイアウト  -->
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <!--  左: メイン操作エリア (可変)  -->
+                <ColumnDefinition Width="*" MinWidth="500" />
+                <!--  中央: セパレータ  -->
+                <ColumnDefinition Width="Auto" />
+                <!--  右: サイドパネル (360dp固定)  -->
+                <ColumnDefinition Width="360" />
+            </Grid.ColumnDefinitions>
+
+            <!--  ========== 左側: メイン操作エリア ==========  -->
+            <DockPanel Grid.Column="0" Margin="20">
+                <!--  #region 入力パネル  -->
+                <StackPanel DockPanel.Dock="Top">
+                    <!--  ヘッダー / 設定  -->
+                    <Grid Margin="0,0,0,20">
+                        <TextBlock Text="設定と実行" FontSize="24" FontWeight="Bold" Foreground="{DynamicResource M3OnSurfaceBrush}" VerticalAlignment="Center" />
+                        <!--  設定ボタン (歯車アイコン)  -->
+                        <Button
+                            x:Name="SettingsButton"
+                            HorizontalAlignment="Right"
+                            Width="44"
+                            Height="44"
+                            Command="{Binding OpenSettingsCommand}"
+                            Style="{StaticResource M3IconButton}"
+                            ToolTip="設定">
+                            <TextBlock
+                                FontSize="20"
+                                Foreground="{DynamicResource M3OnSurfaceVariantBrush}"
+                                Text="⚙" />
+                        </Button>
+                    </Grid>
+
+                    <!--  入力BMSファイル  -->
+                    <StackPanel>
+                        <TextBox
+                            x:Name="InputFilePathTextBox"
+                            ui:TextBoxHelper.BrowseCommand="{Binding BrowseInputFileCommand}"
+                            ui:TextBoxHelper.Label="入力BMSファイル (.bms/.bme/.bml/.pms)"
+                            IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}"
+                            Style="{StaticResource Material.Styles.TextBox.FilePath}">
+                            <TextBox.Text>
+                                <Binding
+                                    Mode="TwoWay"
+                                    NotifyOnValidationError="True"
+                                    Path="InputPath"
+                                    UpdateSourceTrigger="PropertyChanged"
+                                    ValidatesOnDataErrors="True">
+                                    <Binding.ValidationRules>
+                                        <DataErrorValidationRule />
+                                    </Binding.ValidationRules>
+                                </Binding>
+                            </TextBox.Text>
+                            <i:Interaction.Behaviors>
+                                <behaviors:FloatingLabelBehavior LabelText="入力BMSファイル (.bms/.bme/.bml/.pms)" />
+                                <behaviors:EscapeToClearBehavior />
+                            </i:Interaction.Behaviors>
+                        </TextBox>
+                    </StackPanel>
+
+                    <!--  出力BMSファイル  -->
+                    <StackPanel>
+                        <TextBox
+                            x:Name="OutputFilePathTextBox"
+                            ui:TextBoxHelper.BrowseCommand="{Binding BrowseOutputFileCommand}"
+                            ui:TextBoxHelper.Label="出力BMSファイル"
+                            IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}"
+                            Style="{StaticResource Material.Styles.TextBox.FilePath}"
+                            Text="{Binding OutputPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                            <i:Interaction.Behaviors>
+                                <behaviors:FloatingLabelBehavior LabelText="出力BMSファイル" />
+                                <behaviors:EscapeToClearBehavior />
+                            </i:Interaction.Behaviors>
+                        </TextBox>
+                    </StackPanel>
+
+                    <!--  相関係数 & 定義範囲 & 物理削除 (横並び)  -->
+                    <Grid Margin="0,0,0,12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="80" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <!--  相関係数 (✨AI統合型)  -->
+                        <Grid Grid.Column="0" VerticalAlignment="Bottom">
+                            <TextBox
+                                x:Name="R2TextBox"
+                                ui:TextBoxHelper.AiOptimizationCommand="{Binding ExecuteThresholdOptimizationCommand}"
+                                ui:TextBoxHelper.HasAiOptimization="True"
+                                ui:TextBoxHelper.Label="マッチ許容度 (1-100)"
+                                IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}"
+                                Style="{StaticResource R2TextBox}"
+                                Text="{Binding R2Threshold, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                                <i:Interaction.Behaviors>
+                                    <behaviors:ImeOffBehavior />
+                                    <behaviors:NumericInputBehavior AllowDecimal="False" AllowNegative="False" />
+                                    <behaviors:UnitSuffixBehavior Unit="%" />
+                                    <behaviors:VirtualSliderBehavior
+                                        IsIntegerMode="True"
+                                        MaxValue="100"
+                                        MinValue="0"
+                                        Sensitivity="1" />
+                                </i:Interaction.Behaviors>
+                            </TextBox>
+                            <Label
+                                Margin="167,0,-87,0"
+                                VerticalAlignment="Center"
+                                Content="以上"
+                                Foreground="{DynamicResource M3OutlineBrush}" />
+                        </Grid>
+
+                        <!--  定義範囲  -->
+                        <StackPanel Grid.Column="2">
+                            <Label Content="WAVファイルの定義範囲 (00=ファイルから推定)" Foreground="{DynamicResource M3OnSurfaceVariantBrush}" />
+                            <StackPanel Orientation="Horizontal">
+                                <TextBox
+                                    x:Name="Definition_Start"
+                                    Width="50"
+                                    IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}"
+                                    MaxLength="2"
+                                    Style="{StaticResource NumericTextBox}"
+                                    Text="{Binding DefinitionStart, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                                    <i:Interaction.Behaviors>
+                                        <behaviors:ImeOffBehavior />
+                                        <behaviors:Base62InputBehavior />
+                                        <behaviors:ZeroPadBehavior PadLength="2" />
+                                    </i:Interaction.Behaviors>
+                                </TextBox>
+                                <Label
+                                    VerticalAlignment="Center"
+                                    Content="～"
+                                    FontSize="16"
+                                    Foreground="{DynamicResource M3OnSurfaceVariantBrush}" />
+                                <TextBox
+                                    x:Name="Definition_End"
+                                    Width="50"
+                                    IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}"
+                                    MaxLength="2"
+                                    Style="{StaticResource NumericTextBox}"
+                                    Text="{Binding DefinitionEnd, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                                    <i:Interaction.Behaviors>
+                                        <behaviors:ImeOffBehavior />
+                                        <behaviors:Base62InputBehavior />
+                                        <behaviors:ZeroPadBehavior PadLength="2" />
+                                    </i:Interaction.Behaviors>
+                                </TextBox>
+                            </StackPanel>
+                        </StackPanel>
+
+                        <!--  物理削除オプション  -->
+                        <StackPanel Grid.Column="4" VerticalAlignment="Center" Margin="12,0,0,0">
+                            <Label Content="物理削除" Foreground="{DynamicResource M3OnSurfaceVariantBrush}" HorizontalAlignment="Center" />
+                            <ToggleButton
+                                IsChecked="{Binding Optimization.IsPhysicalDeletionEnabled}"
+                                IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}"
+                                Style="{StaticResource M3ToggleSwitch}"
+                                ToolTip="未使用の音源ファイルを物理削除する (危険)" />
+                        </StackPanel>
+                    </Grid>
+
+                    <Separator Margin="0,4,0,20" Background="{DynamicResource M3OutlineVariantBrush}" Height="1" />
+
+                    <!--  実行アクション  -->
+                    <Grid Margin="0,0,0,24">
+                        <!--  通常の処理開始ボタン  -->
+                        <Button
+                            x:Name="DefinitionReductButton"
+                            Height="44"
+                            Command="{Binding ExecuteReductionCommand}"
+                            Content="処理を開始"
+                            IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}"
+                            Style="{StaticResource M3PrimaryButton}"
+                            Visibility="{Binding IsSlideConfirmationVisible, Converter={StaticResource InverseBooleanConverter}}" />
+
+                        <!--  スライド確認UI (上書き時のみ表示)  -->
+                        <controls:SlideConfirmationControl
+                            x:Name="SlideConfirmation"
+                            Direction="{Binding SlideDirection}"
+                            SlideCancelled="SlideConfirmation_Cancelled"
+                            SlideCompleted="SlideConfirmation_Completed"
+                            SlideInstructionText="{Binding Optimization.SlideInstructionText}"
+                            Visibility="{Binding IsSlideConfirmationVisible, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                    </Grid>
+                </StackPanel>
+                <!--  #endregion  -->
+
+                <!--  #region ファイルリスト  -->
+                <DockPanel>
+                    <!--  ファイルリスト ヘッダー＆フィルターエリア  -->
+                    <StackPanel Margin="0,0,0,10" DockPanel.Dock="Top">
+                        <TextBlock Text="📂 ファイルプレビュー (確認用)" FontSize="18" FontWeight="SemiBold" Foreground="{DynamicResource M3OnSurfaceBrush}" Margin="0,0,0,4" />
+                        <TextBlock Text="※ リストでの絞り込みや選択は処理に影響しません" FontSize="12" Foreground="{DynamicResource M3OutlineBrush}" Margin="0,0,0,16" />
+
+                        <Grid Margin="0,0,0,12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <!--  検索バー  -->
+                            <TextBox
+                                x:Name="FilterTextBox"
+                                ui:TextBoxHelper.Label="ファイル名で検索"
+                                Style="{StaticResource Material.Styles.TextBox.Search}"
+                                Text="{Binding FilterText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                TextChanged="FilterTextBox_TextChanged">
+                                <i:Interaction.Behaviors>
+                                    <behaviors:FloatingLabelBehavior LabelText="ファイル名で検索" />
+                                    <behaviors:EscapeToClearBehavior />
+                                </i:Interaction.Behaviors>
+                            </TextBox>
+
+                            <!--  mBMplay再生ボタン  -->
+                            <Button
+                                x:Name="TestPlayButton"
+                                Grid.Column="1"
+                                Width="44"
+                                Height="44"
+                                Margin="12,0,0,0"
+                                Command="{Binding TestPlayCommand}"
+                                Style="{StaticResource M3IconButton}"
+                                ToolTip="mBMplayで再生">
+                                <TextBlock
+                                    FontSize="20"
+                                    Foreground="{DynamicResource M3OnSurfaceVariantBrush}"
+                                    Text="▶" />
+                            </Button>
+                        </Grid>
+
+                        <!--  Smart Filter Chips (Instrument-based)  -->
+                        <controls:SmartFilterChips
+                            x:Name="FilterChipsControl"
+                            ChipClick="FilterChip_Click"
+                            Chips="{Binding FileList.FilterChips}" />
+                    </StackPanel>
+
+
+
+                    <!--  ファイルリスト  -->
+                    <ListView
+                        x:Name="FilesListView"
+                        ItemsSource="{Binding FileList.FileListItems}"
+                        SelectedItem="{Binding SelectedFile}">
+                        <ListView.View>
+                            <GridView>
+                                <GridViewColumn
+                                    Width="50"
+                                    DisplayMemberBinding="{Binding Num}"
+                                    Header="No." />
+                                <GridViewColumn
+                                    Width="450"
+                                    DisplayMemberBinding="{Binding Name}"
+                                    Header="ファイル名" />
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
+                </DockPanel>
+                <!--  #endregion  -->
+            </DockPanel>
+
+            <!--  ========== 右側: 常時表示サイドパネル ==========  -->
+            <!--  #region 解析結果パネル  -->
+            <Border Grid.Column="2" Style="{DynamicResource SidePanel}">
+                <Grid>
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <StackPanel>
+                            <!--  ヘッダー  -->
+                            <TextBlock
+                                Margin="0,0,0,20"
+                                FontSize="18"
+                                FontWeight="SemiBold"
+                                Foreground="{DynamicResource M3OnSurfaceBrush}"
+                                Text="解析結果" />
+
+                            <!--  結果カード  -->
+                            <Border Style="{DynamicResource ResultCard}" Visibility="{Binding IsResultCardVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                <StackPanel>
+                                    <!--  ヘッダー  -->
+                                    <StackPanel Margin="0,0,0,16" Orientation="Horizontal">
+                                        <TextBlock
+                                            VerticalAlignment="Center"
+                                            FontSize="24"
+                                            Foreground="{DynamicResource M3PrimaryBrush}"
+                                            Text="{Binding ResultIcon}" />
+                                        <TextBlock
+                                            Margin="12,0,0,0"
+                                            VerticalAlignment="Center"
+                                            FontSize="15"
+                                            FontWeight="SemiBold"
+                                            Foreground="{DynamicResource M3OnSurfaceBrush}"
+                                            Text="最適化サマリー" />
+                                    </StackPanel>
+
+                                    <!--  推奨しきい値 (大見出し)  -->
+                                    <TextBlock
+                                        Margin="0,0,0,4"
+                                        FontSize="32"
+                                        FontWeight="Bold"
+                                        Foreground="{DynamicResource M3PrimaryBrush}"
+                                        Text="{Binding ResultThreshold}"
+                                        TextAlignment="Center" />
+                                    <TextBlock
+                                        Margin="0,0,0,16"
+                                        FontSize="12"
+                                        Foreground="{DynamicResource M3OutlineBrush}"
+                                        Text="推奨しきい値"
+                                        TextAlignment="Center" />
+
+                                    <Separator Margin="0,0,0,16" />
+
+                                    <!--  削減後ファイル数 (サマリー)  -->
+                                    <TextBlock
+                                        Margin="0,0,0,4"
+                                        FontSize="24"
+                                        FontWeight="SemiBold"
+                                        Foreground="{DynamicResource M3OnSurfaceBrush}"
+                                        Text="{Binding ResultSummary}"
+                                        TextAlignment="Center" />
+                                    <TextBlock
+                                        Margin="0,0,0,16"
+                                        FontSize="12"
+                                        Foreground="{DynamicResource M3OutlineBrush}"
+                                        Text="削減後ファイル数"
+                                        TextAlignment="Center" />
+
+                                    <Separator Margin="0,0,0,16" />
+
+                                    <!--  追加情報 (Simulation/Reduction Rate)  -->
+                                    <TextBlock
+                                        Margin="0,0,0,20"
+                                        FontSize="14"
+                                        Foreground="{DynamicResource M3OnSurfaceVariantBrush}"
+                                        Text="{Binding ResultReduction}"
+                                        TextAlignment="Center" />
+
+                                    <!--  詳細情報 (Memory/Time)  -->
+                                    <Separator Margin="0,0,0,12" />
+
+                                    <Grid Margin="0,0,0,4">
+                                        <TextBlock
+                                            FontSize="12"
+                                            Foreground="{DynamicResource M3OutlineBrush}"
+                                            Text="使用メモリ" />
+                                        <TextBlock
+                                            HorizontalAlignment="Right"
+                                            FontSize="12"
+                                            Foreground="{DynamicResource M3OnSurfaceVariantBrush}"
+                                            Text="{Binding ResultMargin}" />
+                                    </Grid>
+
+                                    <Grid>
+                                        <TextBlock
+                                            FontSize="12"
+                                            Foreground="{DynamicResource M3OutlineBrush}"
+                                            Text="処理時間" />
+                                        <TextBlock
+                                            HorizontalAlignment="Right"
+                                            FontSize="12"
+                                            Foreground="{DynamicResource M3OnSurfaceVariantBrush}"
+                                            Text="{Binding ResultTime}" />
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+
+                            <!--  プレースホルダー (結果なし時)  -->
+                            <Border
+                                Padding="30"
+                                Background="{DynamicResource M3PlaceholderBackgroundBrush}"
+                                CornerRadius="16">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsResultCardVisible}" Value="False">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+                                <StackPanel>
+                                    <TextBlock
+                                        Margin="0,0,0,16"
+                                        FontSize="48"
+                                        Foreground="{DynamicResource M3OnSurfaceVariantBrush}"
+                                        Text="📊"
+                                        TextAlignment="Center" />
+                                    <TextBlock
+                                        FontSize="14"
+                                        Foreground="{DynamicResource M3OutlineBrush}"
+                                        Text="処理結果がここに表示されます"
+                                        TextAlignment="Center"
+                                        TextWrapping="Wrap" />
+                                </StackPanel>
+                            </Border>
+
+                            <!--  ステータス & プログレス  -->
+                            <TextBlock
+                                x:Name="StatusLabel"
+                                Margin="0,20,0,12"
+                                FontSize="12"
+                                Foreground="{DynamicResource M3OnSurfaceVariantBrush}"
+                                Text="{Binding StatusMessage}"
+                                TextWrapping="Wrap" />
+                            <ProgressBar
+                                x:Name="DefinitionReductProgressBar"
+                                Height="8"
+                                Background="{DynamicResource M3PrimaryContainerBrush}"
+                                BorderThickness="0"
+                                Foreground="{DynamicResource M3PrimaryBrush}"
+                                IsIndeterminate="{Binding IsProgressIndeterminate}"
+                                Maximum="100"
+                                Minimum="0"
+                                Value="{Binding ProgressValue}" />
+                        </StackPanel>
+                    </ScrollViewer>
+                </Grid>
+            </Border>
+            <!--  #endregion  -->
+        </Grid>
+
+        <!--  ========== トースト通知 (右下) ==========  -->
+        <controls:ToastControl
+            x:Name="AppToastControl"
+            IsError="{Binding IsToastError}"
+            IsToastVisible="{Binding IsToastVisible}"
+            ToastIcon="{Binding ToastIcon}"
+            ToastMessage="{Binding ToastMessage}" />
+
+        <!--  ========== 設定サイドシート ==========  -->
+        <controls:SideSheet
+            x:Name="SettingsSideSheet"
+            IsOpen="{Binding IsSettingsOpen, Mode=TwoWay}"
+            SheetWidth="400">
+            <controls:SettingsView CloseCommand="{Binding DataContext.CloseSettingsCommand, RelativeSource={RelativeSource AncestorType={x:Type Window}}}" DataContext="{Binding Settings}" />
+        </controls:SideSheet>
+    </Grid>
+</Window>

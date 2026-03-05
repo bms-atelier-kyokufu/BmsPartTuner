@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Style TargetType="{x:Type ContextMenu}">
+        <Setter Property="Background"
+                Value="{DynamicResource M3SurfaceVariantBrush}"/>
+        <Setter Property="Foreground"
+                Value="{DynamicResource M3OnSurfaceBrush}"/>
+        <Setter Property="BorderBrush"
+                Value="{DynamicResource M3OutlineBrush}"/>
+        <Setter Property="BorderThickness"
+                Value="1"/>
+
+        <Setter Property="Effect">
+            <Setter.Value>
+                <DropShadowEffect BlurRadius="8"
+                        ShadowDepth="2"
+                        Opacity="0.4"
+                        Color="Black"/>
+            </Setter.Value>
+        </Setter>
+
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ContextMenu}">
+                    <Border Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            Padding="4"
+                            CornerRadius="8">
+                        <StackPanel IsItemsHost="True"
+                                KeyboardNavigation.DirectionalNavigation="Cycle"/>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="{x:Type MenuItem}">
+        <Setter Property="Background"
+                Value="Transparent"/>
+        <Setter Property="Foreground"
+                Value="{DynamicResource M3OnSurfaceBrush}"/>
+        <Setter Property="FontSize"
+                Value="14"/>
+        <Setter Property="Padding"
+                Value="12,8"/>
+        <Setter Property="Margin"
+                Value="0,2"/>
+
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type MenuItem}">
+                    <Border x:Name="Border"
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="4"
+                            Padding="{TemplateBinding Padding}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <ContentPresenter Grid.Column="0"
+                                              Content="{TemplateBinding Header}"
+                                              ContentSource="Header"
+                                              RecognizesAccessKey="True"
+                                              VerticalAlignment="Center"/>
+
+                            <TextBlock Grid.Column="1"
+                                       Text="{TemplateBinding InputGestureText}"
+                                       Margin="20,0,0,0"
+                                       VerticalAlignment="Center"
+                                       FontSize="12"
+                                       Foreground="{DynamicResource M3OnSurfaceVariantBrush}"/>
+                        </Grid>
+                    </Border>
+
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsHighlighted"
+                                Value="True">
+                            <Setter TargetName="Border"
+                                    Property="Background"
+                                    Value="{DynamicResource M3PrimaryBrush}"/>
+                            <Setter Property="Foreground"
+                                    Value="{DynamicResource M3OnPrimaryBrush}"/>
+                            <Setter TargetName="Border"
+                                    Property="TextBlock.Foreground"
+                                    Value="{DynamicResource M3OnPrimaryBrush}"/>
+                        </Trigger>
+
+                        <Trigger Property="IsEnabled"
+                                Value="False">
+                            <Setter Property="Opacity"
+                                    Value="0.38"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+</ResourceDictionary>

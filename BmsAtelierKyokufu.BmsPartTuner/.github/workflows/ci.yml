@@ -1,0 +1,31 @@
+﻿name: Build Verification
+
+on:
+  pull_request:
+    branches: [ "main", "develop" ] # 監視対象ブランチ
+    paths:
+      - '**.cs'
+      - '**.csproj'
+      - '**.sln'
+      - '**.props'
+
+jobs:
+  build:
+    name: Build Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x' # .NET 10 を明示的に指定
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build
+        # --no-incremental: 毎回フルビルドを行うことで、キャッシュによる「たまたま成功」を防ぐ
+        run: dotnet build --configuration Release --no-restore --no-incremental

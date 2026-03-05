@@ -1,0 +1,145 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <TargetFramework>net10.0-windows7.0</TargetFramework>
+        <UseWPF>true</UseWPF>
+        <AssemblyName>BmsPartTuner</AssemblyName>
+        <RootNamespace>BmsAtelierKyokufu.BmsPartTuner</RootNamespace>
+        <ApplicationManifest>Properties\app.manifest</ApplicationManifest>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>disable</ImplicitUsings>
+
+        <AssemblyVersion>0.1.1.0</AssemblyVersion>
+        <FileVersion>0.1.1.0</FileVersion>
+        <Version>0.1.1</Version>
+        <Product>BmsDefinitionReductor</Product>
+        <Copyright>Copyright c 2021</Copyright>
+
+        <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+        <SupportedOSPlatform>windows7.0</SupportedOSPlatform>
+        <ApplicationIcon>Properties\Resources\icon.ico</ApplicationIcon>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    </PropertyGroup>
+    <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+        <DebugSymbols>true</DebugSymbols>
+        <DebugType>full</DebugType>
+        <Optimize>false</Optimize>
+        <DefineConstants>DEBUG;TRACE</DefineConstants>
+    </PropertyGroup>
+    <ItemGroup>
+        <None Include=".copilot\prompts\gen-commit.prompt.md" />
+        <None Include=".copilot\prompts\gen-pull-request.prompt.md" />
+        <None Include=".github\workflows\ci.yml" />
+        <Resource Include="Properties\Resources\icon.ico" />
+        <Content Include="Properties\Resources\BmpPartTunerLogo.light-dark-variable.svg">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Include="Properties\Resources\BmpPartTunerLogo_dark.svg">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Include="Properties\Resources\BmpPartTunerLogo_light.svg">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="CommunityToolkit.Mvvm" Version="8.3.2" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.0" />
+        <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.122" />
+        <PackageReference Include="NAudio" Version="2.2.1" />
+        <PackageReference Include="Markdig.Wpf" Version="0.5.0.1" />
+        <PackageReference Include="SharpVectors.Wpf" Version="1.8.4.2" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <EmbeddedResource Include="Resources\Licenses\**\*.md" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include=".copilot\copilot-instructions.md" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Compile Update="Properties\Resources.Designer.cs">
+            <DesignTime>True</DesignTime>
+            <AutoGen>True</AutoGen>
+            <DependentUpon>Resources.resx</DependentUpon>
+        </Compile>
+        <Compile Update="Properties\Settings.Designer.cs">
+            <DesignTimeSharedInput>True</DesignTimeSharedInput>
+            <AutoGen>True</AutoGen>
+            <DependentUpon>Settings.settings</DependentUpon>
+        </Compile>
+        <Compile Update="Controls\M3TextBox.cs">
+            <DependentUpon>M3TextBox.xaml</DependentUpon>
+        </Compile>
+        <Compile Update="Controls\M3NumericTextBox.cs">
+            <DependentUpon>M3NumericTextBox.xaml</DependentUpon>
+        </Compile>
+        <Compile Update="Controls\M3SearchTextBox.cs">
+            <DependentUpon>M3SearchTextBox.xaml</DependentUpon>
+        </Compile>
+        <Compile Update="Controls\M3FilePathTextBox.cs">
+            <DependentUpon>M3FilePathTextBox.xaml</DependentUpon>
+        </Compile>
+        <Compile Update="Controls\ToastControl.xaml.cs">
+            <DependentUpon>ToastControl.xaml</DependentUpon>
+        </Compile>
+    </ItemGroup>
+
+    <ItemGroup>
+        <EmbeddedResource Update="Properties\Resources.resx">
+            <Generator>ResXFileCodeGenerator</Generator>
+            <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Update="Properties\Settings.settings">
+            <Generator>SettingsSingleFileGenerator</Generator>
+            <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+        </None>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Page Update="Controls\M3TextBox.xaml">
+            <Generator>MSBuild:Compile</Generator>
+            <SubType>Designer</SubType>
+        </Page>
+        <Page Update="Controls\M3NumericTextBox.xaml">
+            <Generator>MSBuild:Compile</Generator>
+            <SubType>Designer</SubType>
+        </Page>
+        <Page Update="Controls\M3CorrelationTextBox.xaml">
+            <Generator>MSBuild:Compile</Generator>
+            <SubType>Designer</SubType>
+        </Page>
+        <Page Update="Controls\M3SearchTextBox.xaml">
+            <Generator>MSBuild:Compile</Generator>
+            <SubType>Designer</SubType>
+        </Page>
+        <Page Update="Controls\M3FilePathTextBox.xaml">
+            <Generator>MSBuild:Compile</Generator>
+            <SubType>Designer</SubType>
+        </Page>
+        <Page Update="Controls\SmartFilterChips.xaml">
+            <Generator>MSBuild:Compile</Generator>
+            <SubType>Designer</SubType>
+        </Page>
+        <Page Update="Controls\ToastControl.xaml">
+            <Generator>MSBuild:Compile</Generator>
+            <SubType>Designer</SubType>
+        </Page>
+    </ItemGroup>
+    <!-- ビルド前に using の整理を自動実行 -->
+    <Target Name="AutoFormatUsings" BeforeTargets="BeforeBuild">
+        <Message Text="Running dotnet format to clean up usings..." Importance="high" />
+        <!-- 
+        fix-style オプションは廃止されたため削除。
+        diagnostics IDE0005: 不要なusingの削除を指定
+        -->
+        <Exec Command="dotnet format &quot;$(ProjectPath)&quot; --diagnostics IDE0005" IgnoreExitCode="true" />
+    </Target>
+</Project>

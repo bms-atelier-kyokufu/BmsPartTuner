@@ -1,0 +1,92 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!--  M3 Toggle Switch Style  -->
+    <Style x:Key="M3ToggleSwitch" TargetType="ToggleButton">
+        <Setter Property="Width" Value="52" />
+        <Setter Property="Height" Value="32" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ToggleButton">
+                    <Grid>
+                        <!--  Track  -->
+                        <Border
+                            x:Name="Track"
+                            Height="32"
+                            Background="{DynamicResource M3SurfaceVariantBrush}"
+                            BorderBrush="{DynamicResource M3OutlineBrush}"
+                            BorderThickness="2"
+                            CornerRadius="16" />
+
+                        <!--  Thumb  -->
+                        <Border
+                            x:Name="Thumb"
+                            Width="24"
+                            Height="24"
+                            Margin="4,0,0,0"
+                            HorizontalAlignment="Left"
+                            Background="{DynamicResource M3OutlineBrush}"
+                            CornerRadius="12">
+                            <Border.RenderTransform>
+                                <TranslateTransform x:Name="ThumbTransform" X="0" />
+                            </Border.RenderTransform>
+                        </Border>
+                    </Grid>
+
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="Track" Property="Background" Value="{DynamicResource M3PrimaryBrush}" />
+                            <Setter TargetName="Track" Property="BorderBrush" Value="{DynamicResource M3PrimaryBrush}" />
+                            <Setter TargetName="Thumb" Property="Background" Value="{DynamicResource M3OnPrimaryBrush}" />
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation
+                                            Storyboard.TargetName="ThumbTransform"
+                                            Storyboard.TargetProperty="X"
+                                            To="20"
+                                            Duration="0:0:0.2">
+                                            <DoubleAnimation.EasingFunction>
+                                                <CubicEase EasingMode="EaseOut" />
+                                            </DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation
+                                            Storyboard.TargetName="ThumbTransform"
+                                            Storyboard.TargetProperty="X"
+                                            To="0"
+                                            Duration="0:0:0.2">
+                                            <DoubleAnimation.EasingFunction>
+                                                <CubicEase EasingMode="EaseOut" />
+                                            </DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.ExitActions>
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Thumb" Property="Effect">
+                                <Setter.Value>
+                                    <DropShadowEffect
+                                        BlurRadius="8"
+                                        Opacity="0.3"
+                                        ShadowDepth="0"
+                                        Color="Black" />
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+</ResourceDictionary>

@@ -1,0 +1,16 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": ".NET Core Launch (console)",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/BmsAtelierKyokufu.BmsPartTuner/bin/Debug/net10.0-windows7.0/BmsPartTuner.exe",
+            "args": [],
+            "cwd": "${workspaceFolder}/BmsAtelierKyokufu.BmsPartTuner",
+            "stopAtEntry": false,
+            "console": "internalConsole"
+        }
+    ]
+}

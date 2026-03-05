@@ -1,0 +1,114 @@
+﻿<UserControl
+x:Class="BmsAtelierKyokufu.BmsPartTuner.Controls.Settings.GeneralTab"
+xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+xmlns:converters="clr-namespace:BmsAtelierKyokufu.BmsPartTuner.Converters"
+xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+xmlns:ui="clr-namespace:BmsAtelierKyokufu.BmsPartTuner.Infrastructure.UI"
+d:DesignHeight="400"
+d:DesignWidth="350"
+mc:Ignorable="d">
+
+<UserControl.Resources>
+    <converters:BoolToOpacityConverter x:Key="BoolToOpacityConverter" />
+    <converters:InverseBooleanConverter x:Key="InverseBoolConverter" />
+
+    <!--  Settings Section Style  -->
+    <Style x:Key="SettingsSection" TargetType="Border">
+        <Setter Property="Background" Value="{DynamicResource M3SurfaceVariantBrush}" />
+        <Setter Property="CornerRadius" Value="16" />
+        <Setter Property="Padding" Value="16" />
+        <Setter Property="Margin" Value="0,0,0,16" />
+    </Style>
+</UserControl.Resources>
+
+    <ScrollViewer
+        Padding="20"
+        HorizontalScrollBarVisibility="Disabled"
+        VerticalScrollBarVisibility="Auto">
+        <StackPanel>
+            <!--  テーマ設定セクション  -->
+            <Border Style="{StaticResource SettingsSection}">
+                <StackPanel>
+                    <TextBlock
+                        Margin="0,0,0,16"
+                        FontSize="14"
+                        FontWeight="SemiBold"
+                        Foreground="{DynamicResource M3OnSurfaceBrush}"
+                        Text="テーマ" />
+
+                    <!--  システムテーマに追従  -->
+                    <Grid Margin="0,0,0,16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock
+                                FontSize="14"
+                                Foreground="{DynamicResource M3OnSurfaceBrush}"
+                                Text="システムテーマに追従" />
+                            <TextBlock
+                                FontSize="12"
+                                Foreground="{DynamicResource M3OnSurfaceVariantBrush}"
+                                Text="OSのテーマ設定に合わせて自動切替" />
+                        </StackPanel>
+                        <ToggleButton
+                            Grid.Column="1"
+                            IsChecked="{Binding UseSystemTheme}"
+                            Style="{StaticResource M3ToggleSwitch}" />
+                    </Grid>
+
+                    <!--  ダークモード (システムテーマ追従がオフの場合のみ)  -->
+                    <Grid Opacity="{Binding UseSystemTheme, Converter={StaticResource BoolToOpacityConverter}}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock
+                                FontSize="14"
+                                Foreground="{DynamicResource M3OnSurfaceBrush}"
+                                Text="ダークモード" />
+                            <TextBlock
+                                FontSize="12"
+                                Foreground="{DynamicResource M3OnSurfaceVariantBrush}"
+                                Text="手動でダークテーマを切り替え" />
+                        </StackPanel>
+                        <ToggleButton
+                            Grid.Column="1"
+                            IsChecked="{Binding IsDarkTheme}"
+                            IsEnabled="{Binding UseSystemTheme, Converter={StaticResource InverseBoolConverter}}"
+                            Style="{StaticResource M3ToggleSwitch}" />
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!--  外部プレイヤー設定セクション  -->
+            <Border Style="{StaticResource SettingsSection}">
+                <StackPanel>
+                    <TextBlock
+                        Margin="0,0,0,16"
+                        FontSize="14"
+                        FontWeight="SemiBold"
+                        Foreground="{DynamicResource M3OnSurfaceBrush}"
+                        Text="外部プレイヤー" />
+
+                    <TextBox
+                        ui:TextBoxHelper.BrowseCommand="{Binding SelectPlayerPathCommand}"
+                        ui:TextBoxHelper.Label="mBMplay.exe のパス"
+                        Style="{StaticResource Material.Styles.TextBox.FilePath}"
+                        Text="{Binding MbmPlayPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+                    <TextBlock
+                        Margin="0,8,0,0"
+                        FontSize="11"
+                        Foreground="{DynamicResource M3OnSurfaceVariantBrush}"
+                        Text="設定すると、解析結果からテスト再生が可能になります"
+                        TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

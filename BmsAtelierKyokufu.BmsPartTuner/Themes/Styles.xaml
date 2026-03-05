@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="clr-namespace:BmsAtelierKyokufu.BmsPartTuner.Controls"
+    xmlns:markdig="clr-namespace:Markdig.Wpf;assembly=Markdig.Wpf">
+
+    <!--  子リソースのインポート  -->
+    <ResourceDictionary.MergedDictionaries>
+        <!-- Control Styles -->
+        <ResourceDictionary Source="Controls/TextBox.xaml"/>
+        <ResourceDictionary Source="Controls/NumericTextBox.xaml"/>
+        <ResourceDictionary Source="Controls/FilePathTextBox.xaml"/>
+        <ResourceDictionary Source="Controls/SearchTextBox.xaml"/>
+        <ResourceDictionary Source="Controls/R2TextBox.xaml"/>
+        <ResourceDictionary Source="Controls/FloatingLabelTextBox.xaml"/>
+        <ResourceDictionary Source="Controls/IconTextBox.xaml"/>
+        <ResourceDictionary Source="Controls/Button.xaml"/>
+        <ResourceDictionary Source="Controls/ListView.xaml"/>
+        <ResourceDictionary Source="Controls/ToggleSwitch.xaml"/>
+        <ResourceDictionary Source="Controls/ScrollBar.xaml"/>
+        <ResourceDictionary Source="Controls/Markdown.xaml"/>
+        <ResourceDictionary Source="Controls/Container.xaml"/>
+        
+    </ResourceDictionary.MergedDictionaries>
+
+</ResourceDictionary>

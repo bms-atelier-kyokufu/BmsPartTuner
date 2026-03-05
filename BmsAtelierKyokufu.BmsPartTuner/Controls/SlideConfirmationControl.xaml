@@ -1,0 +1,75 @@
+﻿<UserControl
+    x:Class="BmsAtelierKyokufu.BmsPartTuner.Controls.SlideConfirmationControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    d:DesignHeight="44"
+    d:DesignWidth="600"
+    MinWidth="120"
+    mc:Ignorable="d">
+
+    <!--  スライド確認UI (上書き確認用)  -->
+    <Border
+        x:Name="SlideConfirmationPanel"
+        Height="44"
+        Background="{DynamicResource M3WarningContainerBrush}"
+        BorderBrush="{DynamicResource M3WarningBrush}"
+        BorderThickness="2"
+        CornerRadius="12">
+        <Grid>
+            <!--  レール背景  -->
+            <Border
+                Margin="2"
+                Background="{DynamicResource M3WarningContainerLightBrush}"
+                CornerRadius="10" />
+
+            <!--  プログレッシブ・フィル (左から右へ満たされる背景)  -->
+            <Border
+                x:Name="ProgressiveFill"
+                Width="0"
+                Margin="2"
+                HorizontalAlignment="Left"
+                Background="{DynamicResource M3WarningBrush}"
+                CornerRadius="10"
+                Opacity="0.3" />
+
+            <!--  背景テキスト  -->
+            <TextBlock
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                FontSize="13"
+                FontWeight="Medium"
+                Foreground="{DynamicResource M3OutlineBrush}"
+                IsHitTestVisible="False"
+                Text="{Binding SlideInstructionText, RelativeSource={RelativeSource AncestorType=UserControl}}" />
+
+            <!--  スライダーツマミ  -->
+            <Border
+                x:Name="SlideThumb"
+                Width="{Binding ThumbWidth, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                Height="40"
+                HorizontalAlignment="Left"
+                Background="{DynamicResource M3WarningBrush}"
+                CornerRadius="10"
+                Cursor="Hand"
+                MouseLeave="SlideThumb_MouseLeave"
+                MouseLeftButtonDown="SlideThumb_MouseLeftButtonDown"
+                MouseLeftButtonUp="SlideThumb_MouseLeftButtonUp"
+                MouseMove="SlideThumb_MouseMove">
+                <Border.RenderTransform>
+                    <TranslateTransform x:Name="ThumbTransform" />
+                </Border.RenderTransform>
+
+                <TextBlock
+                    x:Name="ArrowText"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    FontSize="35"
+                    Foreground="White"
+                    IsHitTestVisible="False"
+                    Text="➡" />
+            </Border>
+        </Grid>
+    </Border>
+</UserControl>

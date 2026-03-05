@@ -1,0 +1,93 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:markdig="clr-namespace:Markdig.Wpf;assembly=Markdig.Wpf">
+
+    <!--  FlowDocument: ドキュメント全体のベーススタイル  -->
+    <Style TargetType="{x:Type FlowDocument}">
+        <Setter Property="Foreground" Value="{DynamicResource M3OnSurfaceBrush}" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="TextAlignment" Value="Left" />
+    </Style>
+
+    <!--  Paragraph: 段落スタイル  -->
+    <Style TargetType="{x:Type Paragraph}">
+        <Setter Property="Foreground" Value="{DynamicResource M3OnSurfaceBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource M3OnSurfaceBrush}" />
+    </Style>
+
+    <!--  Run: テキスト実行スタイル  -->
+    <Style TargetType="{x:Type Run}">
+        <Setter Property="Foreground" Value="{DynamicResource M3OnSurfaceBrush}" />
+    </Style>
+
+    <!--  Bold: 太字スタイル  -->
+    <Style TargetType="{x:Type Bold}">
+        <Setter Property="Foreground" Value="{DynamicResource M3OnSurfaceBrush}" />
+    </Style>
+
+    <!--  Italic: イタリック体スタイル  -->
+    <Style TargetType="{x:Type Italic}">
+        <Setter Property="Foreground" Value="{DynamicResource M3OnSurfaceBrush}" />
+    </Style>
+
+    <!--  Underline: 下線スタイル  -->
+    <Style TargetType="{x:Type Underline}">
+        <Setter Property="Foreground" Value="{DynamicResource M3OnSurfaceBrush}" />
+    </Style>
+
+    <!--  Span: 汎用スパンスタイル  -->
+    <Style TargetType="{x:Type Span}">
+        <Setter Property="Foreground" Value="{DynamicResource M3OnSurfaceBrush}" />
+    </Style>
+
+    <!--  Section: セクションスタイル  -->
+    <Style TargetType="{x:Type Section}">
+        <Setter Property="Foreground" Value="{DynamicResource M3OnSurfaceBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource M3OnSurfaceBrush}" />
+    </Style>
+
+    <!--  List: リストスタイル  -->
+    <Style TargetType="{x:Type List}">
+        <Setter Property="Foreground" Value="{DynamicResource M3OnSurfaceBrush}" />
+    </Style>
+
+    <!--  ListItem: リストアイテムスタイル  -->
+    <Style TargetType="{x:Type ListItem}">
+        <Setter Property="Foreground" Value="{DynamicResource M3OnSurfaceBrush}" />
+    </Style>
+
+    <!--  Table: テーブルスタイル  -->
+    <Style TargetType="{x:Type Table}">
+        <Setter Property="Foreground" Value="{DynamicResource M3OnSurfaceBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource M3OutlineBrush}" />
+    </Style>
+
+    <!--  TableRow: テーブル行スタイル  -->
+    <Style TargetType="{x:Type TableRow}">
+        <Setter Property="Foreground" Value="{DynamicResource M3OnSurfaceBrush}" />
+    </Style>
+
+    <!--  TableCell: テーブルセルスタイル  -->
+    <Style TargetType="{x:Type TableCell}">
+        <Setter Property="Foreground" Value="{DynamicResource M3OnSurfaceBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource M3OutlineBrush}" />
+    </Style>
+
+    <!--  Hyperlink: ハイパーリンクスタイル  -->
+    <Style TargetType="{x:Type Hyperlink}">
+        <Setter Property="Foreground" Value="{DynamicResource M3PrimaryBrush}" />
+        <Setter Property="TextDecorations" Value="Underline" />
+    </Style>
+
+    <!--  Markdown Thematic Break (Line): 罫線スタイル  -->
+    <Style x:Key="{x:Static markdig:Styles.ThematicBreakStyleKey}" TargetType="{x:Type Line}">
+        <Setter Property="Stroke" Value="{DynamicResource M3OnSurfaceBrush}" />
+        <Setter Property="StrokeThickness" Value="1" />
+        <Setter Property="Stretch" Value="Fill" />
+        <Setter Property="X2" Value="1" />
+        <Setter Property="Margin" Value="0,12" />
+    </Style>
+
+</ResourceDictionary>

@@ -1,0 +1,83 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+
+    <!--
+        ==========================================================
+        Design Tokens (Non-Color)
+        
+        Note: Color/Brush定義はテーマファイル（LightTheme.xaml/DarkTheme.xaml）に
+        直接含まれています。これにより、テーマ切り替え時にリアルタイムで
+        すべてのブラシが更新されます。
+        
+        このファイルには、テーマに依存しない要素（エフェクト、形状トークンなど）
+        のみを定義します。
+        ==========================================================
+    -->
+
+    <!--
+        ==========================================================
+        Effects
+        Why: 浮き出し効果（Elevation）を定義します。
+        ==========================================================
+    -->
+    <DropShadowEffect
+        x:Key="M3Elevation1"
+        BlurRadius="10"
+        Direction="270"
+        Opacity="0.15"
+        ShadowDepth="1"
+        Color="Black" />
+
+    <DropShadowEffect
+        x:Key="M3Elevation2"
+        BlurRadius="15"
+        Direction="270"
+        Opacity="0.2"
+        ShadowDepth="3"
+        Color="Black" />
+
+    <!--
+        ==========================================================
+        Geometry & Shape Tokens (Safe Mode)
+        Why: <CornerRadius> タグを直接使うと .NET のバグでクラッシュするため、
+             値を sys:String として定義し、Style を通じて型変換を適用します。
+        ==========================================================
+    -->
+
+    <!--  Raw Values (for Style Setters)  -->
+    <sys:String x:Key="M3CornerExtraSmallValue">4</sys:String>
+    <sys:String x:Key="M3CornerSmallValue">8</sys:String>
+    <sys:String x:Key="M3CornerMediumValue">12</sys:String>
+    <sys:String x:Key="M3CornerLargeValue">24</sys:String>
+
+    <!--  CornerRadius Resources (for direct StaticResource binding)  -->
+    <CornerRadius x:Key="M3CornerExtraSmall">4</CornerRadius>
+    <CornerRadius x:Key="M3CornerSmall">8</CornerRadius>
+    <CornerRadius x:Key="M3CornerMedium">12</CornerRadius>
+    <CornerRadius x:Key="M3CornerLarge">24</CornerRadius>
+
+    <!--
+        Corner Styles
+        Usage: <Border Style="{StaticResource M3CornerMediumStyle}" ... />
+        Why: Setter.Value に string を指定することで、WPFのパーサーが
+             内部的に CornerRadius 構造体へ安全に変換します。
+    -->
+    <Style x:Key="M3CornerExtraSmallStyle" TargetType="Border">
+        <Setter Property="CornerRadius" Value="{StaticResource M3CornerExtraSmallValue}" />
+    </Style>
+
+    <Style x:Key="M3CornerSmallStyle" TargetType="Border">
+        <Setter Property="CornerRadius" Value="{StaticResource M3CornerSmallValue}" />
+    </Style>
+
+    <Style x:Key="M3CornerMediumStyle" TargetType="Border">
+        <Setter Property="CornerRadius" Value="{StaticResource M3CornerMediumValue}" />
+    </Style>
+
+    <Style x:Key="M3CornerLargeStyle" TargetType="Border">
+        <Setter Property="CornerRadius" Value="{StaticResource M3CornerLargeValue}" />
+    </Style>
+
+</ResourceDictionary>

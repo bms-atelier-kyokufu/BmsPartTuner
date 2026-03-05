@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!--  M3 Style Input Field Border  -->
+    <Style x:Key="M3FieldBorder"
+            TargetType="Border">
+        <Setter Property="CornerRadius"
+                Value="12"/>
+        <Setter Property="Background"
+                Value="{DynamicResource M3SurfaceBrush}"/>
+        <Setter Property="BorderBrush"
+                Value="{DynamicResource M3OutlineBrush}"/>
+        <Setter Property="BorderThickness"
+                Value="1"/>
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver"
+                    Value="True">
+                <Setter Property="BorderBrush"
+                        Value="{DynamicResource M3PrimaryBrush}"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="ResultCard"
+            TargetType="Border">
+        <Setter Property="Background"
+                Value="{DynamicResource M3SurfaceVariantBrush}"/>
+        <Setter Property="CornerRadius"
+                Value="16"/>
+        <Setter Property="Padding"
+                Value="16"/>
+        <Setter Property="Effect"
+                Value="{DynamicResource M3Elevation2}"/>
+    </Style>
+
+    <!--  Side Panel Style  -->
+    <Style x:Key="SidePanel"
+            TargetType="Border">
+        <Setter Property="Background"
+                Value="{DynamicResource M3SurfaceVariantBrush}"/>
+        <Setter Property="BorderBrush"
+                Value="{DynamicResource M3OutlineBrush}"/>
+        <Setter Property="BorderThickness"
+                Value="1,0,0,0"/>
+        <Setter Property="Padding"
+                Value="20"/>
+    </Style>
+
+</ResourceDictionary>
