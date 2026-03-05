@@ -61,4 +61,4 @@ If you are a recruiter or an engineer interested in the technical aspects of thi
 本ソフトウェアは[BMSアトリエ【極譜】](https://bms-atelier-kyokufu.blogspot.com/) によって開発・提供されています。
 バグ報告や機能要望は、GitHubの[Issues](https://github.com/bms-atelier-kyokufu/BmsPartTuner/issues)で受け付けています。
 
-開発者の方は[docs/Technical Guide.md](docs/TECHNICAL_GUIDE.md)をご覧ください。内部の仕組みを詳しく解説しています。
+開発者の方は[docs/Technical Guide.md](https://raw.githubusercontent.com/bms-atelier-kyokufu/BmsPartTuner/refs/heads/main/docs/TECHNICAL_GUIDE.md)をご覧ください。内部の仕組みを詳しく解説しています。
