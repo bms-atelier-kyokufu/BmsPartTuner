@@ -1,6 +1,6 @@
 # BMS Part Tuner
 
-[![BMS Part Tuner Logo](https://raw.githubusercontent.com/bms-atelier-kyokufu/BmsPartTuner/refs/heads/main/BmsAtelierKyokufu.BmsPartTuner/Properties/Resources/BmpPartTunerLogo_dark.svg)](https://github.com/bms-atelier-kyokufu/BmsPartTuner/)
+[![BMS Part Tuner Logo](./Properties/Resources/BmpPartTunerLogo_dark.svg)](https://github.com/bms-atelier-kyokufu/BmsPartTuner/)
 
 
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg?style=flat-square)](https://dotnet.microsoft.com/)
@@ -19,8 +19,8 @@ If you are a recruiter or an engineer interested in the technical aspects of thi
 
 ##  Key Documents
 
-- [Technical Portfolio Summary](docs/PORTFOLIO_SUMMARY_EN.md): A high-level overview of the architecture, optimization, and QA strategy.
-- [Optimization Engineering Report](docs/OPTIMIZATION_GUIDE_EN.md): A deep dive into how I achieved the 800x performance boost using low-level .NET techniques.
+- [Technical Portfolio Summary](./docs/PORTFOLIO_SUMMARY_EN.md): A high-level overview of the architecture, optimization, and QA strategy.
+- [Optimization Engineering Report](./docs/02_OPTIMIZATION_GUIDE_EN.md): A deep dive into how I achieved the 800x performance boost using low-level .NET techniques.
 
 ---
 
@@ -61,4 +61,4 @@ If you are a recruiter or an engineer interested in the technical aspects of thi
 本ソフトウェアは[BMSアトリエ【極譜】](https://bms-atelier-kyokufu.blogspot.com/) によって開発・提供されています。
 バグ報告や機能要望は、GitHubの[Issues](https://github.com/bms-atelier-kyokufu/BmsPartTuner/issues)で受け付けています。
 
-開発者の方は[docs/Technical Guide.md](https://github.com/bms-atelier-kyokufu/BmsPartTuner/blob/main/docs/01_TECHNICAL_GUIDE.md)をご覧ください。内部の仕組みを詳しく解説しています。
+開発者の方は[docs/Technical Guide.md](./docs/01_TECHNICAL_GUIDE.md)をご覧ください。内部の仕組みを詳しく解説しています。
