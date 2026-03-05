@@ -14,7 +14,7 @@ If you are a recruiter or an engineer interested in the technical aspects of thi
 
 ## Performance Highlights
 
-- 8000x Speedup: Reduced audio processing time from 1 hour to 3 seconds.
+- 8000x Speedup: Reduced audio processing time from 1 hour to 300 milliseconds.
 - Tech Stack: .NET 10, SIMD (Vectorization), Memory-Mapped Files, MVVM, and DI.
 
 ##  Key Documents
