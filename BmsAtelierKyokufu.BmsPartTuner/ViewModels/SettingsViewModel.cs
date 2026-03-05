@@ -1,5 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.Reflection;
+using BmsAtelierKyokufu.BmsPartTuner.Core;
 using BmsAtelierKyokufu.BmsPartTuner.Models;
 using BmsAtelierKyokufu.BmsPartTuner.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -151,7 +152,7 @@ public partial class SettingsViewModel : ObservableObject
         {
             Assembly assembly = Assembly.GetExecutingAssembly();
             AssemblyDescriptionAttribute? descriptionAttr = assembly.GetCustomAttribute<AssemblyDescriptionAttribute>();
-            return descriptionAttr?.Description ?? "https://github.com/bms-atelier-kyokufu/BmsPartTuner";
+            return descriptionAttr?.Description ?? AppConstants.Files.GitHubRepositoryUrl;
         }
     }
 
@@ -253,7 +254,7 @@ public partial class SettingsViewModel : ObservableObject
     [RelayCommand]
     private void OpenGitHubIssues()
     {
-        OpenUrl("https://github.com/bms-atelier-kyokufu/BmsPartTuner/issues");
+        OpenUrl($"{AppConstants.Files.GitHubRepositoryUrl}/issues");
     }
 
     /// <summary>

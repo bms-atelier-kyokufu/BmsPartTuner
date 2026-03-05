@@ -11,9 +11,9 @@
     xmlns:ui="clr-namespace:BmsAtelierKyokufu.BmsPartTuner.Infrastructure.UI"
     Title="BMS Part Tuner"
     Width="1200"
-    Height="700"
+    Height="800"
     MinWidth="1000"
-    MinHeight="600"
+    MinHeight="700"
     Background="{DynamicResource M3BackgroundBrush}"
     mc:Ignorable="d">
     <Window.Resources>

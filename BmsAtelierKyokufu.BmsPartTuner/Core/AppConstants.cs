@@ -283,6 +283,9 @@ public static class AppConstants
         /// <summary>デフォルトの出力ファイル名。</summary>
         public const string DefaultOutputFileName = "output.bms";
 
+        /// <summary>GitHubリポジトリのURL。</summary>
+        public const string GitHubRepositoryUrl = "https://github.com/bms-atelier-kyokufu/BmsPartTuner";
+
         /// <summary>
         /// 最適化後のファイル名に付与するサフィックス（例: "song.bms" → "song_optimized.bms"）。
         /// </summary>

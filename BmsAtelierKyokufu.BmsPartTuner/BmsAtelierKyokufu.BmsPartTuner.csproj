@@ -9,17 +9,17 @@
         <ApplicationManifest>Properties\app.manifest</ApplicationManifest>
         <Nullable>enable</Nullable>
         <ImplicitUsings>disable</ImplicitUsings>
-
-        <AssemblyVersion>0.1.1.0</AssemblyVersion>
-        <FileVersion>0.1.1.0</FileVersion>
-        <Version>0.1.1</Version>
-        <Product>BmsDefinitionReductor</Product>
-        <Copyright>Copyright c 2021</Copyright>
+        <Version>1.0.0</Version>
+        <Product>BMS Part Tuner</Product>
+        <Copyright>Copyright (c) 2026 Bms Atelier Kyokufu</Copyright>
 
         <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
         <SupportedOSPlatform>windows7.0</SupportedOSPlatform>
         <ApplicationIcon>Properties\Resources\icon.ico</ApplicationIcon>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <PackageProjectUrl>https://github.com/bms-atelier-kyokufu/BmsPartTuner</PackageProjectUrl>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <AssemblyVersion>1.0.0</AssemblyVersion>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
         <DebugSymbols>true</DebugSymbols>
@@ -28,6 +28,10 @@
         <DefineConstants>DEBUG;TRACE</DefineConstants>
     </PropertyGroup>
     <ItemGroup>
+        <None Include="..\README.md">
+          <Pack>True</Pack>
+          <PackagePath>\</PackagePath>
+        </None>
         <None Include=".copilot\prompts\gen-commit.prompt.md" />
         <None Include=".copilot\prompts\gen-pull-request.prompt.md" />
         <None Include=".github\workflows\ci.yml" />

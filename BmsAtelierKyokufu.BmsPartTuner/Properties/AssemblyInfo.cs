@@ -3,8 +3,8 @@ using System.Runtime.CompilerServices;
 using System.Runtime.Versioning;
 using System.Windows;
 
-[assembly: AssemblyVersion("0.1.1.0")]
-[assembly: AssemblyFileVersion("0.1.1.0")]
+[assembly: AssemblyVersion("1.0.0.0")]
+[assembly: AssemblyFileVersion("1.0.0.0")]
 [assembly: AssemblyTitle("BMS Part Tuner")]
 [assembly: AssemblyProduct("BMS Part Tuner")]
 [assembly: AssemblyCompany("BMSアトリエ【極譜】(おちあP & L-Mys)")]
