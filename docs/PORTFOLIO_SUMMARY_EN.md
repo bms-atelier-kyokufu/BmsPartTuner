@@ -4,11 +4,11 @@
 
 This project is not just a utility tool; it is a demonstration of **high-performance computing**, **modern .NET architecture**, and **AI-orchestrated development**.
 
-## **1\. Optimization Engineering (The "800x" Logic)**
+## **1\. Optimization Engineering (The "8000x" Logic)**
 
 **Source:** [02_OPTIMIZATION\_GUIDE_EN.md](https://raw.githubusercontent.com/bms-atelier-kyokufu/BmsPartTuner/refs/heads/main/docs/02_OPTIMIZATION_GUIDE_EN.md)
 
-I achieved an **800x performance boost** (1 hour → 3 seconds) by resolving critical bottlenecks in file I/O and audio processing.
+I achieved an **800x performance boost** (1 hour → 300 milliseconds) by resolving critical bottlenecks in file I/O and audio processing.
 
 * **Bottleneck Analysis:** Identified severe latency in System.IO file access and naive byte-array comparisons.  
 * **Key Techniques:**  
