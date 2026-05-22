@@ -1,4 +1,4 @@
-﻿# ---------------------------------------------------------
+# ---------------------------------------------------------
 # BmsPartTuner Test Runner & AI Context Generator
 # 注意: カレントディレクトリを取得するために、スクリプトはテストプロジェクトルートで実行すること
 # ---------------------------------------------------------
@@ -9,8 +9,7 @@ Write-Host "Running tests with code coverage..." -ForegroundColor Cyan
 dotnet test --logger "trx" --collect:"XPlat Code Coverage"
 
 # 2. パスの設定
-$baseDir = Get-Location
-$resultsDir = Join-Path $baseDir "TestResults"
+$resultsDir = Join-Path $PSScriptRoot "TestResults"
 $outputJson = Join-Path $resultsDir "ai_context.json"
 
 # 結果フォルダがなければ中断

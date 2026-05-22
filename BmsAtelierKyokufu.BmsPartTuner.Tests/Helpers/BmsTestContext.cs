@@ -44,15 +44,16 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
                 // Best effort cleanup; ignore errors (e.g., file in use)
             }
             _disposed = true;
+            GC.SuppressFinalize(this);
         }
     }
 
     /// <summary>
     /// Fluent builder for constructing BMS files and associated dummy assets.
     /// </summary>
-    public class BmsFileBuilder
+    public class BmsFileBuilder(BmsTestContext context)
     {
-        private readonly BmsTestContext _context;
+        private readonly BmsTestContext _context = context;
         private readonly StringBuilder _headerContent = new();
         private readonly StringBuilder _wavDefinitions = new();
         private readonly StringBuilder _mainData = new();
@@ -60,11 +61,6 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
 
         // Base36 characters for index generation
         private const string Base36Chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-
-        public BmsFileBuilder(BmsTestContext context)
-        {
-            _context = context;
-        }
 
         /// <summary>
         /// Adds a header field.
@@ -194,7 +190,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
             File.WriteAllBytes(path, wavHeader);
         }
 
-        private string ToBmsIndex(int index)
+        private static string ToBmsIndex(int index)
         {
             // Standard BMS is Base36 00-ZZ.
             // However, typical usage is often 01-ZZ.
@@ -202,7 +198,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
             // 35 -> 0Z
             // 36 -> 10
 
-            if (index < 0) throw new ArgumentOutOfRangeException(nameof(index));
+            ArgumentOutOfRangeException.ThrowIfNegative(index);
 
             // If index is small, just format as D2 if it fits?
             // No, BMS index is alphanumeric. 10 is '0A' in base36?

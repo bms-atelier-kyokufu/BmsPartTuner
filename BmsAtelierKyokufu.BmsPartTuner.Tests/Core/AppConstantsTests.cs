@@ -125,6 +125,33 @@ public class AppConstantsTests
         Assert.Contains(".bms", AppConstants.Files.SupportedBmsExtensions);
     }
 
+    [Fact]
+    public void SupportedOutputBmsExtensions_IsNotEmpty()
+    {
+        Assert.NotEmpty(AppConstants.Files.SupportedOutputBmsExtensions);
+    }
+
+    [Fact]
+    public void SupportedOutputBmsExtensions_ContainsDotPrefix()
+    {
+        Assert.All(AppConstants.Files.SupportedOutputBmsExtensions, ext =>
+        {
+            Assert.StartsWith(".", ext);
+        });
+    }
+
+    [Fact]
+    public void SupportedOutputBmsExtensions_ContainsBms()
+    {
+        Assert.Contains(".bms", AppConstants.Files.SupportedOutputBmsExtensions);
+    }
+
+    [Fact]
+    public void SupportedOutputBmsExtensions_DoesNotContainBmson()
+    {
+        Assert.DoesNotContain(".bmson", AppConstants.Files.SupportedOutputBmsExtensions);
+    }
+
     #endregion
 
     #region Default Value Tests
@@ -165,6 +192,7 @@ public class AppConstantsTests
     [InlineData(".bme", "BMEファイル")]
     [InlineData(".bml", "BMLファイル")]
     [InlineData(".pms", "PMSファイル")]
+    [InlineData(".bmson", "BMSONファイル")]
     public void GetFileTypeName_KnownExtensions_ReturnsCorrectName(
         string extension, string expectedName)
     {

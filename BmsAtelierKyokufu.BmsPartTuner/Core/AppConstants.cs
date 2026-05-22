@@ -278,7 +278,10 @@ public static class AppConstants
     public static class Files
     {
         /// <summary>対応するBMSファイルの拡張子一覧。</summary>
-        public static readonly string[] SupportedBmsExtensions = { ".bms", ".bme", ".bml", ".pms" };
+        public static readonly string[] SupportedBmsExtensions = [".bms", ".bme", ".bml", ".pms", ".bmson"];
+
+        /// <summary>出力対応するBMSファイルの拡張子一覧（bmsonを除く）。</summary>
+        public static readonly string[] SupportedOutputBmsExtensions = [".bms", ".bme", ".bml", ".pms"];
 
         /// <summary>デフォルトの出力ファイル名。</summary>
         public const string DefaultOutputFileName = "output.bms";
@@ -308,6 +311,7 @@ public static class AppConstants
                 ".bme" => "BMEファイル",
                 ".bml" => "BMLファイル",
                 ".pms" => "PMSファイル",
+                ".bmson" => "BMSONファイル",
                 _ => "ファイル"
             };
         }
