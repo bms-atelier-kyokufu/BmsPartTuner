@@ -12,7 +12,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Infrastructure
     {
         public static Task RunStaAsync(Func<Task> testBody)
         {
-            if (testBody == null) throw new ArgumentNullException(nameof(testBody));
+            ArgumentNullException.ThrowIfNull(testBody);
 
             var tcs = new TaskCompletionSource<object?>();
 
@@ -23,7 +23,14 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Infrastructure
                     // このSTAスレッド上にWPF app/dispatcherが存在することを確保
                     if (Application.Current == null)
                     {
-                        _ = new Application { ShutdownMode = ShutdownMode.OnExplicitShutdown };
+                        try
+                        {
+                            _ = new Application { ShutdownMode = ShutdownMode.OnExplicitShutdown };
+                        }
+                        catch (InvalidOperationException)
+                        {
+                            // Ignore if another application was already created in this AppDomain
+                        }
                     }
 
                     // SynchronizationContextを設定
