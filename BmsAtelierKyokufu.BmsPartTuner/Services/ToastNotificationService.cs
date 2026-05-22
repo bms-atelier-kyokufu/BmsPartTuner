@@ -64,7 +64,7 @@ public class ToastNotificationService : IUiElementService<ToastViewModel>
             _showStoryboard = toastSequence;
             _showStoryboard.Completed += (s, e) =>
             {
-                _container?.Visibility = Visibility.Collapsed;
+                if (_container != null) _container.Visibility = Visibility.Collapsed;
             };
         }
     }
@@ -107,7 +107,7 @@ public class ToastNotificationService : IUiElementService<ToastViewModel>
     /// </summary>
     public void Hide()
     {
-        _container?.Visibility = Visibility.Collapsed;
+        if (_container != null) _container.Visibility = Visibility.Collapsed;
     }
 
     /// <summary>
@@ -147,8 +147,8 @@ public class ToastNotificationService : IUiElementService<ToastViewModel>
 
         _showStoryboard?.Stop();
 
-        _message?.Text = data.Message;
-        _icon?.Text = data.Icon;
+        if (_message != null) _message.Text = data.Message;
+        if (_icon != null) _icon.Text = data.Icon;
 
         if (data.IsError)
         {

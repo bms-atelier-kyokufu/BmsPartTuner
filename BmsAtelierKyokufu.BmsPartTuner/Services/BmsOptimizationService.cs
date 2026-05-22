@@ -538,7 +538,7 @@ public class BmsOptimizationService : IBmsOptimizationService
     /// </summary>
     /// <param name="files">クリア対象のファイルリスト。</param>
     /// <param name="audioCache">音声キャッシュディクショナリ。</param>
-    private static void CleanupAudioCache(IEnumerable<BmsAudioFile>? files, IReadOnlyDictionary<string, CachedSoundData> audioCache)
+    private static void CleanupAudioCache(IEnumerable<BmsAudioFile>? files, System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData> audioCache)
     {
         if (files == null || audioCache == null) return;
 

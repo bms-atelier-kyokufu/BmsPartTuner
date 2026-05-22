@@ -623,7 +623,7 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
         return string.Empty;
     }
 
-    private string GetSupportedOutputExtensionsPattern()
+    private static string GetSupportedOutputExtensionsPattern()
     {
         return string.Join(", ", Core.AppConstants.Files.SupportedOutputBmsExtensions);
     }

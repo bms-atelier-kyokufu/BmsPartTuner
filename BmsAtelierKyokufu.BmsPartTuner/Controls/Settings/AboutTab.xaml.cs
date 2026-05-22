@@ -44,7 +44,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Controls.Settings
 
         private void AboutTab_Unloaded(object sender, RoutedEventArgs e)
         {
-            _themeService?.ThemeChanged -= OnThemeChanged;
+            if (_themeService != null) _themeService.ThemeChanged -= OnThemeChanged;
         }
 
         private void OnThemeChanged(object? sender, bool isDark)

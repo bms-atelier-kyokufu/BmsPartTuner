@@ -55,7 +55,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Services
             _thumb.MouseLeave += Thumb_MouseLeave;
 
             // Windowレベルでマウスアップをキャッチ（ドラッグ中に外で離した場合）
-            _window?.PreviewMouseLeftButtonUp += Window_PreviewMouseLeftButtonUp;
+            if (_window != null) _window.PreviewMouseLeftButtonUp += Window_PreviewMouseLeftButtonUp;
         }
 
         /// <summary>
@@ -79,7 +79,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Services
             if (_panel != null)
             {
                 _panel.Visibility = Visibility.Collapsed;
-                _actionButton?.IsEnabled = true;
+                if (_actionButton != null) _actionButton.IsEnabled = true;
             }
 
             // ドラッグ状態をリセット
@@ -128,7 +128,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Services
         private void Window_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
             // ドラッグ中にウィンドウ内のどこかでマウスを離した場合
-            if (_isDragging && _panel?.Visibility == Visibility.Visible)
+            if (_isDragging && _panel != null && _panel.Visibility == Visibility.Visible)
             {
                 CompleteSlide();
             }
