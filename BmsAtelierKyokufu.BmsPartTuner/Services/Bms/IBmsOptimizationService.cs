@@ -1,6 +1,6 @@
-﻿using BmsAtelierKyokufu.BmsPartTuner.Models;
+﻿using BmsAtelierKyokufu.BmsPartTuner.Services.Common;
 
-namespace BmsAtelierKyokufu.BmsPartTuner.Services
+namespace BmsAtelierKyokufu.BmsPartTuner.Services.Bms
 {
     /// <summary>
     /// BMS最適化サービスのインターフェース。

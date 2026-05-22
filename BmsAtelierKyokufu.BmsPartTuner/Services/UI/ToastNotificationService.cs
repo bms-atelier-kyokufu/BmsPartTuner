@@ -1,11 +1,10 @@
-﻿using System.Windows;
-using System.Windows.Controls;
+﻿using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
-using BmsAtelierKyokufu.BmsPartTuner.Controls;
 using BmsAtelierKyokufu.BmsPartTuner.ViewModels;
+using BmsAtelierKyokufu.BmsPartTuner.Views.Controls;
 
-namespace BmsAtelierKyokufu.BmsPartTuner.Services;
+namespace BmsAtelierKyokufu.BmsPartTuner.Services.UI;
 
 /// <summary>
 /// トースト通知サービス。
@@ -80,7 +79,7 @@ public class ToastNotificationService : IUiElementService<ToastViewModel>
     /// </remarks>
     public void Initialize(ToastControl control)
     {
-        if (control == null) throw new ArgumentNullException(nameof(control));
+        ArgumentNullException.ThrowIfNull(control);
 
         _container = control.FindName("ToastNotification") as Border ?? throw new InvalidOperationException("ToastControl template does not contain ToastNotification border");
 

@@ -1,8 +1,7 @@
-﻿using System.Windows;
-using System.Windows.Media;
+﻿using System.Windows.Media;
 using Microsoft.Win32;
 
-namespace BmsAtelierKyokufu.BmsPartTuner.Services;
+namespace BmsAtelierKyokufu.BmsPartTuner.Services.UI;
 
 /// <summary>
 /// アプリケーションのテーマ切り替えを管理するサービス。

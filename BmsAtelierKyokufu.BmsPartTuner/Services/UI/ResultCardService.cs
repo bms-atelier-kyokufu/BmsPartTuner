@@ -1,10 +1,8 @@
-﻿using System.Windows;
-using System.Windows.Controls;
+﻿using System.Windows.Controls;
 using System.Windows.Media.Animation;
-using BmsAtelierKyokufu.BmsPartTuner.Models;
 using BmsAtelierKyokufu.BmsPartTuner.ViewModels;
 
-namespace BmsAtelierKyokufu.BmsPartTuner.Services;
+namespace BmsAtelierKyokufu.BmsPartTuner.Services.UI;
 
 /// <summary>
 /// 結果カード表示サービス。
@@ -193,8 +191,7 @@ public class ResultCardService : IUiElementService<ResultCardData>
     /// </remarks>
     public void ShowOptimizationResult(OptimizationResult result)
     {
-        if (result == null)
-            throw new ArgumentNullException(nameof(result));
+        ArgumentNullException.ThrowIfNull(result);
 
         var execTime = result.ExecutionTime.TotalSeconds;
         var memoryMb = result.MemoryUsedBytes / 1024.0 / 1024.0;

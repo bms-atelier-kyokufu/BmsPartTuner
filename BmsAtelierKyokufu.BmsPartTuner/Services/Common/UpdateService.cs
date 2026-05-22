@@ -1,11 +1,10 @@
-﻿using System.Diagnostics;
-using System.Net.Http;
+﻿using System.Net.Http;
 using System.Net.Http.Json;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace BmsAtelierKyokufu.BmsPartTuner.Services;
+namespace BmsAtelierKyokufu.BmsPartTuner.Services.Common;
 
 /// <summary>
 /// Chrome-style の自動アップデートサービス。

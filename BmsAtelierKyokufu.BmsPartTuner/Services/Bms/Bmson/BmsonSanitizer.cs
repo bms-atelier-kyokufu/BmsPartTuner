@@ -1,6 +1,6 @@
 ﻿using BmsAtelierKyokufu.BmsPartTuner.Models.Bmson;
 
-namespace BmsAtelierKyokufu.BmsPartTuner.Services.Bmson;
+namespace BmsAtelierKyokufu.BmsPartTuner.Services.Bms.Bmson;
 
 /// <summary>
 /// パースしたbmsonデータに対して、数学的モデルに合わせた制約の保証や不正値のクリーンアップを行う。

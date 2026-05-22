@@ -1,7 +1,7 @@
 ﻿using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 
-namespace BmsAtelierKyokufu.BmsPartTuner.Services.Bmson;
+namespace BmsAtelierKyokufu.BmsPartTuner.Services.Bms.Bmson;
 
 /// <summary>
 /// bmsonのノート情報に基づき、元の音声ファイル（ステムなど）を指定時間で切り出し、

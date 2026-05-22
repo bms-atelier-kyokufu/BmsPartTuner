@@ -1,4 +1,4 @@
-﻿namespace BmsAtelierKyokufu.BmsPartTuner.Services.AudioPlayer;
+﻿namespace BmsAtelierKyokufu.BmsPartTuner.Services.Audio.AudioPlayer;
 
 /// <summary>
 /// Factory interface for creating IAudioPlayer instances.

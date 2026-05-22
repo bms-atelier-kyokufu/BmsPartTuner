@@ -1,6 +1,6 @@
 ﻿using BmsAtelierKyokufu.BmsPartTuner.ViewModels;
 
-namespace BmsAtelierKyokufu.BmsPartTuner.Services
+namespace BmsAtelierKyokufu.BmsPartTuner.Services.UI
 {
     /// <summary>
     /// スライド確認UI要素

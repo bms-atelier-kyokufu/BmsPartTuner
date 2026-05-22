@@ -1,4 +1,4 @@
-﻿namespace BmsAtelierKyokufu.BmsPartTuner.Services
+﻿namespace BmsAtelierKyokufu.BmsPartTuner.Services.UI
 {
     /// <summary>
     /// UI要素の共通操作インターフェース

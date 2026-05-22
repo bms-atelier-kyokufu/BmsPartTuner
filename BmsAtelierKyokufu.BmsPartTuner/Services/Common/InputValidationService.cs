@@ -1,6 +1,6 @@
 ﻿using BmsAtelierKyokufu.BmsPartTuner.Core.Validation;
 
-namespace BmsAtelierKyokufu.BmsPartTuner.Services;
+namespace BmsAtelierKyokufu.BmsPartTuner.Services.Common;
 
 /// <summary>
 /// 入力値検証サービスの実装。

@@ -1,7 +1,7 @@
 ﻿using System.Threading;
-using BmsAtelierKyokufu.BmsPartTuner.Services.AudioPlayer;
+using BmsAtelierKyokufu.BmsPartTuner.Services.Audio.AudioPlayer;
 
-namespace BmsAtelierKyokufu.BmsPartTuner.Services;
+namespace BmsAtelierKyokufu.BmsPartTuner.Services.Audio;
 
 /// <summary>
 /// 音声プレビューサービス。
@@ -33,13 +33,13 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Services;
 /// <param name="dispatcher">UIスレッドのディスパッチャー。</param>
 /// <param name="playerFactory">AudioPlayerのファクトリー。</param>
 /// <exception cref="ArgumentNullException">dispatcherまたはplayerFactoryがnullの場合。</exception>
-public class AudioPreviewService(IUIThreadDispatcher dispatcher, IAudioPlayerFactory? playerFactory = null) : IDisposable
+public class AudioPreviewService(BmsAtelierKyokufu.BmsPartTuner.Services.UI.IUIThreadDispatcher dispatcher, IAudioPlayerFactory? playerFactory = null) : IDisposable
 {
     #region フィールド
 
     private IAudioPlayer? _currentPlayer;
     private CancellationTokenSource? _cancellationTokenSource;
-    private readonly IUIThreadDispatcher _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
+    private readonly BmsAtelierKyokufu.BmsPartTuner.Services.UI.IUIThreadDispatcher _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
     private readonly IAudioPlayerFactory _playerFactory = playerFactory ?? new NAudioPlayerFactory();
 
     #endregion
@@ -175,6 +175,7 @@ public class AudioPreviewService(IUIThreadDispatcher dispatcher, IAudioPlayerFac
     public void Dispose()
     {
         StopCurrentPlayback();
+        GC.SuppressFinalize(this);
     }
 
     #endregion

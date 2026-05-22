@@ -1,4 +1,4 @@
-﻿namespace BmsAtelierKyokufu.BmsPartTuner.Services;
+﻿namespace BmsAtelierKyokufu.BmsPartTuner.Services.UI;
 
 public interface IUIThreadDispatcher
 {

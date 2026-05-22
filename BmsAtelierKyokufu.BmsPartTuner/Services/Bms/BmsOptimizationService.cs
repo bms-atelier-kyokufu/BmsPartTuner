@@ -1,13 +1,10 @@
-﻿using System.Collections.ObjectModel;
-using System.Diagnostics;
-using BmsAtelierKyokufu.BmsPartTuner.Audio;
-using BmsAtelierKyokufu.BmsPartTuner.Core;
+﻿using BmsAtelierKyokufu.BmsPartTuner.Core;
+using BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Optimization;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Validation;
-using BmsAtelierKyokufu.BmsPartTuner.Models;
 
-namespace BmsAtelierKyokufu.BmsPartTuner.Services;
+namespace BmsAtelierKyokufu.BmsPartTuner.Services.Bms;
 
 /// <summary>
 /// BMS最適化サービス。
@@ -400,7 +397,7 @@ public class BmsOptimizationService : IBmsOptimizationService
         Stopwatch sw = Stopwatch.StartNew();
 
         // 音声データの事前ロード（キャッシュ構築）
-        var (FailedFiles, Cache) = BmsAtelierKyokufu.BmsPartTuner.Audio.AudioCacheManager.PreloadAudioData(fileList, progress);
+        var (FailedFiles, Cache) = AudioCacheManager.PreloadAudioData(fileList, progress);
         var audioCache = Cache;
 
         // DefinitionReuse expects an ObservableCollection, so we need to convert

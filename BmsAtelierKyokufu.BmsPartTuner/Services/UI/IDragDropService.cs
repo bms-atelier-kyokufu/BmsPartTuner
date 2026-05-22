@@ -1,6 +1,4 @@
-﻿using System.Windows;
-
-namespace BmsAtelierKyokufu.BmsPartTuner.Services
+﻿namespace BmsAtelierKyokufu.BmsPartTuner.Services.UI
 {
     /// <summary>
     /// ドラッグ&ドロップサービスのインターフェース

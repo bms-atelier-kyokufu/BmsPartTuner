@@ -1,8 +1,4 @@
-﻿using System.Collections.ObjectModel;
-using BmsAtelierKyokufu.BmsPartTuner.Models;
-using CommunityToolkit.Mvvm.ComponentModel;
-
-namespace BmsAtelierKyokufu.BmsPartTuner.Services;
+﻿namespace BmsAtelierKyokufu.BmsPartTuner.Services.Bms;
 
 /// <summary>
 /// WPF CollectionViewのフィルタリング機能を抽象化し、テキスト/楽器種別/Smart Filter Chipsによるフィルターを提供します。

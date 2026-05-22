@@ -1,4 +1,4 @@
-﻿namespace BmsAtelierKyokufu.BmsPartTuner.Services.AudioPlayer;
+﻿namespace BmsAtelierKyokufu.BmsPartTuner.Services.Audio.AudioPlayer;
 
 public class NAudioPlayerFactory : IAudioPlayerFactory
 {

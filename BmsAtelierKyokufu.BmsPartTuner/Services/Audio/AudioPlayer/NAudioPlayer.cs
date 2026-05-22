@@ -1,6 +1,6 @@
 ﻿using NAudio.Wave;
 
-namespace BmsAtelierKyokufu.BmsPartTuner.Services.AudioPlayer;
+namespace BmsAtelierKyokufu.BmsPartTuner.Services.Audio.AudioPlayer;
 
 /// <summary>
 /// NAudio implementation of IAudioPlayer.

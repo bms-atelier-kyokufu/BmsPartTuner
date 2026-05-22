@@ -1,9 +1,8 @@
-﻿using System.Text;
-using System.Text.Json;
+﻿using System.Text.Json;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 using BmsAtelierKyokufu.BmsPartTuner.Models.Bmson;
 
-namespace BmsAtelierKyokufu.BmsPartTuner.Services.Bmson;
+namespace BmsAtelierKyokufu.BmsPartTuner.Services.Bms.Bmson;
 
 /// <summary>
 /// bmsonファイルを入力として受け取り、解析・クリーンアップ・スライス・BMSスコア生成までを一貫して行うファサード。

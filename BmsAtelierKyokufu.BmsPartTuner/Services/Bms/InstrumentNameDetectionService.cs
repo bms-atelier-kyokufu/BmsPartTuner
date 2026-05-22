@@ -1,9 +1,6 @@
-﻿using System.Diagnostics;
-using System.Text.RegularExpressions;
-using BmsAtelierKyokufu.BmsPartTuner.Models;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System.Text.RegularExpressions;
 
-namespace BmsAtelierKyokufu.BmsPartTuner.Services;
+namespace BmsAtelierKyokufu.BmsPartTuner.Services.Bms;
 
 /// <summary>
 /// ファイル名の統計分析に基づき、音声ファイル群から楽器種別を推定するサービス。

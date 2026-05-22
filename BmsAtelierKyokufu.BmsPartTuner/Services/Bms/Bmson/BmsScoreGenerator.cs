@@ -1,9 +1,8 @@
-﻿using System.Text;
-using BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
+﻿using BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Helpers;
 using BmsAtelierKyokufu.BmsPartTuner.Models.Bmson;
 
-namespace BmsAtelierKyokufu.BmsPartTuner.Services.Bmson;
+namespace BmsAtelierKyokufu.BmsPartTuner.Services.Bms.Bmson;
 
 /// <summary>
 /// BmsonのデータモデルとスライスされたWAVから、BMSファイルのテキストを生成するジェネレータ。

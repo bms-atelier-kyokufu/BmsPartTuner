@@ -1,7 +1,6 @@
 ﻿using System.Text.Json;
-using BmsAtelierKyokufu.BmsPartTuner.Models;
 
-namespace BmsAtelierKyokufu.BmsPartTuner.Services;
+namespace BmsAtelierKyokufu.BmsPartTuner.Services.Common;
 
 /// <summary>
 /// アプリケーション設定の読み書きを行うサービス。

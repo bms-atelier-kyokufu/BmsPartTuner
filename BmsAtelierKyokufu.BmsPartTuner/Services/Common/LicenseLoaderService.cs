@@ -1,8 +1,6 @@
 ﻿using System.Reflection;
-using System.Text;
-using BmsAtelierKyokufu.BmsPartTuner.Models;
 
-namespace BmsAtelierKyokufu.BmsPartTuner.Services;
+namespace BmsAtelierKyokufu.BmsPartTuner.Services.Common;
 
 /// <summary>
 /// 埋め込まれたライセンスファイルを読み込むサービス。

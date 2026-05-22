@@ -1,8 +1,7 @@
-﻿using System.Windows;
-using System.Windows.Controls;
+﻿using System.Windows.Controls;
 using System.Windows.Media.Animation;
 
-namespace BmsAtelierKyokufu.BmsPartTuner.Services
+namespace BmsAtelierKyokufu.BmsPartTuner.Services.UI
 {
     /// <summary>
     /// スライド確認サービス
@@ -54,7 +53,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Services
             _thumb.MouseMove += Thumb_MouseMove;
             _thumb.MouseLeave += Thumb_MouseLeave;
 
-            // Windowレベルでマウスアップをキャッチ（ドラッグ中に外で離した場合）
+            // Windowレベルでマウスアップをキャッチ（ドラッグ中にウィンドウ内のどこかで離した場合）
             if (_window != null) _window.PreviewMouseLeftButtonUp += Window_PreviewMouseLeftButtonUp;
         }
 
@@ -248,7 +247,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Services
         /// <summary>
         /// 名前でビジュアルツリーから子要素を検索
         /// </summary>
-        private FrameworkElement? FindChildByName(DependencyObject parent, string name)
+        private static FrameworkElement? FindChildByName(DependencyObject parent, string name)
         {
             if (parent == null) return null;
 

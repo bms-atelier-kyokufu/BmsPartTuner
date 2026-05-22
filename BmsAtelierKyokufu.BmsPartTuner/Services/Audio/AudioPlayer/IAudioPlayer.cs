@@ -1,4 +1,4 @@
-﻿namespace BmsAtelierKyokufu.BmsPartTuner.Services.AudioPlayer;
+﻿namespace BmsAtelierKyokufu.BmsPartTuner.Services.Audio.AudioPlayer;
 
 /// <summary>
 /// Audio player interface for abstraction and testing.
