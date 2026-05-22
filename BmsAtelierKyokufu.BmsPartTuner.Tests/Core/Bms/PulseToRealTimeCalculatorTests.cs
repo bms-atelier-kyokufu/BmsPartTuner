@@ -8,6 +8,7 @@ public class PulseToRealTimeCalculatorTests
     [Fact]
     public void GetTimeSec_ConstantBpm_ReturnsCorrectTime()
     {
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // 120 BPM = 2 beats per second. 
         // 1 beat = 240 pulses. 
         // 240 pulses = 0.5 seconds.
@@ -21,6 +22,7 @@ public class PulseToRealTimeCalculatorTests
     [Fact]
     public void GetTimeSec_WithBpmChange_CalculatesPiecewise()
     {
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Start with 120 BPM
         // At y=480 (1.0 sec), change to 60 BPM (1 beat per sec)
         List<BmsonBpmEvent> bpmEvents =
@@ -41,6 +43,7 @@ public class PulseToRealTimeCalculatorTests
     [Fact]
     public void GetTimeSec_WithStop_AppliesDelayAfterY()
     {
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // 120 BPM
         // Stop at y=240, duration = 480 pulses (2 beats = 1.0 sec)
         List<BmsonStopEvent> stopEvents =

@@ -31,6 +31,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
 
         public void Dispose()
         {
+            _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
             if (_disposed) return;
             try
             {

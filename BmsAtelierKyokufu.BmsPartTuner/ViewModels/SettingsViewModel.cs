@@ -159,7 +159,7 @@ public partial class SettingsViewModel : ObservableObject
     /// <summary>
     /// ライセンス情報のコレクション。
     /// </summary>
-    public ObservableCollection<LicenseInfo> Licenses { get; } = new();
+    public ObservableCollection<LicenseInfo> Licenses { get; } = [];
 
     /// <summary>
     /// 選択されたライセンス。
@@ -212,7 +212,7 @@ public partial class SettingsViewModel : ObservableObject
     [RelayCommand]
     private void SelectPlayerPath()
     {
-        OpenFileDialog dialog = new OpenFileDialog
+        OpenFileDialog dialog = new()
         {
             Title = "mBMplay.exeを選択してください",
             Filter = "実行ファイル (*.exe)|*.exe|すべてのファイル (*.*)|*.*",

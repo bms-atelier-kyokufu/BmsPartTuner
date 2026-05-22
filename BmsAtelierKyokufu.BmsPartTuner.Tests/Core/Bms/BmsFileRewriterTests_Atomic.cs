@@ -16,6 +16,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
         [Fact]
         public void WriteBmsFile_LockedTarget_PreservesOriginalContent()
         {
+            var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
             using var context = new BmsTestContext();
 
             string bmsPath = Path.Combine(context.TempDirectory, "atomic_test.bms");
@@ -25,11 +26,11 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
             // 1. Create original file
             File.WriteAllText(bmsPath, originalContent, Encoding.GetEncoding("shift_jis"));
 
-            var rewriter = new BmsFileRewriter(new List<FileList.WavFiles>(), new int[1], 0, 0);
+            var rewriter = new BmsFileRewriter([], new int[1], 0, 0);
 
             // 2. Lock the file to simulate write failure (cannot overwrite)
             // Using FileShare.Read to allow reading but deny writing
-            using (FileStream fs = new FileStream(bmsPath, FileMode.Open, FileAccess.Read, FileShare.Read))
+            using (FileStream fs = new(bmsPath, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
                 // 3. Attempt to write
                 // Expect IOException because final move/replace will fail
@@ -59,12 +60,13 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
         [Fact]
         public void WriteBmsFile_Success_WritesToTempAndMoves()
         {
+            _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
             using var context = new BmsTestContext();
 
             string bmsPath = Path.Combine(context.TempDirectory, "atomic_success.bms");
             string content = "Success Content";
 
-            var rewriter = new BmsFileRewriter(new List<FileList.WavFiles>(), new int[1], 0, 0);
+            var rewriter = new BmsFileRewriter([], new int[1], 0, 0);
 
             rewriter.WriteBmsFile(bmsPath, content);
 

@@ -144,7 +144,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner
                         if (chips != null)
                         {
                             // FilterChipsをViewModelに設定
-                            _viewModel.FileList.FilterChips = chips;
+                            _viewModel.BmsDefinitionManager.FilterChips = chips;
 
                             // チップ選択変更時のイベント購読
                             foreach (var chip in chips)
@@ -163,7 +163,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner
             };
 
             // FileListViewModelの選択キーワード変更イベント購読
-            _viewModel.FileList.SelectedKeywordsChanged += (s, e) =>
+            _viewModel.BmsDefinitionManager.SelectedKeywordsChanged += (s, e) =>
             {
                 UpdateChipFilter();
             };
@@ -171,7 +171,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner
 
         private void UpdateChipFilter()
         {
-            var selectedKeywords = _viewModel.FileList.GetSelectedKeywords();
+            var selectedKeywords = _viewModel.BmsDefinitionManager.GetSelectedKeywords();
             _filterService?.ApplyChipFilter(selectedKeywords);
         }
 
@@ -205,7 +205,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner
         {
             if (e is Controls.SmartFilterChips.ChipClickEventArgs args)
             {
-                _viewModel.FileList.ToggleChipSelection(args.Chip);
+                _viewModel.BmsDefinitionManager.ToggleChipSelection(args.Chip);
             }
         }
         private void ViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)

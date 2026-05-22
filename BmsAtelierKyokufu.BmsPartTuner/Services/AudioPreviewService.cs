@@ -27,14 +27,20 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Services;
 /// WaveOutとAudioFileReaderは適切にDispose処理を行い、
 /// メモリリークを防ぎます。
 /// </remarks>
-public class AudioPreviewService : IDisposable
+/// <remarks>
+/// AudioPreviewServiceのインスタンスを作成。
+/// </remarks>
+/// <param name="dispatcher">UIスレッドのディスパッチャー。</param>
+/// <param name="playerFactory">AudioPlayerのファクトリー。</param>
+/// <exception cref="ArgumentNullException">dispatcherまたはplayerFactoryがnullの場合。</exception>
+public class AudioPreviewService(IUIThreadDispatcher dispatcher, IAudioPlayerFactory? playerFactory = null) : IDisposable
 {
     #region フィールド
 
     private IAudioPlayer? _currentPlayer;
     private CancellationTokenSource? _cancellationTokenSource;
-    private readonly IUIThreadDispatcher _dispatcher;
-    private readonly IAudioPlayerFactory _playerFactory;
+    private readonly IUIThreadDispatcher _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
+    private readonly IAudioPlayerFactory _playerFactory = playerFactory ?? new NAudioPlayerFactory();
 
     #endregion
 
@@ -64,20 +70,7 @@ public class AudioPreviewService : IDisposable
     }
 
     #endregion
-
     #region コンストラクタ
-
-    /// <summary>
-    /// AudioPreviewServiceのインスタンスを作成。
-    /// </summary>
-    /// <param name="dispatcher">UIスレッドのディスパッチャー。</param>
-    /// <param name="playerFactory">AudioPlayerのファクトリー。</param>
-    /// <exception cref="ArgumentNullException">dispatcherまたはplayerFactoryがnullの場合。</exception>
-    public AudioPreviewService(IUIThreadDispatcher dispatcher, IAudioPlayerFactory? playerFactory = null)
-    {
-        _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
-        _playerFactory = playerFactory ?? new NAudioPlayerFactory();
-    }
 
     #endregion
 

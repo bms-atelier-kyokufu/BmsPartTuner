@@ -50,7 +50,7 @@ public class UnitSuffixBehavior : Behavior<TextBox>
         var text = AssociatedObject.Text?.Trim() ?? string.Empty;
         if (text.EndsWith(unit))
         {
-            AssociatedObject.Text = text.Substring(0, text.Length - unit.Length).TrimEnd();
+            AssociatedObject.Text = text[..^unit.Length].TrimEnd();
             AssociatedObject.SelectAll();
         }
     }

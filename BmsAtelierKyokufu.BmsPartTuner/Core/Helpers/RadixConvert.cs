@@ -47,8 +47,8 @@ public static class RadixConvert
 {
 
     // ルックアップテーブル: 0-61の値を対応する文字にマッピング
-    private static readonly char[] IntToCharLookup = new char[62]
-    {
+    private static readonly char[] IntToCharLookup =
+    [
         '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',  // 0-9
         'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',  // 10-19
         'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T',  // 20-29
@@ -56,7 +56,7 @@ public static class RadixConvert
         'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',  // 36-45
         'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't',  // 46-55
         'u', 'v', 'w', 'x', 'y', 'z'                       // 56-61
-    };
+    ];
 
     // 逆ルックアップテーブル: 文字から値へのマッピング
     // ASCII範囲で最大の文字'z'(122)まで対応
@@ -139,11 +139,11 @@ public static class RadixConvert
                 $"指定された値が{radix}進数の2桁表現の最大値({limit})を超えています。");
         }
 
-        return new string(new char[]
-        {
+        return new string(
+        [
             IntToCharLookup[dec / radix],
             IntToCharLookup[dec % radix],
-        });
+        ]);
     }
 
     /// <summary>

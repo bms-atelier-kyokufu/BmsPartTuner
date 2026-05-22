@@ -11,8 +11,9 @@ public class ValueToWidthConverterTests
     [Fact]
     public void Convert_WithValidInputs_ReturnsCalculatedWidth()
     {
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Arrange
-        object[] values = new object[] { 0.75, 200.0 };
+        object[] values = [0.75, 200.0];
         double expected = 150.0;
 
         // Act
@@ -26,8 +27,9 @@ public class ValueToWidthConverterTests
     [Fact]
     public void Convert_WithClampedValue_ReturnsClampedWidth()
     {
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Arrange
-        object[] values = new object[] { 1.5, 100.0 }; // Value > 1.0, should be clamped to 1.0
+        object[] values = [1.5, 100.0]; // Value > 1.0, should be clamped to 1.0
         double expected = 100.0;
 
         // Act
@@ -37,7 +39,7 @@ public class ValueToWidthConverterTests
         Assert.Equal(expected, (double)result, 2);
 
         // Arrange
-        values = new object[] { -0.5, 100.0 }; // Value < 0.0, should be clamped to 0.0
+        values = [-0.5, 100.0]; // Value < 0.0, should be clamped to 0.0
         expected = 0.0;
 
         // Act
@@ -50,8 +52,9 @@ public class ValueToWidthConverterTests
     [Fact]
     public void Convert_WithInvalidInputs_ReturnsZero()
     {
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Arrange
-        object[] values = new object[] { "invalid", 100.0 };
+        object[] values = ["invalid", 100.0];
 
         // Act
         object result = _converter.Convert(values, null!, null!, CultureInfo.InvariantCulture);
@@ -63,8 +66,9 @@ public class ValueToWidthConverterTests
     [Fact]
     public void ConvertBack_ReturnsDoNothing()
     {
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Arrange
-        Type[] targetTypes = new Type[] { typeof(double), typeof(double) };
+        Type[] targetTypes = [typeof(double), typeof(double)];
         object value = 100.0;
 
         // Act

@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using BmsAtelierKyokufu.BmsPartTuner.Audio;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Helpers;
-using static BmsAtelierKyokufu.BmsPartTuner.Models.FileList;
+using BmsAtelierKyokufu.BmsPartTuner.Models;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 
@@ -33,7 +33,8 @@ public class DefinitionReuse
 {
     #region フィールド
 
-    private readonly IReadOnlyList<WavFiles> _fileList;
+    private readonly IReadOnlyList<BmsAudioFile> _fileList;
+    private readonly IReadOnlyDictionary<string, CachedSoundData> _audioCache;
     private readonly int[] _replaces = new int[AppConstants.Definition.ReplaceTableSize];
     private readonly DefinitionRangeManager _rangeManager;
     private DefinitionStatistics _statistics;
@@ -53,9 +54,10 @@ public class DefinitionReuse
     /// <see cref="ObservableCollection{T}"/>はUI通知用で変更される可能性があるため、
     /// 内部処理用に不変のスナップショットを作成します。
     /// </remarks>
-    public DefinitionReuse(ObservableCollection<WavFiles> fileList)
+    public DefinitionReuse(ObservableCollection<BmsAudioFile> fileList, IReadOnlyDictionary<string, CachedSoundData> audioCache)
     {
         _fileList = fileList?.ToList() ?? throw new ArgumentNullException(nameof(fileList));
+        _audioCache = audioCache ?? throw new ArgumentNullException(nameof(audioCache));
         _rangeManager = new DefinitionRangeManager(_fileList);
         _statistics = new DefinitionStatistics(_fileList, _replaces,
             _rangeManager.StartPoint, _rangeManager.EndPoint);
@@ -204,7 +206,7 @@ public class DefinitionReuse
     {
         if (_rewriter == null || _rewriter.KeptFiles == null)
         {
-            return new List<string>();
+            return [];
         }
 
         var keptFilePaths = new HashSet<string>(_rewriter.KeptFiles.Select(f => f.Name), StringComparer.OrdinalIgnoreCase);
@@ -249,11 +251,9 @@ public class DefinitionReuse
         IEnumerable<string>? selectedKeywords)
     {
         var groupingStrategy = new AudioFileGroupingStrategy();
-        var groups = groupingStrategy.GroupFiles(_fileList,
-            _rangeManager.StartPoint, _rangeManager.EndPoint, selectedKeywords);
+        var groups = groupingStrategy.GroupFiles(_audioCache, _fileList, _rangeManager.StartPoint, _rangeManager.EndPoint, selectedKeywords);
 
-        var comparisonEngine = new ParallelAudioComparisonEngine(_fileList, _replaces,
-            _rangeManager.StartPoint, _rangeManager.EndPoint);
+        var comparisonEngine = new ParallelAudioComparisonEngine(_fileList, _audioCache, _replaces, _rangeManager.StartPoint, _rangeManager.EndPoint);
         comparisonEngine.CompareGroups(groups, r2val, progress);
     }
 

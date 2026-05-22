@@ -35,7 +35,7 @@ public class OptimizationResult
     /// グラフのX軸をしきい値、Y軸をファイル数とすることで、
     /// ユーザーが最適値の変化を視覚的に理解できます。
     /// </remarks>
-    public List<(double Threshold, int Count)> SimulationData { get; set; } = new();
+    public List<(double Threshold, int Count)> SimulationData { get; set; } = [];
 
     /// <summary>
     /// シミュレーション実行時間。
@@ -59,7 +59,7 @@ public class OptimizationResult
     /// 処理中に発生した警告（破損ファイル、読み込み失敗など）を格納します。
     /// ユーザーに通知すべき情報ですが、処理の成功を妨げるものではありません。
     /// </remarks>
-    public List<string> Warnings { get; set; } = new List<string>();
+    public List<string> Warnings { get; set; } = [];
 
     /// <summary>
     /// 警告が存在するかどうかを示します。

@@ -296,7 +296,7 @@ public class MutationTestRunner
         });
 
         stopwatch.Stop();
-        return CreateReport(results.ToList(), stopwatch.Elapsed);
+        return CreateReport([.. results], stopwatch.Elapsed);
     }
 
     /// <summary>
@@ -367,7 +367,7 @@ public class MutationTestRunner
         });
 
         stopwatch.Stop();
-        return CreateReport(results.ToList(), stopwatch.Elapsed);
+        return CreateReport([.. results], stopwatch.Elapsed);
     }
 
     private MutationTestResult TestMutation(SyntaxNode mutatedRoot, MutationInfo info)
@@ -455,7 +455,7 @@ public class MutationTestRunner
             CompileErrors = compileErrors,
             MutationScore = score,
             Duration = duration,
-            Mutations = results.Select(r => new MutationResultDto
+            Mutations = [.. results.Select(r => new MutationResultDto
             {
                 FilePath = Path.GetRelativePath(_config.SourceDirectory, r.Mutation.FilePath),
                 MutationType = r.Mutation.Type.ToString(),
@@ -465,7 +465,7 @@ public class MutationTestRunner
                 MutatedCode = r.Mutation.MutatedCode,
                 IsKilled = r.IsKilled,
                 ErrorMessage = r.ErrorMessage
-            }).ToList()
+            })]
         };
 
         LogReport(report);

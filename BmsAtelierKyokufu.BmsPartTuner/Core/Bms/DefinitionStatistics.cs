@@ -1,5 +1,5 @@
 ﻿using System.Diagnostics;
-using static BmsAtelierKyokufu.BmsPartTuner.Models.FileList;
+using BmsAtelierKyokufu.BmsPartTuner.Models;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 
@@ -19,32 +19,24 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 /// 自動最適化（<see cref="Core.Optimization.CorrelationThresholdOptimizer"/>）において、
 /// エルボーポイント検出のための評価指標として使用されます。
 /// </remarks>
-internal class DefinitionStatistics
+/// <remarks>
+/// DefinitionStatisticsを初期化します。
+/// </remarks>
+/// <param name="fileList">ファイルリスト。</param>
+/// <param name="replaces">置換テーブル。</param>
+/// <param name="startPoint">処理範囲の開始定義番号。</param>
+/// <param name="endPoint">処理範囲の終了定義番号。</param>
+/// <exception cref="ArgumentNullException">fileListまたはreplacesがnullの場合。</exception>
+internal class DefinitionStatistics(
+    IReadOnlyList<BmsAudioFile> fileList,
+    int[] replaces,
+    int startPoint,
+    int endPoint)
 {
-    private readonly IReadOnlyList<WavFiles> _fileList;
-    private readonly int[] _replaces;
-    private readonly int _startPoint;
-    private readonly int _endPoint;
-
-    /// <summary>
-    /// DefinitionStatisticsを初期化します。
-    /// </summary>
-    /// <param name="fileList">ファイルリスト。</param>
-    /// <param name="replaces">置換テーブル。</param>
-    /// <param name="startPoint">処理範囲の開始定義番号。</param>
-    /// <param name="endPoint">処理範囲の終了定義番号。</param>
-    /// <exception cref="ArgumentNullException">fileListまたはreplacesがnullの場合。</exception>
-    public DefinitionStatistics(
-        IReadOnlyList<WavFiles> fileList,
-        int[] replaces,
-        int startPoint,
-        int endPoint)
-    {
-        _fileList = fileList ?? throw new ArgumentNullException(nameof(fileList));
-        _replaces = replaces ?? throw new ArgumentNullException(nameof(replaces));
-        _startPoint = startPoint;
-        _endPoint = endPoint;
-    }
+    private readonly IReadOnlyList<BmsAudioFile> _fileList = fileList ?? throw new ArgumentNullException(nameof(fileList));
+    private readonly int[] _replaces = replaces ?? throw new ArgumentNullException(nameof(replaces));
+    private readonly int _startPoint = startPoint;
+    private readonly int _endPoint = endPoint;
 
     /// <summary>
     /// 処理統計情報のログ出力。
@@ -177,7 +169,7 @@ internal class DefinitionStatistics
     /// <summary>
     /// 統計データを保持する構造体。
     /// </summary>
-    private struct StatisticsData
+    private readonly struct StatisticsData
     {
         /// <summary>総定義数（処理範囲内）。</summary>
         public int TotalDefinitions { get; init; }

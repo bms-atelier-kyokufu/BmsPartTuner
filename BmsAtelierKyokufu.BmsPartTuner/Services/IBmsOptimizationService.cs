@@ -1,5 +1,4 @@
 ﻿using BmsAtelierKyokufu.BmsPartTuner.Models;
-using static BmsAtelierKyokufu.BmsPartTuner.Models.FileList;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Services
 {
@@ -29,7 +28,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Services
         /// 定義削減処理を実行
         /// </summary>
         Task<BmsOptimizationService.ReductionResult> ExecuteDefinitionReductionAsync(
-            IReadOnlyList<WavFiles> fileList,
+            IReadOnlyList<BmsAudioFile> fileList,
             string inputPath,
             string outputPath,
             float r2Threshold,

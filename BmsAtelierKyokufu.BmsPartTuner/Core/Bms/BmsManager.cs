@@ -28,7 +28,12 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 /// <item>D1-D9, E1-E9: 地雷（1P/2P）</item>
 /// </list>
 /// </remarks>
-internal partial class BmsManager
+/// <remarks>
+/// BmsManagerを初期化します。
+/// </remarks>
+/// <param name="bmsFilePath">BMSファイルのフルパス。</param>
+/// <exception cref="ArgumentNullException">bmsFilePathがnullの場合。</exception>
+internal partial class BmsManager(string bmsFilePath)
 {
     /// <summary>
     /// BMSコマンドの種別。
@@ -43,8 +48,8 @@ internal partial class BmsManager
         OTHER
     }
 
-    private readonly string _bmsFilePath;
-    private readonly string? _bmsDirectory;
+    private readonly string _bmsFilePath = bmsFilePath ?? throw new ArgumentNullException(nameof(bmsFilePath));
+    private readonly string? _bmsDirectory = Path.GetDirectoryName(bmsFilePath);
 
     [GeneratedRegex(@"^#(WAV|BMP|BPM|STOP)[0-9A-Za-z]{2}")]
     private static partial Regex BmsHeaderRegex();
@@ -54,17 +59,6 @@ internal partial class BmsManager
     private static partial Regex BmsChannelDataRegex();
     [GeneratedRegex(@"^#WAV([0-9A-Za-z]{2})\s+(.+)$")]
     private static partial Regex WavDefinitionRegex();
-
-    /// <summary>
-    /// BmsManagerを初期化します。
-    /// </summary>
-    /// <param name="bmsFilePath">BMSファイルのフルパス。</param>
-    /// <exception cref="ArgumentNullException">bmsFilePathがnullの場合。</exception>
-    public BmsManager(string bmsFilePath)
-    {
-        _bmsFilePath = bmsFilePath ?? throw new ArgumentNullException(nameof(bmsFilePath));
-        _bmsDirectory = Path.GetDirectoryName(bmsFilePath);
-    }
 
     /// <summary>
     /// BMSファイルが配置されているディレクトリパスを取得します。

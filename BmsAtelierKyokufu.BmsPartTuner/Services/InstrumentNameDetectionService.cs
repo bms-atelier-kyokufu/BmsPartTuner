@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Text.RegularExpressions;
+using BmsAtelierKyokufu.BmsPartTuner.Models;
 using CommunityToolkit.Mvvm.ComponentModel;
-using static BmsAtelierKyokufu.BmsPartTuner.Models.FileList;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Services;
 
@@ -27,7 +27,24 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Services;
 /// → kick_01.wav → "kick", kick_02.wav → "kick", snare_01.wav → "snare"
 /// </code>
 /// </remarks>
-public partial class InstrumentNameDetectionService
+/// <remarks>
+/// 楽器名検出サービスを初期化します。
+/// </remarks>
+/// <param name="minimumOccurrences">楽器名として認定する最小出現回数（デフォルト: 3）。</param>
+/// <param name="minimumWordLength">単語の最小長（デフォルト: 3）。</param>
+/// <param name="maximumWordLength">単語の最大長（デフォルト: 20）。</param>
+/// <remarks>
+/// <para>【パラメータ設定理由】</para>
+/// <list type="bullet">
+/// <item><c>minimumOccurrences=3</c>: 1-2回の出現は偶然の可能性が高く、ノイズを避けるため</item>
+/// <item><c>minimumWordLength=3</c>: "ab"等の短すぎる単語は楽器名として意味を持たない</item>
+/// <item><c>maximumWordLength=20</c>: 異常に長い文字列を除外してメモリを節約</item>
+/// </list>
+/// </remarks>
+public partial class InstrumentNameDetectionService(
+    int minimumOccurrences = 3,
+    int minimumWordLength = 3,
+    int maximumWordLength = 20)
 {
     /// <summary>
     /// 楽器名検出の結果データ。
@@ -35,10 +52,10 @@ public partial class InstrumentNameDetectionService
     public class InstrumentDetectionResult
     {
         /// <summary>検出された楽器候補とその出現回数。</summary>
-        public Dictionary<string, int> InstrumentCandidates { get; init; } = new();
+        public Dictionary<string, int> InstrumentCandidates { get; init; } = [];
 
         /// <summary>ファイルごとの楽器名マッピング（キー: ファイルフルパス、値: 推定された楽器名）。</summary>
-        public Dictionary<string, string> FileInstrumentMap { get; init; } = new();
+        public Dictionary<string, string> FileInstrumentMap { get; init; } = [];
     }
 
     /// <summary>
@@ -61,9 +78,9 @@ public partial class InstrumentNameDetectionService
         public int Count { get; set; }
     }
 
-    private readonly int _minimumOccurrences;
-    private readonly int _minimumWordLength;
-    private readonly int _maximumWordLength;
+    private readonly int _minimumOccurrences = minimumOccurrences;
+    private readonly int _minimumWordLength = minimumWordLength;
+    private readonly int _maximumWordLength = maximumWordLength;
 
     [GeneratedRegex(@"^\d+$")]
     private static partial Regex IsDigitsOnlyRegex();
@@ -71,30 +88,6 @@ public partial class InstrumentNameDetectionService
     private static partial Regex ExtractAlphabetPrefixRegex();
     [GeneratedRegex(@"^[a-zA-Z][a-zA-Z0-9]*$")]
     private static partial Regex AlphanumericWordRegex();
-
-    /// <summary>
-    /// 楽器名検出サービスを初期化します。
-    /// </summary>
-    /// <param name="minimumOccurrences">楽器名として認定する最小出現回数（デフォルト: 3）。</param>
-    /// <param name="minimumWordLength">単語の最小長（デフォルト: 3）。</param>
-    /// <param name="maximumWordLength">単語の最大長（デフォルト: 20）。</param>
-    /// <remarks>
-    /// <para>【パラメータ設定理由】</para>
-    /// <list type="bullet">
-    /// <item><c>minimumOccurrences=3</c>: 1-2回の出現は偶然の可能性が高く、ノイズを避けるため</item>
-    /// <item><c>minimumWordLength=3</c>: "ab"等の短すぎる単語は楽器名として意味を持たない</item>
-    /// <item><c>maximumWordLength=20</c>: 異常に長い文字列を除外してメモリを節約</item>
-    /// </list>
-    /// </remarks>
-    public InstrumentNameDetectionService(
-        int minimumOccurrences = 3,
-        int minimumWordLength = 3,
-        int maximumWordLength = 20)
-    {
-        _minimumOccurrences = minimumOccurrences;
-        _minimumWordLength = minimumWordLength;
-        _maximumWordLength = maximumWordLength;
-    }
 
     /// <summary>
     /// ファイルリストから楽器名を統計的に検出・推定します。
@@ -113,7 +106,7 @@ public partial class InstrumentNameDetectionService
     /// <see cref="IEnumerable{T}"/>をToList()で即座にコピーすることで、
     /// 元のコレクションが別スレッドで変更されても影響を受けません。
     /// </remarks>
-    public InstrumentDetectionResult DetectInstruments(IEnumerable<WavFiles> files)
+    public InstrumentDetectionResult DetectInstruments(IEnumerable<BmsAudioFile> files)
     {
         if (files == null)
         {
@@ -310,7 +303,7 @@ public partial class InstrumentNameDetectionService
     /// → "kick": 3回（採用）、"snare": 1回（除外）、"cymbal": 1回（除外）
     /// </code>
     /// </remarks>
-    private Dictionary<string, int> ExtractInstrumentCandidates(List<WavFiles> files)
+    private Dictionary<string, int> ExtractInstrumentCandidates(List<BmsAudioFile> files)
     {
         var candidates = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
 

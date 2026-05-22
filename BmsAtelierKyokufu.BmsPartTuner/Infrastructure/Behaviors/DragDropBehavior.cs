@@ -142,8 +142,7 @@ public class DragDropBehavior : Behavior<UIElement>
             return;
 
 
-        var files = e.Data.GetData(DataFormats.FileDrop) as string[];
-        if (files == null || files.Length == 0)
+        if (e.Data.GetData(DataFormats.FileDrop) is not string[] files || files.Length == 0)
             return;
 
         var filePath = files[0];

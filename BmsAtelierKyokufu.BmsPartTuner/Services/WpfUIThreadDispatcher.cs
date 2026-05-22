@@ -2,14 +2,9 @@
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Services;
 
-public class WpfUIThreadDispatcher : IUIThreadDispatcher
+public class WpfUIThreadDispatcher(Dispatcher dispatcher) : IUIThreadDispatcher
 {
-    private readonly Dispatcher _dispatcher;
-
-    public WpfUIThreadDispatcher(Dispatcher dispatcher)
-    {
-        _dispatcher = dispatcher;
-    }
+    private readonly Dispatcher _dispatcher = dispatcher;
 
     public async Task InvokeAsync(Action action)
     {

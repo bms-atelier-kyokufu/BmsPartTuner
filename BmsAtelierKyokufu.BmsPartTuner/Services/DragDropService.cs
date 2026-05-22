@@ -26,9 +26,14 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Services;
 /// コンストラクタで指定された拡張子のみを受け入れます。
 /// 例: [".bms", ".bme", ".bml", ".pms"]
 /// </remarks>
-public class DragDropService : IDragDropService
+/// <remarks>
+/// DragDropServiceを初期化。
+/// </remarks>
+/// <param name="supportedExtensions">サポートされる拡張子の配列。</param>
+/// <exception cref="ArgumentNullException">supportedExtensionsがnullの場合。</exception>
+public class DragDropService(string[] supportedExtensions) : IDragDropService
 {
-    private readonly string[] _supportedExtensions;
+    private readonly string[] _supportedExtensions = supportedExtensions ?? throw new ArgumentNullException(nameof(supportedExtensions));
 
     /// <summary>
     /// ファイルがドロップされた時のイベント。
@@ -38,34 +43,18 @@ public class DragDropService : IDragDropService
     /// <summary>
     /// ファイルドロップイベントの引数。
     /// </summary>
-    public class FileDroppedEventArgs : EventArgs
+    /// <remarks>
+    /// FileDroppedEventArgsを初期化。
+    /// </remarks>
+    /// <param name="filePath">ファイルパス。</param>
+    /// <param name="isSupported">サポートフラグ。</param>
+    public class FileDroppedEventArgs(string filePath, bool isSupported) : EventArgs
     {
         /// <summary>ドロップされたファイルパス。</summary>
-        public string FilePath { get; }
+        public string FilePath { get; } = filePath;
 
         /// <summary>サポートされているファイルかどうか。</summary>
-        public bool IsSupported { get; }
-
-        /// <summary>
-        /// FileDroppedEventArgsを初期化。
-        /// </summary>
-        /// <param name="filePath">ファイルパス。</param>
-        /// <param name="isSupported">サポートフラグ。</param>
-        public FileDroppedEventArgs(string filePath, bool isSupported)
-        {
-            FilePath = filePath;
-            IsSupported = isSupported;
-        }
-    }
-
-    /// <summary>
-    /// DragDropServiceを初期化。
-    /// </summary>
-    /// <param name="supportedExtensions">サポートされる拡張子の配列。</param>
-    /// <exception cref="ArgumentNullException">supportedExtensionsがnullの場合。</exception>
-    public DragDropService(string[] supportedExtensions)
-    {
-        _supportedExtensions = supportedExtensions ?? throw new ArgumentNullException(nameof(supportedExtensions));
+        public bool IsSupported { get; } = isSupported;
     }
 
     /// <summary>

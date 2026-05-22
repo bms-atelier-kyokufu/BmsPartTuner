@@ -146,6 +146,7 @@ public class MutantTestCaseRegistry
     /// <param name="testCase">登録するテストケース</param>
     public void Register(IMutantTestCase testCase)
     {
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         _testCases[testCase.TypeName] = testCase;
     }
 

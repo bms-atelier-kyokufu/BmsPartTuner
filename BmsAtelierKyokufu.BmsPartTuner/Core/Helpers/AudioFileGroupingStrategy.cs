@@ -1,5 +1,5 @@
 ﻿using System.Diagnostics;
-using static BmsAtelierKyokufu.BmsPartTuner.Models.FileList;
+using BmsAtelierKyokufu.BmsPartTuner.Models;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Core.Helpers;
 
@@ -52,7 +52,8 @@ public class AudioFileGroupingStrategy
     /// </list>
     /// </remarks>
     public IReadOnlyList<IReadOnlyList<int>> GroupFiles(
-        IReadOnlyList<WavFiles> fileList,
+        IReadOnlyDictionary<string, CachedSoundData> audioCache,
+        IReadOnlyList<BmsAudioFile> fileList,
         int startPoint,
         int endPoint,
         IEnumerable<string>? selectedKeywords = null)
@@ -65,13 +66,13 @@ public class AudioFileGroupingStrategy
             Debug.WriteLine($"=== GroupFiles with Keyword Filter ===");
             Debug.WriteLine($"Selected Keywords: {string.Join(", ", keywordList!)}");
 
-            return GroupFilesByKeywords(fileList, startPoint, endPoint, keywordList!);
+            return GroupFilesByKeywords(audioCache, fileList, startPoint, endPoint, keywordList!);
         }
         else
         {
             Debug.WriteLine($"=== GroupFiles without Keyword Filter ===");
 
-            return GroupFilesTraditional(fileList, startPoint, endPoint);
+            return GroupFilesTraditional(audioCache, fileList, startPoint, endPoint);
         }
     }
 
@@ -99,7 +100,8 @@ public class AudioFileGroupingStrategy
     /// </list>
     /// </remarks>
     private IReadOnlyList<IReadOnlyList<int>> GroupFilesByKeywords(
-        IReadOnlyList<WavFiles> fileList,
+        IReadOnlyDictionary<string, CachedSoundData> audioCache,
+        IReadOnlyList<BmsAudioFile> fileList,
         int startPoint,
         int endPoint,
         List<string> selectedKeywords)
@@ -114,7 +116,7 @@ public class AudioFileGroupingStrategy
 
         foreach (var keyword in selectedKeywords)
         {
-            keywordGroups[keyword] = new Dictionary<string, List<int>>();
+            keywordGroups[keyword] = [];
         }
 
         for (int i = 0; i < fileList.Count; i++)
@@ -129,7 +131,7 @@ public class AudioFileGroupingStrategy
 
             totalFiles++;
 
-            var cachedData = fileList[i].CachedData;
+            audioCache.TryGetValue(fileList[i].Name, out var cachedData);
             if (cachedData == null)
             {
                 noCache++;
@@ -151,12 +153,13 @@ public class AudioFileGroupingStrategy
             int rmsQuantized = (int)(rms * AppConstants.Grouping.RmsQuantizationFactor);
             string groupKey = $"{fileSize}_{rmsQuantized}";
 
-            if (!keywordGroups[matchedKeyword].ContainsKey(groupKey))
+            if (!keywordGroups[matchedKeyword].TryGetValue(groupKey, out List<int>? value))
             {
-                keywordGroups[matchedKeyword][groupKey] = new List<int>();
+                value = [];
+                keywordGroups[matchedKeyword][groupKey] = value;
             }
 
-            keywordGroups[matchedKeyword][groupKey].Add(i);
+            value.Add(i);
         }
 
         var finalGroups = new List<IReadOnlyList<int>>();
@@ -225,7 +228,8 @@ public class AudioFileGroupingStrategy
     /// 整数化することで、近いRMS値を持つファイルを同じグループに分類します。
     /// </remarks>
     private IReadOnlyList<IReadOnlyList<int>> GroupFilesTraditional(
-        IReadOnlyList<WavFiles> fileList,
+        IReadOnlyDictionary<string, CachedSoundData> audioCache,
+        IReadOnlyList<BmsAudioFile> fileList,
         int startPoint,
         int endPoint)
     {
@@ -248,7 +252,7 @@ public class AudioFileGroupingStrategy
 
             totalFiles++;
 
-            var cachedData = fileList[i].CachedData;
+            audioCache.TryGetValue(fileList[i].Name, out var cachedData);
             if (cachedData == null)
             {
                 noCache++;
@@ -264,7 +268,7 @@ public class AudioFileGroupingStrategy
 
             if (!groups.ContainsKey(groupKey))
             {
-                groups[groupKey] = new List<int>();
+                groups[groupKey] = [];
             }
 
             groups[groupKey].Add(i);

@@ -1,6 +1,5 @@
 ﻿using BmsAtelierKyokufu.BmsPartTuner.Core.Helpers;
 using BmsAtelierKyokufu.BmsPartTuner.Models;
-using static BmsAtelierKyokufu.BmsPartTuner.Models.FileList;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Helpers;
 
@@ -23,13 +22,13 @@ public class AudioFileGroupingStrategyTests
 
     #region Helper Methods
 
-    private static WavFiles CreateWavFile(
+    private static BmsAudioFile CreateWavFile(
         string fileName,
         int numInteger,
         long fileSize = 1000,
         float rms = 0.5f)
     {
-        var file = new WavFiles
+        var file = new BmsAudioFile
         {
             Name = $@"C:\Test\{fileName}",
             NumInteger = numInteger,
@@ -45,7 +44,7 @@ public class AudioFileGroupingStrategyTests
             {
                 samplesPerChannel[0][i] = rms;
             }
-            file.CachedData = new CachedSoundData(samplesPerChannel, 44100, 16, fileName);
+            audioCache[file.Name] = new CachedSoundData(samplesPerChannel, 44100, 16, fileName);
         }
 
         return file;
@@ -58,11 +57,12 @@ public class AudioFileGroupingStrategyTests
     [Fact]
     public void GroupFiles_EmptyList_ReturnsEmptyGroups()
     {
+        var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Arrange
-        var files = new List<WavFiles>();
+        var files = new List<BmsAudioFile>();
 
         // Act
-        var groups = _strategy.GroupFiles(files, 1, 10);
+        var groups = _strategy.GroupFiles(audioCache, audioCache, files, 1, 10);
 
         // Assert
         Assert.Empty(groups);
@@ -71,15 +71,17 @@ public class AudioFileGroupingStrategyTests
     [Fact]
     public void GroupFiles_NullList_ReturnsEmptyGroups()
     {
+        var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Act & Assert - nullの場合は例外が発生する（実装の仕様）
-        Assert.Throws<NullReferenceException>(() => _strategy.GroupFiles(null!, 1, 10));
+        Assert.Throws<NullReferenceException>(() => _strategy.GroupFiles(audioCache, null!, 1, 10));
     }
 
     [Fact]
     public void GroupFiles_SameFileSize_GroupsTogether()
     {
+        var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Arrange - 同じファイルサイズとRMS
-        var files = new List<WavFiles>
+        var files = new List<BmsAudioFile>
         {
             CreateWavFile("file1.wav", 1, 1000, 0.5f),
             CreateWavFile("file2.wav", 2, 1000, 0.5f),
@@ -87,7 +89,7 @@ public class AudioFileGroupingStrategyTests
         };
 
         // Act
-        var groups = _strategy.GroupFiles(files, 1, 3);
+        var groups = _strategy.GroupFiles(audioCache, files, 1, 3);
 
         // Assert
         Assert.Single(groups); // 1つのグループ
@@ -97,9 +99,10 @@ public class AudioFileGroupingStrategyTests
     [Fact]
     public void GroupFiles_DifferentFileSize_SeparatesGroups()
     {
+        var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Arrange - 異なるファイルサイズ
         // 実際の実装では、ファイルサイズが異なってもRMSグループキーで統合される可能性がある
-        var files = new List<WavFiles>
+        var files = new List<BmsAudioFile>
         {
             CreateWavFile("file1.wav", 1, 1000, 0.1f),  // RMSを変えて確実に分離
             CreateWavFile("file2.wav", 2, 2000, 0.5f),
@@ -107,7 +110,7 @@ public class AudioFileGroupingStrategyTests
         };
 
         // Act
-        var groups = _strategy.GroupFiles(files, 1, 3);
+        var groups = _strategy.GroupFiles(audioCache, files, 1, 3);
 
         // Assert - ファイルサイズとRMSの両方が異なるので、複数グループに分かれる
         Assert.True(groups.Count >= 1); // 少なくとも1グループ
@@ -116,8 +119,9 @@ public class AudioFileGroupingStrategyTests
     [Fact]
     public void GroupFiles_DifferentRms_SeparatesGroups()
     {
+        var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Arrange - 同じファイルサイズ、異なるRMS
-        var files = new List<WavFiles>
+        var files = new List<BmsAudioFile>
         {
             CreateWavFile("file1.wav", 1, 1000, 0.1f),
             CreateWavFile("file2.wav", 2, 1000, 0.5f),
@@ -125,7 +129,7 @@ public class AudioFileGroupingStrategyTests
         };
 
         // Act
-        var groups = _strategy.GroupFiles(files, 1, 3);
+        var groups = _strategy.GroupFiles(audioCache, files, 1, 3);
 
         // Assert
         // RMSが大きく異なる場合、異なるグループに分かれる
@@ -135,8 +139,9 @@ public class AudioFileGroupingStrategyTests
     [Fact]
     public void GroupFiles_OutsideRange_ExcludesFiles()
     {
+        var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Arrange
-        var files = new List<WavFiles>
+        var files = new List<BmsAudioFile>
         {
             CreateWavFile("file1.wav", 1, 1000, 0.5f),
             CreateWavFile("file2.wav", 5, 1000, 0.5f), // 範囲外
@@ -144,7 +149,7 @@ public class AudioFileGroupingStrategyTests
         };
 
         // Act
-        var groups = _strategy.GroupFiles(files, 1, 3); // 1-3の範囲のみ
+        var groups = _strategy.GroupFiles(audioCache, files, 1, 3); // 1-3の範囲のみ
 
         // Assert
         var allIndices = groups.SelectMany(g => g).ToList();
@@ -156,8 +161,9 @@ public class AudioFileGroupingStrategyTests
     [Fact]
     public void GroupFiles_NoCachedData_ExcludesFile()
     {
+        var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Arrange
-        var files = new List<WavFiles>
+        var files = new List<BmsAudioFile>
         {
             CreateWavFile("file1.wav", 1, 1000, 0.5f),
             CreateWavFile("file2.wav", 2, 1000, 0), // CachedDataなし
@@ -165,7 +171,7 @@ public class AudioFileGroupingStrategyTests
         };
 
         // Act
-        var groups = _strategy.GroupFiles(files, 1, 3);
+        var groups = _strategy.GroupFiles(audioCache, files, 1, 3);
 
         // Assert
         var totalFiles = groups.SelectMany(g => g).Count();
@@ -179,8 +185,9 @@ public class AudioFileGroupingStrategyTests
     [Fact]
     public void GroupFiles_WithKeywords_SeparatesInstruments()
     {
+        var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Arrange
-        var files = new List<WavFiles>
+        var files = new List<BmsAudioFile>
         {
             CreateWavFile("kick_01.wav", 1, 1000, 0.5f),
             CreateWavFile("kick_02.wav", 2, 1000, 0.5f),
@@ -190,7 +197,7 @@ public class AudioFileGroupingStrategyTests
         var keywords = new List<string> { "kick", "snare" };
 
         // Act
-        var groups = _strategy.GroupFiles(files, 1, 4, keywords);
+        var groups = _strategy.GroupFiles(audioCache, files, 1, 4, keywords);
 
         // Assert
         Assert.True(groups.Count >= 2); // 少なくとも2つのグループ（kick, snare）
@@ -199,8 +206,9 @@ public class AudioFileGroupingStrategyTests
     [Fact]
     public void GroupFiles_WithKeywords_CaseInsensitive()
     {
+        var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Arrange
-        var files = new List<WavFiles>
+        var files = new List<BmsAudioFile>
         {
             CreateWavFile("KICK_01.wav", 1, 1000, 0.5f),
             CreateWavFile("kick_02.wav", 2, 1000, 0.5f),
@@ -209,7 +217,7 @@ public class AudioFileGroupingStrategyTests
         var keywords = new List<string> { "kick" };
 
         // Act
-        var groups = _strategy.GroupFiles(files, 1, 3, keywords);
+        var groups = _strategy.GroupFiles(audioCache, files, 1, 3, keywords);
 
         // Assert
         var totalFiles = groups.SelectMany(g => g).Count();
@@ -219,8 +227,9 @@ public class AudioFileGroupingStrategyTests
     [Fact]
     public void GroupFiles_WithKeywords_NoMatch_ExcludesFiles()
     {
+        var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Arrange
-        var files = new List<WavFiles>
+        var files = new List<BmsAudioFile>
         {
             CreateWavFile("kick_01.wav", 1, 1000, 0.5f),
             CreateWavFile("cymbal_01.wav", 2, 1000, 0.5f), // マッチしない
@@ -229,7 +238,7 @@ public class AudioFileGroupingStrategyTests
         var keywords = new List<string> { "kick", "snare" }; // cymbalは含まれない
 
         // Act
-        var groups = _strategy.GroupFiles(files, 1, 3, keywords);
+        var groups = _strategy.GroupFiles(audioCache, files, 1, 3, keywords);
 
         // Assert
         var totalFiles = groups.SelectMany(g => g).Count();
@@ -239,8 +248,9 @@ public class AudioFileGroupingStrategyTests
     [Fact]
     public void GroupFiles_WithEmptyKeywords_UsesTraditionalGrouping()
     {
+        var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Arrange
-        var files = new List<WavFiles>
+        var files = new List<BmsAudioFile>
         {
             CreateWavFile("file1.wav", 1, 1000, 0.5f),
             CreateWavFile("file2.wav", 2, 1000, 0.5f)
@@ -248,7 +258,7 @@ public class AudioFileGroupingStrategyTests
         var emptyKeywords = new List<string>();
 
         // Act
-        var groups = _strategy.GroupFiles(files, 1, 2, emptyKeywords);
+        var groups = _strategy.GroupFiles(audioCache, files, 1, 2, emptyKeywords);
 
         // Assert
         Assert.Single(groups); // キーワードフィルタなしなので通常のグループ化
@@ -258,15 +268,16 @@ public class AudioFileGroupingStrategyTests
     [Fact]
     public void GroupFiles_WithNullKeywords_UsesTraditionalGrouping()
     {
+        var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Arrange
-        var files = new List<WavFiles>
+        var files = new List<BmsAudioFile>
         {
             CreateWavFile("file1.wav", 1, 1000, 0.5f),
             CreateWavFile("file2.wav", 2, 1000, 0.5f)
         };
 
         // Act
-        var groups = _strategy.GroupFiles(files, 1, 2, null);
+        var groups = _strategy.GroupFiles(audioCache, files, 1, 2, null);
 
         // Assert
         Assert.Single(groups);
@@ -280,14 +291,15 @@ public class AudioFileGroupingStrategyTests
     [Fact]
     public void GroupFiles_SingleFile_ReturnsOneGroup()
     {
+        var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Arrange
-        var files = new List<WavFiles>
+        var files = new List<BmsAudioFile>
         {
             CreateWavFile("file1.wav", 1, 1000, 0.5f)
         };
 
         // Act
-        var groups = _strategy.GroupFiles(files, 1, 1);
+        var groups = _strategy.GroupFiles(audioCache, files, 1, 1);
 
         // Assert
         Assert.Single(groups);
@@ -297,15 +309,16 @@ public class AudioFileGroupingStrategyTests
     [Fact]
     public void GroupFiles_FileWithNullName_HandlesGracefully()
     {
+        var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Arrange
-        var files = new List<WavFiles>
+        var files = new List<BmsAudioFile>
         {
-            new WavFiles { Name = null!, NumInteger = 1, FileSize = 1000 },
+            new() { Name = null!, NumInteger = 1, FileSize = 1000 },
             CreateWavFile("file2.wav", 2, 1000, 0.5f)
         };
 
         // Act
-        var groups = _strategy.GroupFiles(files, 1, 2);
+        var groups = _strategy.GroupFiles(audioCache, files, 1, 2);
 
         // Assert - 例外が発生せず、有効なファイルのみ処理される
         Assert.NotEmpty(groups);
@@ -314,15 +327,16 @@ public class AudioFileGroupingStrategyTests
     [Fact]
     public void GroupFiles_ZeroFileSize_HandlesGracefully()
     {
+        var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Arrange
-        var files = new List<WavFiles>
+        var files = new List<BmsAudioFile>
         {
             CreateWavFile("file1.wav", 1, 0, 0.5f), // ファイルサイズ0
             CreateWavFile("file2.wav", 2, 1000, 0.5f)
         };
 
         // Act
-        var groups = _strategy.GroupFiles(files, 1, 2);
+        var groups = _strategy.GroupFiles(audioCache, files, 1, 2);
 
         // Assert - 例外が発生しない
         Assert.NotEmpty(groups);
@@ -331,15 +345,16 @@ public class AudioFileGroupingStrategyTests
     [Fact]
     public void GroupFiles_VeryHighRms_HandlesGracefully()
     {
+        var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Arrange
-        var files = new List<WavFiles>
+        var files = new List<BmsAudioFile>
         {
             CreateWavFile("file1.wav", 1, 1000, 10.0f), // 異常に高いRMS
             CreateWavFile("file2.wav", 2, 1000, 0.5f)
         };
 
         // Act
-        var groups = _strategy.GroupFiles(files, 1, 2);
+        var groups = _strategy.GroupFiles(audioCache, files, 1, 2);
 
         // Assert
         Assert.NotEmpty(groups);
@@ -352,8 +367,9 @@ public class AudioFileGroupingStrategyTests
     [Fact]
     public void GroupFiles_ReturnsNonEmptyGroups()
     {
+        var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Arrange
-        var files = new List<WavFiles>
+        var files = new List<BmsAudioFile>
         {
             CreateWavFile("file1.wav", 1, 1000, 0.5f),
             CreateWavFile("file2.wav", 2, 1000, 0.5f),
@@ -361,7 +377,7 @@ public class AudioFileGroupingStrategyTests
         };
 
         // Act
-        var groups = _strategy.GroupFiles(files, 1, 3);
+        var groups = _strategy.GroupFiles(audioCache, files, 1, 3);
 
         // Assert
         Assert.All(groups, g => Assert.NotEmpty(g)); // 全てのグループが空でない
@@ -370,8 +386,9 @@ public class AudioFileGroupingStrategyTests
     [Fact]
     public void GroupFiles_GroupIndices_AreValid()
     {
+        var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Arrange
-        var files = new List<WavFiles>
+        var files = new List<BmsAudioFile>
         {
             CreateWavFile("file1.wav", 1, 1000, 0.5f),
             CreateWavFile("file2.wav", 2, 1000, 0.5f),
@@ -379,7 +396,7 @@ public class AudioFileGroupingStrategyTests
         };
 
         // Act
-        var groups = _strategy.GroupFiles(files, 1, 3);
+        var groups = _strategy.GroupFiles(audioCache, files, 1, 3);
 
         // Assert
         var allIndices = groups.SelectMany(g => g).ToList();
@@ -389,8 +406,9 @@ public class AudioFileGroupingStrategyTests
     [Fact]
     public void GroupFiles_NoFilesDuplicated()
     {
+        var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Arrange
-        var files = new List<WavFiles>
+        var files = new List<BmsAudioFile>
         {
             CreateWavFile("file1.wav", 1, 1000, 0.5f),
             CreateWavFile("file2.wav", 2, 1000, 0.5f),
@@ -398,7 +416,7 @@ public class AudioFileGroupingStrategyTests
         };
 
         // Act
-        var groups = _strategy.GroupFiles(files, 1, 3);
+        var groups = _strategy.GroupFiles(audioCache, files, 1, 3);
 
         // Assert
         var allIndices = groups.SelectMany(g => g).ToList();

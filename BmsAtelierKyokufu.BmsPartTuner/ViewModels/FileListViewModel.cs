@@ -4,7 +4,6 @@ using BmsAtelierKyokufu.BmsPartTuner.Models;
 using BmsAtelierKyokufu.BmsPartTuner.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using static BmsAtelierKyokufu.BmsPartTuner.Models.FileList;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.ViewModels;
 
@@ -44,14 +43,14 @@ public partial class FileListViewModel : ObservableObject, IDisposable
     private readonly AudioPreviewService _audioPreviewService;
     private readonly InstrumentNameDetectionService _instrumentDetectionService;
     private FileListFilterService? _filterService;
-    private FileList? _bmsFileList;
+    private BmsDefinitionManager? _bmsFileList;
     private bool disposedValue;
 
     [ObservableProperty]
-    private ObservableCollection<WavFiles> _fileListItems = new();
+    private ObservableCollection<BmsAudioFile> _fileListItems = [];
 
     [ObservableProperty]
-    private WavFiles? _selectedFile;
+    private BmsAudioFile? _selectedFile;
 
     [ObservableProperty]
     private string _filterText = string.Empty;
@@ -60,13 +59,13 @@ public partial class FileListViewModel : ObservableObject, IDisposable
     private Visibility _clearFilterButtonVisibility = Visibility.Collapsed;
 
     [ObservableProperty]
-    private ObservableCollection<InstrumentNameDetectionService.InstrumentGroup> _instrumentGroups = new();
+    private ObservableCollection<InstrumentNameDetectionService.InstrumentGroup> _instrumentGroups = [];
 
     [ObservableProperty]
-    private ObservableCollection<FileListFilterService.SelectableFilterChip> _filterChips = new();
+    private ObservableCollection<FileListFilterService.SelectableFilterChip> _filterChips = [];
 
     /// <summary>BMSファイルリスト。</summary>
-    public FileList? BmsFileList => _bmsFileList;
+    public BmsDefinitionManager? BmsFileList => _bmsFileList;
 
     /// <summary>ファイルリスト読み込み完了イベント。</summary>
     public event EventHandler<FileListLoadedEventArgs>? FileListLoaded;
@@ -114,7 +113,7 @@ public partial class FileListViewModel : ObservableObject, IDisposable
     /// ファイルが選択されると、自動的に音声プレビューを開始します。
     /// デバウンス機能により、連続選択時は最後のファイルのみ再生されます。
     /// </remarks>
-    partial void OnSelectedFileChanged(WavFiles? value)
+    partial void OnSelectedFileChanged(BmsAudioFile? value)
     {
         if (value != null)
         {
@@ -141,7 +140,7 @@ public partial class FileListViewModel : ObservableObject, IDisposable
     /// <remarks>
     /// <para>【処理フロー】</para>
     /// <list type="number">
-    /// <item><see cref="FileList"/>を生成</item>
+    /// <item><see cref="BmsDefinitionManager"/>を生成</item>
     /// <item>ファイルリストを作成</item>
     /// <item>楽器種別を検出してフィルタチップを生成</item>
     /// <item><see cref="FileListLoaded"/>イベントを発火</item>
@@ -155,11 +154,11 @@ public partial class FileListViewModel : ObservableObject, IDisposable
     {
         try
         {
-            _bmsFileList = new FileList(bmsFilePath);
+            _bmsFileList = new BmsDefinitionManager(bmsFilePath);
             var fileList = _bmsFileList.CreateFileList();
             FileListItems = fileList;
 
-            var chips = _filterService?.GenerateFilterChips(fileList) ?? new List<FileListFilterService.FilterChip>();
+            var chips = _filterService?.GenerateFilterChips(fileList) ?? [];
 
             var instrumentGroups = chips
                 .Select(c => new InstrumentNameDetectionService.InstrumentGroup
@@ -221,10 +220,9 @@ public partial class FileListViewModel : ObservableObject, IDisposable
     /// </remarks>
     public string[] GetSelectedKeywords()
     {
-        return FilterChips
+        return [.. FilterChips
             .Where(chip => chip.IsSelected)
-            .Select(chip => chip.Keyword)
-            .ToArray();
+            .Select(chip => chip.Keyword)];
     }
 
     private void NotifySelectedKeywordsChanged()
@@ -293,7 +291,7 @@ public partial class FileListViewModel : ObservableObject, IDisposable
     {
         if (items == null) return;
 
-        var filesToDelete = items.Cast<WavFiles>().ToList();
+        var filesToDelete = items.Cast<BmsAudioFile>().ToList();
         DeleteFiles(filesToDelete);
     }
 
@@ -301,7 +299,7 @@ public partial class FileListViewModel : ObservableObject, IDisposable
     /// 指定されたファイルをリストから削除します。
     /// </summary>
     /// <param name="filesToDelete">削除するファイルのリスト。</param>
-    public void DeleteFiles(IEnumerable<WavFiles> filesToDelete)
+    public void DeleteFiles(IEnumerable<BmsAudioFile> filesToDelete)
     {
         if (filesToDelete == null) return;
 
@@ -346,7 +344,7 @@ public partial class FileListViewModel : ObservableObject, IDisposable
     public class SelectedKeywordsChangedEventArgs : EventArgs
     {
         /// <summary>選択されたキーワード。</summary>
-        public string[] SelectedKeywords { get; set; } = Array.Empty<string>();
+        public string[] SelectedKeywords { get; set; } = [];
     }
 
     /// <summary>

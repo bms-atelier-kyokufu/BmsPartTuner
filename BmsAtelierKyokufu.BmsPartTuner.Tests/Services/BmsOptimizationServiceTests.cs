@@ -1,7 +1,7 @@
 ﻿using System.IO;
+using BmsAtelierKyokufu.BmsPartTuner.Models;
 using BmsAtelierKyokufu.BmsPartTuner.Services;
 using BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers;
-using static BmsAtelierKyokufu.BmsPartTuner.Models.FileList;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Services
 {
@@ -22,7 +22,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Services
 
         public void Dispose()
         {
+            _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
             _context?.Dispose();
+            GC.SuppressFinalize(this);
         }
 
         [Fact]
@@ -46,7 +48,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Services
         [Fact]
         public async Task FindOptimalThresholdsAsync_EmptyList_ReturnsNull()
         {
-            await Assert.ThrowsAsync<ArgumentException>(() => _service.FindOptimalThresholdsAsync(new List<string>(), 1, 1));
+            _ = await Assert.ThrowsAsync<ArgumentException>(() => _service.FindOptimalThresholdsAsync([], 1, 1));
         }
 
         [Fact]
@@ -67,6 +69,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Services
         [InlineData("01", "ZZ", true)]  // Valid: 1 to 1295 (Base36 max)
         public void ValidateDefinitionRange_ValidInputs_ReturnsSuccess(string start, string end, bool expectedValid)
         {
+            _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
             var result = _service.ValidateDefinitionRange(start, end);
 
             Assert.Equal(expectedValid, result.IsValid);
@@ -85,6 +88,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Services
         [InlineData("ABC", "10")]       // Invalid characters
         public void ValidateDefinitionRange_InvalidInputs_ReturnsError(string start, string end)
         {
+            _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
             var result = _service.ValidateDefinitionRange(start, end);
 
             Assert.False(result.IsValid);
@@ -99,6 +103,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Services
         [InlineData("0", 0.0f)]         // Min value
         public void ValidateR2Threshold_ValidInputs_ReturnsSuccess(string input, float expectedValue)
         {
+            _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
             var result = _service.ValidateR2Threshold(input);
 
             Assert.True(result.IsValid);
@@ -112,6 +117,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Services
         [InlineData("150")]             // > 100 (max percentage)
         public void ValidateR2Threshold_InvalidInputs_ReturnsError(string input)
         {
+            _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
             var result = _service.ValidateR2Threshold(input);
 
             Assert.False(result.IsValid);
@@ -123,7 +129,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Services
         [Fact]
         public async Task ExecuteDefinitionReductionAsync_FileNotFound_ReturnsError()
         {
-            var files = new List<WavFiles> { new WavFiles { Name = "test.wav" } };
+            var files = new List<BmsAudioFile> { new() { Name = "test.wav" } };
 
             var result = await _service.ExecuteDefinitionReductionAsync(
                 files,
@@ -146,7 +152,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Services
         [Fact]
         public async Task ExecuteDefinitionReductionAsync_UnauthorizedAccess_ReturnsError()
         {
-            var files = new List<WavFiles> { new WavFiles { Name = "test.wav" } };
+            var files = new List<BmsAudioFile> { new() { Name = "test.wav" } };
 
             // UnauthorizedAccessExceptionをシミュレーションするために、
             // 入力ファイルとしてディレクトリパスを指定
@@ -191,12 +197,12 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Services
             string unused1Path = Path.Combine(_context.TempDirectory, "unused1.wav");
             string unused2Path = Path.Combine(_context.TempDirectory, "unused2.wav");
 
-            var files = new List<WavFiles>
+            var files = new List<BmsAudioFile>
             {
-                new WavFiles { Name = used1Path, Num = "01", NumInteger = 1 },
-                new WavFiles { Name = used2Path, Num = "02", NumInteger = 2 },
-                new WavFiles { Name = unused1Path, Num = "03", NumInteger = 3 },
-                new WavFiles { Name = unused2Path, Num = "04", NumInteger = 4 }
+                new() { Name = used1Path, Num = "01", NumInteger = 1 },
+                new() { Name = used2Path, Num = "02", NumInteger = 2 },
+                new() { Name = unused1Path, Num = "03", NumInteger = 3 },
+                new() { Name = unused2Path, Num = "04", NumInteger = 4 }
             };
 
             // Execute with physical deletion enabled
@@ -228,9 +234,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Services
                 .WithHeader("TITLE", "Test")
                 .Build("input.bms");
 
-            var files = new List<WavFiles>
+            var files = new List<BmsAudioFile>
             {
-                new WavFiles { Name = "test.wav", Num = "01", NumInteger = 1 }
+                new() { Name = "test.wav", Num = "01", NumInteger = 1 }
             };
 
             string outputBmsPath = Path.Combine(_context.TempDirectory, "output.bms");
@@ -251,7 +257,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Services
         }
 
         [Fact]
-        public async Task ExecuteDefinitionReductionAsync_WithNullFileList_ThrowsArgumentException()
+        public async Task ExecuteDefinitionReductionAsync_WithNullBmsDefinitionManager_ThrowsArgumentException()
         {
             await Assert.ThrowsAsync<ArgumentNullException>(() =>
                 _service.ExecuteDefinitionReductionAsync(
@@ -267,7 +273,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Services
         [Fact]
         public async Task ExecuteDefinitionReductionAsync_WithEmptyInputPath_ThrowsArgumentException()
         {
-            var files = new List<WavFiles> { new WavFiles { Name = "test.wav" } };
+            var files = new List<BmsAudioFile> { new() { Name = "test.wav" } };
 
             await Assert.ThrowsAsync<ArgumentException>(() =>
                 _service.ExecuteDefinitionReductionAsync(
@@ -283,7 +289,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Services
         [Fact]
         public async Task ExecuteDefinitionReductionAsync_WithEmptyOutputPath_ThrowsArgumentException()
         {
-            var files = new List<WavFiles> { new WavFiles { Name = "test.wav" } };
+            var files = new List<BmsAudioFile> { new() { Name = "test.wav" } };
 
             await Assert.ThrowsAsync<ArgumentException>(() =>
                 _service.ExecuteDefinitionReductionAsync(
@@ -312,9 +318,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Services
             string outputBmsPath = Path.Combine(_context.TempDirectory, "output2.bms");
             string wavPath = Path.Combine(_context.TempDirectory, "test1.wav");
 
-            var files = new List<WavFiles>
+            var files = new List<BmsAudioFile>
             {
-                new WavFiles { Name = wavPath, Num = "01", NumInteger = 1 }
+                new() { Name = wavPath, Num = "01", NumInteger = 1 }
             };
 
             var result = await _service.ExecuteDefinitionReductionAsync(
@@ -437,6 +443,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Services
         [InlineData("01", "100", false)] // "100" exceeds Base36 limit (1296 > 1295)
         public void ValidateDefinitionRange_Base36Boundary_ValidatesCorrectly(string start, string end, bool expectedValid)
         {
+            _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
             var result = _service.ValidateDefinitionRange(start, end);
 
             Assert.Equal(expectedValid, result.IsValid);
@@ -453,6 +460,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Services
         [InlineData("99", 0.99f)]        // パーセンテージ形式の境界
         public void ValidateR2Threshold_BoundaryValues_ReturnsCorrectValue(string input, float expectedValue)
         {
+            _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
             var result = _service.ValidateR2Threshold(input);
 
             Assert.True(result.IsValid, $"Expected valid for input '{input}' but got invalid: {string.Join(", ", result.Errors)}");
@@ -469,6 +477,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Services
         [InlineData("Infinity")]         // 無限大
         public void ValidateR2Threshold_ExtremeValues_ReturnsError(string input)
         {
+            _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
             var result = _service.ValidateR2Threshold(input);
 
             Assert.False(result.IsValid);
@@ -486,17 +495,12 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Services
         [Fact]
         public async Task ExecuteDefinitionReductionAsync_WithException_ClearsCache()
         {
-            var files = new List<WavFiles>
+            var files = new List<BmsAudioFile>
             {
-                new WavFiles
-                {
+                new() {
                     Name = "nonexistent.wav",
                     Num = "01",
-                    NumInteger = 1,
-                    CachedData = new Models.CachedSoundData(
-                        new float[][] { new float[100] },
-                        44100,
-                        16)
+                    NumInteger = 1
                 }
             };
 
@@ -511,7 +515,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Services
 
             // 処理は失敗するが、キャッシュはクリアされているべき
             Assert.False(result.IsSuccess);
-            Assert.Null(files[0].CachedData);
+            Assert.False(audioCache.ContainsKey(files[0].Name));
         }
 
         /// <summary>
@@ -534,10 +538,10 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Services
             string kickPath = Path.Combine(_context.TempDirectory, "kick.wav");
             string snarePath = Path.Combine(_context.TempDirectory, "snare.wav");
 
-            var files = new List<WavFiles>
+            var files = new List<BmsAudioFile>
             {
-                new WavFiles { Name = kickPath, Num = "01", NumInteger = 1 },
-                new WavFiles { Name = snarePath, Num = "02", NumInteger = 2 }
+                new() { Name = kickPath, Num = "01", NumInteger = 1 },
+                new() { Name = snarePath, Num = "02", NumInteger = 2 }
             };
 
             var result = await _service.ExecuteDefinitionReductionAsync(
@@ -549,7 +553,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Services
                 2,
                 false,
                 null,
-                new[] { "kick" }); // kickのみをフィルタ
+                ["kick"]); // kickのみをフィルタ
 
             Assert.NotNull(result);
             // キーワードフィルタの動作確認（実装依存）

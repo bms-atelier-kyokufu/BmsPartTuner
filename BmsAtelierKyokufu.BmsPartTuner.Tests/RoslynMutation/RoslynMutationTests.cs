@@ -7,18 +7,14 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.MutationFramework
     /// 変異テストを実行するxUnitテストクラス。
     /// 汎用的なMutationTestFrameworkを使用します。
     /// </summary>
-    public class RoslynMutationTests
+    public class RoslynMutationTests(ITestOutputHelper output)
     {
-        private readonly ITestOutputHelper _output;
-
-        public RoslynMutationTests(ITestOutputHelper output)
-        {
-            _output = output;
-        }
+        private readonly ITestOutputHelper _output = output;
 
         [Fact]
         public void MutationTest_AllSourceFiles_AllPatterns()
         {
+            var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
             // Fluent API を使用してテストを実行
             var report = MutationTestRunner
                 .Create()
@@ -45,6 +41,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.MutationFramework
         [InlineData("Core/Optimization/SimulationEngine.cs")]
         public void MutationTest_SpecificFile(string relativePath)
         {
+            var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
             // Fluent API を使用してファイル単位のテストを実行
             var report = MutationTestRunner
                 .Create()

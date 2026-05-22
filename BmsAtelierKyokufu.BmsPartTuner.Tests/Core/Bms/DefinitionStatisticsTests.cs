@@ -1,6 +1,6 @@
 ﻿using BmsAtelierKyokufu.BmsPartTuner.Core;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
-using static BmsAtelierKyokufu.BmsPartTuner.Models.FileList;
+using BmsAtelierKyokufu.BmsPartTuner.Models;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms;
 
@@ -19,9 +19,9 @@ public class DefinitionStatisticsTests
 {
     #region Helper Methods
 
-    private static WavFiles CreateWavFile(int numInteger)
+    private static BmsAudioFile CreateWavFile(int numInteger)
     {
-        return new WavFiles
+        return new BmsAudioFile
         {
             NumInteger = numInteger,
             Num = numInteger.ToString("D2"),
@@ -30,9 +30,9 @@ public class DefinitionStatisticsTests
         };
     }
 
-    private static List<WavFiles> CreateFileList(params int[] numbers)
+    private static List<BmsAudioFile> CreateBmsDefinitionManager(params int[] numbers)
     {
-        return numbers.Select(CreateWavFile).ToList();
+        return [.. numbers.Select(CreateWavFile)];
     }
 
     private static int[] CreateReplaceTable()
@@ -47,7 +47,8 @@ public class DefinitionStatisticsTests
     [Fact]
     public void Constructor_WithValidParameters_CreatesInstance()
     {
-        var fileList = CreateFileList(1, 2, 3);
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
+        var fileList = CreateBmsDefinitionManager(1, 2, 3);
         var replaces = CreateReplaceTable();
 
         var stats = new DefinitionStatistics(fileList, replaces, 1, 3);
@@ -57,8 +58,9 @@ public class DefinitionStatisticsTests
     }
 
     [Fact]
-    public void Constructor_WithNullFileList_ThrowsArgumentNullException()
+    public void Constructor_WithNullBmsDefinitionManager_ThrowsArgumentNullException()
     {
+        var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         var replaces = CreateReplaceTable();
 
         Assert.Throws<ArgumentNullException>(() =>
@@ -68,7 +70,8 @@ public class DefinitionStatisticsTests
     [Fact]
     public void Constructor_WithNullReplaces_ThrowsArgumentNullException()
     {
-        var fileList = CreateFileList(1, 2, 3);
+        var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
+        var fileList = CreateBmsDefinitionManager(1, 2, 3);
 
         Assert.Throws<ArgumentNullException>(() =>
             new DefinitionStatistics(fileList, null!, 1, 10));
@@ -81,8 +84,9 @@ public class DefinitionStatisticsTests
     [Fact]
     public void GetUniqueFileCount_AllSelfReferencing_ReturnsAllCount()
     {
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // すべてのファイルが自分自身を指している（置換なし）
-        var fileList = CreateFileList(1, 2, 3, 4, 5);
+        var fileList = CreateBmsDefinitionManager(1, 2, 3, 4, 5);
         var replaces = CreateReplaceTable();
 
         // 各ファイルが自分自身を指す
@@ -102,8 +106,9 @@ public class DefinitionStatisticsTests
     [Fact]
     public void GetUniqueFileCount_AllReplaced_ReturnsOne()
     {
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // すべてのファイルが1つのファイルに置換されている
-        var fileList = CreateFileList(1, 2, 3, 4, 5);
+        var fileList = CreateBmsDefinitionManager(1, 2, 3, 4, 5);
         var replaces = CreateReplaceTable();
 
         // すべてが1を指す
@@ -123,8 +128,9 @@ public class DefinitionStatisticsTests
     [Fact]
     public void GetUniqueFileCount_PartiallyReplaced_ReturnsCorrectCount()
     {
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // 一部が置換されている
-        var fileList = CreateFileList(1, 2, 3, 4, 5);
+        var fileList = CreateBmsDefinitionManager(1, 2, 3, 4, 5);
         var replaces = CreateReplaceTable();
 
         replaces[1] = 1;  // ユニーク
@@ -143,8 +149,9 @@ public class DefinitionStatisticsTests
     [Fact]
     public void GetUniqueFileCount_NotProcessed_ExcludesFromCount()
     {
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // 一部が未処理（replaces[i] == 0）
-        var fileList = CreateFileList(1, 2, 3, 4, 5);
+        var fileList = CreateBmsDefinitionManager(1, 2, 3, 4, 5);
         var replaces = CreateReplaceTable();
 
         replaces[1] = 1;  // ユニーク
@@ -167,7 +174,8 @@ public class DefinitionStatisticsTests
     [Fact]
     public void GetUniqueFileCount_RangeExcludesSomeFiles_CountsOnlyInRange()
     {
-        var fileList = CreateFileList(1, 5, 10, 15, 20);
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
+        var fileList = CreateBmsDefinitionManager(1, 5, 10, 15, 20);
         var replaces = CreateReplaceTable();
 
         replaces[1] = 1;
@@ -187,7 +195,8 @@ public class DefinitionStatisticsTests
     [Fact]
     public void GetUniqueFileCount_FileOutsideRange_NotCounted()
     {
-        var fileList = CreateFileList(1, 100, 200);
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
+        var fileList = CreateBmsDefinitionManager(1, 100, 200);
         var replaces = CreateReplaceTable();
 
         replaces[1] = 1;
@@ -207,9 +216,11 @@ public class DefinitionStatisticsTests
     #region GetUniqueFileCount Tests - エッジケース
 
     [Fact]
-    public void GetUniqueFileCount_EmptyFileList_ReturnsZero()
+    public void GetUniqueFileCount_EmptyBmsDefinitionManager_ReturnsZero()
     {
-        var fileList = new List<WavFiles>();
+        var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
+        var audioCache = audioCache;
+        var fileList = new List<BmsAudioFile>();
         var replaces = CreateReplaceTable();
 
         var stats = new DefinitionStatistics(fileList, replaces, 1, 100);
@@ -222,7 +233,8 @@ public class DefinitionStatisticsTests
     [Fact]
     public void GetUniqueFileCount_SingleFile_ReturnsOne()
     {
-        var fileList = CreateFileList(42);
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
+        var fileList = CreateBmsDefinitionManager(42);
         var replaces = CreateReplaceTable();
         replaces[42] = 42;
 
@@ -236,8 +248,9 @@ public class DefinitionStatisticsTests
     [Fact]
     public void GetUniqueFileCount_AllZeroReplaces_ReturnsZero()
     {
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // すべて未処理
-        var fileList = CreateFileList(1, 2, 3);
+        var fileList = CreateBmsDefinitionManager(1, 2, 3);
         var replaces = CreateReplaceTable();
         // replaces配列は初期値0のまま
 
@@ -255,7 +268,8 @@ public class DefinitionStatisticsTests
     [Fact]
     public void LogStatistics_DoesNotThrow()
     {
-        var fileList = CreateFileList(1, 2, 3);
+        var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
+        var fileList = CreateBmsDefinitionManager(1, 2, 3);
         var replaces = CreateReplaceTable();
         replaces[1] = 1;
         replaces[2] = 1;
@@ -275,8 +289,9 @@ public class DefinitionStatisticsTests
     [Fact]
     public void GetUniqueFileCount_ChainReplacement_CountsCorrectly()
     {
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // 連鎖的な置換（2→1, 3→1）
-        var fileList = CreateFileList(1, 2, 3, 4, 5);
+        var fileList = CreateBmsDefinitionManager(1, 2, 3, 4, 5);
         var replaces = CreateReplaceTable();
 
         replaces[1] = 1;  // ユニーク（グループ1の代表）
@@ -295,8 +310,9 @@ public class DefinitionStatisticsTests
     [Fact]
     public void GetUniqueFileCount_SparseNumbers_CountsCorrectly()
     {
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // まばらな定義番号
-        var fileList = CreateFileList(1, 100, 500, 1000, 3000);
+        var fileList = CreateBmsDefinitionManager(1, 100, 500, 1000, 3000);
         var replaces = CreateReplaceTable();
 
         replaces[1] = 1;

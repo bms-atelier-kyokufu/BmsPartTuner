@@ -5,18 +5,13 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Services.UI
     /// <summary>
     /// 結果カードUI要素（ViewModelドリブン）
     /// </summary>
-    public class ResultCardElement : IUiElementService<ResultCardData>
+    /// <remarks>
+    /// コンストラクタ
+    /// </remarks>
+    /// <param name="viewModel">MainViewModel インスタンス</param>
+    public class ResultCardElement(MainViewModel viewModel) : IUiElementService<ResultCardData>
     {
-        private readonly MainViewModel _viewModel;
-
-        /// <summary>
-        /// コンストラクタ
-        /// </summary>
-        /// <param name="viewModel">MainViewModel インスタンス</param>
-        public ResultCardElement(MainViewModel viewModel)
-        {
-            _viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
-        }
+        private readonly MainViewModel _viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
 
         /// <summary>
         /// 結果カードの表示状態

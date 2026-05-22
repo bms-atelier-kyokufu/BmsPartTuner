@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 using BmsAtelierKyokufu.BmsPartTuner.Core;
-using static BmsAtelierKyokufu.BmsPartTuner.Models.FileList;
+using BmsAtelierKyokufu.BmsPartTuner.Models;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Audio;
 
@@ -23,7 +23,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Audio;
 /// </list>
 /// 
 /// <para>【メモリ使用量】</para>
-/// 2,196ファイル × 200KB ≈ 440MB（現代のPCでは許容範囲）
+/// 2,196ファイル × 200KB ? 440MB（現代のPCでは許容範囲）
 /// 
 /// <para>【バッチ処理戦略】</para>
 /// <list type="bullet">
@@ -67,8 +67,8 @@ internal static class AudioCacheManager
     /// 破損ファイルや読み込みに失敗したファイルは無視して処理を続行しますが、
     /// そのファイルパスをリストで返却します。呼び出し元でユーザーに警告を表示できます。
     /// </remarks>
-    public static List<string> PreloadAudioData(
-        IReadOnlyList<WavFiles> fileList,
+    public static (List<string> FailedFiles, System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData> Cache) PreloadAudioData(
+        IReadOnlyList<BmsAudioFile> fileList,
         IProgress<int>? progress,
         Models.NormalizationMode normalizationMode = Models.NormalizationMode.None)
     {
@@ -81,12 +81,13 @@ internal static class AudioCacheManager
         int successCount = 0;
         int failCount = 0;
         var failedFiles = new System.Collections.Concurrent.ConcurrentBag<string>();
+        var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
 
         if (totalFiles == 0)
         {
             Debug.WriteLine("WARNING: No files to preload");
             progress?.Report(AppConstants.Progress.PreloadComplete);
-            return new List<string>();
+            return (new List<string>(), audioCache);
         }
 
         int batchSize = CalculateOptimalBatchSize(totalFiles);
@@ -106,7 +107,7 @@ internal static class AudioCacheManager
             int batchSuccess = 0;
             int batchFail = 0;
 
-            LoadBatch(batch, ref loaded, ref batchSuccess, ref batchFail, normalizationMode, failedFiles);
+            LoadBatch(batch, ref loaded, ref batchSuccess, ref batchFail, normalizationMode, failedFiles, audioCache);
 
             System.Threading.Interlocked.Add(ref successCount, batchSuccess);
             System.Threading.Interlocked.Add(ref failCount, batchFail);
@@ -124,9 +125,9 @@ internal static class AudioCacheManager
 
         sw.Stop();
 
-        LogCacheStatistics(fileList, loaded, totalFiles, successCount, failCount, sw.ElapsedMilliseconds);
+        LogCacheStatistics(fileList, audioCache, loaded, totalFiles, successCount, failCount, sw.ElapsedMilliseconds);
 
-        return failedFiles.ToList();
+        return (failedFiles.ToList(), audioCache);
     }
 
     /// <summary>
@@ -153,16 +154,16 @@ internal static class AudioCacheManager
     /// <summary>
     /// ファイルリストをバッチに分割。
     /// </summary>
-    private static IReadOnlyList<IReadOnlyList<WavFiles>> CreateBatches(
-        IReadOnlyList<WavFiles> fileList,
+    private static IReadOnlyList<IReadOnlyList<BmsAudioFile>> CreateBatches(
+        IReadOnlyList<BmsAudioFile> fileList,
         int batchSize)
     {
-        var batches = new List<IReadOnlyList<WavFiles>>();
+        var batches = new List<IReadOnlyList<BmsAudioFile>>();
 
         for (int i = 0; i < fileList.Count; i += batchSize)
         {
             int remaining = Math.Min(batchSize, fileList.Count - i);
-            var batch = new List<WavFiles>();
+            var batch = new List<BmsAudioFile>();
 
             for (int j = 0; j < remaining; j++)
             {
@@ -182,30 +183,22 @@ internal static class AudioCacheManager
     /// バッチ間は並列、バッチ内は順次でディスク負荷を制御します。
     /// </remarks>
     private static void LoadBatch(
-        IReadOnlyList<WavFiles> batch,
+        IReadOnlyList<BmsAudioFile> batch,
         ref int loaded,
         ref int successCount,
         ref int failCount,
         Models.NormalizationMode normalizationMode,
-        System.Collections.Concurrent.ConcurrentBag<string> failedFiles)
+        System.Collections.Concurrent.ConcurrentBag<string> failedFiles,
+        System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData> audioCache)
     {
         foreach (var file in batch)
         {
             try
             {
-                file.PreloadCache(normalizationMode);
+                var cachedData = new CachedSoundData(file.Name, normalizationMode);
+                audioCache[file.Name] = cachedData;
                 System.Threading.Interlocked.Increment(ref loaded);
-
-                if (file.CachedData != null)
-                {
-                    System.Threading.Interlocked.Increment(ref successCount);
-                }
-                else
-                {
-                    Debug.WriteLine($"[AudioCacheManager] Preload failed: {Path.GetFileName(file.Name)}");
-                    System.Threading.Interlocked.Increment(ref failCount);
-                    failedFiles.Add(file.Name);
-                }
+                System.Threading.Interlocked.Increment(ref successCount);
             }
             catch (Exception ex)
             {
@@ -231,7 +224,8 @@ internal static class AudioCacheManager
     /// </list>
     /// </remarks>
     private static void LogCacheStatistics(
-        IReadOnlyList<WavFiles> fileList,
+        IReadOnlyList<BmsAudioFile> fileList,
+        IReadOnlyDictionary<string, CachedSoundData> audioCache,
         int loaded,
         int totalFiles,
         int successCount,
@@ -243,7 +237,7 @@ internal static class AudioCacheManager
 
         for (int i = 0; i < fileList.Count; i++)
         {
-            var cached = fileList[i].CachedData;
+            audioCache.TryGetValue(fileList[i].Name, out var cached);
             if (cached != null)
             {
                 totalMemoryMB += cached.EstimatedMemoryMB;

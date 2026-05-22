@@ -49,7 +49,7 @@ public class ZeroPadBehavior : Behavior<TextBox>
         }
         else if (text.Length > padLength)
         {
-            AssociatedObject.Text = text.Substring(0, padLength);
+            AssociatedObject.Text = text[..padLength];
         }
     }
 }

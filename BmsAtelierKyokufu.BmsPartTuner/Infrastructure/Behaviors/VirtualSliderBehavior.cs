@@ -264,10 +264,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Behaviors
         {
             if (AssociatedObject != null && !_isDragging)
             {
-                if (_originalCursor == null)
-                {
-                    _originalCursor = AssociatedObject.Cursor;
-                }
+                _originalCursor ??= AssociatedObject.Cursor;
                 AssociatedObject.Cursor = Cursors.SizeWE;
             }
         }

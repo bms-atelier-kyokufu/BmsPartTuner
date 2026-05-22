@@ -156,16 +156,10 @@ public partial class InputValidationViewModel : ObservableObject
     /// <summary>
     /// 検証エラーのイベント引数。
     /// </summary>
-    public class ValidationErrorEventArgs : EventArgs
+    public class ValidationErrorEventArgs(string propertyName, string errorMessage) : EventArgs
     {
-        public string PropertyName { get; }
-        public string ErrorMessage { get; }
-
-        public ValidationErrorEventArgs(string propertyName, string errorMessage)
-        {
-            PropertyName = propertyName;
-            ErrorMessage = errorMessage;
-        }
+        public string PropertyName { get; } = propertyName;
+        public string ErrorMessage { get; } = errorMessage;
     }
 
     #endregion

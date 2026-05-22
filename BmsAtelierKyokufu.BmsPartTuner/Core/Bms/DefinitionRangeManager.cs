@@ -1,5 +1,5 @@
 ﻿using System.Diagnostics;
-using static BmsAtelierKyokufu.BmsPartTuner.Models.FileList;
+using BmsAtelierKyokufu.BmsPartTuner.Models;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 
@@ -23,32 +23,25 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 /// defEnd=0または負の値を指定すると、ファイルリストから
 /// 実際に使用されている最大定義番号を自動検出します。
 /// </remarks>
-internal class DefinitionRangeManager
+/// <remarks>
+/// DefinitionRangeManagerを初期化します。
+/// </remarks>
+/// <param name="fileList">ファイルリスト。</param>
+/// <exception cref="ArgumentNullException">fileListがnullの場合。</exception>
+/// <remarks>
+/// <para>【デフォルト範囲】</para>
+/// StartPoint: 1（BMSの最小定義番号）
+/// EndPoint: 3843（62進数の最大定義番号"zz"）
+/// </remarks>
+internal class DefinitionRangeManager(IReadOnlyList<BmsAudioFile> fileList)
 {
-    private readonly IReadOnlyList<WavFiles> _fileList;
+    private readonly IReadOnlyList<BmsAudioFile> _fileList = fileList ?? throw new ArgumentNullException(nameof(fileList));
 
     /// <summary>処理範囲の開始定義番号。</summary>
-    public int StartPoint { get; private set; }
+    public int StartPoint { get; private set; } = AppConstants.Definition.MinNumber;
 
     /// <summary>処理範囲の終了定義番号。</summary>
-    public int EndPoint { get; private set; }
-
-    /// <summary>
-    /// DefinitionRangeManagerを初期化します。
-    /// </summary>
-    /// <param name="fileList">ファイルリスト。</param>
-    /// <exception cref="ArgumentNullException">fileListがnullの場合。</exception>
-    /// <remarks>
-    /// <para>【デフォルト範囲】</para>
-    /// StartPoint: 1（BMSの最小定義番号）
-    /// EndPoint: 3843（62進数の最大定義番号"zz"）
-    /// </remarks>
-    public DefinitionRangeManager(IReadOnlyList<WavFiles> fileList)
-    {
-        _fileList = fileList ?? throw new ArgumentNullException(nameof(fileList));
-        StartPoint = AppConstants.Definition.MinNumber;
-        EndPoint = AppConstants.Definition.MaxNumberBase62;
-    }
+    public int EndPoint { get; private set; } = AppConstants.Definition.MaxNumberBase62;
 
     /// <summary>
     /// 処理範囲を決定します。
@@ -104,7 +97,7 @@ internal class DefinitionRangeManager
             defEnd = AppConstants.Definition.MaxNumberBase62 - 1;
 
         int firstNum = AppConstants.Definition.MinNumber;
-        var firstItem = (_fileList ?? Enumerable.Empty<WavFiles>()).FirstOrDefault();
+        var firstItem = (_fileList ?? Enumerable.Empty<BmsAudioFile>()).FirstOrDefault();
         if (firstItem != null)
         {
             firstNum = firstItem.NumInteger;

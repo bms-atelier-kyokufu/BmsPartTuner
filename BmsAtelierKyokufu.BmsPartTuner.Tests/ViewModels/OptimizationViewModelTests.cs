@@ -38,7 +38,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.ViewModels
         }
 
         public async Task<BmsOptimizationService.ReductionResult> ExecuteDefinitionReductionAsync(
-            IReadOnlyList<FileList.WavFiles> fileList,
+            IReadOnlyList<BmsAudioFile> fileList,
             string inputPath,
             string outputPath,
             float r2Threshold,
@@ -101,7 +101,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.ViewModels
                 string? error = null;
                 vm.ErrorOccurred += (_, msg) => error = msg;
 
-                var result = await vm.ExecuteThresholdOptimizationAsync(new List<string>(), 0, 10);
+                var result = await vm.ExecuteThresholdOptimizationAsync([], 0, 10);
 
                 Assert.Null(result);
                 Assert.Equal("ファイルリストが空です", error);
@@ -118,7 +118,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.ViewModels
                 {
                     R2Threshold = "80"
                 };
-                var list = new FileList("dummy.bms");
+                var list = new BmsDefinitionManager("dummy.bms");
                 string? completedOutput = null;
                 vm.DefinitionReductionCompleted += (_, e) => completedOutput = e.OutputPath;
 
@@ -138,7 +138,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.ViewModels
                 {
                     R2Threshold = "-1"
                 };
-                var list = new FileList("dummy.bms");
+                var list = new BmsDefinitionManager("dummy.bms");
                 string? error = null;
                 vm.ErrorOccurred += (_, msg) => error = msg;
 
@@ -164,7 +164,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.ViewModels
                 vm.ErrorOccurred += (_, msg) => error = msg;
 
                 var result = await vm.ExecuteThresholdOptimizationAsync(
-                    new List<string> { "a.wav" }, 0, 10);
+                    ["a.wav"], 0, 10);
 
                 // 処理後の状態
                 Assert.Null(result);
@@ -242,7 +242,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.ViewModels
                 {
                     R2Threshold = "80"
                 };
-                var list = new FileList("dummy.bms");
+                var list = new BmsDefinitionManager("dummy.bms");
                 var busyStates = new List<bool>();
 
                 vm.PropertyChanged += (s, e) =>
@@ -271,7 +271,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.ViewModels
                 var vm = new OptimizationViewModel(new NullReturningOptimizationService());
 
                 var result = await vm.ExecuteThresholdOptimizationAsync(
-                    new List<string> { "a.wav" }, 0, 10);
+                    ["a.wav"], 0, 10);
 
                 Assert.Null(result);
                 Assert.False(vm.IsBusy, "サービスがnullを返しても、IsBusyはfalseになるべき");
@@ -300,7 +300,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.ViewModels
         }
 
         public Task<BmsOptimizationService.ReductionResult> ExecuteDefinitionReductionAsync(
-            IReadOnlyList<FileList.WavFiles> fileList,
+            IReadOnlyList<BmsAudioFile> fileList,
             string inputPath,
             string outputPath,
             float r2Threshold,
@@ -336,7 +336,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.ViewModels
         }
 
         public Task<BmsOptimizationService.ReductionResult> ExecuteDefinitionReductionAsync(
-            IReadOnlyList<FileList.WavFiles> fileList,
+            IReadOnlyList<BmsAudioFile> fileList,
             string inputPath,
             string outputPath,
             float r2Threshold,

@@ -29,7 +29,8 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Audio
         [Fact]
         public void IsMatch_ExactMatch_ReturnsTrue()
         {
-            float[] data = new float[] { 0.1f, 0.2f, 0.3f, 0.4f };
+            _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
+            float[] data = [0.1f, 0.2f, 0.3f, 0.4f];
             using var sound1 = CreateCachedSoundData(data);
             using var sound2 = CreateCachedSoundData(data);
 
@@ -40,8 +41,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Audio
         [Fact]
         public void IsMatch_DifferentLengths_ReturnsFalse()
         {
-            using var sound1 = CreateCachedSoundData(new float[] { 0.1f, 0.2f });
-            using var sound2 = CreateCachedSoundData(new float[] { 0.1f, 0.2f, 0.3f });
+            _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
+            using var sound1 = CreateCachedSoundData([0.1f, 0.2f]);
+            using var sound2 = CreateCachedSoundData([0.1f, 0.2f, 0.3f]);
 
             Assert.False(FastWaveCompare.IsMatch(sound1, sound2, 0.1f));
         }
@@ -49,10 +51,11 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Audio
         [Fact]
         public void IsMatch_Silence_HandlesGracefully()
         {
+            _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
             // 無音データ（ゼロ分散）は定数値として扱われ、
             // 同じ定数値（0.0）なので相関係数は1.0となり、一致判定される
 
-            float[] silence = new float[] { 0.0f, 0.0f, 0.0f, 0.0f };
+            float[] silence = [0.0f, 0.0f, 0.0f, 0.0f];
             using var sound1 = CreateCachedSoundData(silence);
             using var sound2 = CreateCachedSoundData(silence);
 
@@ -64,8 +67,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Audio
         [Fact]
         public void IsMatch_NearSilence_HandlesGracefully()
         {
-            float[] nearSilence1 = new float[] { 1e-6f, -1e-6f };
-            float[] nearSilence2 = new float[] { 1e-6f, -1e-6f };
+            _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
+            float[] nearSilence1 = [1e-6f, -1e-6f];
+            float[] nearSilence2 = [1e-6f, -1e-6f];
 
             using var sound1 = CreateCachedSoundData(nearSilence1);
             using var sound2 = CreateCachedSoundData(nearSilence2);
@@ -78,8 +82,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Audio
         [Fact]
         public void IsMatch_VolumeDifference_ReturnsTrue()
         {
-            float[] data1 = new float[] { 0.1f, 0.2f, 0.3f, 0.4f };
-            float[] data2 = new float[] { 0.05f, 0.1f, 0.15f, 0.2f }; // 半分の振幅
+            _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
+            float[] data1 = [0.1f, 0.2f, 0.3f, 0.4f];
+            float[] data2 = [0.05f, 0.1f, 0.15f, 0.2f]; // 半分の振幅
 
             using var sound1 = CreateCachedSoundData(data1);
             using var sound2 = CreateCachedSoundData(data2);
@@ -91,8 +96,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Audio
         [Fact]
         public void IsMatch_InvertedPhase_ReturnsFalse()
         {
-            float[] data1 = new float[] { 0.1f, 0.2f, 0.3f, 0.4f };
-            float[] data2 = new float[] { -0.1f, -0.2f, -0.3f, -0.4f }; // 位相反転
+            _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
+            float[] data1 = [0.1f, 0.2f, 0.3f, 0.4f];
+            float[] data2 = [-0.1f, -0.2f, -0.3f, -0.4f]; // 位相反転
 
             using var sound1 = CreateCachedSoundData(data1);
             using var sound2 = CreateCachedSoundData(data2);
@@ -104,15 +110,14 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Audio
         [Fact]
         public void IsMatch_DifferentSampleRates_ReturnsFalse()
         {
+            _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
             // フォーマット不一致: サンプリングレートが異なる場合
-            float[] data = new float[] { 0.1f, 0.2f, 0.3f, 0.4f };
+            float[] data = [0.1f, 0.2f, 0.3f, 0.4f];
 
-            float[][] samples1 = new float[1][];
-            samples1[0] = data;
+            float[][] samples1 = [data];
             var sound1 = new CachedSoundData(samples1, 44100, 16);
 
-            float[][] samples2 = new float[1][];
-            samples2[0] = data;
+            float[][] samples2 = [data];
             var sound2 = new CachedSoundData(samples2, 48000, 16); // Different sample rate
 
             Assert.False(FastWaveCompare.IsMatch(sound1, sound2, 0.1f));
@@ -121,9 +126,10 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Audio
         [Fact]
         public void IsMatch_DifferentChannels_ReturnsFalse()
         {
+            _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
             // フォーマット不一致: チャンネル数が異なる場合
-            float[] monoData = new float[] { 0.1f, 0.2f, 0.3f, 0.4f };
-            float[] stereoData = new float[] { 0.1f, 0.1f, 0.2f, 0.2f, 0.3f, 0.3f, 0.4f, 0.4f };
+            float[] monoData = [0.1f, 0.2f, 0.3f, 0.4f];
+            float[] stereoData = [0.1f, 0.1f, 0.2f, 0.2f, 0.3f, 0.3f, 0.4f, 0.4f];
 
             using var monoSound = CreateCachedSoundData(monoData, channels: 1);
             using var stereoSound = CreateCachedSoundData(stereoData, channels: 2);
@@ -134,15 +140,14 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Audio
         [Fact]
         public void IsMatch_DifferentBitDepths_ReturnsFalse()
         {
+            _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
             // フォーマット不一致: ビット深度が異なる場合
-            float[] data = new float[] { 0.1f, 0.2f, 0.3f, 0.4f };
+            float[] data = [0.1f, 0.2f, 0.3f, 0.4f];
 
-            float[][] samples1 = new float[1][];
-            samples1[0] = data;
+            float[][] samples1 = [data];
             var sound1 = new CachedSoundData(samples1, 44100, 16);
 
-            float[][] samples2 = new float[1][];
-            samples2[0] = data;
+            float[][] samples2 = [data];
             var sound2 = new CachedSoundData(samples2, 44100, 24); // Different bit depth
 
             Assert.False(FastWaveCompare.IsMatch(sound1, sound2, 0.1f));
@@ -151,8 +156,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Audio
         [Fact]
         public void IsMatch_EmptyFiles_ThrowsException()
         {
+            var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
             // 空ファイル（サンプル数0）は CachedSoundData のコンストラクタで例外をスローする
-            float[] emptyData = Array.Empty<float>();
+            float[] emptyData = [];
 
             // ArgumentExceptionがスローされることを確認
             Assert.Throws<ArgumentException>(() => CreateCachedSoundData(emptyData));
@@ -161,6 +167,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Audio
         [Fact]
         public void IsMatch_LargeDataSIMDPath_WorksCorrectly()
         {
+            _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
             // SIMD分岐: 大きなデータで最適化パスをテスト
             // 通常、SIMD処理は4サンプル以上で動作するため、128サンプルのデータを用意
             float[] largeData = new float[128];
@@ -178,8 +185,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Audio
         [Fact]
         public void IsMatch_SmallDataNonSIMDPath_WorksCorrectly()
         {
+            _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
             // 非SIMD分岐: 小さなデータで通常パスをテスト
-            float[] smallData = new float[] { 0.1f, 0.2f };
+            float[] smallData = [0.1f, 0.2f];
 
             using var sound1 = CreateCachedSoundData(smallData);
             using var sound2 = CreateCachedSoundData(smallData);
@@ -190,7 +198,8 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Audio
         [Fact]
         public void GetCorrelation_ExactMatch_ReturnsOne()
         {
-            float[] data = new float[] { 0.1f, 0.2f, 0.3f, 0.4f };
+            _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
+            float[] data = [0.1f, 0.2f, 0.3f, 0.4f];
             using var sound1 = CreateCachedSoundData(data);
             using var sound2 = CreateCachedSoundData(data);
 
@@ -203,14 +212,13 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Audio
         [Fact]
         public void GetCorrelation_FormatMismatch_ReturnsZero()
         {
-            float[] data = new float[] { 0.1f, 0.2f, 0.3f, 0.4f };
+            _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
+            float[] data = [0.1f, 0.2f, 0.3f, 0.4f];
 
-            float[][] samples1 = new float[1][];
-            samples1[0] = data;
+            float[][] samples1 = [data];
             var sound1 = new CachedSoundData(samples1, 44100, 16);
 
-            float[][] samples2 = new float[1][];
-            samples2[0] = data;
+            float[][] samples2 = [data];
             var sound2 = new CachedSoundData(samples2, 48000, 16); // Different format
 
             float correlation = FastWaveCompare.GetCorrelation(sound1, sound2);
@@ -221,8 +229,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Audio
         [Fact]
         public void GetCorrelation_InvertedPhase_ReturnsNegativeOne()
         {
-            float[] data1 = new float[] { 0.1f, 0.2f, 0.3f, 0.4f };
-            float[] data2 = new float[] { -0.1f, -0.2f, -0.3f, -0.4f };
+            _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
+            float[] data1 = [0.1f, 0.2f, 0.3f, 0.4f];
+            float[] data2 = [-0.1f, -0.2f, -0.3f, -0.4f];
 
             using var sound1 = CreateCachedSoundData(data1);
             using var sound2 = CreateCachedSoundData(data2);
@@ -236,8 +245,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Audio
         [Fact]
         public void IsMatch_WithNormalizedWaveform_UsesOptimizedPath()
         {
+            _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
             // 正規化波形が事前計算されている場合の最適化パステスト
-            float[] data = new float[] { 0.1f, 0.2f, 0.3f, 0.4f };
+            float[] data = [0.1f, 0.2f, 0.3f, 0.4f];
             using var sound1 = CreateCachedSoundData(data);
             using var sound2 = CreateCachedSoundData(data);
 
@@ -249,8 +259,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Audio
         [Fact]
         public void IsMatch_WithHighThreshold_FiltersSimilarButNotIdentical()
         {
-            float[] data1 = new float[] { 0.1f, 0.2f, 0.3f, 0.4f };
-            float[] data2 = new float[] { 0.1f, 0.2f, 0.3f, 0.35f }; // Slightly different
+            _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
+            float[] data1 = [0.1f, 0.2f, 0.3f, 0.4f];
+            float[] data2 = [0.1f, 0.2f, 0.3f, 0.35f]; // Slightly different
 
             using var sound1 = CreateCachedSoundData(data1);
             using var sound2 = CreateCachedSoundData(data2);
@@ -277,6 +288,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Audio
         [InlineData(17)]  // 4の倍数+1
         public void IsMatch_NonMultipleOfFourLength_WorksCorrectly(int length)
         {
+            _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
             float[] data = new float[length];
             for (int i = 0; i < length; i++)
             {
@@ -295,8 +307,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Audio
         [Fact]
         public void IsMatch_MinimalData_HandlesGracefully()
         {
+            _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
             // 最小限のデータ（1サンプル）
-            float[] minimalData = new float[] { 0.5f };
+            float[] minimalData = [0.5f];
 
             using var sound1 = CreateCachedSoundData(minimalData);
             using var sound2 = CreateCachedSoundData(minimalData);
@@ -313,8 +326,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Audio
         [Fact]
         public void IsMatch_ConstantValueData_HandlesGracefully()
         {
+            var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
             // すべて同じ値（分散0）
-            float[] constantData = new float[] { 0.5f, 0.5f, 0.5f, 0.5f };
+            float[] constantData = [0.5f, 0.5f, 0.5f, 0.5f];
 
             using var sound1 = CreateCachedSoundData(constantData);
             using var sound2 = CreateCachedSoundData(constantData);
@@ -331,7 +345,8 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Audio
         [Fact]
         public void IsMatch_LargeAmplitude_NoOverflow()
         {
-            float[] largeData = new float[] { 1.0f, 1.0f, 1.0f, 1.0f };
+            var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
+            float[] largeData = [1.0f, 1.0f, 1.0f, 1.0f];
 
             using var sound1 = CreateCachedSoundData(largeData);
             using var sound2 = CreateCachedSoundData(largeData);
@@ -346,7 +361,8 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Audio
         [Fact]
         public void IsMatch_TinyAmplitude_NoUnderflow()
         {
-            float[] tinyData = new float[] { 1e-7f, 2e-7f, 3e-7f, 4e-7f };
+            var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
+            float[] tinyData = [1e-7f, 2e-7f, 3e-7f, 4e-7f];
 
             using var sound1 = CreateCachedSoundData(tinyData);
             using var sound2 = CreateCachedSoundData(tinyData);
@@ -361,9 +377,10 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Audio
         [Fact]
         public void IsMatch_StereoWithDifferentChannels_ComparesCorrectly()
         {
+            _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
             // 左右で異なるデータを持つステレオ
-            float[] stereoData1 = new float[] { 0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f, 0.7f, 0.8f };
-            float[] stereoData2 = new float[] { 0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f, 0.7f, 0.8f };
+            float[] stereoData1 = [0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f, 0.7f, 0.8f];
+            float[] stereoData2 = [0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f, 0.7f, 0.8f];
 
             using var sound1 = CreateCachedSoundData(stereoData1, channels: 2);
             using var sound2 = CreateCachedSoundData(stereoData2, channels: 2);
@@ -377,8 +394,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Audio
         [Fact]
         public void IsMatch_SpecialFloatValues_HandlesGracefully()
         {
+            var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
             // NaNを含むデータ
-            float[] dataWithNaN = new float[] { 0.1f, float.NaN, 0.3f, 0.4f };
+            float[] dataWithNaN = [0.1f, float.NaN, 0.3f, 0.4f];
 
             using var sound1 = CreateCachedSoundData(dataWithNaN);
             using var sound2 = CreateCachedSoundData(dataWithNaN);
@@ -399,7 +417,8 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Audio
         [InlineData(0.999f)] // 極大しきい値
         public void IsMatch_ThresholdBoundaries_ProcessesCorrectly(float threshold)
         {
-            float[] data = new float[] { 0.1f, 0.2f, 0.3f, 0.4f };
+            _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
+            float[] data = [0.1f, 0.2f, 0.3f, 0.4f];
 
             using var sound1 = CreateCachedSoundData(data);
             using var sound2 = CreateCachedSoundData(data);
@@ -424,9 +443,10 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Audio
         [Fact]
         public void GetCorrelation_SimilarButNotIdentical_ReturnsBetweenZeroAndOne()
         {
+            _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
             // わずかにノイズを加えたデータ
-            float[] data1 = new float[] { 0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f, 0.7f, 0.8f };
-            float[] data2 = new float[] { 0.11f, 0.19f, 0.31f, 0.39f, 0.51f, 0.59f, 0.71f, 0.79f };
+            float[] data1 = [0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f, 0.7f, 0.8f];
+            float[] data2 = [0.11f, 0.19f, 0.31f, 0.39f, 0.51f, 0.59f, 0.71f, 0.79f];
 
             using var sound1 = CreateCachedSoundData(data1);
             using var sound2 = CreateCachedSoundData(data2);
@@ -444,9 +464,10 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Audio
         [Fact]
         public void GetCorrelation_UncorrelatedData_ReturnsLessThanOne()
         {
+            _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
             // 直交するデータ（相関なし）
-            float[] data1 = new float[] { 1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f };
-            float[] data2 = new float[] { 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f };
+            float[] data1 = [1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f];
+            float[] data2 = [0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f];
 
             using var sound1 = CreateCachedSoundData(data1);
             using var sound2 = CreateCachedSoundData(data2);

@@ -26,7 +26,7 @@ public class ValidationResult
     private ValidationResult(bool isValid, IEnumerable<string> errors)
     {
         IsValid = isValid;
-        Errors = errors.ToList();
+        Errors = [.. errors];
     }
 
     /// <summary>
@@ -34,7 +34,7 @@ public class ValidationResult
     /// </summary>
     /// <returns>成功を表すValidationResult。</returns>
     public static ValidationResult Success()
-        => new ValidationResult(true, Enumerable.Empty<string>());
+        => new(true, []);
 
     /// <summary>
     /// 失敗結果を作成。
@@ -42,7 +42,7 @@ public class ValidationResult
     /// <param name="error">エラーメッセージ。</param>
     /// <returns>失敗を表すValidationResult。</returns>
     public static ValidationResult Failure(string error)
-        => new ValidationResult(false, new[] { error });
+        => new(false, [error]);
 
     /// <summary>
     /// 複数エラーの失敗結果を作成。
@@ -50,7 +50,7 @@ public class ValidationResult
     /// <param name="errors">エラーメッセージのコレクション。</param>
     /// <returns>失敗を表すValidationResult。</returns>
     public static ValidationResult Failure(IEnumerable<string> errors)
-        => new ValidationResult(false, errors);
+        => new(false, errors);
 
     /// <summary>
     /// 最初のエラーメッセージを取得。
@@ -100,7 +100,7 @@ public class ValidationResult<T>
     {
         IsValid = isValid;
         Value = value;
-        Errors = errors.ToList();
+        Errors = [.. errors];
     }
 
     /// <summary>
@@ -109,7 +109,7 @@ public class ValidationResult<T>
     /// <param name="value">検証された値。</param>
     /// <returns>成功を表すValidationResult。</returns>
     public static ValidationResult<T> Success(T value)
-        => new ValidationResult<T>(true, value, Enumerable.Empty<string>());
+        => new(true, value, []);
 
     /// <summary>
     /// 失敗結果を作成。
@@ -117,7 +117,7 @@ public class ValidationResult<T>
     /// <param name="error">エラーメッセージ。</param>
     /// <returns>失敗を表すValidationResult。</returns>
     public static ValidationResult<T> Failure(string error)
-        => new ValidationResult<T>(false, default, new[] { error });
+        => new(false, default, [error]);
 
     /// <summary>
     /// 最初のエラーメッセージを取得。

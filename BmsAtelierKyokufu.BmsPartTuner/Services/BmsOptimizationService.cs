@@ -6,7 +6,6 @@ using BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Optimization;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Validation;
 using BmsAtelierKyokufu.BmsPartTuner.Models;
-using static BmsAtelierKyokufu.BmsPartTuner.Models.FileList;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Services;
 
@@ -85,7 +84,7 @@ public class BmsOptimizationService : IBmsOptimizationService
         long peakMemory = memoryBefore;
 
         // ファイルリストからObservableCollectionを作成
-        ObservableCollection<WavFiles> fileListItems = new ObservableCollection<FileList.WavFiles>();
+        ObservableCollection<BmsAudioFile> fileListItems = [];
         try
         {
             Debug.WriteLine("=== FindOptimalThresholdsAsync: Starting ===");
@@ -110,7 +109,7 @@ public class BmsOptimizationService : IBmsOptimizationService
             {
                 if (File.Exists(filePath))
                 {
-                    WavFiles wavFile = new FileList.WavFiles
+                    BmsAudioFile wavFile = new()
                     {
                         Num = Core.Helpers.RadixConvert.IntToZZ(fileNum, radix),
                         NumInteger = fileNum,
@@ -139,13 +138,16 @@ public class BmsOptimizationService : IBmsOptimizationService
 
             // 音声キャッシュをプリロード
             progress?.Report(5);
-            List<string> failedFiles = new List<string>();
+            System.Collections.Concurrent.ConcurrentDictionary<string, BmsAtelierKyokufu.BmsPartTuner.Models.CachedSoundData>? audioCache = null;
+            List<string> failedFiles = [];
             try
             {
-                failedFiles = AudioCacheManager.PreloadAudioData(
+                var (FailedFiles, Cache) = AudioCacheManager.PreloadAudioData(
                     fileListItems,
                     new Progress<int>(p => progress?.Report(5 + p / 20)), // 5-10%
                     Models.NormalizationMode.None);
+                failedFiles = FailedFiles;
+                audioCache = Cache;
 
                 if (failedFiles.Count > 0)
                 {
@@ -171,12 +173,13 @@ public class BmsOptimizationService : IBmsOptimizationService
 
             // SimulationEngineでシミュレーション実行
             // endPointは実際にロードしたファイルの最大定義番号を使用
-            SimulationEngine simulationEngine = new SimulationEngine(
+            SimulationEngine simulationEngine = new(
                 fileListItems,
+                audioCache!,
                 startDefinition,
                 actualEnd);
 
-            Progress<int> simulationProgress = new Progress<int>(p => progress?.Report(10 + (int)(p * 0.6))); // 10-70%
+            Progress<int> simulationProgress = new(p => progress?.Report(10 + (int)(p * 0.6))); // 10-70%
 
             IReadOnlyList<SimulationPoint> simulationResults = await Task.Run(() =>
                 simulationEngine.RunParallelSimulation(
@@ -188,15 +191,13 @@ public class BmsOptimizationService : IBmsOptimizationService
             progress?.Report(70);
 
             // シミュレーション結果をOptimizationResult形式に変換
-            List<(double, int FileCount)> simulationData = simulationResults
-                .Select(r => ((double)r.Threshold, r.FileCount))
-                .ToList();
+            List<(double, int FileCount)> simulationData = [.. simulationResults.Select(r => ((double)r.Threshold, r.FileCount))];
 
             Debug.WriteLine($"Simulation results: {simulationData.Count} data points");
             if (simulationData.Count > 0)
             {
-                int minCount = simulationData.Min(d => d.Item2);
-                int maxCount = simulationData.Max(d => d.Item2);
+                int minCount = simulationData.Min(d => d.FileCount);
+                int maxCount = simulationData.Max(d => d.FileCount);
                 Debug.WriteLine($"File count range in results: {minCount} - {maxCount}");
             }
 
@@ -228,7 +229,7 @@ public class BmsOptimizationService : IBmsOptimizationService
             long currentMemory = GC.GetTotalMemory(false);
             long memoryUsed = Math.Max(0, currentMemory - memoryBefore);
 
-            OptimizationResult result = new Models.OptimizationResult
+            OptimizationResult result = new()
             {
                 Base36Result = (base36Threshold, base36Count),
                 Base62Result = (base62Threshold, base62Count),
@@ -257,7 +258,6 @@ public class BmsOptimizationService : IBmsOptimizationService
             Debug.WriteLine($"Simulation data points: {simulationData.Count}");
 
             Debug.WriteLine("=== Clearing audio cache ===");
-            CleanupAudioCache(fileListItems);
             fileListItems.Clear();
 
             return result;
@@ -267,7 +267,6 @@ public class BmsOptimizationService : IBmsOptimizationService
             Debug.WriteLine($"ERROR in FindOptimalThresholdsAsync: {ex.Message}");
             Debug.WriteLine($"StackTrace: {ex.StackTrace}");
 
-            CleanupAudioCache(fileListItems);
             fileListItems?.Clear();
 
             return null;
@@ -296,9 +295,7 @@ public class BmsOptimizationService : IBmsOptimizationService
         }
 
         // ファイル数がfileLimit以下のエントリを抽出
-        List<(double Threshold, int Count)> validEntries = simulationData
-            .Where(d => d.Count > 0 && d.Count <= fileLimit)
-            .ToList();
+        List<(double Threshold, int Count)> validEntries = [.. simulationData.Where(d => d.Count > 0 && d.Count <= fileLimit)];
 
         Debug.WriteLine($"FindOptimalThreshold: {validEntries.Count} valid entries for limit {fileLimit}");
 
@@ -306,7 +303,7 @@ public class BmsOptimizationService : IBmsOptimizationService
         {
             // 全てのエントリがfileLimit超えまたは0件の場合
             // ファイル数が最も少ない（0以外の）ものを選択
-            List<(double Threshold, int Count)> nonZeroEntries = simulationData.Where(d => d.Count > 0).ToList();
+            List<(double Threshold, int Count)> nonZeroEntries = [.. simulationData.Where(d => d.Count > 0)];
 
             if (nonZeroEntries.Count == 0)
             {
@@ -314,9 +311,9 @@ public class BmsOptimizationService : IBmsOptimizationService
                 return (0.60f, 0);
             }
 
-            (double Threshold, int Count) minEntry = nonZeroEntries.OrderBy(d => d.Count).First();
-            Debug.WriteLine($"FindOptimalThreshold: Using min count entry: Threshold={minEntry.Threshold:F2}, Count={minEntry.Count}");
-            return ((float)minEntry.Threshold, minEntry.Count);
+            (double Threshold, int Count) = nonZeroEntries.OrderBy(d => d.Count).First();
+            Debug.WriteLine($"FindOptimalThreshold: Using min count entry: Threshold={Threshold:F2}, Count={Count}");
+            return ((float)Threshold, Count);
         }
 
         // 制限を満たす中で、しきい値が最も高い（=品質が最大）ものを選択
@@ -384,7 +381,7 @@ public class BmsOptimizationService : IBmsOptimizationService
     /// バックグラウンドスレッドで実行します。
     /// </remarks>
     public async Task<ReductionResult> ExecuteDefinitionReductionAsync(
-        IReadOnlyList<WavFiles> fileList,
+        IReadOnlyList<BmsAudioFile> fileList,
         string inputPath,
         string outputPath,
         float r2Threshold,
@@ -394,8 +391,7 @@ public class BmsOptimizationService : IBmsOptimizationService
         IProgress<int>? progress = null,
         IEnumerable<string>? selectedKeywords = null)
     {
-        if (fileList == null)
-            throw new ArgumentNullException(nameof(fileList));
+        ArgumentNullException.ThrowIfNull(fileList);
         if (string.IsNullOrWhiteSpace(inputPath))
             throw new ArgumentException("入力パスが指定されていません", nameof(inputPath));
         if (string.IsNullOrWhiteSpace(outputPath))
@@ -403,28 +399,32 @@ public class BmsOptimizationService : IBmsOptimizationService
 
         Stopwatch sw = Stopwatch.StartNew();
 
+        // 音声データの事前ロード（キャッシュ構築）
+        var (FailedFiles, Cache) = BmsAtelierKyokufu.BmsPartTuner.Audio.AudioCacheManager.PreloadAudioData(fileList, progress);
+        var audioCache = Cache;
+
         // DefinitionReuse expects an ObservableCollection, so we need to convert
-        ObservableCollection<WavFiles> observableCollection = new ObservableCollection<WavFiles>(fileList);
-        DefinitionReuse dr = new DefinitionReuse(observableCollection);
+        ObservableCollection<BmsAudioFile> observableCollection = new(fileList);
+        DefinitionReuse dr = new(observableCollection, audioCache);
 
         int originalCount = fileList.Count;
         int optimizedCount = originalCount;
         int deletedFilesCount = 0;
-        Func<string, ReductionResult> errorResult = (string message) =>
+        ReductionResult errorResult(string message)
+        {
+            Debug.WriteLine($"ERROR in ExecuteDefinitionReductionAsync: {message}");
+            sw.Stop();
+            return new ReductionResult
             {
-                Debug.WriteLine($"ERROR in ExecuteDefinitionReductionAsync: {message}");
-                sw.Stop();
-                return new ReductionResult
-                {
-                    OriginalCount = originalCount,
-                    OptimizedCount = optimizedCount,
-                    ReductionRate = 0,
-                    ProcessingTime = sw.Elapsed,
-                    Threshold = r2Threshold,
-                    IsSuccess = false,
-                    ErrorMessage = message
-                };
+                OriginalCount = originalCount,
+                OptimizedCount = optimizedCount,
+                ReductionRate = 0,
+                ProcessingTime = sw.Elapsed,
+                Threshold = r2Threshold,
+                IsSuccess = false,
+                ErrorMessage = message
             };
+        }
 
         try
         {
@@ -458,7 +458,7 @@ public class BmsOptimizationService : IBmsOptimizationService
             double reductionRate = CalculateReductionRate(originalCount, optimizedCount);
 
             Debug.WriteLine("=== Clearing audio cache after reduction ===");
-            CleanupAudioCache(fileList);
+            CleanupAudioCache(fileList, audioCache);
 
             return new ReductionResult
             {
@@ -473,20 +473,12 @@ public class BmsOptimizationService : IBmsOptimizationService
         }
         catch (FileNotFoundException ex)
         {
-            CleanupAudioCache(fileList);
             return errorResult($"ファイルが見つかりません: {ex.FileName}");
         }
         catch (IOException ex)
         {
             // ファイル削除失敗やアクセス拒否を処理
-            foreach (WavFiles file in fileList)
-            {
-                if (file.CachedData != null)
-                {
-                    file.CachedData.Dispose();
-                    file.ClearCache();
-                }
-            }
+            CleanupAudioCache(fileList, audioCache);
 
             GC.Collect(GC.MaxGeneration, GCCollectionMode.Aggressive, blocking: true, compacting: true);
             GC.WaitForPendingFinalizers();
@@ -496,14 +488,12 @@ public class BmsOptimizationService : IBmsOptimizationService
         }
         catch (UnauthorizedAccessException)
         {
-            CleanupAudioCache(fileList);
             return errorResult("ファイルへのアクセスが拒否されました");
         }
         catch (Exception ex)
         {
             Debug.WriteLine($"ERROR in ExecuteDefinitionReductionAsync: {ex.Message}");
             Debug.WriteLine($"StackTrace: {ex.StackTrace}");
-            CleanupAudioCache(fileList);
             Trace.TraceError($"Unexpected error: {ex}");
             return errorResult($"予期しないエラーが発生しました: {ex.Message}\n{ex.StackTrace}");
         }
@@ -521,7 +511,7 @@ public class BmsOptimizationService : IBmsOptimizationService
     /// </remarks>
     public ValidationResult ValidateDefinitionRange(string startVal, string endVal)
     {
-        DefinitionRange range = new DefinitionRange(startVal, endVal);
+        DefinitionRange range = new(startVal, endVal);
         return _definitionRangeValidator.Validate(range);
     }
 
@@ -547,23 +537,17 @@ public class BmsOptimizationService : IBmsOptimizationService
     /// 音声キャッシュをクリアします。
     /// </summary>
     /// <param name="files">クリア対象のファイルリスト。</param>
-    /// <remarks>
-    /// <para>【IDisposableパターン】</para>
-    /// CachedSoundDataはIDisposableを実装しているため、
-    /// Disposeを呼び出すことでアンマネージドリソースを解放します。
-    /// GCは.NETランタイムが最適なタイミングで自動的に実行します。
-    /// </remarks>
-    private static void CleanupAudioCache(IEnumerable<WavFiles>? files)
+    /// <param name="audioCache">音声キャッシュディクショナリ。</param>
+    private static void CleanupAudioCache(IEnumerable<BmsAudioFile>? files, IReadOnlyDictionary<string, CachedSoundData> audioCache)
     {
-        if (files == null) return;
+        if (files == null || audioCache == null) return;
 
         int clearedCount = 0;
-        foreach (WavFiles file in files)
+        foreach (BmsAudioFile file in files)
         {
-            if (file.CachedData != null)
+            if (audioCache.TryGetValue(file.Name, out var cachedData))
             {
-                file.CachedData.Dispose();
-                file.ClearCache();
+                cachedData.Dispose();
                 clearedCount++;
             }
         }

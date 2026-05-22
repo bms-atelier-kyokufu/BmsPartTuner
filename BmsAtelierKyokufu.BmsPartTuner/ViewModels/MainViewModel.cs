@@ -19,7 +19,7 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
     public FileOperationsViewModel FileOperations { get; }
 
     /// <summary>ファイルリストViewModel。</summary>
-    public FileListViewModel FileList { get; }
+    public FileListViewModel BmsDefinitionManager { get; }
 
     /// <summary>最適化ViewModel。</summary>
     public OptimizationViewModel Optimization { get; }
@@ -119,7 +119,7 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
 
     public ICommand BrowseInputFileCommand => FileOperations.BrowseInputFileCommand;
     public ICommand BrowseOutputFileCommand => FileOperations.BrowseOutputFileCommand;
-    public ICommand ClearFilterCommand => FileList.ClearFilterCommand;
+    public ICommand ClearFilterCommand => BmsDefinitionManager.ClearFilterCommand;
 
     #endregion
 
@@ -138,8 +138,8 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
         _audioPreviewService = audioPreviewService ?? throw new ArgumentNullException(nameof(audioPreviewService));
 
         FileOperations = new FileOperationsViewModel();
-        FileList = new FileListViewModel(audioPreviewService, instrumentDetectionService);
-        FileList.SetFilterService(filterService);
+        BmsDefinitionManager = new FileListViewModel(audioPreviewService, instrumentDetectionService);
+        BmsDefinitionManager.SetFilterService(filterService);
         Optimization = new OptimizationViewModel(optimizationService);
         Notification = new NotificationViewModel();
         Settings = new SettingsViewModel(settingsService, themeService, licenseLoaderService);
@@ -149,8 +149,8 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
         // イベントハンドラー登録
         FileOperations.InputPathChanged += OnInputPathChanged;
         FileOperations.AutoOutputPathRequested += OnAutoOutputPathRequested;
-        FileList.FileListLoaded += OnFileListLoaded;
-        FileList.AudioPlaybackStateChanged += OnAudioPlaybackStateChanged;
+        BmsDefinitionManager.FileListLoaded += OnFileListLoaded;
+        BmsDefinitionManager.AudioPlaybackStateChanged += OnAudioPlaybackStateChanged;
         Optimization.DefinitionReductionCompleted += OnDefinitionReductionCompleted;
         Optimization.ErrorOccurred += OnOptimizationError;
 
@@ -187,7 +187,7 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
             }
         };
 
-        FileList.PropertyChanged += (s, e) => ForwardPropertyChanged(e.PropertyName);
+        BmsDefinitionManager.PropertyChanged += (s, e) => ForwardPropertyChanged(e.PropertyName);
         Optimization.PropertyChanged += (s, e) =>
         {
             ForwardPropertyChanged(e.PropertyName);
@@ -276,18 +276,18 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
         {
             ShowMessage($"入力ファイルが見つかりません: {Path.GetFileName(inputPath)}", isError: true);
             StatusMessage = "入力ファイルが存在しません";
-            FileList.FileListItems.Clear();
+            BmsDefinitionManager.FileListItems.Clear();
             return;
         }
 
-        if (FileList.BmsFileList == null)
+        if (BmsDefinitionManager.BmsFileList == null)
         {
             ShowMessage("BMS/BMSONファイルをまだ読み込んでいません。入力ファイルを選択してください", isError: true);
             StatusMessage = "ファイルリストが未読み込み";
             return;
         }
 
-        var fileListItems = FileList.BmsFileList.GetFileList();
+        var fileListItems = BmsDefinitionManager.BmsFileList.GetFileList();
         if (fileListItems == null || fileListItems.Count == 0)
         {
             ShowMessage("ファイルリストが空です。BMS/BMSONファイルに定義が含まれているか確認してください", isError: true);
@@ -355,10 +355,10 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
             return;
         }
 
-        var selectedKeywords = FileList.GetSelectedKeywords();
+        var selectedKeywords = BmsDefinitionManager.GetSelectedKeywords();
 
         await Optimization.ExecuteDefinitionReductionAsync(
-            FileList.BmsFileList,
+            BmsDefinitionManager.BmsFileList,
             InputPath,
             OutputPath,
             selectedKeywords);
@@ -370,7 +370,7 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
         {
             if (File.Exists(InputPath))
             {
-                FileList.LoadBmsFile(InputPath);
+                BmsDefinitionManager.LoadBmsFile(InputPath);
             }
         }
         else
@@ -403,7 +403,7 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
                 catch (Exception ex)
                 {
                     ShowToast($"bmson変換失敗: {ex.Message}", "⚠", true);
-                    FileList.FileListItems.Clear();
+                    BmsDefinitionManager.FileListItems.Clear();
                 }
                 finally
                 {
@@ -413,13 +413,13 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
             }
             else
             {
-                FileList.LoadBmsFile(path);
+                BmsDefinitionManager.LoadBmsFile(path);
             }
         }
         else if (!string.IsNullOrWhiteSpace(path))
         {
             StatusMessage = $"対応形式: {GetSupportedExtensionsPattern()}";
-            FileList.FileListItems.Clear();
+            BmsDefinitionManager.FileListItems.Clear();
         }
     }
 
@@ -488,7 +488,7 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
         return InputValidation.ValidateAll(InputPath, OutputPath);
     }
 
-    private string GetSupportedExtensionsPattern()
+    private static string GetSupportedExtensionsPattern()
     {
         return string.Join(", ", Core.AppConstants.Files.SupportedBmsExtensions);
     }
@@ -513,10 +513,10 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
 
     public async Task ExecuteDefinitionReductionAfterConfirmationAsync()
     {
-        var selectedKeywords = FileList.GetSelectedKeywords();
+        var selectedKeywords = BmsDefinitionManager.GetSelectedKeywords();
 
         await Optimization.ExecuteDefinitionReductionAsync(
-            FileList.BmsFileList,
+            BmsDefinitionManager.BmsFileList,
             InputPath,
             OutputPath,
             selectedKeywords);
@@ -635,7 +635,7 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
 
         if (disposing)
         {
-            (FileList as IDisposable)?.Dispose();
+            (BmsDefinitionManager as IDisposable)?.Dispose();
             (Notification as IDisposable)?.Dispose();
             _audioPreviewService?.Dispose();
         }
@@ -729,34 +729,34 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
         set => Notification.IsSlideConfirmationVisible = value;
     }
 
-    public ObservableCollection<Models.FileList.WavFiles> FileListItems
+    public ObservableCollection<Models.BmsAudioFile> FileListItems
     {
-        get => FileList.FileListItems;
-        set => FileList.FileListItems = value;
+        get => BmsDefinitionManager.FileListItems;
+        set => BmsDefinitionManager.FileListItems = value;
     }
 
-    public Models.FileList.WavFiles? SelectedFile
+    public Models.BmsAudioFile? SelectedFile
     {
-        get => FileList.SelectedFile;
-        set => FileList.SelectedFile = value;
+        get => BmsDefinitionManager.SelectedFile;
+        set => BmsDefinitionManager.SelectedFile = value;
     }
 
     public string FilterText
     {
-        get => FileList.FilterText;
-        set => FileList.FilterText = value;
+        get => BmsDefinitionManager.FilterText;
+        set => BmsDefinitionManager.FilterText = value;
     }
 
     public Visibility ClearFilterButtonVisibility
     {
-        get => FileList.ClearFilterButtonVisibility;
-        set => FileList.ClearFilterButtonVisibility = value;
+        get => BmsDefinitionManager.ClearFilterButtonVisibility;
+        set => BmsDefinitionManager.ClearFilterButtonVisibility = value;
     }
 
     public ObservableCollection<InstrumentNameDetectionService.InstrumentGroup> InstrumentGroups
     {
-        get => FileList.InstrumentGroups;
-        set => FileList.InstrumentGroups = value;
+        get => BmsDefinitionManager.InstrumentGroups;
+        set => BmsDefinitionManager.InstrumentGroups = value;
     }
 
     #endregion

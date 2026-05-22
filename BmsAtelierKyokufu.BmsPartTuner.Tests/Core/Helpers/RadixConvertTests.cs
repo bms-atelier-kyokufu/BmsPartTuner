@@ -1,5 +1,6 @@
 ﻿using BmsAtelierKyokufu.BmsPartTuner.Core;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Helpers;
+using BmsAtelierKyokufu.BmsPartTuner.Models;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Helpers;
 
@@ -36,6 +37,7 @@ public class RadixConvertTests
     [InlineData(1295, "ZZ")]   // 36進数最大値（36^2 - 1）
     public void IntToZZ_Base36_ReturnsCorrectString(int input, string expected)
     {
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Act
         var result = RadixConvert.IntToZZ(input, AppConstants.Definition.RadixBase36);
 
@@ -46,6 +48,7 @@ public class RadixConvertTests
     [Fact]
     public void IntToZZ_DefaultRadix_UsesBase36()
     {
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Act
         var result = RadixConvert.IntToZZ(35);
 
@@ -67,6 +70,7 @@ public class RadixConvertTests
     [InlineData(3843, "zz")]   // 62進数最大値（62^2 - 1）
     public void IntToZZ_Base62_ReturnsCorrectString(int input, string expected)
     {
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Act
         var result = RadixConvert.IntToZZ(input, AppConstants.Definition.RadixBase62);
 
@@ -85,6 +89,7 @@ public class RadixConvertTests
     [InlineData(100)]  // 無効
     public void IntToZZ_InvalidRadix_FallsBackToBase62(int invalidRadix)
     {
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // 仕様: 無効な基数は62進数にフォールバック
         // Act
         var result = RadixConvert.IntToZZ(61, invalidRadix);
@@ -107,6 +112,7 @@ public class RadixConvertTests
     [InlineData(-1, AppConstants.Definition.RadixBase62)]
     public void IntToZZ_NegativeValue_ThrowsArgumentOutOfRangeException(int value, int radix)
     {
+        var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Act & Assert
         var ex = Assert.Throws<ArgumentOutOfRangeException>(() =>
             RadixConvert.IntToZZ(value, radix));
@@ -122,6 +128,7 @@ public class RadixConvertTests
     [InlineData(5000, AppConstants.Definition.RadixBase62)]
     public void IntToZZ_ExceedsMaxValue_ThrowsArgumentOutOfRangeException(int value, int radix)
     {
+        var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Act & Assert
         var ex = Assert.Throws<ArgumentOutOfRangeException>(() =>
             RadixConvert.IntToZZ(value, radix));
@@ -137,6 +144,7 @@ public class RadixConvertTests
     [Fact]
     public void ZZToInt_NullString_ThrowsArgumentNullException()
     {
+        var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Act & Assert
         var ex = Assert.Throws<ArgumentNullException>(() =>
             RadixConvert.ZZToInt(null!, AppConstants.Definition.RadixBase36));
@@ -153,6 +161,7 @@ public class RadixConvertTests
     [InlineData("zzz", AppConstants.Definition.RadixBase62)]
     public void ZZToInt_InvalidLength_ThrowsArgumentException(string input, int radix)
     {
+        var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Act & Assert
         var ex = Assert.Throws<ArgumentException>(() =>
             RadixConvert.ZZToInt(input, radix));
@@ -167,6 +176,7 @@ public class RadixConvertTests
     [InlineData("!0", AppConstants.Definition.RadixBase62)]
     public void ZZToInt_InvalidCharacters_ThrowsArgumentException(string input, int radix)
     {
+        var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Act & Assert
         var ex = Assert.Throws<ArgumentException>(() =>
             RadixConvert.ZZToInt(input, radix));
@@ -180,6 +190,7 @@ public class RadixConvertTests
     [InlineData("zz", AppConstants.Definition.RadixBase36)]  // 小文字はBase36では無効
     public void ZZToInt_Base36_LowercaseLetters_ThrowsArgumentException(string input, int radix)
     {
+        var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Base36では小文字は範囲外（36以上の値にマップされるため例外スロー）
         // Act & Assert
         var ex = Assert.Throws<ArgumentException>(() =>
@@ -196,6 +207,7 @@ public class RadixConvertTests
     [InlineData("1c", 100)]
     public void ZZToInt_InvalidRadix_ThrowsArgumentOutOfRangeException(string input, int radix)
     {
+        var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Act & Assert
         var ex = Assert.Throws<ArgumentOutOfRangeException>(() =>
             RadixConvert.ZZToInt(input, radix));
@@ -223,6 +235,7 @@ public class RadixConvertTests
     [InlineData("ZZ", 1295)]   // 36進数最大値
     public void ZZToInt_Base36_ReturnsCorrectValue(string input, int expected)
     {
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Act
         var result = RadixConvert.ZZToInt(input, AppConstants.Definition.RadixBase36);
 
@@ -233,6 +246,7 @@ public class RadixConvertTests
     [Fact]
     public void ZZToInt_DefaultRadix_UsesBase36()
     {
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Act
         var result = RadixConvert.ZZToInt("0Z");
 
@@ -254,6 +268,7 @@ public class RadixConvertTests
     [InlineData("zz", 3843)]   // 62進数最大値
     public void ZZToInt_Base62_ReturnsCorrectValue(string input, int expected)
     {
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Act
         var result = RadixConvert.ZZToInt(input, AppConstants.Definition.RadixBase62);
 
@@ -272,6 +287,7 @@ public class RadixConvertTests
     [InlineData("Aa", 10 * 62 + 36)]  // 大文字小文字混在
     public void ZZToInt_MixedCase_DistinguishesCorrectly(string input, int expected)
     {
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // 62進数では大文字小文字は別の値
         // Act
         var result = RadixConvert.ZZToInt(input, AppConstants.Definition.RadixBase62);
@@ -295,6 +311,7 @@ public class RadixConvertTests
     [InlineData(1295)]  // 36進数最大
     public void Roundtrip_Base36_PreservesValue(int original)
     {
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Act
         var str = RadixConvert.IntToZZ(original, AppConstants.Definition.RadixBase36);
         var result = RadixConvert.ZZToInt(str, AppConstants.Definition.RadixBase36);
@@ -312,6 +329,7 @@ public class RadixConvertTests
     [InlineData(3843)]  // 62進数最大
     public void Roundtrip_Base62_PreservesValue(int original)
     {
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Act
         var str = RadixConvert.IntToZZ(original, AppConstants.Definition.RadixBase62);
         var result = RadixConvert.ZZToInt(str, AppConstants.Definition.RadixBase62);
@@ -327,6 +345,7 @@ public class RadixConvertTests
     [InlineData("ZZ")]
     public void Roundtrip_StringToIntToString_Base36_PreservesValue(string original)
     {
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Act
         var num = RadixConvert.ZZToInt(original, AppConstants.Definition.RadixBase36);
         var result = RadixConvert.IntToZZ(num, AppConstants.Definition.RadixBase36);
@@ -342,6 +361,7 @@ public class RadixConvertTests
     [InlineData("zz")]
     public void Roundtrip_StringToIntToString_Base62_PreservesValue(string original)
     {
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Act
         var num = RadixConvert.ZZToInt(original, AppConstants.Definition.RadixBase62);
         var result = RadixConvert.IntToZZ(num, AppConstants.Definition.RadixBase62);
@@ -357,6 +377,7 @@ public class RadixConvertTests
     [Fact]
     public void IntToZZ_MaxDefinitionNumberBase36_ReturnsZZ()
     {
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Arrange
         int maxBase36 = AppConstants.Definition.MaxNumberBase36;  // 1295
 
@@ -370,6 +391,7 @@ public class RadixConvertTests
     [Fact]
     public void IntToZZ_MaxDefinitionNumberBase62_Returnszz()
     {
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Arrange
         int maxBase62 = AppConstants.Definition.MaxNumberBase62;  // 3843
 
@@ -383,6 +405,7 @@ public class RadixConvertTests
     [Fact]
     public void ZZToInt_ZZ_ReturnsMaxDefinitionNumberBase36()
     {
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Act
         var result = RadixConvert.ZZToInt("ZZ", AppConstants.Definition.RadixBase36);
 
@@ -393,6 +416,7 @@ public class RadixConvertTests
     [Fact]
     public void ZZToInt_zz_ReturnsMaxDefinitionNumberBase62()
     {
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Act
         var result = RadixConvert.ZZToInt("zz", AppConstants.Definition.RadixBase62);
 
@@ -407,6 +431,7 @@ public class RadixConvertTests
     [Fact]
     public void IntToZZ_Zero_Returns00()
     {
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Act
         var result36 = RadixConvert.IntToZZ(0, AppConstants.Definition.RadixBase36);
         var result62 = RadixConvert.IntToZZ(0, AppConstants.Definition.RadixBase62);
@@ -421,6 +446,7 @@ public class RadixConvertTests
     [InlineData(AppConstants.Definition.RadixBase62)]
     public void IntToZZ_MinDefinitionNumber_Returns01(int radix)
     {
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Arrange
         int minDef = AppConstants.Definition.MinNumber;  // 1
 
@@ -438,6 +464,7 @@ public class RadixConvertTests
     [Fact]
     public void CharToIntLookup_AllDigits_ReturnCorrectValues()
     {
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // 0-9
         for (int i = 0; i <= 9; i++)
         {
@@ -450,6 +477,7 @@ public class RadixConvertTests
     [Fact]
     public void CharToIntLookup_AllUppercase_ReturnCorrectValues()
     {
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // A-Z (10-35)
         for (int i = 0; i < 26; i++)
         {
@@ -463,6 +491,7 @@ public class RadixConvertTests
     [Fact]
     public void CharToIntLookup_AllLowercase_ReturnCorrectValues()
     {
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // a-z (36-61)
         for (int i = 0; i < 26; i++)
         {
@@ -480,6 +509,7 @@ public class RadixConvertTests
     [Fact]
     public void IntToZZ_LargeNumberOfConversions_CompletesQuickly()
     {
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // 大量変換でもO(1)であることを確認
         var sw = System.Diagnostics.Stopwatch.StartNew();
 
@@ -498,6 +528,7 @@ public class RadixConvertTests
     [Fact]
     public void ZZToInt_LargeNumberOfConversions_CompletesQuickly()
     {
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // 大量変換でもO(1)であることを確認
         var testStrings = new[] { "00", "0Z", "1c", "ZZ", "zz" };
         var sw = System.Diagnostics.Stopwatch.StartNew();

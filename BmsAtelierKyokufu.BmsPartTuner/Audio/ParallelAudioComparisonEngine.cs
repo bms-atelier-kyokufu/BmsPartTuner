@@ -2,7 +2,6 @@
 using System.Threading;
 using BmsAtelierKyokufu.BmsPartTuner.Core;
 using BmsAtelierKyokufu.BmsPartTuner.Models;
-using static BmsAtelierKyokufu.BmsPartTuner.Models.FileList;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Audio;
 
@@ -38,7 +37,20 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Audio;
 /// <item>ロックレス設計</item>
 /// </list>
 /// </remarks>
-internal class ParallelAudioComparisonEngine
+/// <remarks>
+/// ParallelAudioComparisonEngineのインスタンスを作成。
+/// </remarks>
+/// <param name="fileList">音声ファイルリスト。</param>
+/// <param name="replaceTable">置換テーブル。</param>
+/// <param name="startPoint">処理開始位置。</param>
+/// <param name="endPoint">処理終了位置。</param>
+/// <exception cref="ArgumentNullException">fileListまたはreplaceTableがnullの場合。</exception>
+internal class ParallelAudioComparisonEngine(
+    IReadOnlyList<BmsAudioFile> fileList,
+    IReadOnlyDictionary<string, CachedSoundData> audioCache,
+    int[] replaceTable,
+    int startPoint,
+    int endPoint)
 {
     #region 定数定義
 
@@ -49,34 +61,14 @@ internal class ParallelAudioComparisonEngine
 
     #region フィールド
 
-    private readonly IReadOnlyList<WavFiles> _fileList;
-    private readonly int[] _replaceTable;
-    private readonly int _startPoint;
-    private readonly int _endPoint;
+    private readonly IReadOnlyList<BmsAudioFile> _fileList = fileList ?? throw new ArgumentNullException(nameof(fileList));
+    private readonly int[] _replaceTable = replaceTable ?? throw new ArgumentNullException(nameof(replaceTable));
+    private readonly int _startPoint = startPoint;
+    private readonly int _endPoint = endPoint;
+    private readonly IReadOnlyDictionary<string, CachedSoundData> _audioCache = audioCache ?? throw new ArgumentNullException(nameof(audioCache));
 
     #endregion
-
     #region コンストラクタ
-
-    /// <summary>
-    /// ParallelAudioComparisonEngineのインスタンスを作成。
-    /// </summary>
-    /// <param name="fileList">音声ファイルリスト。</param>
-    /// <param name="replaceTable">置換テーブル。</param>
-    /// <param name="startPoint">処理開始位置。</param>
-    /// <param name="endPoint">処理終了位置。</param>
-    /// <exception cref="ArgumentNullException">fileListまたはreplaceTableがnullの場合。</exception>
-    public ParallelAudioComparisonEngine(
-        IReadOnlyList<WavFiles> fileList,
-        int[] replaceTable,
-        int startPoint,
-        int endPoint)
-    {
-        _fileList = fileList ?? throw new ArgumentNullException(nameof(fileList));
-        _replaceTable = replaceTable ?? throw new ArgumentNullException(nameof(replaceTable));
-        _startPoint = startPoint;
-        _endPoint = endPoint;
-    }
 
     #endregion
 
@@ -95,18 +87,11 @@ internal class ParallelAudioComparisonEngine
     /// <item>第2キー: ファイル番号（決定性の保証）</item>
     /// </list>
     /// </remarks>
-    private readonly struct AudioEntry : IComparable<AudioEntry>
+    private readonly struct AudioEntry(int index, float rms, int fileNum) : IComparable<AudioEntry>
     {
-        public readonly int OriginalIndex;
-        public readonly float Rms;
-        public readonly int FileNum;
-
-        public AudioEntry(int index, float rms, int fileNum)
-        {
-            OriginalIndex = index;
-            Rms = rms;
-            FileNum = fileNum;
-        }
+        public readonly int OriginalIndex = index;
+        public readonly float Rms = rms;
+        public readonly int FileNum = fileNum;
 
         /// <summary>
         /// RMS値で昇順比較、同じRMSの場合はファイル番号で比較（決定性の保証）。
@@ -267,7 +252,7 @@ internal class ParallelAudioComparisonEngine
         for (int i = 0; i < group.Count; i++)
         {
             int idx = group[i];
-            var cachedData = _fileList[idx].CachedData;
+            _audioCache.TryGetValue(_fileList[idx].Name, out var cachedData);
             float rms = (cachedData == null) ? float.MaxValue : cachedData.TotalRms;
             entries[i] = new AudioEntry(idx, rms, _fileList[idx].NumInteger);
         }
@@ -315,7 +300,7 @@ internal class ParallelAudioComparisonEngine
                 continue;
             }
 
-            var cachedData1 = _fileList[iIdx].CachedData;
+            _audioCache.TryGetValue(_fileList[iIdx].Name, out var cachedData1);
             if (cachedData1 != null)
             {
                 CompareWithNearbyEntries(entries, i, cachedData1, r2Threshold, ref comparisons, ref matches, ref skipped);
@@ -337,11 +322,11 @@ internal class ParallelAudioComparisonEngine
     private void CompareWithNearbyEntries(AudioEntry[] entries, int currentIndex, CachedSoundData cachedData1, float r2Threshold, ref int comparisons, ref int matches, ref int skipped)
     {
         float rms1 = entries[currentIndex].Rms;
-        var thresholds = CalculateRmsThresholds(rms1);
+        var (_, max) = CalculateRmsThresholds(rms1);
 
         for (int j = currentIndex + 1; j < entries.Length; j++)
         {
-            if (entries[j].Rms > thresholds.max) break;
+            if (entries[j].Rms > max) break;
             CompareFilePair(entries[currentIndex].OriginalIndex, entries[j].OriginalIndex, cachedData1, r2Threshold, ref comparisons, ref matches, ref skipped);
         }
     }
@@ -377,7 +362,7 @@ internal class ParallelAudioComparisonEngine
     /// </remarks>
     private void CompareFilePair(int iIdx, int jIdx, CachedSoundData cachedData1, float r2Threshold, ref int comparisons, ref int matches, ref int skipped)
     {
-        int iVal = _fileList[iIdx].NumInteger;
+        _ = _fileList[iIdx].NumInteger;
         int jVal = _fileList[jIdx].NumInteger;
 
         if (jVal < _startPoint || jVal > _endPoint || _replaceTable[jVal] != 0) return;
@@ -390,7 +375,7 @@ internal class ParallelAudioComparisonEngine
             return;
         }
 
-        var cachedData2 = _fileList[jIdx].CachedData;
+        _audioCache.TryGetValue(_fileList[jIdx].Name, out var cachedData2);
         if (cachedData2 == null) { Interlocked.Increment(ref skipped); return; }
 
         Interlocked.Increment(ref comparisons);

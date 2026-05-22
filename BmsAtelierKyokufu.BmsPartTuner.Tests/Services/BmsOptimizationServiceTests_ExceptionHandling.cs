@@ -1,7 +1,6 @@
 ﻿using System.IO;
 using BmsAtelierKyokufu.BmsPartTuner.Services;
 using BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers;
-using static BmsAtelierKyokufu.BmsPartTuner.Models.FileList;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Services;
 
@@ -30,6 +29,7 @@ public class BmsOptimizationServiceTests_ExceptionHandling : IDisposable
 
     public void Dispose()
     {
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         _context?.Dispose();
     }
 
@@ -61,7 +61,7 @@ public class BmsOptimizationServiceTests_ExceptionHandling : IDisposable
     #region Null/Empty Input Tests - 入力検証テスト
 
     [Fact]
-    public async Task ExecuteDefinitionReductionAsync_NullFileList_ThrowsArgumentNullException()
+    public async Task ExecuteDefinitionReductionAsync_NullBmsDefinitionManager_ThrowsArgumentNullException()
     {
         // Arrange
         var bmsFile = _context.CreateBuilder()
@@ -89,9 +89,10 @@ public class BmsOptimizationServiceTests_ExceptionHandling : IDisposable
     public async Task ExecuteDefinitionReductionAsync_EmptyInputPath_ThrowsArgumentException()
     {
         // Arrange
-        var fileList = new List<WavFiles>
+        var audioCache = audioCache;
+        var fileList = new List<BmsAudioFile>
         {
-            new WavFiles { Num = "01", NumInteger = 1, Name = "test.wav" }
+            new BmsAudioFile { Num = "01", NumInteger = 1, Name = "test.wav" }
         };
 
         var outputFile = Path.Combine(_context.TempDirectory, "output.bms");
@@ -119,9 +120,10 @@ public class BmsOptimizationServiceTests_ExceptionHandling : IDisposable
             .WithHeader("TITLE", "Test")
             .Build("test.bms");
 
-        var fileList = new List<WavFiles>
+        var audioCache = audioCache;
+        var fileList = new List<BmsAudioFile>
         {
-            new WavFiles { Num = "01", NumInteger = 1, Name = "test.wav" }
+            new BmsAudioFile { Num = "01", NumInteger = 1, Name = "test.wav" }
         };
 
         // Act & Assert
@@ -147,9 +149,10 @@ public class BmsOptimizationServiceTests_ExceptionHandling : IDisposable
     public async Task ExecuteDefinitionReductionAsync_InputFileNotFound_ReturnsErrorResult()
     {
         // Arrange: 存在しないファイルを指定
-        var fileList = new List<WavFiles>
+        var audioCache = audioCache;
+        var fileList = new List<BmsAudioFile>
         {
-            new WavFiles { Num = "01", NumInteger = 1, Name = CreateTestWaveFile("test.wav") }
+            new BmsAudioFile { Num = "01", NumInteger = 1, Name = CreateTestWaveFile("test.wav") }
         };
 
         var nonExistentInput = Path.Combine(_context.TempDirectory, "nonexistent.bms");
@@ -177,9 +180,10 @@ public class BmsOptimizationServiceTests_ExceptionHandling : IDisposable
     {
         // Arrange
         var wavFile = CreateTestWaveFile("test.wav");
-        var fileList = new List<WavFiles>
+        var audioCache = audioCache;
+        var fileList = new List<BmsAudioFile>
         {
-            new WavFiles { Num = "01", NumInteger = 1, Name = wavFile, FileSize = new FileInfo(wavFile).Length }
+            new BmsAudioFile { Num = "01", NumInteger = 1, Name = wavFile, FileSize = new FileInfo(wavFile).Length }
         };
 
         var bmsFile = _context.CreateBuilder()
@@ -233,10 +237,11 @@ public class BmsOptimizationServiceTests_ExceptionHandling : IDisposable
         var file1 = CreateTestWaveFile("identical1.wav", 1000, 440f);
         var file2 = CreateTestWaveFile("identical2.wav", 1000, 440f);
 
-        var fileList = new List<WavFiles>
+        var audioCache = audioCache;
+        var fileList = new List<BmsAudioFile>
         {
-            new WavFiles { Num = "01", NumInteger = 1, Name = file1, FileSize = new FileInfo(file1).Length },
-            new WavFiles { Num = "02", NumInteger = 2, Name = file2, FileSize = new FileInfo(file2).Length }
+            new BmsAudioFile { Num = "01", NumInteger = 1, Name = file1, FileSize = new FileInfo(file1).Length },
+            new BmsAudioFile { Num = "02", NumInteger = 2, Name = file2, FileSize = new FileInfo(file2).Length }
         };
 
         var bmsFile = _context.CreateBuilder()
@@ -274,11 +279,12 @@ public class BmsOptimizationServiceTests_ExceptionHandling : IDisposable
         var identical2 = CreateTestWaveFile("dup2.wav", 1000, 440f);
         var unique = CreateTestWaveFile("unique.wav", 1000, 880f);
 
-        var fileList = new List<WavFiles>
+        var audioCache = audioCache;
+        var fileList = new List<BmsAudioFile>
         {
-            new WavFiles { Num = "01", NumInteger = 1, Name = identical1, FileSize = new FileInfo(identical1).Length },
-            new WavFiles { Num = "02", NumInteger = 2, Name = identical2, FileSize = new FileInfo(identical2).Length },
-            new WavFiles { Num = "03", NumInteger = 3, Name = unique, FileSize = new FileInfo(unique).Length }
+            new BmsAudioFile { Num = "01", NumInteger = 1, Name = identical1, FileSize = new FileInfo(identical1).Length },
+            new BmsAudioFile { Num = "02", NumInteger = 2, Name = identical2, FileSize = new FileInfo(identical2).Length },
+            new BmsAudioFile { Num = "03", NumInteger = 3, Name = unique, FileSize = new FileInfo(unique).Length }
         };
 
         var bmsFile = _context.CreateBuilder()
@@ -322,10 +328,11 @@ public class BmsOptimizationServiceTests_ExceptionHandling : IDisposable
         var file1 = CreateTestWaveFile("locked.wav", 1000, 440f);
         var file2 = CreateTestWaveFile("normal.wav", 1000, 440f);
 
-        var fileList = new List<WavFiles>
+        var audioCache = audioCache;
+        var fileList = new List<BmsAudioFile>
         {
-            new WavFiles { Num = "01", NumInteger = 1, Name = file1, FileSize = new FileInfo(file1).Length },
-            new WavFiles { Num = "02", NumInteger = 2, Name = file2, FileSize = new FileInfo(file2).Length }
+            new BmsAudioFile { Num = "01", NumInteger = 1, Name = file1, FileSize = new FileInfo(file1).Length },
+            new BmsAudioFile { Num = "02", NumInteger = 2, Name = file2, FileSize = new FileInfo(file2).Length }
         };
 
         var bmsFile = _context.CreateBuilder()
@@ -338,22 +345,20 @@ public class BmsOptimizationServiceTests_ExceptionHandling : IDisposable
         var outputFile = Path.Combine(_context.TempDirectory, "output.bms");
 
         // ファイルをロック（読み取り専用としてオープン）
-        using (var fs = new FileStream(file1, FileMode.Open, FileAccess.Read, FileShare.Read))
-        {
-            // Act: 物理削除を有効にして実行
-            var result = await _service.ExecuteDefinitionReductionAsync(
-                fileList: fileList,
-                inputPath: bmsFile,
-                outputPath: outputFile,
-                r2Threshold: 0.95f,
-                startDefinition: 1,
-                endDefinition: 2,
-                isPhysicalDeletionEnabled: true
-            );
+        using var fs = new FileStream(file1, FileMode.Open, FileAccess.Read, FileShare.Read);
+        // Act: 物理削除を有効にして実行
+        var result = await _service.ExecuteDefinitionReductionAsync(
+            fileList: fileList,
+            inputPath: bmsFile,
+            outputPath: outputFile,
+            r2Threshold: 0.95f,
+            startDefinition: 1,
+            endDefinition: 2,
+            isPhysicalDeletionEnabled: true
+        );
 
-            // Assert: ロックされたファイルの削除に失敗しても処理全体は成功する
-            Assert.True(result.IsSuccess, $"処理は成功するべき（一部削除失敗は許容）: {result.ErrorMessage}");
-        }
+        // Assert: ロックされたファイルの削除に失敗しても処理全体は成功する
+        Assert.True(result.IsSuccess, $"処理は成功するべき（一部削除失敗は許容）: {result.ErrorMessage}");
     }
 
     #endregion
@@ -361,7 +366,7 @@ public class BmsOptimizationServiceTests_ExceptionHandling : IDisposable
     #region FindOptimalThresholdsAsync Exception Tests
 
     [Fact]
-    public async Task FindOptimalThresholdsAsync_EmptyFileList_ThrowsArgumentException()
+    public async Task FindOptimalThresholdsAsync_EmptyBmsDefinitionManager_ThrowsArgumentException()
     {
         // Arrange
         var emptyList = new List<string>();
@@ -378,7 +383,7 @@ public class BmsOptimizationServiceTests_ExceptionHandling : IDisposable
     }
 
     [Fact]
-    public async Task FindOptimalThresholdsAsync_NullFileList_ThrowsArgumentException()
+    public async Task FindOptimalThresholdsAsync_NullBmsDefinitionManager_ThrowsArgumentException()
     {
         // Arrange
         List<string>? nullList = null;
@@ -435,8 +440,8 @@ public class BmsOptimizationServiceTests_ExceptionHandling : IDisposable
         // 現在の実装では、破損ファイルはロード失敗するが、処理自体は継続される
         Assert.NotNull(result);
         // 音声データがロードされていないため、削減効果は期待できない
-        Assert.Equal(1, result.Base36Result.Item2); // ファイル数はそのまま
-        Assert.Equal(1, result.Base62Result.Item2);
+        Assert.Equal(1, result.Base36Result.Count); // ファイル数はそのまま
+        Assert.Equal(1, result.Base62Result.Count);
     }
 
     [Fact]
@@ -475,9 +480,10 @@ public class BmsOptimizationServiceTests_ExceptionHandling : IDisposable
         var longFileName = new string('a', 200) + ".wav";
         var wavFile = CreateTestWaveFile(longFileName);
 
-        var fileList = new List<WavFiles>
+        var audioCache = audioCache;
+        var fileList = new List<BmsAudioFile>
         {
-            new WavFiles { Num = "01", NumInteger = 1, Name = wavFile, FileSize = new FileInfo(wavFile).Length }
+            new BmsAudioFile { Num = "01", NumInteger = 1, Name = wavFile, FileSize = new FileInfo(wavFile).Length }
         };
 
         var bmsFile = _context.CreateBuilder()
@@ -531,11 +537,12 @@ public class BmsOptimizationServiceTests_ExceptionHandling : IDisposable
         var file2 = CreateTestWaveFile("merge2.wav", 1000, 880f);
         var file3 = CreateTestWaveFile("merge3.wav", 1000, 1320f);
 
-        var fileList = new List<WavFiles>
+        var audioCache = audioCache;
+        var fileList = new List<BmsAudioFile>
         {
-            new WavFiles { Num = "01", NumInteger = 1, Name = file1, FileSize = new FileInfo(file1).Length },
-            new WavFiles { Num = "02", NumInteger = 2, Name = file2, FileSize = new FileInfo(file2).Length },
-            new WavFiles { Num = "03", NumInteger = 3, Name = file3, FileSize = new FileInfo(file3).Length }
+            new BmsAudioFile { Num = "01", NumInteger = 1, Name = file1, FileSize = new FileInfo(file1).Length },
+            new BmsAudioFile { Num = "02", NumInteger = 2, Name = file2, FileSize = new FileInfo(file2).Length },
+            new BmsAudioFile { Num = "03", NumInteger = 3, Name = file3, FileSize = new FileInfo(file3).Length }
         };
 
         var bmsFile = _context.CreateBuilder()
@@ -578,7 +585,7 @@ public class BmsOptimizationServiceTests_ExceptionHandling : IDisposable
         File.WriteAllText(corruptedFile1, "This is not a valid WAV file");
 
         var corruptedFile2 = Path.Combine(_context.TempDirectory, "corrupted2.wav");
-        File.WriteAllBytes(corruptedFile2, new byte[0]); // 0バイトファイル
+        File.WriteAllBytes(corruptedFile2, []); // 0バイトファイル
 
         var files = new List<string> { validFile, corruptedFile1, corruptedFile2 };
 
@@ -699,8 +706,8 @@ public class BmsOptimizationServiceTests_ExceptionHandling : IDisposable
 
         // 破損ファイルは file list に含まれるため、カウントは5になる可能性がある
         // しかし、実際に読み込めるのは3つだけなので、最適化結果は3つ以下
-        var base36Count = result.Base36Result.Item2;
-        var base62Count = result.Base62Result.Item2;
+        var base36Count = result.Base36Result.Count;
+        var base62Count = result.Base62Result.Count;
 
         // ファイルリストには5つ追加されているが、音声データがロードできないものは
         // 比較対象外となり、結果として3つまでカウントされる
@@ -721,20 +728,18 @@ public class BmsOptimizationServiceTests_ExceptionHandling : IDisposable
         var files = new List<string> { validFile, lockedFile };
 
         // ファイルをロック
-        using (var fs = new FileStream(lockedFile, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
-        {
-            // Act
-            var result = await _service.FindOptimalThresholdsAsync(
-                files: files,
-                startDefinition: 1,
-                endDefinition: 2
-            );
+        using var fs = new FileStream(lockedFile, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+        // Act
+        var result = await _service.FindOptimalThresholdsAsync(
+            files: files,
+            startDefinition: 1,
+            endDefinition: 2
+        );
 
-            // Assert: ロックされたファイルは読み込み失敗するが処理は続行
-            Assert.NotNull(result);
-            Assert.True(result.HasWarnings, "ロックされたファイルがあるため警告があるべき");
-            Assert.NotEmpty(result.Warnings);
-        }
+        // Assert: ロックされたファイルは読み込み失敗するが処理は続行
+        Assert.NotNull(result);
+        Assert.True(result.HasWarnings, "ロックされたファイルがあるため警告があるべき");
+        Assert.NotEmpty(result.Warnings);
     }
 
     [Fact]
@@ -747,7 +752,7 @@ public class BmsOptimizationServiceTests_ExceptionHandling : IDisposable
         var zeroByteFile = Path.Combine(_context.TempDirectory, "zero.wav");
 
         File.WriteAllText(corruptedFile, "Invalid");
-        File.WriteAllBytes(zeroByteFile, new byte[0]);
+        File.WriteAllBytes(zeroByteFile, []);
 
         var files = new List<string> { validFile, corruptedFile, missingFile, zeroByteFile };
 

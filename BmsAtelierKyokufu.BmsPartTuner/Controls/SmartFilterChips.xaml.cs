@@ -93,15 +93,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Controls
         /// <summary>
         /// チップクリックイベント引数
         /// </summary>
-        public class ChipClickEventArgs : RoutedEventArgs
+        public class ChipClickEventArgs(RoutedEvent routedEvent, FileListFilterService.SelectableFilterChip chip) : RoutedEventArgs(routedEvent)
         {
-            public FileListFilterService.SelectableFilterChip Chip { get; }
-
-            public ChipClickEventArgs(RoutedEvent routedEvent, FileListFilterService.SelectableFilterChip chip)
-                : base(routedEvent)
-            {
-                Chip = chip;
-            }
+            public FileListFilterService.SelectableFilterChip Chip { get; } = chip;
         }
 
         #endregion

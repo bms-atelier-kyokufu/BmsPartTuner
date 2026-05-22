@@ -325,7 +325,7 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
     }
 
     public async Task ExecuteDefinitionReductionAsync(
-        Models.FileList? bmsFileList,
+        Models.BmsDefinitionManager? bmsFileList,
         string? inputPath,
         string? outputPath,
         IEnumerable<string>? selectedKeywords = null)
@@ -359,7 +359,7 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
     }
 
     private async Task ExecuteDefinitionReductionInternalAsync(
-        Models.FileList bmsFileList,
+        Models.BmsDefinitionManager bmsFileList,
         string inputPath,
         string outputPath,
         float r2Val,
@@ -413,7 +413,10 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
             await Task.Run(() =>
             {
                 Debug.WriteLine("=== OptimizationViewModel: Clearing caches ===");
-                bmsFileList.ClearAllCaches();
+                if (bmsFileList != null)
+                {
+                    // キャッシュの解放は BmsOptimizationService 内部で実行されるため、ここでは何もしません
+                }
             });
         }
     }

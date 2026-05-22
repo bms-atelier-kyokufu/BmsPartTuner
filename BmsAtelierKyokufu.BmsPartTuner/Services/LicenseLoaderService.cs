@@ -19,7 +19,7 @@ public class LicenseLoaderService
     {
         Assembly assembly = Assembly.GetExecutingAssembly();
         string[] resourceNames = assembly.GetManifestResourceNames();
-        List<LicenseInfo> licenses = new List<LicenseInfo>();
+        List<LicenseInfo> licenses = [];
 
         foreach (string resourceName in resourceNames)
         {
@@ -50,7 +50,7 @@ public class LicenseLoaderService
         using Stream? stream = assembly.GetManifestResourceStream(resourceName);
         if (stream == null) return string.Empty;
 
-        using StreamReader reader = new StreamReader(stream, Encoding.UTF8);
+        using StreamReader reader = new(stream, Encoding.UTF8);
         return reader.ReadToEnd();
     }
 
@@ -65,13 +65,13 @@ public class LicenseLoaderService
         // 2. プレフィックス(Namespace + Path)を除去
         if (nameWithoutExt.StartsWith(LicenseResourcePath))
         {
-            nameWithoutExt = nameWithoutExt.Substring(LicenseResourcePath.Length);
+            nameWithoutExt = nameWithoutExt[LicenseResourcePath.Length..];
         }
 
         // 3. 先頭のドットを除去 (例: .AppLicense -> AppLicense)
         if (nameWithoutExt.StartsWith("."))
         {
-            nameWithoutExt = nameWithoutExt.Substring(1);
+            nameWithoutExt = nameWithoutExt[1..];
         }
 
         // 4. ThirdPartyフォルダ内にある場合は、そのプレフィックスも除去
@@ -79,7 +79,7 @@ public class LicenseLoaderService
         const string thirdPartyPrefix = "ThirdParty.";
         if (nameWithoutExt.StartsWith(thirdPartyPrefix))
         {
-            nameWithoutExt = nameWithoutExt.Substring(thirdPartyPrefix.Length);
+            nameWithoutExt = nameWithoutExt[thirdPartyPrefix.Length..];
         }
 
         return nameWithoutExt;

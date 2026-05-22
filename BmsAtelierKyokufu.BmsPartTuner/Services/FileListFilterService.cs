@@ -1,6 +1,6 @@
 ﻿using System.Collections.ObjectModel;
+using BmsAtelierKyokufu.BmsPartTuner.Models;
 using CommunityToolkit.Mvvm.ComponentModel;
-using static BmsAtelierKyokufu.BmsPartTuner.Models.FileList;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Services;
 
@@ -143,7 +143,7 @@ public partial class FileListFilterService
 
             _collectionView.Filter = (obj) =>
             {
-                if (obj is WavFiles item)
+                if (obj is BmsAudioFile item)
                 {
                     // AND条件1: テキストフィルター
                     if (hasTextFilter && !item.Name.Contains(_textFilter, StringComparison.OrdinalIgnoreCase))
@@ -199,7 +199,7 @@ public partial class FileListFilterService
         {
             _collectionView.Filter = (obj) =>
             {
-                if (obj is WavFiles item)
+                if (obj is BmsAudioFile item)
                 {
                     // 優先戦略: InstrumentName（統計的に信頼性が高い）
                     if (!string.IsNullOrEmpty(item.InstrumentName))
@@ -252,7 +252,7 @@ public partial class FileListFilterService
     /// </para>
     /// </remarks>
     public ObservableCollection<SelectableFilterChip> GenerateSelectableFilterChips(
-        ObservableCollection<WavFiles> files,
+        ObservableCollection<BmsAudioFile> files,
         int minOccurrences = 2,
         int maxChips = 8,
         int minKeywordLength = 3)
@@ -314,7 +314,7 @@ public partial class FileListFilterService
     /// </para>
     /// </remarks>
     public IList<FilterChip> GenerateFilterChips(
-        ObservableCollection<WavFiles> files,
+        ObservableCollection<BmsAudioFile> files,
         int minOccurrences = 2,
         int maxChips = 8,
         int minKeywordLength = 3)

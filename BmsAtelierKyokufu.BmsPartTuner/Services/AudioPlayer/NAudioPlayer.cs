@@ -25,11 +25,7 @@ public class NAudioPlayer : IAudioPlayer
 
     public void Stop()
     {
-        if (_waveOut != null)
-        {
-            _waveOut.Stop();
-            // Dispose is called in Dispose() or when needed, but Stop usually triggers PlaybackStopped
-        }
+        _waveOut?.Stop();
     }
 
     private void OnPlaybackStopped(object? sender, StoppedEventArgs e)
@@ -46,10 +42,7 @@ public class NAudioPlayer : IAudioPlayer
             _waveOut = null;
         }
 
-        if (_audioFileReader != null)
-        {
-            _audioFileReader.Dispose();
-            _audioFileReader = null;
-        }
+        _audioFileReader?.Dispose();
+        _audioFileReader = null;
     }
 }

@@ -1,6 +1,5 @@
 ﻿using BmsAtelierKyokufu.BmsPartTuner.Core.Optimization;
 using BmsAtelierKyokufu.BmsPartTuner.Models;
-using static BmsAtelierKyokufu.BmsPartTuner.Models.FileList;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Scenarios
 {
@@ -24,7 +23,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Scenarios
             float currentRms = CalculateRms(samples);
             if (currentRms == 0) return samples;
             float scale = targetRms / currentRms;
-            return samples.Select(s => s * scale).ToArray();
+            return [.. samples.Select(s => s * scale)];
         }
 
         /// <summary>
@@ -33,8 +32,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Scenarios
         /// </summary>
         private static CachedSoundData CreateMockAudioData(float[] samples)
         {
-            float[][] channels = new float[1][];
-            channels[0] = samples;
+            float[][] channels = [samples];
             return new CachedSoundData(channels, 44100, 16);
         }
 
@@ -43,6 +41,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Scenarios
         [Fact]
         public void RunParallelSimulation_IdenticalAndDifferentFiles_GroupsCorrectly()
         {
+            var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
             // Arrange: インメモリでサンプル音声データを生成
             const int sampleCount = 1000;
             const float targetRms = 0.5f;
@@ -69,15 +68,16 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Scenarios
                 samplesD[i] = (float)Math.Cos(i * 0.2);
             samplesD = NormalizeToRms(samplesD, targetRms);
 
-            var fileList = new List<WavFiles>
+            var audioCache = audioCache;
+            var fileList = new List<BmsAudioFile>
             {
-                new WavFiles { NumInteger = 1, Name = "A.wav", CachedData = CreateMockAudioData(samplesA) },
-                new WavFiles { NumInteger = 2, Name = "B.wav", CachedData = CreateMockAudioData(samplesB) },
-                new WavFiles { NumInteger = 3, Name = "C.wav", CachedData = CreateMockAudioData(samplesC) },
-                new WavFiles { NumInteger = 4, Name = "D.wav", CachedData = CreateMockAudioData(samplesD) }
+                new() { NumInteger = 1, Name = "A.wav"},
+                new() { NumInteger = 2, Name = "B.wav"},
+                new() { NumInteger = 3, Name = "C.wav"},
+                new() { NumInteger = 4, Name = "D.wav"}
             };
 
-            var engine = new SimulationEngine(fileList, 1, 4);
+            var engine = new SimulationEngine(fileList, audioCache, 1, 4);
 
             // Act: しきい値0.90〜1.0の範囲でシミュレーション実行
             var results = engine.RunParallelSimulationDetailed(0.90f, 1.0f, 0.01f, null);

@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using BmsAtelierKyokufu.BmsPartTuner.Models;
 using BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers;
 using BmsAtelierKyokufu.BmsPartTuner.ViewModels;
 
@@ -9,6 +10,7 @@ public class FileOperationsViewModelTests
     [Fact]
     public void OnInputPathChanged_WithBmsonFile_ForcesBmsOutputExtension()
     {
+            var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         using var context = new BmsTestContext();
         var bmsonPath = Path.Combine(context.TempDirectory, "test.bmson");
         File.WriteAllText(bmsonPath, "{}"); // Create empty bmson file

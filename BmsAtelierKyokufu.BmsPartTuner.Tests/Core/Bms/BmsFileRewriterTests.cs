@@ -21,6 +21,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
 
         public void Dispose()
         {
+            _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
             if (Directory.Exists(_tempDir))
             {
                 try
@@ -31,9 +32,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
             }
         }
 
-        private FileList.WavFiles CreateWavFile(int num, string name)
+        private BmsAudioFile CreateWavFile(int num, string name)
         {
-            return new FileList.WavFiles
+            return new BmsAudioFile
             {
                 Num = BmsAtelierKyokufu.BmsPartTuner.Core.Helpers.RadixConvert.IntToZZ(num),
                 NumInteger = num,
@@ -45,7 +46,8 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
         [Fact]
         public void ReplaceAndAlignBmsFile_CorrectlyRenamesAndSortsDefinitions()
         {
-            var fileList = new List<FileList.WavFiles>
+            _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
+            var fileList = new List<BmsAudioFile>
             {
                 CreateWavFile(1, "kick.wav"),
                 CreateWavFile(2, "snare.wav"),
@@ -84,7 +86,8 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
         [Fact]
         public void ReplaceAndAlignBmsFile_HandlesReplacementsCorrectly()
         {
-            var fileList = new List<FileList.WavFiles>
+            var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
+            var fileList = new List<BmsAudioFile>
             {
                 CreateWavFile(1, "kick1.wav"),
                 CreateWavFile(2, "kick2.wav"), // kick1に置換される
@@ -127,10 +130,11 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
         [Fact]
         public void WriteBmsFile_AtomicWrite_CleansUpOnFailure()
         {
+            _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
             // 書き込み中の失敗時にクリーンアップが行われることを検証
             // StreamWriterの失敗をモックするのは難しいため、正常な書き込みが動作することを確認
 
-            var fileList = new List<FileList.WavFiles>();
+            var fileList = new List<BmsAudioFile>();
             var replaces = new int[1];
             var rewriter = new BmsFileRewriter(fileList, replaces, 0, 0);
 
@@ -146,7 +150,8 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
         [Fact]
         public void ReplaceAndAlignBmsFile_PreservesUndefinedDefinitions()
         {
-            var fileList = new List<FileList.WavFiles>
+            _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
+            var fileList = new List<BmsAudioFile>
             {
                 CreateWavFile(1, "kick.wav")
             };

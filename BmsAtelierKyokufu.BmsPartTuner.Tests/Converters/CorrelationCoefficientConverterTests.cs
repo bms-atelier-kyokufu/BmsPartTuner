@@ -32,6 +32,7 @@ public class CorrelationCoefficientConverterTests
     [InlineData("0.99", "99")]
     public void Convert_StringInternalValue_ReturnsCorrectDisplayValue(string input, string expected)
     {
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Act
         var result = _converter.Convert(input, typeof(string), null!, _culture);
 
@@ -51,6 +52,7 @@ public class CorrelationCoefficientConverterTests
     [InlineData(0.015f, "2")]   // 四捨五入で2になる（1.5に近い）
     public void Convert_FloatInternalValue_ReturnsCorrectDisplayValue(float input, string expected)
     {
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Act
         var result = _converter.Convert(input, typeof(string), null!, _culture);
 
@@ -67,6 +69,7 @@ public class CorrelationCoefficientConverterTests
     [InlineData(0.954, "95")]  // 四捨五入
     public void Convert_DoubleInternalValue_ReturnsCorrectDisplayValue(double input, string expected)
     {
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Act
         var result = _converter.Convert(input, typeof(string), null!, _culture);
 
@@ -79,6 +82,7 @@ public class CorrelationCoefficientConverterTests
     [InlineData("0.944", "94")]  // 0.944 → 94.4 → 94 (四捨五入)
     public void Convert_StringWithRounding_RoundsCorrectly(string input, string expected)
     {
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Act
         var result = _converter.Convert(input, typeof(string), null!, _culture);
 
@@ -89,6 +93,7 @@ public class CorrelationCoefficientConverterTests
     [Fact]
     public void Convert_NullValue_ReturnsEmptyString()
     {
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Act
         var result = _converter.Convert(null!, typeof(string), null!, _culture);
 
@@ -99,6 +104,7 @@ public class CorrelationCoefficientConverterTests
     [Fact]
     public void Convert_InvalidString_ReturnsOriginalString()
     {
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Arrange
         var invalidInput = "not-a-number";
 
@@ -112,6 +118,7 @@ public class CorrelationCoefficientConverterTests
     [Fact]
     public void Convert_IntegerValue_ReturnsToString()
     {
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Arrange
         int intValue = 42;
 
@@ -135,6 +142,7 @@ public class CorrelationCoefficientConverterTests
     [InlineData("99", "0.99")]
     public void ConvertBack_ValidDisplayValue_ReturnsCorrectInternalValue(string input, string expected)
     {
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Act
         var result = _converter.ConvertBack(input, typeof(string), null!, _culture);
 
@@ -148,6 +156,7 @@ public class CorrelationCoefficientConverterTests
     [InlineData(null)]
     public void ConvertBack_EmptyOrWhitespace_ReturnsDefaultValue(string? input)
     {
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Arrange
         var expectedDefault = AppConstants.Threshold.Default.ToString("F2");
 
@@ -165,6 +174,7 @@ public class CorrelationCoefficientConverterTests
     [InlineData("999", "1.00")]   // 100超は100にクランプ
     public void ConvertBack_OutOfRangeValue_ClampsToValidRange(string input, string expected)
     {
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Act
         var result = _converter.ConvertBack(input, typeof(string), null!, _culture);
 
@@ -179,6 +189,7 @@ public class CorrelationCoefficientConverterTests
     [InlineData("1.00", "1.00")]  // 既に0-1形式
     public void ConvertBack_AlreadyInternalFormat_PreservesValue(string input, string expected)
     {
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Act
         var result = _converter.ConvertBack(input, typeof(string), null!, _culture);
 
@@ -191,6 +202,7 @@ public class CorrelationCoefficientConverterTests
     [InlineData("75.25", "0.75")]  // 小数の表示値（1-100スケール）→ 100で割る
     public void ConvertBack_DecimalDisplayValue_DividesBy100(string input, string expected)
     {
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Act
         var result = _converter.ConvertBack(input, typeof(string), null!, _culture);
 
@@ -201,6 +213,7 @@ public class CorrelationCoefficientConverterTests
     [Fact]
     public void ConvertBack_InvalidString_ReturnsDefaultValue()
     {
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Arrange
         var invalidInput = "not-a-number";
         var expectedDefault = AppConstants.Threshold.Default.ToString("F2");
@@ -215,6 +228,7 @@ public class CorrelationCoefficientConverterTests
     [Fact]
     public void ConvertBack_NonStringValue_ReturnsDefaultValue()
     {
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Arrange
         int nonStringValue = 42;
         var expectedDefault = AppConstants.Threshold.Default.ToString("F2");
@@ -238,6 +252,7 @@ public class CorrelationCoefficientConverterTests
     [InlineData("0.75")]
     public void Roundtrip_ConvertThenConvertBack_PreservesValue(string originalInternal)
     {
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Act
         var displayValue = _converter.Convert(originalInternal, typeof(string), null!, _culture);
         var roundtripInternal = _converter.ConvertBack(displayValue, typeof(string), null!, _culture);
@@ -254,6 +269,7 @@ public class CorrelationCoefficientConverterTests
     [InlineData("75")]
     public void Roundtrip_ConvertBackThenConvert_PreservesValue(string originalDisplay)
     {
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Act
         var internalValue = _converter.ConvertBack(originalDisplay, typeof(string), null!, _culture);
         var roundtripDisplay = _converter.Convert(internalValue, typeof(string), null!, _culture);
@@ -273,6 +289,7 @@ public class CorrelationCoefficientConverterTests
     [InlineData("en-US")]  // アメリカ
     public void Convert_DifferentCultures_ProducesSameResult(string cultureName)
     {
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Arrange
         var culture = new CultureInfo(cultureName);
         var input = 0.95f;
@@ -293,6 +310,7 @@ public class CorrelationCoefficientConverterTests
     [InlineData("0.999", "100")]   // 非常に大きい値（1に近い）
     public void Convert_ExtremeValues_HandlesCorrectly(string input, string expected)
     {
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Act
         var result = _converter.Convert(input, typeof(string), null!, _culture);
 
@@ -303,6 +321,7 @@ public class CorrelationCoefficientConverterTests
     [Fact]
     public void ConvertBack_VeryLongDecimal_HandlesCorrectly()
     {
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Arrange
         var input = "0.123456789";  // 非常に長い小数
 
@@ -317,6 +336,7 @@ public class CorrelationCoefficientConverterTests
     [InlineData("  95  ", "0.95")]  // 前後の空白
     public void ConvertBack_StringWithWhitespace_TrimsAndConverts(string input, string expected)
     {
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Act
         var result = _converter.ConvertBack(input, typeof(string), null!, _culture);
 

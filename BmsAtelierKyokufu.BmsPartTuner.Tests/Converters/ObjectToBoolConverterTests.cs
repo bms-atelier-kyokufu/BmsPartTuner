@@ -12,6 +12,7 @@ public class ObjectToBoolConverterTests
     [Fact]
     public void Convert_WithNull_ReturnsFalse()
     {
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Arrange
         object value = null;
 
@@ -25,6 +26,7 @@ public class ObjectToBoolConverterTests
     [Fact]
     public void Convert_WithObject_ReturnsTrue()
     {
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Arrange
         var value = new object();
 
@@ -38,6 +40,7 @@ public class ObjectToBoolConverterTests
     [Fact]
     public void ConvertBack_WithFalse_ReturnsNull()
     {
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Arrange
         var value = false;
 
@@ -51,6 +54,7 @@ public class ObjectToBoolConverterTests
     [Fact]
     public void ConvertBack_WithTrue_ReturnsBindingDoNothing()
     {
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Arrange
         var value = true;
 
@@ -64,6 +68,7 @@ public class ObjectToBoolConverterTests
     [Fact]
     public void ConvertBack_WithNonBool_ReturnsBindingDoNothing()
     {
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Arrange
         var value = "invalid";
 

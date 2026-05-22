@@ -18,7 +18,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Services
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
         }
 
-        private void CreateValidWavFile(string path, bool isDifferent = false)
+        private static void CreateValidWavFile(string path, bool isDifferent = false)
         {
             using var stream = new FileStream(path, FileMode.Create);
             using var writer = new BinaryWriter(stream);
@@ -66,6 +66,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Services
         [Fact]
         public async Task ExecuteDefinitionReductionAsync_DeletionEnabled_DeletesUnusedFiles()
         {
+            _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
             using var context = new BmsTestContext();
 
 
@@ -83,9 +84,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Services
 
             var outputPath = Path.Combine(context.TempDirectory, "output.bms");
 
-            var file1 = new FileList.WavFiles { Name = file1Path, NumInteger = 1, Num = "01" };
-            var file2 = new FileList.WavFiles { Name = file2Path, NumInteger = 2, Num = "02" };
-            var fileList = new List<FileList.WavFiles> { file1, file2 };
+            var file1 = new BmsAudioFile { Name = file1Path, NumInteger = 1, Num = "01" };
+            var file2 = new BmsAudioFile { Name = file2Path, NumInteger = 2, Num = "02" };
+            var fileList = new List<BmsAudioFile> { file1, file2 };
 
             var service = new BmsOptimizationService();
 
@@ -93,9 +94,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Services
             CreateValidWavFile(file1Path);
             CreateValidWavFile(file2Path); // 完全な重複
 
-            var file1_dup = new FileList.WavFiles { Name = file1Path, NumInteger = 1, Num = "01", FileSize = new FileInfo(file1Path).Length };
-            var file2_dup = new FileList.WavFiles { Name = file2Path, NumInteger = 2, Num = "02", FileSize = new FileInfo(file2Path).Length };
-            var fileList_dup = new List<FileList.WavFiles> { file1_dup, file2_dup };
+            var file1_dup = new BmsAudioFile { Name = file1Path, NumInteger = 1, Num = "01", FileSize = new FileInfo(file1Path).Length };
+            var file2_dup = new BmsAudioFile { Name = file2Path, NumInteger = 2, Num = "02", FileSize = new FileInfo(file2Path).Length };
+            var fileList_dup = new List<BmsAudioFile> { file1_dup, file2_dup };
 
             // 100%一致（R2=1.0）で削減判定
 
@@ -120,6 +121,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Services
         [Fact]
         public async Task ExecuteDefinitionReductionAsync_DeletionDisabled_KeepsUnusedFiles()
         {
+            _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
             using var context = new BmsTestContext();
 
             var file1Path = Path.Combine(context.TempDirectory, "used.wav");
@@ -135,9 +137,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Services
                 .Build("test.bms");
             var outputPath = Path.Combine(context.TempDirectory, "output.bms");
 
-            var file1 = new FileList.WavFiles { Name = file1Path, NumInteger = 1, Num = "01", FileSize = new FileInfo(file1Path).Length };
-            var file2 = new FileList.WavFiles { Name = file2Path, NumInteger = 2, Num = "02", FileSize = new FileInfo(file2Path).Length };
-            var fileList = new List<FileList.WavFiles> { file1, file2 };
+            var file1 = new BmsAudioFile { Name = file1Path, NumInteger = 1, Num = "01", FileSize = new FileInfo(file1Path).Length };
+            var file2 = new BmsAudioFile { Name = file2Path, NumInteger = 2, Num = "02", FileSize = new FileInfo(file2Path).Length };
+            var fileList = new List<BmsAudioFile> { file1, file2 };
 
             var service = new BmsOptimizationService();
 
@@ -167,6 +169,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Services
         [Fact]
         public async Task ExecuteDefinitionReductionAsync_MultipleDuplicates_DeletesAllUnused()
         {
+            _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
             using var context = new BmsTestContext();
 
             var file1Path = Path.Combine(context.TempDirectory, "original.wav");
@@ -187,12 +190,12 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Services
 
             var outputPath = Path.Combine(context.TempDirectory, "output_multi_dup.bms");
 
-            var fileList = new List<FileList.WavFiles>
+            var fileList = new List<BmsAudioFile>
             {
-                new FileList.WavFiles { Name = file1Path, NumInteger = 1, Num = "01", FileSize = new FileInfo(file1Path).Length },
-                new FileList.WavFiles { Name = file2Path, NumInteger = 2, Num = "02", FileSize = new FileInfo(file2Path).Length },
-                new FileList.WavFiles { Name = file3Path, NumInteger = 3, Num = "03", FileSize = new FileInfo(file3Path).Length },
-                new FileList.WavFiles { Name = file4Path, NumInteger = 4, Num = "04", FileSize = new FileInfo(file4Path).Length }
+                new() { Name = file1Path, NumInteger = 1, Num = "01", FileSize = new FileInfo(file1Path).Length },
+                new() { Name = file2Path, NumInteger = 2, Num = "02", FileSize = new FileInfo(file2Path).Length },
+                new() { Name = file3Path, NumInteger = 3, Num = "03", FileSize = new FileInfo(file3Path).Length },
+                new() { Name = file4Path, NumInteger = 4, Num = "04", FileSize = new FileInfo(file4Path).Length }
             };
 
             var service = new BmsOptimizationService();
@@ -219,6 +222,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Services
         [Fact]
         public async Task ExecuteDefinitionReductionAsync_ReadOnlyFile_ContinuesWithoutCrash()
         {
+            _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
             using var context = new BmsTestContext();
 
             var file1Path = Path.Combine(context.TempDirectory, "used.wav");
@@ -240,10 +244,10 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Services
 
                 var outputPath = Path.Combine(context.TempDirectory, "output_readonly.bms");
 
-                var fileList = new List<FileList.WavFiles>
+                var fileList = new List<BmsAudioFile>
                 {
-                    new FileList.WavFiles { Name = file1Path, NumInteger = 1, Num = "01", FileSize = new FileInfo(file1Path).Length },
-                    new FileList.WavFiles { Name = file2Path, NumInteger = 2, Num = "02", FileSize = new FileInfo(file2Path).Length }
+                    new() { Name = file1Path, NumInteger = 1, Num = "01", FileSize = new FileInfo(file1Path).Length },
+                    new() { Name = file2Path, NumInteger = 2, Num = "02", FileSize = new FileInfo(file2Path).Length }
                 };
 
                 var service = new BmsOptimizationService();
@@ -280,6 +284,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Services
         [Fact]
         public async Task ExecuteDefinitionReductionAsync_DifferentFrequency_NotMerged()
         {
+            _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
             using var context = new BmsTestContext();
 
             var file1Path = Path.Combine(context.TempDirectory, "low_freq.wav");
@@ -297,10 +302,10 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Services
 
             var outputPath = Path.Combine(context.TempDirectory, "output_diff_freq.bms");
 
-            var fileList = new List<FileList.WavFiles>
+            var fileList = new List<BmsAudioFile>
             {
-                new FileList.WavFiles { Name = file1Path, NumInteger = 1, Num = "01", FileSize = new FileInfo(file1Path).Length },
-                new FileList.WavFiles { Name = file2Path, NumInteger = 2, Num = "02", FileSize = new FileInfo(file2Path).Length }
+                new() { Name = file1Path, NumInteger = 1, Num = "01", FileSize = new FileInfo(file1Path).Length },
+                new() { Name = file2Path, NumInteger = 2, Num = "02", FileSize = new FileInfo(file2Path).Length }
             };
 
             var service = new BmsOptimizationService();
@@ -329,6 +334,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Services
         [Fact]
         public async Task ExecuteDefinitionReductionAsync_LowThreshold_MergesSimilarFiles()
         {
+            _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
             using var context = new BmsTestContext();
 
             var file1Path = Path.Combine(context.TempDirectory, "base.wav");
@@ -345,10 +351,10 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Services
 
             var outputPath = Path.Combine(context.TempDirectory, "output_low_threshold.bms");
 
-            var fileList = new List<FileList.WavFiles>
+            var fileList = new List<BmsAudioFile>
             {
-                new FileList.WavFiles { Name = file1Path, NumInteger = 1, Num = "01", FileSize = new FileInfo(file1Path).Length },
-                new FileList.WavFiles { Name = file2Path, NumInteger = 2, Num = "02", FileSize = new FileInfo(file2Path).Length }
+                new() { Name = file1Path, NumInteger = 1, Num = "01", FileSize = new FileInfo(file1Path).Length },
+                new() { Name = file2Path, NumInteger = 2, Num = "02", FileSize = new FileInfo(file2Path).Length }
             };
 
             var service = new BmsOptimizationService();
@@ -375,6 +381,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Services
         [Fact]
         public async Task ExecuteDefinitionReductionAsync_MixedExistingAndMissing_HandlesGracefully()
         {
+            _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
             using var context = new BmsTestContext();
 
             var existingPath = Path.Combine(context.TempDirectory, "existing.wav");
@@ -391,10 +398,10 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Services
 
             var outputPath = Path.Combine(context.TempDirectory, "output_mixed.bms");
 
-            var fileList = new List<FileList.WavFiles>
+            var fileList = new List<BmsAudioFile>
             {
-                new FileList.WavFiles { Name = existingPath, NumInteger = 1, Num = "01", FileSize = new FileInfo(existingPath).Length },
-                new FileList.WavFiles { Name = missingPath, NumInteger = 2, Num = "02" }
+                new() { Name = existingPath, NumInteger = 1, Num = "01", FileSize = new FileInfo(existingPath).Length },
+                new() { Name = missingPath, NumInteger = 2, Num = "02" }
             };
 
             var service = new BmsOptimizationService();

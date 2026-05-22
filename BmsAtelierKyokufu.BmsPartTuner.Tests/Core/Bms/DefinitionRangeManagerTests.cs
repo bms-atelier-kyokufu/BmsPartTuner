@@ -1,6 +1,6 @@
 ﻿using BmsAtelierKyokufu.BmsPartTuner.Core;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
-using static BmsAtelierKyokufu.BmsPartTuner.Models.FileList;
+using BmsAtelierKyokufu.BmsPartTuner.Models;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms;
 
@@ -21,9 +21,9 @@ public class DefinitionRangeManagerTests
 {
     #region Helper Methods
 
-    private static WavFiles CreateWavFile(int numInteger, string num = "")
+    private static BmsAudioFile CreateWavFile(int numInteger, string num = "")
     {
-        return new WavFiles
+        return new BmsAudioFile
         {
             NumInteger = numInteger,
             Num = string.IsNullOrEmpty(num) ? numInteger.ToString("D2") : num,
@@ -32,9 +32,9 @@ public class DefinitionRangeManagerTests
         };
     }
 
-    private static List<WavFiles> CreateFileList(params int[] numbers)
+    private static List<BmsAudioFile> CreateBmsDefinitionManager(params int[] numbers)
     {
-        return numbers.Select(n => CreateWavFile(n)).ToList();
+        return [.. numbers.Select(n => CreateWavFile(n))];
     }
 
     #endregion
@@ -42,10 +42,11 @@ public class DefinitionRangeManagerTests
     #region Constructor Tests
 
     [Fact]
-    public void Constructor_WithValidFileList_InitializesCorrectly()
+    public void Constructor_WithValidBmsDefinitionManager_InitializesCorrectly()
     {
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Arrange
-        var fileList = CreateFileList(1, 10, 50);
+        var fileList = CreateBmsDefinitionManager(1, 10, 50);
 
         // Act
         var manager = new DefinitionRangeManager(fileList);
@@ -56,10 +57,12 @@ public class DefinitionRangeManagerTests
     }
 
     [Fact]
-    public void Constructor_WithEmptyFileList_InitializesWithDefaults()
+    public void Constructor_WithEmptyBmsDefinitionManager_InitializesWithDefaults()
     {
+        var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Arrange
-        var fileList = new List<WavFiles>();
+        var audioCache = audioCache;
+        var fileList = new List<BmsAudioFile>();
 
         // Act
         var manager = new DefinitionRangeManager(fileList);
@@ -70,8 +73,9 @@ public class DefinitionRangeManagerTests
     }
 
     [Fact]
-    public void Constructor_WithNullFileList_ThrowsArgumentNullException()
+    public void Constructor_WithNullBmsDefinitionManager_ThrowsArgumentNullException()
     {
+        var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Act & Assert
         Assert.Throws<ArgumentNullException>(() => new DefinitionRangeManager(null!));
     }
@@ -83,8 +87,9 @@ public class DefinitionRangeManagerTests
     [Fact]
     public void DetermineProcessingRange_DefEndZero_AutoDetectsMaximum()
     {
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Arrange
-        var fileList = CreateFileList(1, 10, 50, 100);
+        var fileList = CreateBmsDefinitionManager(1, 10, 50, 100);
         var manager = new DefinitionRangeManager(fileList);
 
         // Act
@@ -98,8 +103,9 @@ public class DefinitionRangeManagerTests
     [Fact]
     public void DetermineProcessingRange_DefEndNegative_AutoDetectsMaximum()
     {
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Arrange
-        var fileList = CreateFileList(5, 25, 75);
+        var fileList = CreateBmsDefinitionManager(5, 25, 75);
         var manager = new DefinitionRangeManager(fileList);
 
         // Act
@@ -117,8 +123,9 @@ public class DefinitionRangeManagerTests
     [Fact]
     public void DetermineProcessingRange_ExplicitRange_UsesSpecifiedValues()
     {
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Arrange
-        var fileList = CreateFileList(1, 10, 50, 100);
+        var fileList = CreateBmsDefinitionManager(1, 10, 50, 100);
         var manager = new DefinitionRangeManager(fileList);
 
         // Act
@@ -130,10 +137,11 @@ public class DefinitionRangeManagerTests
     }
 
     [Fact]
-    public void DetermineProcessingRange_StartGreaterThanFileListStart_UsesLarger()
+    public void DetermineProcessingRange_StartGreaterThanBmsDefinitionManagerStart_UsesLarger()
     {
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Arrange
-        var fileList = CreateFileList(5, 10, 20);
+        var fileList = CreateBmsDefinitionManager(5, 10, 20);
         var manager = new DefinitionRangeManager(fileList);
 
         // Act
@@ -146,8 +154,9 @@ public class DefinitionRangeManagerTests
     [Fact]
     public void DetermineProcessingRange_EndSmallerThanMax_UsesSmaller()
     {
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Arrange
-        var fileList = CreateFileList(1, 50, 100, 200);
+        var fileList = CreateBmsDefinitionManager(1, 50, 100, 200);
         var manager = new DefinitionRangeManager(fileList);
 
         // Act
@@ -164,8 +173,9 @@ public class DefinitionRangeManagerTests
     [Fact]
     public void DetermineProcessingRange_StartLessThanMin_CorrectsToMin()
     {
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Arrange
-        var fileList = CreateFileList(1, 10, 50);
+        var fileList = CreateBmsDefinitionManager(1, 10, 50);
         var manager = new DefinitionRangeManager(fileList);
 
         // Act
@@ -178,8 +188,9 @@ public class DefinitionRangeManagerTests
     [Fact]
     public void DetermineProcessingRange_EndExceedsMax_CorrectsToMax()
     {
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Arrange
-        var fileList = CreateFileList(1, 10, 3800);
+        var fileList = CreateBmsDefinitionManager(1, 10, 3800);
         var manager = new DefinitionRangeManager(fileList);
 
         // Act
@@ -194,8 +205,9 @@ public class DefinitionRangeManagerTests
     [Fact]
     public void DetermineProcessingRange_ZeroStart_CorrectsToMin()
     {
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Arrange
-        var fileList = CreateFileList(1, 10);
+        var fileList = CreateBmsDefinitionManager(1, 10);
         var manager = new DefinitionRangeManager(fileList);
 
         // Act
@@ -210,10 +222,12 @@ public class DefinitionRangeManagerTests
     #region DetermineProcessingRange Tests - エッジケース
 
     [Fact]
-    public void DetermineProcessingRange_EmptyFileList_UsesMinDefaults()
+    public void DetermineProcessingRange_EmptyBmsDefinitionManager_UsesMinDefaults()
     {
+        var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Arrange
-        var fileList = new List<WavFiles>();
+        var audioCache = audioCache;
+        var fileList = new List<BmsAudioFile>();
         var manager = new DefinitionRangeManager(fileList);
 
         // Act
@@ -228,8 +242,9 @@ public class DefinitionRangeManagerTests
     [Fact]
     public void DetermineProcessingRange_SingleFile_RangeIsSinglePoint()
     {
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Arrange
-        var fileList = CreateFileList(42);
+        var fileList = CreateBmsDefinitionManager(42);
         var manager = new DefinitionRangeManager(fileList);
 
         // Act
@@ -243,8 +258,9 @@ public class DefinitionRangeManagerTests
     [Fact]
     public void DetermineProcessingRange_NonSequentialNumbers_FindsCorrectMax()
     {
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Arrange - 連番でないファイルリスト
-        var fileList = CreateFileList(5, 100, 50, 1000, 200);
+        var fileList = CreateBmsDefinitionManager(5, 100, 50, 1000, 200);
         var manager = new DefinitionRangeManager(fileList);
 
         // Act
@@ -258,8 +274,9 @@ public class DefinitionRangeManagerTests
     [Fact]
     public void DetermineProcessingRange_LargeRange_HandlesCorrectly()
     {
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Arrange - 大きな定義番号
-        var fileList = CreateFileList(1, 1295, 3843);  // ZZ(36進), zz(62進)
+        var fileList = CreateBmsDefinitionManager(1, 1295, 3843);  // ZZ(36進), zz(62進)
         var manager = new DefinitionRangeManager(fileList);
 
         // Act
@@ -279,8 +296,9 @@ public class DefinitionRangeManagerTests
     [Fact]
     public void DetermineProcessingRange_CalledMultipleTimes_UpdatesCorrectly()
     {
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Arrange
-        var fileList = CreateFileList(1, 50, 100);
+        var fileList = CreateBmsDefinitionManager(1, 50, 100);
         var manager = new DefinitionRangeManager(fileList);
 
         // Act - 1回目

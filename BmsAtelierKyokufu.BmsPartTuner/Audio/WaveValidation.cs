@@ -315,12 +315,12 @@ static public class WaveValidation
 
         for (int i = 0; i < vectorizedLength; i += vectorSize)
         {
-            Vector<float> x = new Vector<float>(normalizedWav1.Slice(i, vectorSize));
-            Vector<float> y = new Vector<float>(normalizedWav2.Slice(i, vectorSize));
+            Vector<float> x = new(normalizedWav1.Slice(i, vectorSize));
+            Vector<float> y = new(normalizedWav2.Slice(i, vectorSize));
             dotProduct_vec += x * y;
         }
 
-        Vector<float> ones = new Vector<float>(1.0f);
+        Vector<float> ones = new(1.0f);
         double dotProduct = Vector.Dot(dotProduct_vec, ones);
 
         for (int i = vectorizedLength; i < length; i++)
@@ -354,8 +354,8 @@ static public class WaveValidation
 
         for (int i = 0; i < vectorizedLength; i += vectorSize)
         {
-            Vector<float> x = new Vector<float>(wav1.Slice(i, vectorSize));
-            Vector<float> y = new Vector<float>(wav2.Slice(i, vectorSize));
+            Vector<float> x = new(wav1.Slice(i, vectorSize));
+            Vector<float> y = new(wav2.Slice(i, vectorSize));
 
             Vector<float> diff = x - y;
 
@@ -364,7 +364,7 @@ static public class WaveValidation
             sumDiff2_vec += diff * diff;
         }
 
-        Vector<float> ones = new Vector<float>(1.0f);
+        Vector<float> ones = new(1.0f);
         float sumX = Vector.Dot(sumX_vec, ones);
         float sumX2 = Vector.Dot(sumX2_vec, ones);
         float rss = Vector.Dot(sumDiff2_vec, ones);
@@ -420,8 +420,8 @@ static public class WaveValidation
 
         for (int i = 0; i < vectorizedLength; i += vectorSize)
         {
-            Vector<float> x = new Vector<float>(wav1.Slice(i, vectorSize));
-            Vector<float> y = new Vector<float>(wav2.Slice(i, vectorSize));
+            Vector<float> x = new(wav1.Slice(i, vectorSize));
+            Vector<float> y = new(wav2.Slice(i, vectorSize));
 
             sumX_vec += x;
             sumY_vec += y;
@@ -430,7 +430,7 @@ static public class WaveValidation
             sumXY_vec += x * y;
         }
 
-        Vector<float> ones = new Vector<float>(1.0f);
+        Vector<float> ones = new(1.0f);
         float sumX = Vector.Dot(sumX_vec, ones);
         float sumY = Vector.Dot(sumY_vec, ones);
         float sumX2 = Vector.Dot(sumX2_vec, ones);

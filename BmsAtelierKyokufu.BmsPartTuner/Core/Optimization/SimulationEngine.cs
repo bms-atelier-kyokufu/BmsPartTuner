@@ -3,7 +3,6 @@ using System.Diagnostics;
 using BmsAtelierKyokufu.BmsPartTuner.Audio;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Helpers;
 using BmsAtelierKyokufu.BmsPartTuner.Models;
-using static BmsAtelierKyokufu.BmsPartTuner.Models.FileList;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Core.Optimization;
 
@@ -37,31 +36,24 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Core.Optimization;
 /// <item>非再帰版FindRoot: スタックオーバーフロー防止</item>
 /// </list>
 /// </remarks>
-internal class SimulationEngine
+/// <remarks>
+/// SimulationEngineを初期化。
+/// </remarks>
+/// <param name="fileList">ファイルリスト。</param>
+/// <param name="startPoint">開始位置。</param>
+/// <param name="endPoint">終了位置。</param>
+/// <exception cref="ArgumentNullException">fileListがnullの場合。</exception>
+internal class SimulationEngine(
+    IReadOnlyList<BmsAudioFile> fileList,
+    IReadOnlyDictionary<string, CachedSoundData> audioCache,
+    int startPoint,
+    int endPoint)
 {
-    private readonly IReadOnlyList<WavFiles> _fileList;
-    private readonly int _startPoint;
-    private readonly int _endPoint;
-    private readonly int _parallelDegree;
-
-    /// <summary>
-    /// SimulationEngineを初期化。
-    /// </summary>
-    /// <param name="fileList">ファイルリスト。</param>
-    /// <param name="startPoint">開始位置。</param>
-    /// <param name="endPoint">終了位置。</param>
-    /// <exception cref="ArgumentNullException">fileListがnullの場合。</exception>
-    public SimulationEngine(
-        IReadOnlyList<WavFiles> fileList,
-        int startPoint,
-        int endPoint)
-    {
-        _fileList = fileList ?? throw new ArgumentNullException(nameof(fileList));
-
-        _startPoint = startPoint;
-        _endPoint = endPoint;
-        _parallelDegree = Math.Max(1, Environment.ProcessorCount - 1);
-    }
+    private readonly IReadOnlyList<BmsAudioFile> _fileList = fileList ?? throw new ArgumentNullException(nameof(fileList));
+    private readonly int _startPoint = startPoint;
+    private readonly int _endPoint = endPoint;
+    private readonly IReadOnlyDictionary<string, CachedSoundData> _audioCache = audioCache ?? throw new ArgumentNullException(nameof(audioCache));
+    private readonly int _parallelDegree = Math.Max(1, Environment.ProcessorCount - 1);
 
     /// <summary>
     /// 並列シミュレーション実行（詳細進捗版）。
@@ -86,7 +78,7 @@ internal class SimulationEngine
         Debug.WriteLine($"Parallel simulation: {total} thresholds, {_parallelDegree} threads");
         Debug.WriteLine($"Range: {rangeMin:F2} - {rangeMax:F2}, Step: {step:F2}");
 
-        int cachedCount = _fileList.Count(f => f.CachedData != null);
+        int cachedCount = _audioCache.Count;
         Debug.WriteLine($"Cached audio files: {cachedCount}/{_fileList.Count}");
 
         var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = _parallelDegree };
@@ -116,7 +108,7 @@ internal class SimulationEngine
         Debug.WriteLine($"=== RunParallelSimulationDetailed Complete ===");
         Debug.WriteLine($"Completed {results.Count} simulations in {sw.ElapsedMilliseconds} ms");
 
-        return results.OrderByDescending(r => r.Threshold).ToList();
+        return [.. results.OrderByDescending(r => r.Threshold)];
     }
 
     /// <summary>
@@ -175,7 +167,7 @@ internal class SimulationEngine
         Debug.WriteLine($"Base62 limit: {Base62Limit} files");
 
         // 音声キャッシュの確認
-        int cachedCount = _fileList.Count(f => f.CachedData != null);
+        int cachedCount = _audioCache.Count;
         Debug.WriteLine($"Cached audio files: {cachedCount}/{_fileList.Count}");
 
         if (cachedCount == 0)
@@ -292,7 +284,7 @@ internal class SimulationEngine
     private int SimulateThreshold(float threshold)
     {
         var groupingStrategy = new AudioFileGroupingStrategy();
-        IReadOnlyList<IReadOnlyList<int>> groups = groupingStrategy.GroupFiles(_fileList, _startPoint, _endPoint);
+        IReadOnlyList<IReadOnlyList<int>> groups = groupingStrategy.GroupFiles(_audioCache, _fileList, _startPoint, _endPoint, null);
 
         var replaceTable = new int[3844]; // BMSの最大定義番号
 
@@ -316,7 +308,7 @@ internal class SimulationEngine
         int totalInRange = 0;
         int notProcessed = 0;
 
-        foreach (WavFiles file in _fileList)
+        foreach (BmsAudioFile file in _fileList)
         {
             int fileNum = file.NumInteger;
             if (fileNum >= _startPoint && fileNum <= _endPoint)
@@ -414,14 +406,14 @@ internal class SimulationEngine
                 continue;
 
             float rms1 = entries[i].Rms;
-            (float min, float max) thresholds = CalculateRmsRange(rms1);
+            (float min, float max) = CalculateRmsRange(rms1);
 
             for (int j = i + 1; j < n; j++)
             {
                 float rms2 = entries[j].Rms;
 
                 // Early break: sorted by RMS
-                if (rms2 > thresholds.max) break;
+                if (rms2 > max) break;
 
                 int jIdx = entries[j].OriginalIndex;
                 int jVal = _fileList[jIdx].NumInteger;
@@ -451,14 +443,14 @@ internal class SimulationEngine
                 }
 
                 // RMS range check
-                if (rms2 < thresholds.min || rms2 > thresholds.max)
+                if (rms2 < min || rms2 > max)
                     continue;
 
                 // Actual audio comparison
                 try
                 {
-                    CachedSoundData? cachedData1 = _fileList[iIdx].CachedData;
-                    CachedSoundData? cachedData2 = _fileList[jIdx].CachedData;
+                    _audioCache.TryGetValue(_fileList[iIdx].Name, out var cachedData1);
+                    _audioCache.TryGetValue(_fileList[jIdx].Name, out var cachedData2);
 
                     if (cachedData1 != null && cachedData2 != null)
                     {
@@ -494,7 +486,7 @@ internal class SimulationEngine
 
         foreach (var idx in group)
         {
-            CachedSoundData? cachedData = _fileList[idx].CachedData;
+            _audioCache.TryGetValue(_fileList[idx].Name, out var cachedData);
             if (cachedData != null)
             {
                 entries.Add((idx, cachedData.TotalRms));
@@ -624,15 +616,9 @@ internal class SimulationEngine
     /// <summary>
     /// オーディオエントリ（軽量構造体）。
     /// </summary>
-    private readonly struct AudioEntry
+    private readonly struct AudioEntry(int index, float rms)
     {
-        public readonly int OriginalIndex;
-        public readonly float Rms;
-
-        public AudioEntry(int index, float rms)
-        {
-            OriginalIndex = index;
-            Rms = rms;
-        }
+        public readonly int OriginalIndex = index;
+        public readonly float Rms = rms;
     }
 }

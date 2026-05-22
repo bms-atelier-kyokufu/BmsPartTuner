@@ -112,7 +112,7 @@ public class UpdateService : IDisposable
                 return null;
             }
 
-            JsonSerializerOptions options = new JsonSerializerOptions
+            JsonSerializerOptions options = new()
             {
                 PropertyNameCaseInsensitive = true
             };
@@ -152,7 +152,7 @@ public class UpdateService : IDisposable
             using HttpResponseMessage response = await _httpClient.GetAsync(installerAsset.BrowserDownloadUrl);
             response.EnsureSuccessStatusCode();
 
-            await using FileStream fileStream = new FileStream(tempPath, FileMode.Create, FileAccess.Write, FileShare.None);
+            await using FileStream fileStream = new(tempPath, FileMode.Create, FileAccess.Write, FileShare.None);
             await response.Content.CopyToAsync(fileStream);
 
             _updateInstallerPath = tempPath;

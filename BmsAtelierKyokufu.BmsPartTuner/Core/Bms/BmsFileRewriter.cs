@@ -2,7 +2,7 @@
 using System.Text;
 using System.Text.RegularExpressions;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Helpers;
-using static BmsAtelierKyokufu.BmsPartTuner.Models.FileList;
+using BmsAtelierKyokufu.BmsPartTuner.Models;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 
@@ -30,12 +30,24 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 /// 整列により、類似ファイルが連続して並ぶため、視認性が向上します。
 /// 例: kick_01, kick_02, kick_03, snare_01, snare_02...
 /// </remarks>
-internal partial class BmsFileRewriter
+/// <remarks>
+/// BmsFileRewriterを初期化します。
+/// </remarks>
+/// <param name="fileList">ファイルリスト。</param>
+/// <param name="replaces">置換テーブル（配列インデックス: 元のID、値: 置換先ID）。</param>
+/// <param name="startPoint">処理範囲の開始定義番号。</param>
+/// <param name="endPoint">処理範囲の終了定義番号。</param>
+/// <exception cref="ArgumentNullException">fileListまたはreplacesがnullの場合。</exception>
+internal partial class BmsFileRewriter(
+    IReadOnlyList<BmsAudioFile> fileList,
+    int[] replaces,
+    int startPoint,
+    int endPoint)
 {
-    private readonly IReadOnlyList<WavFiles> _fileList;
-    private readonly int[] _replaces;
-    private readonly int _startPoint;
-    private readonly int _endPoint;
+    private readonly IReadOnlyList<BmsAudioFile> _fileList = fileList ?? throw new ArgumentNullException(nameof(fileList));
+    private readonly int[] _replaces = replaces ?? throw new ArgumentNullException(nameof(replaces));
+    private readonly int _startPoint = startPoint;
+    private readonly int _endPoint = endPoint;
 
     /// <summary>
     /// Shift_JISエンコーディングのプロバイダを登録する静的コンストラクタ。
@@ -50,27 +62,7 @@ internal partial class BmsFileRewriter
     /// 削減後に保持されるファイルのリスト。
     /// ReplaceAndAlignBmsFile呼び出し後に設定されます。
     /// </summary>
-    public List<WavFiles> KeptFiles { get; private set; } = new List<WavFiles>();
-
-    /// <summary>
-    /// BmsFileRewriterを初期化します。
-    /// </summary>
-    /// <param name="fileList">ファイルリスト。</param>
-    /// <param name="replaces">置換テーブル（配列インデックス: 元のID、値: 置換先ID）。</param>
-    /// <param name="startPoint">処理範囲の開始定義番号。</param>
-    /// <param name="endPoint">処理範囲の終了定義番号。</param>
-    /// <exception cref="ArgumentNullException">fileListまたはreplacesがnullの場合。</exception>
-    public BmsFileRewriter(
-        IReadOnlyList<WavFiles> fileList,
-        int[] replaces,
-        int startPoint,
-        int endPoint)
-    {
-        _fileList = fileList ?? throw new ArgumentNullException(nameof(fileList));
-        _replaces = replaces ?? throw new ArgumentNullException(nameof(replaces));
-        _startPoint = startPoint;
-        _endPoint = endPoint;
-    }
+    public List<BmsAudioFile> KeptFiles { get; private set; } = [];
 
     /// <summary>
     /// BMSファイルの置換と整列を実行します。
@@ -218,10 +210,10 @@ internal partial class BmsFileRewriter
     /// <para>【Why HashSet】</para>
     /// Contains()がO(1)で高速なため、重複チェックに最適です。
     /// </remarks>
-    private (Dictionary<int, int> reductionMap, List<WavFiles> filesToKeep) BuildReductionMap()
+    private (Dictionary<int, int> reductionMap, List<BmsAudioFile> filesToKeep) BuildReductionMap()
     {
         var reductionMap = new Dictionary<int, int>();
-        var filesToKeep = new List<WavFiles>();
+        var filesToKeep = new List<BmsAudioFile>();
         var keptIndices = new HashSet<int>();
 
         foreach (var file in _fileList)
@@ -284,12 +276,12 @@ internal partial class BmsFileRewriter
     /// BMSファイルから見た相対パスで記述することで、フォルダ構造の変更に強くなります。
     /// </remarks>
     private Dictionary<string, string> BuildFinalMap(
-        List<WavFiles> filesToKeep,
+        List<BmsAudioFile> filesToKeep,
         string bmsFileName,
         out List<(string Index, string Path)> newDefinitions)
     {
         var finalMap = new Dictionary<string, string>();
-        newDefinitions = new List<(string Index, string Path)>();
+        newDefinitions = [];
 
         int maxCount = filesToKeep.Count;
         int radix = (maxCount > AppConstants.Definition.MaxNumberBase36)
