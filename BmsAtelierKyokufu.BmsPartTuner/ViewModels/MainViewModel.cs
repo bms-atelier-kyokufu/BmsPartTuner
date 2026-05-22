@@ -14,6 +14,7 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
 {
     private readonly AudioPreviewService _audioPreviewService;
     private bool _disposed;
+    private string? _workingBmsPath;
 
     /// <summary>ファイル操作ViewModel。</summary>
     public FileOperationsViewModel FileOperations { get; }
@@ -263,7 +264,7 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
     [RelayCommand(CanExecute = nameof(CanExecuteThresholdOptimization))]
     private async Task ExecuteThresholdOptimizationAsync()
     {
-        var inputPath = InputPath?.Trim('"') ?? string.Empty;
+        var inputPath = (_workingBmsPath ?? InputPath)?.Trim('"') ?? string.Empty;
 
         if (string.IsNullOrWhiteSpace(inputPath))
         {
@@ -349,6 +350,15 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
             return;
         }
 
+        var inputToUse = _workingBmsPath ?? InputPath;
+
+        // BMSONファイルがそのまま渡されている場合はブロックする
+        if (Path.GetExtension(inputToUse).Equals(".bmson", StringComparison.OrdinalIgnoreCase))
+        {
+            ShowMessage("BMSONファイルは直接削減できません。自動ダウンコンバートされたBMSファイルがセットされるまでお待ち下さい。", true);
+            return;
+        }
+
         if (FileOperations.CheckOverwriteRequired() || IsPhysicalDeletionEnabled)
         {
             SlideConfirmationRequested?.Invoke(this, EventArgs.Empty);
@@ -359,18 +369,18 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
 
         await Optimization.ExecuteDefinitionReductionAsync(
             BmsDefinitionManager.BmsFileList,
-            InputPath,
+            inputToUse,
             OutputPath,
             selectedKeywords);
 
         // 処理完了後、出力先のファイルでリストを再読み込み
         // InputPathとOutputPathが同じ場合（上書き保存）でも、
         // ファイルの内容が変更されているため再読み込みが必要
-        if (string.Equals(InputPath, OutputPath, StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(inputToUse, OutputPath, StringComparison.OrdinalIgnoreCase))
         {
-            if (File.Exists(InputPath))
+            if (File.Exists(inputToUse))
             {
-                BmsDefinitionManager.LoadBmsFile(InputPath);
+                BmsDefinitionManager.LoadBmsFile(inputToUse);
             }
         }
         else
@@ -380,7 +390,9 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
         }
     }
 
-    private bool CanExecuteReduction() => !Optimization.IsBusy;
+    private bool _isDownconverting;
+
+    private bool CanExecuteReduction() => !Optimization.IsBusy && !_isDownconverting;
 
     private async void OnInputPathChanged(object? sender, string path)
     {
@@ -389,6 +401,9 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
             var extension = Path.GetExtension(path);
             if (string.Equals(extension, ".bmson", StringComparison.OrdinalIgnoreCase))
             {
+                if (_isDownconverting) return;
+
+                _isDownconverting = true;
                 IsBusy = true;
                 StatusMessage = "bmsonをダウンコンバート中...";
                 try
@@ -397,7 +412,8 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
                     string outBmsPath = await Task.Run(() =>
                         Services.Bmson.BmsonIntegrationFacade.Downconvert(path, outputDir, keyNotesOnly: false));
 
-                    InputPath = outBmsPath;
+                    _workingBmsPath = outBmsPath;
+                    BmsDefinitionManager.LoadBmsFile(outBmsPath);
                     ShowToast($"bmsonをダウンコンバートしました: {Path.GetFileName(outBmsPath)}", "📁", false);
                 }
                 catch (Exception ex)
@@ -407,19 +423,26 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
                 }
                 finally
                 {
+                    _isDownconverting = false;
                     IsBusy = false;
                     StatusMessage = "準備完了";
+                    OnPropertyChanged(nameof(CanExecuteReduction));
                 }
             }
             else
             {
+                _workingBmsPath = path;
                 BmsDefinitionManager.LoadBmsFile(path);
             }
         }
-        else if (!string.IsNullOrWhiteSpace(path))
+        else
         {
-            StatusMessage = $"対応形式: {GetSupportedExtensionsPattern()}";
-            BmsDefinitionManager.FileListItems.Clear();
+            _workingBmsPath = null;
+            if (!string.IsNullOrWhiteSpace(path))
+            {
+                StatusMessage = $"対応形式: {GetSupportedExtensionsPattern()}";
+                BmsDefinitionManager.FileListItems.Clear();
+            }
         }
     }
 
@@ -514,12 +537,27 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
     public async Task ExecuteDefinitionReductionAfterConfirmationAsync()
     {
         var selectedKeywords = BmsDefinitionManager.GetSelectedKeywords();
+        var inputToUse = _workingBmsPath ?? InputPath;
 
         await Optimization.ExecuteDefinitionReductionAsync(
             BmsDefinitionManager.BmsFileList,
-            InputPath,
+            inputToUse,
             OutputPath,
             selectedKeywords);
+
+        // 処理完了後、出力先のファイルでリストを再読み込み
+        if (string.Equals(inputToUse, OutputPath, StringComparison.OrdinalIgnoreCase))
+        {
+            if (File.Exists(inputToUse))
+            {
+                BmsDefinitionManager.LoadBmsFile(inputToUse);
+            }
+        }
+        else
+        {
+            // 別名保存の場合は入力パスを切り替えて読み込み
+            InputPath = OutputPath;
+        }
     }
 
     public void ShowToast(string message, string icon = "✓", bool isError = false)
