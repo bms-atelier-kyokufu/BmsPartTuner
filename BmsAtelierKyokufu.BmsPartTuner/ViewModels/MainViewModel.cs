@@ -1,9 +1,8 @@
-﻿using System.Collections.ObjectModel;
-using System.Windows;
-using BmsAtelierKyokufu.BmsPartTuner.Core.Helpers;
-using BmsAtelierKyokufu.BmsPartTuner.Services;
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
+﻿using BmsAtelierKyokufu.BmsPartTuner.Core.Helpers;
+using BmsAtelierKyokufu.BmsPartTuner.Services.Audio;
+using BmsAtelierKyokufu.BmsPartTuner.Services.Bms;
+using BmsAtelierKyokufu.BmsPartTuner.Services.Common;
+using BmsAtelierKyokufu.BmsPartTuner.Services.UI;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.ViewModels;
 
@@ -102,7 +101,7 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
         set => Optimization.IsBusy = value;
     }
 
-    public Controls.SlideDirection SlideDirection
+    public Views.Controls.SlideDirection SlideDirection
     {
         get => Optimization.SlideDirection;
     }
@@ -410,7 +409,7 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
                 {
                     string outputDir = Path.GetDirectoryName(path) ?? "";
                     string outBmsPath = await Task.Run(() =>
-                        Services.Bmson.BmsonIntegrationFacade.Downconvert(path, outputDir, keyNotesOnly: false));
+                        Services.Bms.Bmson.BmsonIntegrationFacade.Downconvert(path, outputDir, keyNotesOnly: false));
 
                     _workingBmsPath = outBmsPath;
                     BmsDefinitionManager.LoadBmsFile(outBmsPath);

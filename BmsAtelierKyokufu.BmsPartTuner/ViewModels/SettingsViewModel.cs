@@ -1,10 +1,7 @@
-﻿using System.Collections.ObjectModel;
-using System.Reflection;
+﻿using System.Reflection;
 using BmsAtelierKyokufu.BmsPartTuner.Core;
-using BmsAtelierKyokufu.BmsPartTuner.Models;
-using BmsAtelierKyokufu.BmsPartTuner.Services;
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
+using BmsAtelierKyokufu.BmsPartTuner.Services.Common;
+using BmsAtelierKyokufu.BmsPartTuner.Services.UI;
 using Microsoft.Win32;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.ViewModels;

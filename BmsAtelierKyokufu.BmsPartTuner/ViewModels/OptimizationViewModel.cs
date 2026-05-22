@@ -1,10 +1,8 @@
-﻿using System.Diagnostics;
-using System.Threading;
-using System.Windows;
+﻿using System.Threading;
 using BmsAtelierKyokufu.BmsPartTuner.Core;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Helpers;
-using BmsAtelierKyokufu.BmsPartTuner.Services;
-using CommunityToolkit.Mvvm.ComponentModel;
+using BmsAtelierKyokufu.BmsPartTuner.Services.Bms;
+using BmsAtelierKyokufu.BmsPartTuner.Views.Controls;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.ViewModels;
 
@@ -82,7 +80,7 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
     /// スライド方向。
     /// </summary>
     [ObservableProperty]
-    private Controls.SlideDirection _swipeDirection = Controls.SlideDirection.LeftToRight;
+    private SlideDirection _swipeDirection = SlideDirection.LeftToRight;
 
     /// <summary>
     /// 現在の処理状況を示すローディングメッセージ。
@@ -96,8 +94,8 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
     [ObservableProperty]
     private Models.OptimizationResult? _lastOptimizationResult;
 
-    public Controls.SlideDirection SlideDirection =>
-        IsPhysicalDeletionEnabled ? Controls.SlideDirection.RightToLeft : Controls.SlideDirection.LeftToRight;
+    public SlideDirection SlideDirection =>
+        IsPhysicalDeletionEnabled ? SlideDirection.RightToLeft : SlideDirection.LeftToRight;
 
     public string SlideInstruction =>
         IsPhysicalDeletionEnabled ? "スライドして音源ファイルを物理削除" : "スライドして上書きを確定";
@@ -132,12 +130,12 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
         if (IsPhysicalDeletionEnabled)
         {
             SlideInstructionText = "上書きして不要な音源も削除する";
-            SwipeDirection = Controls.SlideDirection.RightToLeft;
+            SwipeDirection = SlideDirection.RightToLeft;
         }
         else
         {
             SlideInstructionText = "スライドして上書き保存";
-            SwipeDirection = Controls.SlideDirection.LeftToRight;
+            SwipeDirection = SlideDirection.LeftToRight;
         }
     }
     #endregion
@@ -325,7 +323,7 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
     }
 
     public async Task ExecuteDefinitionReductionAsync(
-        Models.BmsDefinitionManager? bmsFileList,
+        BmsAtelierKyokufu.BmsPartTuner.Core.Bms.BmsDefinitionManager? bmsFileList,
         string? inputPath,
         string? outputPath,
         IEnumerable<string>? selectedKeywords = null)
@@ -359,7 +357,7 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
     }
 
     private async Task ExecuteDefinitionReductionInternalAsync(
-        Models.BmsDefinitionManager bmsFileList,
+        BmsAtelierKyokufu.BmsPartTuner.Core.Bms.BmsDefinitionManager bmsFileList,
         string inputPath,
         string outputPath,
         float r2Val,
