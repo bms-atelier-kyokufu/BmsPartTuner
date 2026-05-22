@@ -1,7 +1,7 @@
 ﻿using System.Windows.Controls;
 using Microsoft.Xaml.Behaviors;
 
-namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Behaviors;
+namespace BmsAtelierKyokufu.BmsPartTuner.Behaviors;
 
 /// <summary>
 /// IMEを無効化して非ASCII入力を抑止するBehavior。

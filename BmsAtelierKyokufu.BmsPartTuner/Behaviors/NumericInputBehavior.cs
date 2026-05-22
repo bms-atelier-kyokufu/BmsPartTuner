@@ -1,9 +1,8 @@
 ﻿using System.Text.RegularExpressions;
-using System.Windows;
 using System.Windows.Controls;
 using Microsoft.Xaml.Behaviors;
 
-namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Behaviors
+namespace BmsAtelierKyokufu.BmsPartTuner.Behaviors
 {
     /// <summary>
     /// 数値入力のみを許可するビヘイビア

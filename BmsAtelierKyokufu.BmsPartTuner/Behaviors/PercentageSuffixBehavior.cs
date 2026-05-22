@@ -1,8 +1,7 @@
-﻿using System.Windows;
-using System.Windows.Controls;
+﻿using System.Windows.Controls;
 using Microsoft.Xaml.Behaviors;
 
-namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Behaviors;
+namespace BmsAtelierKyokufu.BmsPartTuner.Behaviors;
 
 /// <summary>
 /// テキストボックスに任意の単位サフィックスを自動付加するBehavior。

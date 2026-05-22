@@ -1,8 +1,7 @@
-﻿using System.Windows;
-using System.Windows.Controls;
+﻿using System.Windows.Controls;
 using Microsoft.Xaml.Behaviors;
 
-namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Behaviors;
+namespace BmsAtelierKyokufu.BmsPartTuner.Behaviors;
 
 /// <summary>
 /// 指定桁数の0埋めを行うBehavior（例: PadLength=2の場合、"1" → "01"）。

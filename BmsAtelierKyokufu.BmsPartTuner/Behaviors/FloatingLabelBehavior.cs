@@ -1,10 +1,10 @@
-﻿using System.Windows;
-using System.Windows.Controls;
+﻿using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
+using BmsAtelierKyokufu.BmsPartTuner.Infrastructure.UI;
 using Microsoft.Xaml.Behaviors;
 
-namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Behaviors
+namespace BmsAtelierKyokufu.BmsPartTuner.Behaviors
 {
     /// <summary>
     /// TextBoxにFloating Label機能を追加するBehavior
@@ -73,7 +73,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Behaviors
             InitializeFloatingLabel();
 
             // IsLabelPinnedがTrueの場合は初期状態でfloat
-            bool isPinned = UI.TextBoxHelper.GetIsLabelPinned(AssociatedObject);
+            bool isPinned = TextBoxHelper.GetIsLabelPinned(AssociatedObject);
             bool shouldFloat = isPinned || AssociatedObject.IsFocused || !string.IsNullOrEmpty(AssociatedObject.Text);
             AnimateLabel(shouldFloat, animated: false);
         }
@@ -104,7 +104,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Behaviors
         private void OnTextBoxLostFocus(object sender, RoutedEventArgs e)
         {
             // IsLabelPinnedがTrueの場合は常にfloat状態を維持
-            bool isPinned = UI.TextBoxHelper.GetIsLabelPinned(AssociatedObject);
+            bool isPinned = TextBoxHelper.GetIsLabelPinned(AssociatedObject);
 
             // テキストが空でもpinnedならfloat状態を維持、そうでなければ中央に戻す
             if (!isPinned && string.IsNullOrEmpty(AssociatedObject.Text))
@@ -121,7 +121,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Behaviors
         private void UpdateLabelState(bool animated)
         {
             // IsLabelPinnedがTrueの場合は常にfloat状態を維持
-            bool isPinned = UI.TextBoxHelper.GetIsLabelPinned(AssociatedObject);
+            bool isPinned = TextBoxHelper.GetIsLabelPinned(AssociatedObject);
             bool shouldFloat = isPinned || AssociatedObject.IsFocused || !string.IsNullOrEmpty(AssociatedObject.Text);
 
             if (shouldFloat != _isFloated)

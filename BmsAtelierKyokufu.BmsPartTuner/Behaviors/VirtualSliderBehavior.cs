@@ -1,9 +1,9 @@
-﻿using System.Windows;
-using System.Windows.Controls;
+﻿using System.Windows.Controls;
 using System.Windows.Media;
+using BmsAtelierKyokufu.BmsPartTuner.Infrastructure.UI;
 using Microsoft.Xaml.Behaviors;
 
-namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Behaviors
+namespace BmsAtelierKyokufu.BmsPartTuner.Behaviors
 {
     /// <summary>
     /// テキストボックスにバーチャルスライダー機能を追加するBehavior
@@ -495,15 +495,15 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Behaviors
             switch (speed)
             {
                 case DragSpeed.Fast:
-                    UI.TextBoxHelper.SetBadgeText(AssociatedObject, "FAST");
-                    AssociatedObject.SetResourceReference(UI.TextBoxHelper.BadgeBrushProperty, "M3TertiaryBrush");
+                    TextBoxHelper.SetBadgeText(AssociatedObject, "FAST");
+                    AssociatedObject.SetResourceReference(TextBoxHelper.BadgeBrushProperty, "M3TertiaryBrush");
                     break;
                 case DragSpeed.Fine:
-                    UI.TextBoxHelper.SetBadgeText(AssociatedObject, "FINE");
-                    AssociatedObject.SetResourceReference(UI.TextBoxHelper.BadgeBrushProperty, "M3SecondaryBrush");
+                    TextBoxHelper.SetBadgeText(AssociatedObject, "FINE");
+                    AssociatedObject.SetResourceReference(TextBoxHelper.BadgeBrushProperty, "M3SecondaryBrush");
                     break;
                 default:
-                    UI.TextBoxHelper.SetBadgeText(AssociatedObject, "");
+                    TextBoxHelper.SetBadgeText(AssociatedObject, "");
                     break;
             }
         }
@@ -515,7 +515,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Behaviors
         {
             if (AssociatedObject != null)
             {
-                UI.TextBoxHelper.SetBadgeText(AssociatedObject, "");
+                TextBoxHelper.SetBadgeText(AssociatedObject, "");
             }
         }
 

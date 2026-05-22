@@ -1,7 +1,6 @@
-﻿using System.Windows;
-using Microsoft.Xaml.Behaviors;
+﻿using Microsoft.Xaml.Behaviors;
 
-namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Behaviors;
+namespace BmsAtelierKyokufu.BmsPartTuner.Behaviors;
 
 /// <summary>
 /// ドラッグ＆ドロップをサポートするBehavior。

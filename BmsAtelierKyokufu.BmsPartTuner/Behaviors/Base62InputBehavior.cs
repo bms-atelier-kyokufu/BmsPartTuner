@@ -1,9 +1,8 @@
 ﻿using System.Text.RegularExpressions;
-using System.Windows;
 using System.Windows.Controls;
 using Microsoft.Xaml.Behaviors;
 
-namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Behaviors;
+namespace BmsAtelierKyokufu.BmsPartTuner.Behaviors;
 
 /// <summary>
 /// 62進数入力（0-9, A-Z, a-z）を許可するBehavior。
