@@ -1,6 +1,6 @@
 ﻿using System.Windows.Controls;
 
-namespace BmsAtelierKyokufu.BmsPartTuner.Controls.Settings
+namespace BmsAtelierKyokufu.BmsPartTuner.Views.Dialogs.Settings
 {
     /// <summary>
     /// GeneralTab.xaml の相互作用ロジック

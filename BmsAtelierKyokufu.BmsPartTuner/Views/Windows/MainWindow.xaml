@@ -1,9 +1,10 @@
 <Window
-    x:Class="BmsAtelierKyokufu.BmsPartTuner.MainWindow"
+    x:Class="BmsAtelierKyokufu.BmsPartTuner.Views.Windows.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:behaviors="clr-namespace:BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Behaviors"
-    xmlns:controls="clr-namespace:BmsAtelierKyokufu.BmsPartTuner.Controls"
+    xmlns:behaviors="clr-namespace:BmsAtelierKyokufu.BmsPartTuner.Behaviors"
+    xmlns:controls="clr-namespace:BmsAtelierKyokufu.BmsPartTuner.Views.Controls"
+    xmlns:dialogs="clr-namespace:BmsAtelierKyokufu.BmsPartTuner.Views.Dialogs"
     xmlns:converters="clr-namespace:BmsAtelierKyokufu.BmsPartTuner.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
@@ -469,11 +470,11 @@
             ToastMessage="{Binding ToastMessage}" />
 
         <!--  ========== 設定サイドシート ==========  -->
-        <controls:SideSheet
+        <dialogs:SideSheet
             x:Name="SettingsSideSheet"
             IsOpen="{Binding IsSettingsOpen, Mode=TwoWay}"
             SheetWidth="400">
-            <controls:SettingsView CloseCommand="{Binding DataContext.CloseSettingsCommand, RelativeSource={RelativeSource AncestorType={x:Type Window}}}" DataContext="{Binding Settings}" />
-        </controls:SideSheet>
+            <dialogs:SettingsView CloseCommand="{Binding DataContext.CloseSettingsCommand, RelativeSource={RelativeSource AncestorType={x:Type Window}}}" DataContext="{Binding Settings}" />
+        </dialogs:SideSheet>
     </Grid>
 </Window>

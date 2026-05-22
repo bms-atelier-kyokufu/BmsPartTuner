@@ -1,8 +1,7 @@
-﻿using System.Windows;
-using System.Windows.Controls;
-using BmsAtelierKyokufu.BmsPartTuner.Services;
+﻿using System.Windows.Controls;
+using BmsAtelierKyokufu.BmsPartTuner.Services.UI;
 
-namespace BmsAtelierKyokufu.BmsPartTuner.Controls.Settings
+namespace BmsAtelierKyokufu.BmsPartTuner.Views.Dialogs.Settings
 {
     /// <summary>
     /// AboutTab.xaml の相互作用ロジック

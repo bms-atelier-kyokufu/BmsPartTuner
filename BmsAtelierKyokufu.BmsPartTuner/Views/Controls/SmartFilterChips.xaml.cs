@@ -1,9 +1,7 @@
-﻿using System.Collections.ObjectModel;
-using System.Windows;
-using System.Windows.Controls;
-using BmsAtelierKyokufu.BmsPartTuner.Services;
+﻿using System.Windows.Controls;
+using BmsAtelierKyokufu.BmsPartTuner.Services.Bms;
 
-namespace BmsAtelierKyokufu.BmsPartTuner.Controls
+namespace BmsAtelierKyokufu.BmsPartTuner.Views.Controls
 {
     /// <summary>
     /// Smart Filter Chips コントロール

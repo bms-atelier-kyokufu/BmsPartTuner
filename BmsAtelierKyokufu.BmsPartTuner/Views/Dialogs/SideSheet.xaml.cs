@@ -1,8 +1,7 @@
-﻿using System.Windows;
-using System.Windows.Controls;
+﻿using System.Windows.Controls;
 using System.Windows.Media.Animation;
 
-namespace BmsAtelierKyokufu.BmsPartTuner.Controls;
+namespace BmsAtelierKyokufu.BmsPartTuner.Views.Dialogs;
 
 /// <summary>
 /// Material 3準拠のモーダル・サイドシートコントロール。

@@ -1,11 +1,13 @@
 ﻿using System.Reflection;
-using System.Text;
-using System.Windows;
 using System.Windows.Threading;
 using BmsAtelierKyokufu.BmsPartTuner.Core;
-using BmsAtelierKyokufu.BmsPartTuner.Services;
-using BmsAtelierKyokufu.BmsPartTuner.Services.AudioPlayer;
+using BmsAtelierKyokufu.BmsPartTuner.Services.Audio;
+using BmsAtelierKyokufu.BmsPartTuner.Services.Audio.AudioPlayer;
+using BmsAtelierKyokufu.BmsPartTuner.Services.Bms;
+using BmsAtelierKyokufu.BmsPartTuner.Services.Common;
+using BmsAtelierKyokufu.BmsPartTuner.Services.UI;
 using BmsAtelierKyokufu.BmsPartTuner.ViewModels;
+using BmsAtelierKyokufu.BmsPartTuner.Views.Windows;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Win32;

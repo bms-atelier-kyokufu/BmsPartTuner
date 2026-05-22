@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <OutputType>WinExe</OutputType>
@@ -76,20 +76,32 @@
             <AutoGen>True</AutoGen>
             <DependentUpon>Settings.settings</DependentUpon>
         </Compile>
-        <Compile Update="Controls\M3TextBox.cs">
-            <DependentUpon>M3TextBox.xaml</DependentUpon>
+        <Compile Update="Views\Windows\MainWindow.xaml.cs">
+            <DependentUpon>MainWindow.xaml</DependentUpon>
         </Compile>
-        <Compile Update="Controls\M3NumericTextBox.cs">
-            <DependentUpon>M3NumericTextBox.xaml</DependentUpon>
+        <Compile Update="Views\Controls\SlideConfirmationControl.xaml.cs">
+            <DependentUpon>SlideConfirmationControl.xaml</DependentUpon>
         </Compile>
-        <Compile Update="Controls\M3SearchTextBox.cs">
-            <DependentUpon>M3SearchTextBox.xaml</DependentUpon>
+        <Compile Update="Views\Controls\SmartFilterChips.xaml.cs">
+            <DependentUpon>SmartFilterChips.xaml</DependentUpon>
         </Compile>
-        <Compile Update="Controls\M3FilePathTextBox.cs">
-            <DependentUpon>M3FilePathTextBox.xaml</DependentUpon>
-        </Compile>
-        <Compile Update="Controls\ToastControl.xaml.cs">
+        <Compile Update="Views\Controls\ToastControl.xaml.cs">
             <DependentUpon>ToastControl.xaml</DependentUpon>
+        </Compile>
+        <Compile Update="Views\Dialogs\SettingsView.xaml.cs">
+            <DependentUpon>SettingsView.xaml</DependentUpon>
+        </Compile>
+        <Compile Update="Views\Dialogs\SideSheet.xaml.cs">
+            <DependentUpon>SideSheet.xaml</DependentUpon>
+        </Compile>
+        <Compile Update="Views\Dialogs\Settings\AboutTab.xaml.cs">
+            <DependentUpon>AboutTab.xaml</DependentUpon>
+        </Compile>
+        <Compile Update="Views\Dialogs\Settings\GeneralTab.xaml.cs">
+            <DependentUpon>GeneralTab.xaml</DependentUpon>
+        </Compile>
+        <Compile Update="Views\Dialogs\Settings\LicenseDetailView.xaml.cs">
+            <DependentUpon>LicenseDetailView.xaml</DependentUpon>
         </Compile>
     </ItemGroup>
 
@@ -108,31 +120,39 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Page Update="Controls\M3TextBox.xaml">
+        <Page Update="Views\Windows\MainWindow.xaml">
             <Generator>MSBuild:Compile</Generator>
             <SubType>Designer</SubType>
         </Page>
-        <Page Update="Controls\M3NumericTextBox.xaml">
+        <Page Update="Views\Controls\SlideConfirmationControl.xaml">
             <Generator>MSBuild:Compile</Generator>
             <SubType>Designer</SubType>
         </Page>
-        <Page Update="Controls\M3CorrelationTextBox.xaml">
+        <Page Update="Views\Controls\SmartFilterChips.xaml">
             <Generator>MSBuild:Compile</Generator>
             <SubType>Designer</SubType>
         </Page>
-        <Page Update="Controls\M3SearchTextBox.xaml">
+        <Page Update="Views\Controls\ToastControl.xaml">
             <Generator>MSBuild:Compile</Generator>
             <SubType>Designer</SubType>
         </Page>
-        <Page Update="Controls\M3FilePathTextBox.xaml">
+        <Page Update="Views\Dialogs\SettingsView.xaml">
             <Generator>MSBuild:Compile</Generator>
             <SubType>Designer</SubType>
         </Page>
-        <Page Update="Controls\SmartFilterChips.xaml">
+        <Page Update="Views\Dialogs\SideSheet.xaml">
             <Generator>MSBuild:Compile</Generator>
             <SubType>Designer</SubType>
         </Page>
-        <Page Update="Controls\ToastControl.xaml">
+        <Page Update="Views\Dialogs\Settings\AboutTab.xaml">
+            <Generator>MSBuild:Compile</Generator>
+            <SubType>Designer</SubType>
+        </Page>
+        <Page Update="Views\Dialogs\Settings\GeneralTab.xaml">
+            <Generator>MSBuild:Compile</Generator>
+            <SubType>Designer</SubType>
+        </Page>
+        <Page Update="Views\Dialogs\Settings\LicenseDetailView.xaml">
             <Generator>MSBuild:Compile</Generator>
             <SubType>Designer</SubType>
         </Page>

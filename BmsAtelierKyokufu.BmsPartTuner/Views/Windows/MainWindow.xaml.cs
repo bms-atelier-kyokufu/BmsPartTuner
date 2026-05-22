@@ -1,10 +1,11 @@
-﻿using System.Windows;
-using System.Windows.Controls;
+﻿using System.Windows.Controls;
 using BmsAtelierKyokufu.BmsPartTuner.Infrastructure;
-using BmsAtelierKyokufu.BmsPartTuner.Services;
+using BmsAtelierKyokufu.BmsPartTuner.Services.Bms;
+using BmsAtelierKyokufu.BmsPartTuner.Services.UI;
 using BmsAtelierKyokufu.BmsPartTuner.ViewModels;
+using BmsAtelierKyokufu.BmsPartTuner.Views.Controls;
 
-namespace BmsAtelierKyokufu.BmsPartTuner
+namespace BmsAtelierKyokufu.BmsPartTuner.Views.Windows
 {
     /// <summary>
     /// MainWindow.xaml の相互作用ロジック
@@ -203,7 +204,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner
 
         private void FilterChip_Click(object sender, RoutedEventArgs e)
         {
-            if (e is Controls.SmartFilterChips.ChipClickEventArgs args)
+            if (e is SmartFilterChips.ChipClickEventArgs args)
             {
                 _viewModel.BmsDefinitionManager.ToggleChipSelection(args.Chip);
             }

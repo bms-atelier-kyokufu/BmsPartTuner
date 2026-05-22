@@ -1,9 +1,8 @@
-﻿using System.Windows;
-using System.Windows.Controls;
+﻿using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 
-namespace BmsAtelierKyokufu.BmsPartTuner.Controls
+namespace BmsAtelierKyokufu.BmsPartTuner.Views.Controls
 {
     public enum SlideDirection
     {
