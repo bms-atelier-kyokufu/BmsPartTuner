@@ -19,7 +19,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms;
 /// 【Priority: Critical】
 /// このクラスはBMS定義の再利用を司り、バグはデータ破壊に直結する。
 /// </summary>
-public class DefinitionReuseTests : IDisposable
+public partial class DefinitionReuseTests : IDisposable
 {
     private readonly BmsTestContext _context;
 
@@ -33,6 +33,7 @@ public class DefinitionReuseTests : IDisposable
         _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         _context.Dispose();
+        GC.SuppressFinalize(this);
     }
 
     #region Helper Methods
@@ -134,7 +135,7 @@ public class DefinitionReuseTests : IDisposable
 
         // ZZの定義が存在することを確認（削減処理により番号が変わる可能性あり）
         // 少なくとも2つのWAV定義が存在すること
-        var wavDefinitions = System.Text.RegularExpressions.Regex.Matches(outputContent, @"#WAV\w{2}\s+", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+        var wavDefinitions = WavDefinitionRegex().Matches(outputContent);
         Assert.True(wavDefinitions.Count >= 1, $"WAV定義が見つかりません。実際の出力: {outputContent}");
     }
 
@@ -177,7 +178,7 @@ public class DefinitionReuseTests : IDisposable
 
         // zzの定義が存在することを確認（削減処理により番号が変わる可能性あり）
         // 少なくとも1つのWAV定義が存在すること
-        var wavDefinitions = System.Text.RegularExpressions.Regex.Matches(outputContent, @"#wav\w{2}\s+", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+        var wavDefinitions = WavDefinitionRegex().Matches(outputContent);
         Assert.True(wavDefinitions.Count >= 1, $"WAV定義が見つかりません。実際の出力: {outputContent}");
     }
 
@@ -331,7 +332,7 @@ public class DefinitionReuseTests : IDisposable
         // Arrange
         var file1 = CreateTestWaveFile("keep1.wav", 1000, 440f);
         var file2 = CreateTestWaveFile("keep2.wav", 1000, 440f);  // 同一波形
-        _ = new ObservableCollection<BmsAudioFile>
+        var fileList = new ObservableCollection<BmsAudioFile>
         {
             new() { Num = "01", NumInteger = 1, Name = file1, FileSize = new FileInfo(file1).Length },
             new() { Num = "02", NumInteger = 2, Name = file2, FileSize = new FileInfo(file2).Length }
@@ -345,7 +346,6 @@ public class DefinitionReuseTests : IDisposable
             .Build("test_nodelete.bms");
 
         var outputFile = Path.Combine(_context.TempDirectory, "output_nodelete.bms");
-        var fileList = new System.Collections.ObjectModel.ObservableCollection<BmsAudioFile>();
         var dr = new DefinitionReuse(fileList, audioCache);
 
         // Act: 物理削除無効で実行
@@ -372,7 +372,7 @@ public class DefinitionReuseTests : IDisposable
         // Arrange
         var file1 = CreateTestWaveFile("used.wav", 1000, 440f);
         var file2 = CreateTestWaveFile("unused.wav", 1000, 440f);  // 同一波形
-        _ = new ObservableCollection<BmsAudioFile>
+        var fileList = new ObservableCollection<BmsAudioFile>
         {
             new() { Num = "01", NumInteger = 1, Name = file1, FileSize = new FileInfo(file1).Length },
             new() { Num = "02", NumInteger = 2, Name = file2, FileSize = new FileInfo(file2).Length }
@@ -386,7 +386,6 @@ public class DefinitionReuseTests : IDisposable
             .Build("test_unused.bms");
 
         var outputFile = Path.Combine(_context.TempDirectory, "output_unused.bms");
-        var fileList = new System.Collections.ObjectModel.ObservableCollection<BmsAudioFile>();
         var dr = new DefinitionReuse(fileList, audioCache);
 
         // Act
@@ -632,4 +631,7 @@ public class DefinitionReuseTests : IDisposable
     }
 
     #endregion
+
+    [System.Text.RegularExpressions.GeneratedRegex(@"#WAV\w{2}\s+", System.Text.RegularExpressions.RegexOptions.IgnoreCase)]
+    private static partial System.Text.RegularExpressions.Regex WavDefinitionRegex();
 }

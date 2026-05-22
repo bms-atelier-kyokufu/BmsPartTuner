@@ -9,7 +9,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Audio
     /// </summary>
     public class ParallelAudioComparisonEngineTests
     {
-        private CachedSoundData CreateCachedSoundData(float[] samples)
+        private static CachedSoundData CreateCachedSoundData(float[] samples)
         {
             // テスト用の有効な音声データ（1ch, 44100Hz, 16bit）を生成
             var samplesPerChannel = new float[1][];
@@ -17,7 +17,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Audio
             return new CachedSoundData(samplesPerChannel, 44100, 16);
         }
 
-        private BmsAudioFile CreateWavFile(int num, float[] samples)
+        private static BmsAudioFile CreateWavFile(int num, float[] samples, System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData> audioCache)
         {
             var file = new BmsAudioFile
             {
@@ -27,17 +27,20 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Audio
                 FileSize = 1024
             };
 
+            var cachedData = CreateCachedSoundData(samples);
+            audioCache[file.Name] = cachedData;
+
             // テスト用：BmsAudioFileのキャッシュデータ（CachedSoundData）を直接注入
             // setterがprivateの場合はリフレクションで設定
             System.Reflection.PropertyInfo? prop = null;
             if (prop != null && prop.CanWrite)
             {
-                prop.SetValue(file, CreateCachedSoundData(samples));
+                prop.SetValue(file, cachedData);
             }
             else
             {
                 var field = typeof(BmsAudioFile).GetField("_cachedData", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                field?.SetValue(file, CreateCachedSoundData(samples));
+                field?.SetValue(file, cachedData);
             }
 
             return file;
@@ -51,19 +54,19 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Audio
             var samples = new float[] { 0.1f, 0.2f, 0.3f };
             var fileList = new List<BmsAudioFile>
             {
-                CreateWavFile(0, [0]), // ダミー
-                CreateWavFile(1, samples),
-                CreateWavFile(2, samples),
-                CreateWavFile(3, [0.5f, 0.6f, 0.7f]) // 異なるデータ
+                CreateWavFile(0, [0], audioCache), // ダミー
+                CreateWavFile(1, samples, audioCache),
+                CreateWavFile(2, samples, audioCache),
+                CreateWavFile(3, [0.5f, 0.6f, 0.7f], audioCache) // 異なるデータ
             };
 
-            var replaceTable = new int[4];
+            var replaceTable = new int[fileList.Count];
             var groups = new List<List<int>>
             {
                 new() { 1, 2, 3 }
             };
 
-            var engine = new ParallelAudioComparisonEngine(fileList, audioCache, new int[fileList.Count], 1, fileList.Count);
+            var engine = new ParallelAudioComparisonEngine(fileList, audioCache, replaceTable, 1, fileList.Count - 1);
 
             // 並列処理エンジンの仕様確認
             // 置換が発生しない（ユニークな）ファイルは、処理済みマークとして
@@ -86,15 +89,15 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Audio
 
             var fileList = new List<BmsAudioFile>
             {
-                CreateWavFile(0, [0]),
-                CreateWavFile(1, samples1),
-                CreateWavFile(2, samples2)
+                CreateWavFile(0, [0], audioCache),
+                CreateWavFile(1, samples1, audioCache),
+                CreateWavFile(2, samples2, audioCache)
             };
 
-            var replaceTable = new int[4];
+            var replaceTable = new int[fileList.Count];
             var groups = new List<List<int>> { new() { 1, 2 } };
 
-            var engine = new ParallelAudioComparisonEngine(fileList, audioCache, new int[fileList.Count], 1, fileList.Count);
+            var engine = new ParallelAudioComparisonEngine(fileList, audioCache, replaceTable, 1, fileList.Count - 1);
 
             // 類似度が高い場合、2は1に置換される
             engine.CompareGroups(groups, 0.90f, new Progress<int>());
@@ -112,15 +115,15 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Audio
 
             var fileList = new List<BmsAudioFile>
             {
-                CreateWavFile(0, [0]),
-                CreateWavFile(1, samples1),
-                CreateWavFile(2, samples2)
+                CreateWavFile(0, [0], audioCache),
+                CreateWavFile(1, samples1, audioCache),
+                CreateWavFile(2, samples2, audioCache)
             };
 
-            var replaceTable = new int[4];
+            var replaceTable = new int[fileList.Count];
             var groups = new List<List<int>> { new() { 1, 2 } };
 
-            var engine = new ParallelAudioComparisonEngine(fileList, audioCache, new int[fileList.Count], 1, fileList.Count);
+            var engine = new ParallelAudioComparisonEngine(fileList, audioCache, replaceTable, 1, fileList.Count - 1);
 
             // 類似度が低い場合、置換は発生せず各自のIDでマークされる
             engine.CompareGroups(groups, 0.99f, new Progress<int>());
