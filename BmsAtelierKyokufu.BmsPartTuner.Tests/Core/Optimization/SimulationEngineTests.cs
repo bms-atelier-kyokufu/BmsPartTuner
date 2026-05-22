@@ -1031,7 +1031,10 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
             // クリーンアップ
             foreach (var file in fileList)
             {
-                audioCache[file.Name]?.Dispose();
+                if (audioCache.TryGetValue(file.Name, out var cached))
+                {
+                    cached?.Dispose();
+                }
             }
         }
 

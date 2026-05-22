@@ -68,6 +68,11 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Scenarios
                 samplesD[i] = (float)Math.Cos(i * 0.2);
             samplesD = NormalizeToRms(samplesD, targetRms);
 
+            audioCache["A.wav"] = CreateMockAudioData(samplesA);
+            audioCache["B.wav"] = CreateMockAudioData(samplesB);
+            audioCache["C.wav"] = CreateMockAudioData(samplesC);
+            audioCache["D.wav"] = CreateMockAudioData(samplesD);
+
             var fileList = new List<BmsAudioFile>
             {
                 new() { NumInteger = 1, Name = "A.wav"},
