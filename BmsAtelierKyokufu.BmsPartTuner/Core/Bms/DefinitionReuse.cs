@@ -34,7 +34,7 @@ public class DefinitionReuse
     #region フィールド
 
     private readonly IReadOnlyList<BmsAudioFile> _fileList;
-    private readonly IReadOnlyDictionary<string, CachedSoundData> _audioCache;
+    private IReadOnlyDictionary<string, CachedSoundData> _audioCache;
     private readonly int[] _replaces = new int[AppConstants.Definition.ReplaceTableSize];
     private readonly DefinitionRangeManager _rangeManager;
     private DefinitionStatistics _statistics;
@@ -125,7 +125,8 @@ public class DefinitionReuse
             _rangeManager.StartPoint, _rangeManager.EndPoint);
 
         Debug.WriteLine("=== Phase 1: Preloading audio data ===");
-        AudioCacheManager.PreloadAudioData(_fileList, progress, normalizationMode);
+        var (_, loadedCache) = AudioCacheManager.PreloadAudioData(_fileList, progress, normalizationMode);
+        _audioCache = loadedCache;
         progress.Report(AppConstants.Progress.PreloadComplete);
 
         Debug.WriteLine("=== Phase 2: Creating replace table ===");
@@ -142,7 +143,7 @@ public class DefinitionReuse
 
         if (isPhysicalDeletionEnabled)
         {
-            PerformPhysicalDeletion(progress);
+            PerformPhysicalDeletion();
         }
 
         progress.Report(AppConstants.Progress.Complete);
@@ -153,7 +154,7 @@ public class DefinitionReuse
         _statistics.LogStatistics();
     }
 
-    private void PerformPhysicalDeletion(IProgress<int> progress)
+    private void PerformPhysicalDeletion()
     {
         if (_rewriter == null) return;
 
@@ -250,8 +251,7 @@ public class DefinitionReuse
     private void CreateReplaceTable(IProgress<int> progress, float r2val,
         IEnumerable<string>? selectedKeywords)
     {
-        var groupingStrategy = new AudioFileGroupingStrategy();
-        var groups = groupingStrategy.GroupFiles(_audioCache, _fileList, _rangeManager.StartPoint, _rangeManager.EndPoint, selectedKeywords);
+        var groups = AudioFileGroupingStrategy.GroupFiles(_audioCache, _fileList, _rangeManager.StartPoint, _rangeManager.EndPoint, selectedKeywords);
 
         var comparisonEngine = new ParallelAudioComparisonEngine(_fileList, _audioCache, _replaces, _rangeManager.StartPoint, _rangeManager.EndPoint);
         comparisonEngine.CompareGroups(groups, r2val, progress);

@@ -283,8 +283,7 @@ internal class SimulationEngine(
     /// </remarks>
     private int SimulateThreshold(float threshold)
     {
-        var groupingStrategy = new AudioFileGroupingStrategy();
-        IReadOnlyList<IReadOnlyList<int>> groups = groupingStrategy.GroupFiles(_audioCache, _fileList, _startPoint, _endPoint, null);
+        IReadOnlyList<IReadOnlyList<int>> groups = AudioFileGroupingStrategy.GroupFiles(_audioCache, _fileList, _startPoint, _endPoint, null);
 
         var replaceTable = new int[3844]; // BMSの最大定義番号
 

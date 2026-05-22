@@ -34,7 +34,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Core.Helpers;
 /// 楽器種別ごとに分離することで、異なる楽器同士の無駄な比較を回避し、
 /// さらなる高速化と精度向上を実現します。
 /// </remarks>
-public class AudioFileGroupingStrategy
+public static class AudioFileGroupingStrategy
 {
     /// <summary>
     /// ファイルリストをグループ化。
@@ -51,7 +51,7 @@ public class AudioFileGroupingStrategy
     /// <item>selectedKeywordsがnullまたは空: <see cref="GroupFilesTraditional"/>を使用</item>
     /// </list>
     /// </remarks>
-    public IReadOnlyList<IReadOnlyList<int>> GroupFiles(
+    public static IReadOnlyList<IReadOnlyList<int>> GroupFiles(
         IReadOnlyDictionary<string, CachedSoundData> audioCache,
         IReadOnlyList<BmsAudioFile> fileList,
         int startPoint,
@@ -99,7 +99,7 @@ public class AudioFileGroupingStrategy
     /// <item>どのキーワードにも該当しない</item>
     /// </list>
     /// </remarks>
-    private IReadOnlyList<IReadOnlyList<int>> GroupFilesByKeywords(
+    private static List<IReadOnlyList<int>> GroupFilesByKeywords(
         IReadOnlyDictionary<string, CachedSoundData> audioCache,
         IReadOnlyList<BmsAudioFile> fileList,
         int startPoint,
@@ -130,6 +130,12 @@ public class AudioFileGroupingStrategy
             }
 
             totalFiles++;
+
+            if (string.IsNullOrEmpty(fileList[i].Name))
+            {
+                noCache++;
+                continue;
+            }
 
             audioCache.TryGetValue(fileList[i].Name, out var cachedData);
             if (cachedData == null)
@@ -227,7 +233,7 @@ public class AudioFileGroupingStrategy
     /// 浮動小数点の完全一致は困難なため、<see cref="AppConstants.RmsQuantizationFactor"/>倍して
     /// 整数化することで、近いRMS値を持つファイルを同じグループに分類します。
     /// </remarks>
-    private IReadOnlyList<IReadOnlyList<int>> GroupFilesTraditional(
+    private static List<IReadOnlyList<int>> GroupFilesTraditional(
         IReadOnlyDictionary<string, CachedSoundData> audioCache,
         IReadOnlyList<BmsAudioFile> fileList,
         int startPoint,
@@ -252,6 +258,12 @@ public class AudioFileGroupingStrategy
 
             totalFiles++;
 
+            if (string.IsNullOrEmpty(fileList[i].Name))
+            {
+                noCache++;
+                continue;
+            }
+
             audioCache.TryGetValue(fileList[i].Name, out var cachedData);
             if (cachedData == null)
             {
@@ -266,12 +278,13 @@ public class AudioFileGroupingStrategy
 
             string groupKey = $"{fileSize}_{rmsQuantized}";
 
-            if (!groups.ContainsKey(groupKey))
+            if (!groups.TryGetValue(groupKey, out var groupList))
             {
-                groups[groupKey] = [];
+                groupList = [];
+                groups[groupKey] = groupList;
             }
 
-            groups[groupKey].Add(i);
+            groupList.Add(i);
         }
 
         var finalGroups = new List<IReadOnlyList<int>>();
