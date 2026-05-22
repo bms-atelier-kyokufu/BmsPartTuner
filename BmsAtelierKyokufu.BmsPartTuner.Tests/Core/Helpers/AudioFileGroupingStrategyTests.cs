@@ -44,6 +44,7 @@ public class AudioFileGroupingStrategyTests
             {
                 samplesPerChannel[0][i] = rms;
             }
+            var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
             audioCache[file.Name] = new CachedSoundData(samplesPerChannel, 44100, 16, fileName);
         }
 
@@ -62,7 +63,7 @@ public class AudioFileGroupingStrategyTests
         var files = new List<BmsAudioFile>();
 
         // Act
-        var groups = _strategy.GroupFiles(audioCache, audioCache, files, 1, 10);
+        var groups = _strategy.GroupFiles(audioCache, files, 1, 10);
 
         // Assert
         Assert.Empty(groups);

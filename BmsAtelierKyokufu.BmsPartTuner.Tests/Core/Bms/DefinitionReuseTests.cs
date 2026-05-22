@@ -31,6 +31,7 @@ public class DefinitionReuseTests : IDisposable
     public void Dispose()
     {
         _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         _context.Dispose();
     }
 
@@ -99,6 +100,7 @@ public class DefinitionReuseTests : IDisposable
     public void ReductDefinition_WithBase36MaxValue_ZZ_Success()
     {
         var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Arrange: ZZ (1295) の境界値テスト
         var fileList = CreateBmsDefinitionManager(
             (1294, "sound_1294.wav"),
@@ -113,7 +115,7 @@ public class DefinitionReuseTests : IDisposable
             .Build("test_zz.bms");
 
         var outputFile = Path.Combine(_context.TempDirectory, "output_zz.bms");
-        var dr = new DefinitionReuse(new System.Collections.ObjectModel.ObservableCollection<BmsAudioFile>(fileList, audioCache));
+        var dr = new DefinitionReuse(fileList, audioCache);
 
         // Act: defStartとdefEndは実際のファイルリスト範囲に合わせる
         dr.ReductDefinition(
@@ -140,6 +142,7 @@ public class DefinitionReuseTests : IDisposable
     public void ReductDefinition_WithBase62MaxValue_zz_Success()
     {
         var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Arrange: zz (3843) の境界値テスト
         var fileList = CreateBmsDefinitionManager(
             BmsAtelierKyokufu.BmsPartTuner.Core.AppConstants.Definition.RadixBase62,
@@ -155,7 +158,7 @@ public class DefinitionReuseTests : IDisposable
             .Build("test_zz62.bms");
 
         var outputFile = Path.Combine(_context.TempDirectory, "output_zz62.bms");
-        var dr = new DefinitionReuse(new System.Collections.ObjectModel.ObservableCollection<BmsAudioFile>(fileList, audioCache));
+        var dr = new DefinitionReuse(fileList, audioCache);
 
         // Act: defStartとdefEndは実際のファイルリスト範囲に合わせる
         dr.ReductDefinition(
@@ -204,7 +207,7 @@ public class DefinitionReuseTests : IDisposable
         File.WriteAllText(bmsFile, bmsContent);
 
         var outputFile = Path.Combine(_context.TempDirectory, "output_mixed.bms");
-        var dr = new DefinitionReuse(new System.Collections.ObjectModel.ObservableCollection<BmsAudioFile>(fileList, audioCache));
+        var dr = new DefinitionReuse(fileList, audioCache);
 
         // Act & Assert: エラーなく処理が完了することを確認
         var exception = Record.Exception(() =>
@@ -250,7 +253,7 @@ public class DefinitionReuseTests : IDisposable
         File.WriteAllText(bmsFile, bmsContent);
 
         var outputFile = Path.Combine(_context.TempDirectory, "output_dup.bms");
-        var dr = new DefinitionReuse(new System.Collections.ObjectModel.ObservableCollection<BmsAudioFile>(fileList, audioCache));
+        var dr = new DefinitionReuse(fileList, audioCache);
 
         // Act & Assert: エラーなく処理が完了することを確認
         var exception = Record.Exception(() =>
@@ -277,6 +280,7 @@ public class DefinitionReuseTests : IDisposable
     public void ReductDefinition_WithPhysicalDeletion_DeletesUnusedFiles()
     {
         var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Arrange: 同一音声ファイルを2つ用意
         var identical1 = CreateTestWaveFile("identical1.wav", 1000, 440f);
         var identical2 = CreateTestWaveFile("identical2.wav", 1000, 440f);  // 同一波形
@@ -298,7 +302,7 @@ public class DefinitionReuseTests : IDisposable
             .Build("test_delete.bms");
 
         var outputFile = Path.Combine(_context.TempDirectory, "output_delete.bms");
-        var dr = new DefinitionReuse(new ObservableCollection<BmsAudioFile>(fileList, audioCache));
+        var dr = new DefinitionReuse(new ObservableCollection<BmsAudioFile>(fileList), audioCache);
 
         // Act: 物理削除有効で実行
         dr.ReductDefinition(
@@ -323,11 +327,11 @@ public class DefinitionReuseTests : IDisposable
     public void ReductDefinition_WithPhysicalDeletionDisabled_KeepsAllFiles()
     {
         var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Arrange
         var file1 = CreateTestWaveFile("keep1.wav", 1000, 440f);
         var file2 = CreateTestWaveFile("keep2.wav", 1000, 440f);  // 同一波形
-
-        var fileList = new ObservableCollection<BmsAudioFile>
+        _ = new ObservableCollection<BmsAudioFile>
         {
             new() { Num = "01", NumInteger = 1, Name = file1, FileSize = new FileInfo(file1).Length },
             new() { Num = "02", NumInteger = 2, Name = file2, FileSize = new FileInfo(file2).Length }
@@ -341,7 +345,8 @@ public class DefinitionReuseTests : IDisposable
             .Build("test_nodelete.bms");
 
         var outputFile = Path.Combine(_context.TempDirectory, "output_nodelete.bms");
-        var dr = new DefinitionReuse(new System.Collections.ObjectModel.ObservableCollection<BmsAudioFile>(fileList, audioCache));
+        var fileList = new System.Collections.ObjectModel.ObservableCollection<BmsAudioFile>();
+        var dr = new DefinitionReuse(fileList, audioCache);
 
         // Act: 物理削除無効で実行
         dr.ReductDefinition(
@@ -363,11 +368,11 @@ public class DefinitionReuseTests : IDisposable
     public void GetUnusedFilePaths_AfterReduction_ReturnsCorrectList()
     {
         var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Arrange
         var file1 = CreateTestWaveFile("used.wav", 1000, 440f);
         var file2 = CreateTestWaveFile("unused.wav", 1000, 440f);  // 同一波形
-
-        var fileList = new ObservableCollection<BmsAudioFile>
+        _ = new ObservableCollection<BmsAudioFile>
         {
             new() { Num = "01", NumInteger = 1, Name = file1, FileSize = new FileInfo(file1).Length },
             new() { Num = "02", NumInteger = 2, Name = file2, FileSize = new FileInfo(file2).Length }
@@ -381,7 +386,8 @@ public class DefinitionReuseTests : IDisposable
             .Build("test_unused.bms");
 
         var outputFile = Path.Combine(_context.TempDirectory, "output_unused.bms");
-        var dr = new DefinitionReuse(new System.Collections.ObjectModel.ObservableCollection<BmsAudioFile>(fileList, audioCache));
+        var fileList = new System.Collections.ObjectModel.ObservableCollection<BmsAudioFile>();
+        var dr = new DefinitionReuse(fileList, audioCache);
 
         // Act
         dr.ReductDefinition(
@@ -404,9 +410,10 @@ public class DefinitionReuseTests : IDisposable
     public void GetUnusedFilePaths_BeforeReduction_ReturnsEmptyList()
     {
         var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Arrange
         var fileList = CreateBmsDefinitionManager((1, "test.wav"));
-        var dr = new DefinitionReuse(new System.Collections.ObjectModel.ObservableCollection<BmsAudioFile>(fileList, audioCache));
+        var dr = new DefinitionReuse(fileList, audioCache);
 
         // Act: ReductDefinitionを実行する前
         var unusedFiles = dr.GetUnusedFilePaths();
@@ -423,6 +430,7 @@ public class DefinitionReuseTests : IDisposable
     public void ReductDefinition_WithExtremeThreshold_0_MergesAll()
     {
         var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Arrange: しきい値0.0（全てを結合）
         var fileList = CreateBmsDefinitionManager(
             (1, "sound1.wav"),
@@ -439,7 +447,7 @@ public class DefinitionReuseTests : IDisposable
             .Build("test_threshold0.bms");
 
         var outputFile = Path.Combine(_context.TempDirectory, "output_threshold0.bms");
-        var dr = new DefinitionReuse(new System.Collections.ObjectModel.ObservableCollection<BmsAudioFile>(fileList, audioCache));
+        var dr = new DefinitionReuse(fileList, audioCache);
 
         // Act
         dr.ReductDefinition(
@@ -462,6 +470,7 @@ public class DefinitionReuseTests : IDisposable
     public void ReductDefinition_WithExtremeThreshold_1_MergesNothing()
     {
         var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Arrange: しきい値1.0（完全一致のみ結合）
         var fileList = CreateBmsDefinitionManager(
             (1, "diff1.wav"),
@@ -476,7 +485,7 @@ public class DefinitionReuseTests : IDisposable
             .Build("test_threshold1.bms");
 
         var outputFile = Path.Combine(_context.TempDirectory, "output_threshold1.bms");
-        var dr = new DefinitionReuse(new System.Collections.ObjectModel.ObservableCollection<BmsAudioFile>(fileList, audioCache));
+        var dr = new DefinitionReuse(fileList, audioCache);
 
         // Act
         dr.ReductDefinition(
@@ -520,7 +529,7 @@ public class DefinitionReuseTests : IDisposable
             .Build("test_single.bms");
 
         var outputFile = Path.Combine(_context.TempDirectory, "output_single.bms");
-        var dr = new DefinitionReuse(new System.Collections.ObjectModel.ObservableCollection<BmsAudioFile>(fileList, audioCache));
+        var dr = new DefinitionReuse(fileList, audioCache);
 
         // Act & Assert: エラーなく処理が完了することを確認
         var exception = Record.Exception(() =>
@@ -548,6 +557,7 @@ public class DefinitionReuseTests : IDisposable
     public void ReductDefinition_WithSelectedKeywords_ProcessesOnlyMatchingFiles()
     {
         var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Arrange
         var fileList = CreateBmsDefinitionManager(
             (1, "kick_heavy.wav"),
@@ -564,7 +574,7 @@ public class DefinitionReuseTests : IDisposable
             .Build("test_keywords.bms");
 
         var outputFile = Path.Combine(_context.TempDirectory, "output_keywords.bms");
-        var dr = new DefinitionReuse(new System.Collections.ObjectModel.ObservableCollection<BmsAudioFile>(fileList, audioCache));
+        var dr = new DefinitionReuse(fileList, audioCache);
 
         // Act: "kick"キーワードのみ処理
         dr.ReductDefinition(
@@ -599,7 +609,7 @@ public class DefinitionReuseTests : IDisposable
             .Build("test_progress.bms");
 
         var outputFile = Path.Combine(_context.TempDirectory, "output_progress.bms");
-        var dr = new DefinitionReuse(new System.Collections.ObjectModel.ObservableCollection<BmsAudioFile>(fileList, audioCache));
+        var dr = new DefinitionReuse(fileList, audioCache);
 
         var progressReports = new List<int>();
         var progress = new Progress<int>(p => progressReports.Add(p));

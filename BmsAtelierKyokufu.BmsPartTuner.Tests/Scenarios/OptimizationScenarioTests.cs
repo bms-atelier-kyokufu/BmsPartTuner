@@ -68,7 +68,6 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Scenarios
                 samplesD[i] = (float)Math.Cos(i * 0.2);
             samplesD = NormalizeToRms(samplesD, targetRms);
 
-            var audioCache = audioCache;
             var fileList = new List<BmsAudioFile>
             {
                 new() { NumInteger = 1, Name = "A.wav"},

@@ -59,9 +59,9 @@ public class DefinitionRangeManagerTests
     [Fact]
     public void Constructor_WithEmptyBmsDefinitionManager_InitializesWithDefaults()
     {
-        var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Arrange
-        var audioCache = audioCache;
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         var fileList = new List<BmsAudioFile>();
 
         // Act
@@ -224,9 +224,9 @@ public class DefinitionRangeManagerTests
     [Fact]
     public void DetermineProcessingRange_EmptyBmsDefinitionManager_UsesMinDefaults()
     {
-        var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Arrange
-        var audioCache = audioCache;
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         var fileList = new List<BmsAudioFile>();
         var manager = new DefinitionRangeManager(fileList);
 

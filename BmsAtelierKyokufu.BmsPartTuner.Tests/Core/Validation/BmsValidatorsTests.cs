@@ -1,4 +1,5 @@
 ﻿using BmsAtelierKyokufu.BmsPartTuner.Core.Validation;
+using BmsAtelierKyokufu.BmsPartTuner.Models;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Validation;
 

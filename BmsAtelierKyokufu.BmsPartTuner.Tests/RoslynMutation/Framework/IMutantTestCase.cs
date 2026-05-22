@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using BmsAtelierKyokufu.BmsPartTuner.Models;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Tests.MutationFramework;
 

@@ -10,7 +10,7 @@ public class FileOperationsViewModelTests
     [Fact]
     public void OnInputPathChanged_WithBmsonFile_ForcesBmsOutputExtension()
     {
-            var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
+        var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         using var context = new BmsTestContext();
         var bmsonPath = Path.Combine(context.TempDirectory, "test.bmson");
         File.WriteAllText(bmsonPath, "{}"); // Create empty bmson file

@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using BmsAtelierKyokufu.BmsPartTuner.Models;
 using BmsAtelierKyokufu.BmsPartTuner.Services;
 using BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers;
 
@@ -89,10 +90,10 @@ public class BmsOptimizationServiceTests_ExceptionHandling : IDisposable
     public async Task ExecuteDefinitionReductionAsync_EmptyInputPath_ThrowsArgumentException()
     {
         // Arrange
-        var audioCache = audioCache;
+        var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         var fileList = new List<BmsAudioFile>
         {
-            new BmsAudioFile { Num = "01", NumInteger = 1, Name = "test.wav" }
+            new() { Num = "01", NumInteger = 1, Name = "test.wav" }
         };
 
         var outputFile = Path.Combine(_context.TempDirectory, "output.bms");
@@ -120,10 +121,10 @@ public class BmsOptimizationServiceTests_ExceptionHandling : IDisposable
             .WithHeader("TITLE", "Test")
             .Build("test.bms");
 
-        var audioCache = audioCache;
+        var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         var fileList = new List<BmsAudioFile>
         {
-            new BmsAudioFile { Num = "01", NumInteger = 1, Name = "test.wav" }
+            new() { Num = "01", NumInteger = 1, Name = "test.wav" }
         };
 
         // Act & Assert
@@ -149,10 +150,10 @@ public class BmsOptimizationServiceTests_ExceptionHandling : IDisposable
     public async Task ExecuteDefinitionReductionAsync_InputFileNotFound_ReturnsErrorResult()
     {
         // Arrange: 存在しないファイルを指定
-        var audioCache = audioCache;
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         var fileList = new List<BmsAudioFile>
         {
-            new BmsAudioFile { Num = "01", NumInteger = 1, Name = CreateTestWaveFile("test.wav") }
+            new() { Num = "01", NumInteger = 1, Name = CreateTestWaveFile("test.wav") }
         };
 
         var nonExistentInput = Path.Combine(_context.TempDirectory, "nonexistent.bms");
@@ -180,10 +181,10 @@ public class BmsOptimizationServiceTests_ExceptionHandling : IDisposable
     {
         // Arrange
         var wavFile = CreateTestWaveFile("test.wav");
-        var audioCache = audioCache;
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         var fileList = new List<BmsAudioFile>
         {
-            new BmsAudioFile { Num = "01", NumInteger = 1, Name = wavFile, FileSize = new FileInfo(wavFile).Length }
+            new() { Num = "01", NumInteger = 1, Name = wavFile, FileSize = new FileInfo(wavFile).Length }
         };
 
         var bmsFile = _context.CreateBuilder()
@@ -236,12 +237,11 @@ public class BmsOptimizationServiceTests_ExceptionHandling : IDisposable
         // Arrange: 同一波形のファイルを2つ用意
         var file1 = CreateTestWaveFile("identical1.wav", 1000, 440f);
         var file2 = CreateTestWaveFile("identical2.wav", 1000, 440f);
-
-        var audioCache = audioCache;
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         var fileList = new List<BmsAudioFile>
         {
-            new BmsAudioFile { Num = "01", NumInteger = 1, Name = file1, FileSize = new FileInfo(file1).Length },
-            new BmsAudioFile { Num = "02", NumInteger = 2, Name = file2, FileSize = new FileInfo(file2).Length }
+            new() { Num = "01", NumInteger = 1, Name = file1, FileSize = new FileInfo(file1).Length },
+            new() { Num = "02", NumInteger = 2, Name = file2, FileSize = new FileInfo(file2).Length }
         };
 
         var bmsFile = _context.CreateBuilder()
@@ -278,13 +278,12 @@ public class BmsOptimizationServiceTests_ExceptionHandling : IDisposable
         var identical1 = CreateTestWaveFile("dup1.wav", 1000, 440f);
         var identical2 = CreateTestWaveFile("dup2.wav", 1000, 440f);
         var unique = CreateTestWaveFile("unique.wav", 1000, 880f);
-
-        var audioCache = audioCache;
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         var fileList = new List<BmsAudioFile>
         {
-            new BmsAudioFile { Num = "01", NumInteger = 1, Name = identical1, FileSize = new FileInfo(identical1).Length },
-            new BmsAudioFile { Num = "02", NumInteger = 2, Name = identical2, FileSize = new FileInfo(identical2).Length },
-            new BmsAudioFile { Num = "03", NumInteger = 3, Name = unique, FileSize = new FileInfo(unique).Length }
+            new() { Num = "01", NumInteger = 1, Name = identical1, FileSize = new FileInfo(identical1).Length },
+            new() { Num = "02", NumInteger = 2, Name = identical2, FileSize = new FileInfo(identical2).Length },
+            new() { Num = "03", NumInteger = 3, Name = unique, FileSize = new FileInfo(unique).Length }
         };
 
         var bmsFile = _context.CreateBuilder()
@@ -327,12 +326,11 @@ public class BmsOptimizationServiceTests_ExceptionHandling : IDisposable
         // Arrange: ファイルをロックして削除不可能にする
         var file1 = CreateTestWaveFile("locked.wav", 1000, 440f);
         var file2 = CreateTestWaveFile("normal.wav", 1000, 440f);
-
-        var audioCache = audioCache;
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         var fileList = new List<BmsAudioFile>
         {
-            new BmsAudioFile { Num = "01", NumInteger = 1, Name = file1, FileSize = new FileInfo(file1).Length },
-            new BmsAudioFile { Num = "02", NumInteger = 2, Name = file2, FileSize = new FileInfo(file2).Length }
+            new() { Num = "01", NumInteger = 1, Name = file1, FileSize = new FileInfo(file1).Length },
+            new() { Num = "02", NumInteger = 2, Name = file2, FileSize = new FileInfo(file2).Length }
         };
 
         var bmsFile = _context.CreateBuilder()
@@ -479,11 +477,10 @@ public class BmsOptimizationServiceTests_ExceptionHandling : IDisposable
         // Arrange: 長いファイル名を作成（Windows MAX_PATHは260文字）
         var longFileName = new string('a', 200) + ".wav";
         var wavFile = CreateTestWaveFile(longFileName);
-
-        var audioCache = audioCache;
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         var fileList = new List<BmsAudioFile>
         {
-            new BmsAudioFile { Num = "01", NumInteger = 1, Name = wavFile, FileSize = new FileInfo(wavFile).Length }
+            new() { Num = "01", NumInteger = 1, Name = wavFile, FileSize = new FileInfo(wavFile).Length }
         };
 
         var bmsFile = _context.CreateBuilder()
@@ -536,13 +533,12 @@ public class BmsOptimizationServiceTests_ExceptionHandling : IDisposable
         var file1 = CreateTestWaveFile("merge1.wav", 1000, 440f);
         var file2 = CreateTestWaveFile("merge2.wav", 1000, 880f);
         var file3 = CreateTestWaveFile("merge3.wav", 1000, 1320f);
-
-        var audioCache = audioCache;
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         var fileList = new List<BmsAudioFile>
         {
-            new BmsAudioFile { Num = "01", NumInteger = 1, Name = file1, FileSize = new FileInfo(file1).Length },
-            new BmsAudioFile { Num = "02", NumInteger = 2, Name = file2, FileSize = new FileInfo(file2).Length },
-            new BmsAudioFile { Num = "03", NumInteger = 3, Name = file3, FileSize = new FileInfo(file3).Length }
+            new() { Num = "01", NumInteger = 1, Name = file1, FileSize = new FileInfo(file1).Length },
+            new() { Num = "02", NumInteger = 2, Name = file2, FileSize = new FileInfo(file2).Length },
+            new() { Num = "03", NumInteger = 3, Name = file3, FileSize = new FileInfo(file3).Length }
         };
 
         var bmsFile = _context.CreateBuilder()

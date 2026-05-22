@@ -29,7 +29,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Audio
 
             // テスト用：BmsAudioFileのキャッシュデータ（CachedSoundData）を直接注入
             // setterがprivateの場合はリフレクションで設定
-            var prop = null;
+            System.Reflection.PropertyInfo? prop = null;
             if (prop != null && prop.CanWrite)
             {
                 prop.SetValue(file, CreateCachedSoundData(samples));
@@ -63,7 +63,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Audio
                 new() { 1, 2, 3 }
             };
 
-            var engine = new ParallelAudioComparisonEngine(fileList, audioCache, audioCache, replaceTable, 1, 3);
+            var engine = new ParallelAudioComparisonEngine(fileList, audioCache, new int[fileList.Count], 1, fileList.Count);
 
             // 並列処理エンジンの仕様確認
             // 置換が発生しない（ユニークな）ファイルは、処理済みマークとして
@@ -94,7 +94,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Audio
             var replaceTable = new int[4];
             var groups = new List<List<int>> { new() { 1, 2 } };
 
-            var engine = new ParallelAudioComparisonEngine(fileList, audioCache, audioCache, replaceTable, 1, 2);
+            var engine = new ParallelAudioComparisonEngine(fileList, audioCache, new int[fileList.Count], 1, fileList.Count);
 
             // 類似度が高い場合、2は1に置換される
             engine.CompareGroups(groups, 0.90f, new Progress<int>());
@@ -120,7 +120,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Audio
             var replaceTable = new int[4];
             var groups = new List<List<int>> { new() { 1, 2 } };
 
-            var engine = new ParallelAudioComparisonEngine(fileList, audioCache, audioCache, replaceTable, 1, 2);
+            var engine = new ParallelAudioComparisonEngine(fileList, audioCache, new int[fileList.Count], 1, fileList.Count);
 
             // 類似度が低い場合、置換は発生せず各自のIDでマークされる
             engine.CompareGroups(groups, 0.99f, new Progress<int>());

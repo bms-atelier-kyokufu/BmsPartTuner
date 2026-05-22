@@ -15,7 +15,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
         /// SimulationEngineはキャッシュ(CachedData)がないファイルを処理対象外としてスキップします。
         /// 名前の一致判定ロジックをテストするため、ダミーのキャッシュデータを設定します。
         /// </summary>
-        private CachedSoundData CreateDummyCache()
+        private static CachedSoundData CreateDummyCache()
         {
             return new CachedSoundData([new float[10]], 44100, 16);
         }
@@ -24,7 +24,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
         /// 異なる波形データを持つキャッシュを生成します（音声比較テスト用）。
         /// </summary>
         /// <param name="frequency">サイン波の周波数（Hz）。異なる値で異なる波形を生成します。</param>
-        private CachedSoundData CreateDistinctCache(double frequency = 440.0)
+        private static CachedSoundData CreateDistinctCache(double frequency = 440.0)
         {
             int sampleCount = 4410; // 0.1秒分 @ 44100Hz
             float[] samples = new float[sampleCount];
@@ -300,7 +300,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
         public void RunParallelSimulation_SingleFile_ReturnsCountOne()
         {
             var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
-            // SimulationEngineは NumInteger = 1 };
+            var file1 = new BmsAudioFile { Name = "a.wav", NumInteger = 1 };
             audioCache["a.wav"] = CreateDummyCache();
             var fileList = new List<BmsAudioFile> { file1 };
             var engine = new SimulationEngine(fileList, audioCache, 1, 1);
@@ -317,7 +317,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
         public void RunParallelSimulation_TwoDifferentFiles_ReturnsCountTwo()
         {
             var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
-            // SimulationEngineは NumInteger = 1 };
+            var file1 = new BmsAudioFile { Name = "a.wav", NumInteger = 1 };
             audioCache["a.wav"] = CreateDistinctCache(440.0);
             var file2 = new BmsAudioFile { Name = "b.wav", NumInteger = 2 };
             audioCache["b.wav"] = CreateDistinctCache(880.0);
@@ -336,7 +336,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
         public void RunParallelSimulation_TwoIdenticalNames_MergesCorrectly()
         {
             var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
-            // SimulationEngineは NumInteger = 1 };
+            var file1 = new BmsAudioFile { Name = "a.wav", NumInteger = 1 };
             audioCache["a.wav"] = CreateDummyCache();
             var file2 = new BmsAudioFile { Name = "a.wav", NumInteger = 2 };
             audioCache["a.wav"] = CreateDummyCache();
@@ -503,11 +503,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
                 NumInteger = 2
             };
             audioCache["unique2.wav"] = CreateDistinctCache(880.0);
-            var file3 = new BmsAudioFile
-            {
-                Name = "unique3.wav",
-                NumInteger = 3
-            };
+            var file3 = new BmsAudioFile { Name = "unique3.wav", NumInteger = 3 };
             audioCache["unique3.wav"] = CreateDistinctCache(1320.0);
 
             var fileList = new List<BmsAudioFile> { file1, file2, file3 };
@@ -545,7 +541,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
                 NumInteger = 3
             };
             audioCache["same.wav"] = CreateDummyCache();
-
+            _ = new BmsAudioFile { Name = "dummy.wav", NumInteger = 1 };
             var fileList = new List<BmsAudioFile> { file1, file2, file3 };
             var engine = new SimulationEngine(fileList, audioCache, 1, 3);
 

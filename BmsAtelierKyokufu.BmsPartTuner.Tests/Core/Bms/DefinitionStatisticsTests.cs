@@ -218,8 +218,8 @@ public class DefinitionStatisticsTests
     [Fact]
     public void GetUniqueFileCount_EmptyBmsDefinitionManager_ReturnsZero()
     {
-        var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
-        var audioCache = audioCache;
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
+        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         var fileList = new List<BmsAudioFile>();
         var replaces = CreateReplaceTable();
 

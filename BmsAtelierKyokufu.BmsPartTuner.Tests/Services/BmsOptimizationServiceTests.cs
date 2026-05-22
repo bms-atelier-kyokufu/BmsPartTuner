@@ -495,6 +495,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Services
         [Fact]
         public async Task ExecuteDefinitionReductionAsync_WithException_ClearsCache()
         {
+            var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
             var files = new List<BmsAudioFile>
             {
                 new() {
