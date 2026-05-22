@@ -1,6 +1,7 @@
 ﻿using System.Numerics;
+using Vector = System.Numerics.Vector;
 
-namespace BmsAtelierKyokufu.BmsPartTuner.Audio;
+namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
 
 /// <summary>
 /// 波形検証クラス（SIMD最適化版）。

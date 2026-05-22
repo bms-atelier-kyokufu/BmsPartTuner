@@ -1,6 +1,4 @@
-﻿using BmsAtelierKyokufu.BmsPartTuner.Models;
-
-namespace BmsAtelierKyokufu.BmsPartTuner.Audio;
+﻿namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
 
 /// <summary>
 /// オンメモリキャッシュされた音声データの高速比較クラス。

@@ -1,7 +1,4 @@
-﻿using System.Diagnostics;
-using BmsAtelierKyokufu.BmsPartTuner.Models;
-
-namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
+﻿namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 
 /// <summary>
 /// 定義番号の処理範囲を管理するクラス。

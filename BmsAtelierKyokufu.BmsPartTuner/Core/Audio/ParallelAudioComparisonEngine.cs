@@ -1,9 +1,6 @@
-﻿using System.Diagnostics;
-using System.Threading;
-using BmsAtelierKyokufu.BmsPartTuner.Core;
-using BmsAtelierKyokufu.BmsPartTuner.Models;
+﻿using System.Threading;
 
-namespace BmsAtelierKyokufu.BmsPartTuner.Audio;
+namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
 
 /// <summary>
 /// 並列オーディオ比較エンジン。

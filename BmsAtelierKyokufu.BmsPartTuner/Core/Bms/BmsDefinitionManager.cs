@@ -1,11 +1,7 @@
-﻿using System.Collections.ObjectModel;
-using System.Diagnostics;
-using BmsAtelierKyokufu.BmsPartTuner.Core;
-using BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
-using BmsAtelierKyokufu.BmsPartTuner.Core.Helpers;
-using BmsAtelierKyokufu.BmsPartTuner.Services;
+﻿using BmsAtelierKyokufu.BmsPartTuner.Core.Helpers;
+using BmsAtelierKyokufu.BmsPartTuner.Services.Bms;
 
-namespace BmsAtelierKyokufu.BmsPartTuner.Models;
+namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 
 /// <summary>
 /// BMSファイルに関連付けられたオーディオファイルリストの管理および解析を行います。

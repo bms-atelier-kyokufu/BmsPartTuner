@@ -1,5 +1,5 @@
 ﻿using System.IO;
-using BmsAtelierKyokufu.BmsPartTuner.Audio;
+using BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
 using BmsAtelierKyokufu.BmsPartTuner.Models;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Audio
