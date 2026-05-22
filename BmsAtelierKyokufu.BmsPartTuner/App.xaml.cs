@@ -94,7 +94,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner
         /// <para>【Why ログ保存】</para>
         /// リリース後の予期せぬクラッシュ時に、原因究明に必要な情報を確実に残すため。
         /// </remarks>
-        private void LogUnhandledException(Exception ex, string source)
+        private static void LogUnhandledException(Exception ex, string source)
         {
             string? logPath = null;
             try
