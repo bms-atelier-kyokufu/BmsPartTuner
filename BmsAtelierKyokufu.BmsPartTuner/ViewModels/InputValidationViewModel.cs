@@ -108,6 +108,15 @@ public partial class InputValidationViewModel : ObservableObject
             return false;
         }
 
+        var extension = Path.GetExtension(outputPath).ToLower();
+        if (!Array.Exists(AppConstants.Files.SupportedOutputBmsExtensions, ext => ext == extension))
+        {
+            OutputPathErrorMessage = $"出力ファイルはBMS形式である必要があります ({GetSupportedOutputExtensionsPattern()})";
+            IsOutputPathValid = false;
+            ValidationErrorOccurred?.Invoke(this, new ValidationErrorEventArgs("OutputPath", OutputPathErrorMessage));
+            return false;
+        }
+
         OutputPathErrorMessage = string.Empty;
         IsOutputPathValid = true;
         return true;
@@ -135,6 +144,11 @@ public partial class InputValidationViewModel : ObservableObject
     private string GetSupportedExtensionsPattern()
     {
         return string.Join(", ", AppConstants.Files.SupportedBmsExtensions);
+    }
+
+    private string GetSupportedOutputExtensionsPattern()
+    {
+        return string.Join(", ", AppConstants.Files.SupportedOutputBmsExtensions);
     }
 
     #region イベント引数クラス

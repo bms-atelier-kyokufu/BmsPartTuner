@@ -1,4 +1,4 @@
-﻿<Window
+<Window
     x:Class="BmsAtelierKyokufu.BmsPartTuner.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -64,7 +64,7 @@
                         <TextBox
                             x:Name="InputFilePathTextBox"
                             ui:TextBoxHelper.BrowseCommand="{Binding BrowseInputFileCommand}"
-                            ui:TextBoxHelper.Label="入力BMSファイル (.bms/.bme/.bml/.pms)"
+                            ui:TextBoxHelper.Label="入力BMS/BMSONファイル (.bms/.bme/.bml/.pms/.bmson)"
                             IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}"
                             Style="{StaticResource Material.Styles.TextBox.FilePath}">
                             <TextBox.Text>
@@ -80,7 +80,7 @@
                                 </Binding>
                             </TextBox.Text>
                             <i:Interaction.Behaviors>
-                                <behaviors:FloatingLabelBehavior LabelText="入力BMSファイル (.bms/.bme/.bml/.pms)" />
+                                <behaviors:FloatingLabelBehavior LabelText="入力BMS/BMSONファイル (.bms/.bme/.bml/.pms/.bmson)" />
                                 <behaviors:EscapeToClearBehavior />
                             </i:Interaction.Behaviors>
                         </TextBox>
@@ -93,8 +93,19 @@
                             ui:TextBoxHelper.BrowseCommand="{Binding BrowseOutputFileCommand}"
                             ui:TextBoxHelper.Label="出力BMSファイル"
                             IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}"
-                            Style="{StaticResource Material.Styles.TextBox.FilePath}"
-                            Text="{Binding OutputPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                            Style="{StaticResource Material.Styles.TextBox.FilePath}">
+                            <TextBox.Text>
+                                <Binding
+                                    Mode="TwoWay"
+                                    NotifyOnValidationError="True"
+                                    Path="OutputPath"
+                                    UpdateSourceTrigger="PropertyChanged"
+                                    ValidatesOnDataErrors="True">
+                                    <Binding.ValidationRules>
+                                        <DataErrorValidationRule />
+                                    </Binding.ValidationRules>
+                                </Binding>
+                            </TextBox.Text>
                             <i:Interaction.Behaviors>
                                 <behaviors:FloatingLabelBehavior LabelText="出力BMSファイル" />
                                 <behaviors:EscapeToClearBehavior />

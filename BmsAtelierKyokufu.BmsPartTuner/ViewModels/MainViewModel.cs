@@ -257,7 +257,7 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
         }
 
         // どちらもない場合
-        ShowMessage("再生対象のBMSファイルがありません。まずBMSファイルを読み込んでください。", isError: true);
+        ShowMessage("再生対象のBMS/BMSONファイルがありません。まずBMS/BMSONファイルを読み込んでください。", isError: true);
     }
 
     [RelayCommand(CanExecute = nameof(CanExecuteThresholdOptimization))]
@@ -267,7 +267,7 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
 
         if (string.IsNullOrWhiteSpace(inputPath))
         {
-            ShowMessage("入力BMSファイルを先に読み込んでください", isError: true);
+            ShowMessage("入力BMS/BMSONファイルを先に読み込んでください", isError: true);
             StatusMessage = "入力ファイルが指定されていません";
             return;
         }
@@ -282,7 +282,7 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
 
         if (FileList.BmsFileList == null)
         {
-            ShowMessage("BMSファイルをまだ読み込んでいません。入力ファイルを選択してください", isError: true);
+            ShowMessage("BMS/BMSONファイルをまだ読み込んでいません。入力ファイルを選択してください", isError: true);
             StatusMessage = "ファイルリストが未読み込み";
             return;
         }
@@ -290,7 +290,7 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
         var fileListItems = FileList.BmsFileList.GetFileList();
         if (fileListItems == null || fileListItems.Count == 0)
         {
-            ShowMessage("ファイルリストが空です。BMSファイルに#WAV定義が含まれているか確認してください", isError: true);
+            ShowMessage("ファイルリストが空です。BMS/BMSONファイルに定義が含まれているか確認してください", isError: true);
             StatusMessage = "ファイルリストが空";
             return;
         }
@@ -382,11 +382,39 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
 
     private bool CanExecuteReduction() => !Optimization.IsBusy;
 
-    private void OnInputPathChanged(object? sender, string path)
+    private async void OnInputPathChanged(object? sender, string path)
     {
         if (File.Exists(path))
         {
-            FileList.LoadBmsFile(path);
+            var extension = Path.GetExtension(path);
+            if (string.Equals(extension, ".bmson", StringComparison.OrdinalIgnoreCase))
+            {
+                IsBusy = true;
+                StatusMessage = "bmsonをダウンコンバート中...";
+                try
+                {
+                    string outputDir = Path.GetDirectoryName(path) ?? "";
+                    string outBmsPath = await Task.Run(() =>
+                        Services.Bmson.BmsonIntegrationFacade.Downconvert(path, outputDir, keyNotesOnly: false));
+
+                    InputPath = outBmsPath;
+                    ShowToast($"bmsonをダウンコンバートしました: {Path.GetFileName(outBmsPath)}", "📁", false);
+                }
+                catch (Exception ex)
+                {
+                    ShowToast($"bmson変換失敗: {ex.Message}", "⚠", true);
+                    FileList.FileListItems.Clear();
+                }
+                finally
+                {
+                    IsBusy = false;
+                    StatusMessage = "準備完了";
+                }
+            }
+            else
+            {
+                FileList.LoadBmsFile(path);
+            }
         }
         else if (!string.IsNullOrWhiteSpace(path))
         {
@@ -537,6 +565,7 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
                 nameof(R2Threshold) or nameof(DefinitionStart) or nameof(DefinitionEnd)
                     => Optimization[columnName],
                 nameof(InputPath) => ValidateInputPathError(),
+                nameof(OutputPath) => ValidateOutputPathError(),
                 _ => string.Empty
             };
         }
@@ -562,6 +591,41 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
             return $"サポートされていない形式です ({GetSupportedExtensionsPattern()})";
         }
         return string.Empty;
+    }
+
+    private string ValidateOutputPathError()
+    {
+        var outputPath = OutputPath?.Trim('"') ?? string.Empty;
+
+        if (string.IsNullOrWhiteSpace(outputPath))
+        {
+            return string.Empty;
+        }
+
+        try
+        {
+            var outputDir = Path.GetDirectoryName(Path.GetFullPath(outputPath));
+            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+            {
+                return $"フォルダが見つかりません: {outputDir}";
+            }
+        }
+        catch (Exception)
+        {
+            return "パスが無効です";
+        }
+
+        var extension = Path.GetExtension(outputPath).ToLower();
+        if (!Array.Exists(Core.AppConstants.Files.SupportedOutputBmsExtensions, ext => ext == extension))
+        {
+            return $"出力ファイルはBMS形式である必要があります ({GetSupportedOutputExtensionsPattern()})";
+        }
+        return string.Empty;
+    }
+
+    private string GetSupportedOutputExtensionsPattern()
+    {
+        return string.Join(", ", Core.AppConstants.Files.SupportedOutputBmsExtensions);
     }
 
     protected virtual void Dispose(bool disposing)

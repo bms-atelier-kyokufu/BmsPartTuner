@@ -80,7 +80,6 @@ namespace BmsAtelierKyokufu.BmsPartTuner
                 if (e.IsSupported)
                 {
                     _viewModel.InputPath = e.FilePath;
-                    _viewModel.ShowToast($"ファイルを読み込みました: {System.IO.Path.GetFileName(e.FilePath)}", "📁", false);
                 }
                 else
                 {
@@ -98,6 +97,8 @@ namespace BmsAtelierKyokufu.BmsPartTuner
             // スライド確認要求イベントのハンドラ登録
             _viewModel.SlideConfirmationRequested += OnSlideConfirmationRequested;
         }
+
+
 
         private void InitializeUIBindings()
         {

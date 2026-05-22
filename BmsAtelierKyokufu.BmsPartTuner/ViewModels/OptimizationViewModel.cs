@@ -153,6 +153,8 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
 
         _progress = new Progress<int>(percent =>
         {
+            if (!IsBusy) return;
+
             ProgressValue = percent;
             IsProgressIndeterminate = false;
 
@@ -330,13 +332,13 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
     {
         if (bmsFileList == null)
         {
-            ErrorOccurred?.Invoke(this, "BMSファイルが読み込まれていません");
+            ErrorOccurred?.Invoke(this, "BMS/BMSONファイルが読み込まれていません");
             return;
         }
 
         if (string.IsNullOrWhiteSpace(inputPath))
         {
-            ErrorOccurred?.Invoke(this, "入力BMSファイルを指定してください");
+            ErrorOccurred?.Invoke(this, "入力BMS/BMSONファイルを指定してください");
             return;
         }
 

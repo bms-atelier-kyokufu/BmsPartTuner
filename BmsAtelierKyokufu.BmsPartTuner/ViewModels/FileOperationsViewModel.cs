@@ -75,6 +75,10 @@ public partial class FileOperationsViewModel : ObservableObject
             {
                 string? directory = Path.GetDirectoryName(path);
                 var extension = Path.GetExtension(path);
+                if (string.Equals(extension, ".bmson", StringComparison.OrdinalIgnoreCase))
+                {
+                    extension = ".bms";
+                }
                 var baseFileName = Path.GetFileNameWithoutExtension(path);
                 var fileName = $"{baseFileName}{AppConstants.Files.OptimizedFileSuffix}{extension}";
                 var autoPath = Path.Combine(directory ?? string.Empty, fileName);
@@ -99,8 +103,8 @@ public partial class FileOperationsViewModel : ObservableObject
     {
         var dialog = new OpenFileDialog
         {
-            Filter = $"BMSファイル ({GetDialogExtensionPattern()})|{GetDialogExtensionPattern()}|すべてのファイル (*.*)|*.*",
-            Title = "BMSファイルを選択"
+            Filter = $"BMS/BMSONファイル ({GetDialogExtensionPattern()})|{GetDialogExtensionPattern()}|すべてのファイル (*.*)|*.*",
+            Title = "BMS/BMSONファイルを選択"
         };
 
         if (dialog.ShowDialog() == true)
@@ -121,7 +125,7 @@ public partial class FileOperationsViewModel : ObservableObject
     {
         var dialog = new SaveFileDialog
         {
-            Filter = $"BMSファイル ({GetDialogExtensionPattern()})|{GetDialogExtensionPattern()}|すべてのファイル (*.*)|*.*",
+            Filter = $"BMSファイル ({GetOutputDialogExtensionPattern()})|{GetOutputDialogExtensionPattern()}|すべてのファイル (*.*)|*.*",
             FileName = AppConstants.Files.DefaultOutputFileName,
             Title = "保存先を選択",
             DefaultExt = ".bms"
@@ -172,7 +176,7 @@ public partial class FileOperationsViewModel : ObservableObject
             return true;
         }
 
-        var isSameDirectory = (string path1, string path2) =>
+        static bool isSameDirectory(string path1, string path2) =>
             string.Equals(
                 Path.GetDirectoryName(path1),
                 Path.GetDirectoryName(path2),
@@ -188,7 +192,7 @@ public partial class FileOperationsViewModel : ObservableObject
     /// </summary>
     /// <param name="filePath">ファイルパス。</param>
     /// <returns>サポートされている場合true。</returns>
-    private bool IsSupportedBmsFile(string filePath)
+    private static bool IsSupportedBmsFile(string filePath)
     {
         var extension = Path.GetExtension(filePath).ToLower();
         return Array.Exists(AppConstants.Files.SupportedBmsExtensions, ext => ext == extension);
@@ -198,9 +202,18 @@ public partial class FileOperationsViewModel : ObservableObject
     /// ダイアログ用の拡張子パターンを取得。
     /// </summary>
     /// <returns>ワイルドカードパターン（例: "*.bms;*.bme;*.bml"）。</returns>
-    private string GetDialogExtensionPattern()
+    private static string GetDialogExtensionPattern()
     {
         return string.Join(";", Array.ConvertAll(AppConstants.Files.SupportedBmsExtensions, ext => $"*{ext}"));
+    }
+
+    /// <summary>
+    /// 出力ダイアログ用の拡張子パターンを取得。
+    /// </summary>
+    /// <returns>ワイルドカードパターン（例: "*.bms;*.bme;*.bml"）。</returns>
+    private static string GetOutputDialogExtensionPattern()
+    {
+        return string.Join(";", Array.ConvertAll(AppConstants.Files.SupportedOutputBmsExtensions, ext => $"*{ext}"));
     }
 
     /// <summary>
