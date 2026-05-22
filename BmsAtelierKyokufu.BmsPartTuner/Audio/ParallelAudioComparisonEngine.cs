@@ -438,7 +438,7 @@ internal class ParallelAudioComparisonEngine(
     /// 100ファイルごとまたは完了時に進捗を報告することで、
     /// オーバーヘッドを削減します。
     /// </remarks>
-    private void ReportProgress(ref int processedCount, int totalCount, IProgress<int> progress)
+    private static void ReportProgress(ref int processedCount, int totalCount, IProgress<int> progress)
     {
         int current = processedCount;
         if (current % 100 == 0 || current == totalCount)
