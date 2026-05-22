@@ -1,8 +1,4 @@
-﻿using System.Diagnostics;
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-
-namespace BmsAtelierKyokufu.BmsPartTuner.ViewModels;
+﻿namespace BmsAtelierKyokufu.BmsPartTuner.ViewModels;
 
 /// <summary>
 /// 外部メディアプレイヤーの制御を担当するViewModel。

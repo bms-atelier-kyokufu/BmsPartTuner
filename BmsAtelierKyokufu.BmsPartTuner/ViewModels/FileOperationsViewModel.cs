@@ -1,6 +1,4 @@
 ﻿using BmsAtelierKyokufu.BmsPartTuner.Core;
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
 using Microsoft.Win32;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.ViewModels;

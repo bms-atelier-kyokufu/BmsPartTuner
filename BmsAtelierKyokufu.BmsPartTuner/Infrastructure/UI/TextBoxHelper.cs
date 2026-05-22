@@ -1,5 +1,4 @@
-﻿using System.Windows;
-using System.Windows.Controls;
+﻿using System.Windows.Controls;
 using System.Windows.Media;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.UI

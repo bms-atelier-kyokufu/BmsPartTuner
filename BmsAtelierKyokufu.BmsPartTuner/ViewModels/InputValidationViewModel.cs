@@ -1,5 +1,4 @@
 ﻿using BmsAtelierKyokufu.BmsPartTuner.Core;
-using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.ViewModels;
 

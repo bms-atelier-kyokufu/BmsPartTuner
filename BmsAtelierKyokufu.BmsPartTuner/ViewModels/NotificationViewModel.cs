@@ -1,5 +1,4 @@
 ﻿using System.Windows.Threading;
-using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.ViewModels;
 
