@@ -25,7 +25,14 @@ public class NAudioPlayer : IAudioPlayer
         }
         else
         {
-            _audioReader = new AudioFileReader(filePath);
+            if (filePath.EndsWith(".ogg", StringComparison.OrdinalIgnoreCase))
+            {
+                _audioReader = new NAudio.Vorbis.VorbisWaveReader(filePath);
+            }
+            else
+            {
+                _audioReader = new AudioFileReader(filePath);
+            }
         }
 
         _waveOut = new WaveOutEvent();

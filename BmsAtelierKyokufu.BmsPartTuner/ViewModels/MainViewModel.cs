@@ -1,4 +1,4 @@
-﻿using BmsAtelierKyokufu.BmsPartTuner.Core.Helpers;
+using BmsAtelierKyokufu.BmsPartTuner.Core.Helpers;
 using BmsAtelierKyokufu.BmsPartTuner.Services.Audio;
 using BmsAtelierKyokufu.BmsPartTuner.Services.Bms;
 using BmsAtelierKyokufu.BmsPartTuner.Services.Common;
@@ -430,7 +430,13 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
                 }
                 catch (Exception ex)
                 {
-                    ShowToast($"bmson変換失敗: {ex.Message}", "⚠", true);
+                    string errorMessage = ex.Message;
+                    if (ex is AggregateException aggEx && aggEx.InnerExceptions.Count > 0)
+                    {
+                        errorMessage = aggEx.InnerExceptions[0].Message;
+                    }
+
+                    ShowToast($"bmson変換失敗: {errorMessage}", "⚠", true);
                     BmsDefinitionManager.FileListItems.Clear();
                     _lastDownconvertedBmsonPath = null; // 失敗時はクリア
                     _workingBmsContent = null;
