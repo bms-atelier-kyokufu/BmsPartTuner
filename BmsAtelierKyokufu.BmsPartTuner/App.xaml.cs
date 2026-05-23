@@ -1,10 +1,6 @@
-﻿using System.Reflection;
-using BmsAtelierKyokufu.BmsPartTuner.Services.Audio;
-using BmsAtelierKyokufu.BmsPartTuner.Services.Audio.AudioPlayer;
-using BmsAtelierKyokufu.BmsPartTuner.Services.Bms;
+﻿using BmsAtelierKyokufu.BmsPartTuner.Extensions;
 using BmsAtelierKyokufu.BmsPartTuner.Services.Common;
 using BmsAtelierKyokufu.BmsPartTuner.Services.UI;
-using BmsAtelierKyokufu.BmsPartTuner.ViewModels;
 using BmsAtelierKyokufu.BmsPartTuner.Views.Windows;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -34,45 +30,13 @@ namespace BmsAtelierKyokufu.BmsPartTuner
             InitializeComponent();
 
             _host = Host.CreateDefaultBuilder()
-                .ConfigureServices((context, services) =>
-                {
-                    // Settings Services
-                    services.AddSingleton<SettingsService>();
-                    services.AddSingleton<ThemeService>();
-                    services.AddSingleton<LicenseLoaderService>();
-                    services.AddSingleton<UpdateService>();
-
-                    // Core Services (Phase 5: ISP 適用)
-                    services.AddSingleton<IInputValidationService, InputValidationService>();
-                    services.AddSingleton<IBmsOptimizationService, BmsOptimizationService>();
-                    services.AddSingleton<IAudioPlayerFactory, NAudioPlayerFactory>();
-                    services.AddSingleton<IUIThreadDispatcher>(provider =>
-                        new WpfUIThreadDispatcher(Current.Dispatcher));
-                    services.AddSingleton(provider =>
-                        new AudioPreviewService(
-                            provider.GetRequiredService<IUIThreadDispatcher>(),
-                            provider.GetRequiredService<IAudioPlayerFactory>()));
-                    services.AddSingleton<InstrumentNameDetectionService>();
-
-                    // UI Services (Initializeパターン)
-                    services.AddSingleton<IUiElementService<ToastViewModel>, ToastNotificationService>();
-                    services.AddSingleton<IUiElementService<ResultCardData>, ResultCardService>();
-                    services.AddSingleton<IDragDropService>(provider =>
-                        new DragDropService(AppConstants.Files.SupportedBmsExtensions));
-                    services.AddSingleton<FileListFilterService>();
-
-                    // ViewModels
-                    services.AddTransient<MainViewModel>();
-
-                    // Windows
-                    services.AddTransient<MainWindow>();
-                })
+                .ConfigureServices((context, services) => services.ConfigureAppServices())
                 .Build();
         }
 
         private void App_DispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
         {
-            LogUnhandledException(e.Exception, "UIスレッド");
+            CrashReportingService.LogUnhandledException(e.Exception, "UIスレッド");
             e.Handled = true;
             Shutdown();
         }
@@ -81,94 +45,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner
         {
             if (e.ExceptionObject is Exception ex)
             {
-                LogUnhandledException(ex, "バックグラウンドスレッド");
-            }
-        }
-
-        /// <summary>
-        /// 未処理例外をログファイルに記録し、ユーザーに通知します。
-        /// </summary>
-        /// <param name="ex">発生した例外。</param>
-        /// <param name="source">例外の発生元（UIスレッド/バックグラウンドスレッド）。</param>
-        /// <remarks>
-        /// <para>【Why ログ保存】</para>
-        /// リリース後の予期せぬクラッシュ時に、原因究明に必要な情報を確実に残すため。
-        /// </remarks>
-        private static void LogUnhandledException(Exception ex, string source)
-        {
-            string? logPath = null;
-            try
-            {
-                // ログディレクトリを作成
-                var logDir = Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                    "BmsPartTuner",
-                    "Logs");
-                Directory.CreateDirectory(logDir);
-
-                // ログファイル名を生成
-                var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
-                logPath = Path.Combine(logDir, $"crash_{timestamp}.log");
-
-                // ログ内容を構築
-                var sb = new StringBuilder();
-                sb.AppendLine("=== BMS Part Tuner Crash Report ===");
-                sb.AppendLine($"Date: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
-                sb.AppendLine($"Source: {source}");
-                sb.AppendLine();
-
-                // アプリバージョン
-                var version = Assembly.GetExecutingAssembly().GetName().Version;
-                sb.AppendLine($"App Version: {version}");
-
-                // OSバージョン
-                sb.AppendLine($"OS Version: {Environment.OSVersion}");
-                sb.AppendLine($".NET Version: {Environment.Version}");
-                sb.AppendLine();
-
-                // 例外情報を再帰的に記録
-                AppendExceptionDetails(sb, ex, 0);
-
-                // ファイルに保存
-                File.WriteAllText(logPath, sb.ToString(), Encoding.UTF8);
-            }
-            catch
-            {
-                // ログ保存に失敗しても処理を続行
-            }
-
-            // ユーザーへの通知
-            var message = "予期せぬエラーが発生しました。";
-            if (logPath != null && File.Exists(logPath))
-            {
-                message += $"\n\nエラーログを保存しました:\n{logPath}";
-            }
-            message += $"\n\n詳細: {ex.Message}";
-
-            MessageBox.Show(message, "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
-        }
-
-        /// <summary>
-        /// 例外の詳細を再帰的に追加します。
-        /// </summary>
-        private static void AppendExceptionDetails(StringBuilder sb, Exception ex, int depth)
-        {
-            var indent = new string(' ', depth * 2);
-
-            if (depth > 0)
-            {
-                sb.AppendLine($"{indent}--- Inner Exception (Level {depth}) ---");
-            }
-
-            sb.AppendLine($"{indent}Type: {ex.GetType().FullName}");
-            sb.AppendLine($"{indent}Message: {ex.Message}");
-            sb.AppendLine($"{indent}StackTrace:");
-            sb.AppendLine(ex.StackTrace);
-            sb.AppendLine();
-
-            if (ex.InnerException != null && depth < 5)
-            {
-                AppendExceptionDetails(sb, ex.InnerException, depth + 1);
+                CrashReportingService.LogUnhandledException(ex, "バックグラウンドスレッド");
             }
         }
 
