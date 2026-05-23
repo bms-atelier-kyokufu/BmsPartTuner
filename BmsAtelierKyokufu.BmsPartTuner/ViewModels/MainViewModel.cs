@@ -14,6 +14,7 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
     private readonly AudioPreviewService _audioPreviewService;
     private bool _disposed;
     private string? _workingBmsPath;
+    private string? _lastDownconvertedBmsonPath;
 
     /// <summary>ファイル操作ViewModel。</summary>
     public FileOperationsViewModel FileOperations { get; }
@@ -400,6 +401,13 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
             var extension = Path.GetExtension(path);
             if (string.Equals(extension, ".bmson", StringComparison.OrdinalIgnoreCase))
             {
+                // すでにダウンコンバート済みの同じファイルなら再変換をスキップ
+                if (string.Equals(path, _lastDownconvertedBmsonPath, StringComparison.OrdinalIgnoreCase) && _workingBmsPath != null)
+                {
+                    BmsDefinitionManager.LoadBmsFile(_workingBmsPath);
+                    return;
+                }
+
                 if (_isDownconverting) return;
 
                 _isDownconverting = true;
@@ -412,6 +420,8 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
                         Services.Bms.Bmson.BmsonIntegrationFacade.Downconvert(path, outputDir, keyNotesOnly: false));
 
                     _workingBmsPath = outBmsPath;
+                    _lastDownconvertedBmsonPath = path; // 成功時にパスを記憶
+
                     BmsDefinitionManager.LoadBmsFile(outBmsPath);
                     ShowToast($"bmsonをダウンコンバートしました: {Path.GetFileName(outBmsPath)}", "📁", false);
                 }
@@ -419,6 +429,7 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
                 {
                     ShowToast($"bmson変換失敗: {ex.Message}", "⚠", true);
                     BmsDefinitionManager.FileListItems.Clear();
+                    _lastDownconvertedBmsonPath = null; // 失敗時はクリア
                 }
                 finally
                 {
@@ -431,12 +442,14 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
             else
             {
                 _workingBmsPath = path;
+                _lastDownconvertedBmsonPath = null; // 別のファイルが来たらクリア
                 BmsDefinitionManager.LoadBmsFile(path);
             }
         }
         else
         {
             _workingBmsPath = null;
+            _lastDownconvertedBmsonPath = null; // ファイルが存在しない場合もクリア
             if (!string.IsNullOrWhiteSpace(path))
             {
                 StatusMessage = $"対応形式: {GetSupportedExtensionsPattern()}";
