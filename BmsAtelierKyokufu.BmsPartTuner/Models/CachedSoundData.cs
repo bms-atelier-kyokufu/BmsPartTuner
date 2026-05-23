@@ -337,7 +337,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Models
 
                         if (read == 0)
                         {
-                            Debug.WriteLine($"[CachedSoundData] WARNING: Read returned 0 at {totalRead}/{totalSamples} for {Path.GetFileName(path)}");
+                            PerfDebugLogger.WriteLine($"[CachedSoundData] WARNING: Read returned 0 at {totalRead}/{totalSamples} for {Path.GetFileName(path)}");
                             break;
                         }
 
@@ -382,7 +382,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Models
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[CachedSoundData] ERROR loading {Path.GetFileName(path)}: {ex.Message}");
+                PerfDebugLogger.WriteLine($"[CachedSoundData] ERROR loading {Path.GetFileName(path)}: {ex.Message}");
                 throw new InvalidOperationException($"音声ファイルの読み込みに失敗: {path}", ex);
             }
         }
@@ -625,7 +625,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Models
         /// <returns>先頭の無音サンプル数</returns>
         private static int DetectStartSilence(float[][] channelData, int samplesPerChannel, int channels)
         {
-            const float SilenceThreshold = 0.001f;
+            const float SilenceThreshold = AppConstants.AudioComparison.SilenceRmsThreshold;
 
             for (int i = 0; i < samplesPerChannel; i++)
             {

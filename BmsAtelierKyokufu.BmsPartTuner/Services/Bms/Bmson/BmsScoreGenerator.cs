@@ -1,7 +1,5 @@
 ﻿using System.Collections.Concurrent;
-using System.Threading;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
-using BmsAtelierKyokufu.BmsPartTuner.Core.Helpers;
 using BmsAtelierKyokufu.BmsPartTuner.Models.Bmson;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Services.Bms.Bmson;
@@ -21,7 +19,7 @@ public class BmsScoreGenerator(
     private readonly PulseToRealTimeCalculator _realTimeCalc = realTimeCalc;
     private readonly AudioSliceManager _audioSliceManager = audioSliceManager;
     private readonly bool _keyNotesOnly = keyNotesOnly;
-    private int _radix = 62; // Default, will be recalculated
+    private int _radix = AppConstants.Definition.RadixBase62; // Default, will be recalculated
     private readonly bool _isDoublePlay = DetermineIsDoublePlay(bmson);
 
     // #WAV定義の管理
@@ -55,22 +53,34 @@ public class BmsScoreGenerator(
 
     public string GenerateBmsText()
     {
+        PerfDebugLogger.WriteLine("  [BmsScoreGenerator] Start GenerateBmsText");
+        var sw = System.Diagnostics.Stopwatch.StartNew();
+
         // 0. Y座標データの事前計算 (次元の分離)
         PrecalculateYPositions();
+        PerfDebugLogger.WriteLine($"  [BmsScoreGenerator] PrecalculateYPositions: {sw.ElapsedMilliseconds} ms");
 
         // 1. Pre-pass slicing to determine exact number of unique definitions needed
+        sw.Restart();
         PreSliceAudio();
         int uniqueSlices = _audioSliceManager.GetGeneratedSliceCount();
+        PerfDebugLogger.WriteLine($"  [BmsScoreGenerator] PreSliceAudio (uniqueSlices={uniqueSlices}): {sw.ElapsedMilliseconds} ms");
 
         // 2. Choose optimal radix
-        _radix = uniqueSlices <= 1295 ? 36 : 62;
+        _radix = uniqueSlices <= AppConstants.Definition.MaxNumberBase36 ? AppConstants.Definition.RadixBase36 : AppConstants.Definition.RadixBase62;
 
+        sw.Restart();
         ProcessSoundChannels();
+        PerfDebugLogger.WriteLine($"  [BmsScoreGenerator] ProcessSoundChannels: {sw.ElapsedMilliseconds} ms");
+
+        sw.Restart();
         ProcessBpmEvents();
         ProcessStopEvents();
         ProcessBgaEvents();
         ProcessMeasureLengths();
+        PerfDebugLogger.WriteLine($"  [BmsScoreGenerator] Other events processing: {sw.ElapsedMilliseconds} ms");
 
+        sw.Restart();
         var sb = new StringBuilder();
 
         // 1. ヘッダー出力
@@ -82,6 +92,7 @@ public class BmsScoreGenerator(
         // 3. データブロック出力
         WriteDataBlocks(sb);
 
+        PerfDebugLogger.WriteLine($"  [BmsScoreGenerator] StringBuilder formatting: {sw.ElapsedMilliseconds} ms");
         return sb.ToString();
     }
 
@@ -159,7 +170,7 @@ public class BmsScoreGenerator(
         }
 
         // BPM
-        sb.AppendLine($"#BPM {Math.Round(_bmson.Info.InitBpm, 3)}");
+        sb.AppendLine($"{AppConstants.Definition.BpmPrefix} {Math.Round(_bmson.Info.InitBpm, 3)}");
 
         // PLAYLEVEL
         sb.AppendLine($"#PLAYLEVEL {_bmson.Info.Level}");
@@ -186,28 +197,28 @@ public class BmsScoreGenerator(
         foreach (var kvp in _wavDefinitions.OrderBy(k => k.Value))
         {
             string fileName = kvp.Key.Split('|')[0];
-            sb.AppendLine($"#WAV{kvp.Value} {fileName}");
+            sb.AppendLine($"{AppConstants.Definition.WavPrefix}{kvp.Value} {fileName}");
         }
 
         // BMP
         if (_bmpDefinitions.Count > 0) sb.AppendLine();
         foreach (var kvp in _bmpDefinitions.OrderBy(k => k.Value))
         {
-            sb.AppendLine($"#BMP{kvp.Value} {_bmson.Bga?.BgaHeader?.FirstOrDefault(h => h.Id == kvp.Key)?.Name}");
+            sb.AppendLine($"{AppConstants.Definition.BmpPrefix}{kvp.Value} {_bmson.Bga?.BgaHeader?.FirstOrDefault(h => h.Id == kvp.Key)?.Name}");
         }
 
         // BPM
         if (_bpmDefinitions.Count > 0) sb.AppendLine();
         foreach (var kvp in _bpmDefinitions.OrderBy(k => k.Value))
         {
-            sb.AppendLine($"#BPM{kvp.Value} {kvp.Key}");
+            sb.AppendLine($"{AppConstants.Definition.BpmPrefix}{kvp.Value} {kvp.Key}");
         }
 
         // STOP
         if (_stopDefinitions.Count > 0) sb.AppendLine();
         foreach (var kvp in _stopDefinitions.OrderBy(k => k.Value))
         {
-            sb.AppendLine($"#STOP{kvp.Value} {kvp.Key}");
+            sb.AppendLine($"{AppConstants.Definition.StopPrefix}{kvp.Value} {kvp.Key}");
         }
     }
 
@@ -263,7 +274,7 @@ public class BmsScoreGenerator(
         int gcd = arr.Length;
         for (int i = 0; i < arr.Length; i++)
         {
-            if (arr[i] != "00")
+            if (arr[i] != AppConstants.Definition.Rest)
             {
                 gcd = GCD(gcd, i);
             }
@@ -414,7 +425,7 @@ public class BmsScoreGenerator(
             double roundedBpm = Math.Round(b.Bpm, 3);
             if (!_bpmDefinitions.TryGetValue(roundedBpm, out string? bpmId))
             {
-                bpmId = RadixConvert.IntToZZ(_bpmCounter++, 36);
+                bpmId = RadixConvert.IntToZZ(_bpmCounter++, AppConstants.Definition.RadixBase36);
                 _bpmDefinitions[roundedBpm] = bpmId;
             }
 
@@ -432,7 +443,7 @@ public class BmsScoreGenerator(
 
             if (!_stopDefinitions.TryGetValue(bmsStopVal, out string? stopId))
             {
-                stopId = RadixConvert.IntToZZ(_stopCounter++, 36);
+                stopId = RadixConvert.IntToZZ(_stopCounter++, AppConstants.Definition.RadixBase36);
                 _stopDefinitions[bmsStopVal] = stopId;
             }
 
@@ -450,7 +461,7 @@ public class BmsScoreGenerator(
         {
             if (!_bmpDefinitions.ContainsKey(h.Id))
             {
-                _bmpDefinitions[h.Id] = RadixConvert.IntToZZ(_bmpCounter++, 36);
+                _bmpDefinitions[h.Id] = RadixConvert.IntToZZ(_bmpCounter++, AppConstants.Definition.RadixBase36);
             }
         }
 
@@ -505,7 +516,7 @@ public class BmsScoreGenerator(
     private static string[] CreateEmptyArray(int size)
     {
         var arr = new string[size];
-        for (int i = 0; i < size; i++) arr[i] = "00";
+        for (int i = 0; i < size; i++) arr[i] = AppConstants.Definition.Rest;
         return arr;
     }
 
@@ -523,7 +534,7 @@ public class BmsScoreGenerator(
                 bool placed = false;
                 foreach (var arr in mDict[channel])
                 {
-                    if (arr.Length == measureLength && arr[step] == "00")
+                    if (arr.Length == measureLength && arr[step] == AppConstants.Definition.Rest)
                     {
                         arr[step] = id;
                         placed = true;

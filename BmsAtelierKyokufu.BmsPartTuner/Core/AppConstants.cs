@@ -54,6 +54,35 @@ public static class AppConstants
         /// </remarks>
         public const string End = "00";
 
+        /// <summary>
+        /// BMSデータ中の休符/未定義オブジェクトプレースホルダー。
+        /// </summary>
+        public const string Rest = "00";
+
+        /// <summary>WAV定義コマンド。</summary>
+        public const string Wav = "WAV";
+
+        /// <summary>BPM定義コマンド。</summary>
+        public const string Bpm = "BPM";
+
+        /// <summary>STOP定義コマンド。</summary>
+        public const string Stop = "STOP";
+
+        /// <summary>BMP定義コマンド。</summary>
+        public const string Bmp = "BMP";
+
+        /// <summary>WAV定義コマンドのプレフィックス。</summary>
+        public const string WavPrefix = "#WAV";
+
+        /// <summary>BPM定義コマンドのプレフィックス。</summary>
+        public const string BpmPrefix = "#BPM";
+
+        /// <summary>STOP定義コマンドのプレフィックス。</summary>
+        public const string StopPrefix = "#STOP";
+
+        /// <summary>BMP定義コマンドのプレフィックス。</summary>
+        public const string BmpPrefix = "#BMP";
+
         /// <summary>定義文字列の必須長（2桁固定）。</summary>
         public const int StringLength = 2;
 
@@ -62,6 +91,15 @@ public static class AppConstants
 
         /// <summary>62進数の基数。</summary>
         public const int RadixBase62 = 62;
+    }
+
+    /// <summary>
+    /// 音声フォーマットに関する定数。
+    /// </summary>
+    public static class Audio
+    {
+        /// <summary>標準オーディオサンプルレート (44100 Hz)。</summary>
+        public const int StandardSampleRate = 44100;
     }
 
     /// <summary>

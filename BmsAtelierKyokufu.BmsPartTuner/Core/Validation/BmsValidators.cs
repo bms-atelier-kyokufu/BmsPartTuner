@@ -1,6 +1,4 @@
-﻿using BmsAtelierKyokufu.BmsPartTuner.Core.Helpers;
-
-namespace BmsAtelierKyokufu.BmsPartTuner.Core.Validation;
+﻿namespace BmsAtelierKyokufu.BmsPartTuner.Core.Validation;
 
 /// <summary>
 /// 定義範囲の検証データ。
@@ -56,7 +54,7 @@ public class DefinitionRangeValidator : IValidator<DefinitionRange>
             // Why: BMSフォーマットは62進数（0-9, A-Z, a-z）をサポートするため、Base62で検証する
             var startValue = RadixConvert.ZZToInt(range.Start, AppConstants.Definition.RadixBase62);
             var endValue = RadixConvert.ZZToInt(range.End, AppConstants.Definition.RadixBase62);
-            var maxValue = RadixConvert.ZZToInt("zz", AppConstants.Definition.RadixBase62);
+            var maxValue = AppConstants.Definition.MaxNumberBase62;
 
             if (startValue < AppConstants.Definition.MinNumber)
                 return ValidationResult.Failure("開始定義は01以上にしてください");
@@ -111,7 +109,7 @@ public class R2ThresholdValidator : IValidator<string>
     /// 検証とパースを同時に行うことで、呼び出し側での再パースを不要にします。
     /// これにより、エラーが発生しやすい重複したパース処理を排除できます。
     /// </remarks>
-    public ValidationResult<float> ValidateWithValue(string r2Text)
+    public static ValidationResult<float> ValidateWithValue(string r2Text)
     {
         if (string.IsNullOrWhiteSpace(r2Text))
             return ValidationResult<float>.Failure("マッチ許容度を入力してください");

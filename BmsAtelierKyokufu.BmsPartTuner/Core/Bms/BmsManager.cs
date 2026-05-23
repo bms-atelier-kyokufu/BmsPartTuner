@@ -116,12 +116,12 @@ internal partial class BmsManager(string bmsFilePath, string? bmsContent = null)
         }
         catch (ArgumentException ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[BmsManager] Encoding Error: {ex.Message}");
+            PerfDebugLogger.WriteLine($"[BmsManager] Encoding Error: {ex.Message}");
             throw;
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[BmsManager] Parse Error in file '{Path.GetFileName(_bmsFilePath)}': {ex.Message}");
+            PerfDebugLogger.WriteLine($"[BmsManager] Parse Error in file '{Path.GetFileName(_bmsFilePath)}': {ex.Message}");
         }
 
         return definitions;
@@ -208,7 +208,7 @@ internal partial class BmsManager(string bmsFilePath, string? bmsContent = null)
             if (i + 1 < data.Length)
             {
                 var def = data.Substring(i, 2);
-                if (def != "00" && replaceMap.TryGetValue(def, out string? replacement))
+                if (def != AppConstants.Definition.Rest && replaceMap.TryGetValue(def, out string? replacement))
                 {
                     sb.Append(replacement);
                 }

@@ -1,5 +1,4 @@
 ﻿using System.Text.RegularExpressions;
-using BmsAtelierKyokufu.BmsPartTuner.Core.Helpers;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 
@@ -146,7 +145,7 @@ internal partial class BmsFileRewriter(
             }
             File.Move(tempFileName, saveFileName);
 
-            Debug.WriteLine($"BMS file written atomically: {saveFileName}");
+            PerfDebugLogger.WriteLine($"BMS file written atomically: {saveFileName}");
         }
         catch (IOException)
         {
@@ -163,11 +162,11 @@ internal partial class BmsFileRewriter(
                     if (originalExists)
                     {
                         File.Delete(tempFileName);
-                        Debug.WriteLine($"Cleanup: Incomplete temp file deleted: {tempFileName}");
+                        PerfDebugLogger.WriteLine($"Cleanup: Incomplete temp file deleted: {tempFileName}");
                     }
                     else
                     {
-                        Debug.WriteLine($"CRITICAL WARNING: Original file lost, keeping temp file for recovery: {tempFileName}");
+                        PerfDebugLogger.WriteLine($"CRITICAL WARNING: Original file lost, keeping temp file for recovery: {tempFileName}");
                     }
                 }
             }
@@ -185,7 +184,7 @@ internal partial class BmsFileRewriter(
                 if (File.Exists(tempFileName))
                 {
                     File.Delete(tempFileName);
-                    Debug.WriteLine($"Cleanup: Temp file deleted due to access denied: {tempFileName}");
+                    PerfDebugLogger.WriteLine($"Cleanup: Temp file deleted due to access denied: {tempFileName}");
                 }
             }
             catch
@@ -382,7 +381,7 @@ internal partial class BmsFileRewriter(
                     {
                         foreach (var def in newDefinitions)
                         {
-                            sb.AppendLine($"#WAV{def.Index} {def.Path}");
+                            sb.AppendLine($"{AppConstants.Definition.WavPrefix}{def.Index} {def.Path}");
                         }
                         definitionsWritten = true;
                     }
@@ -396,7 +395,7 @@ internal partial class BmsFileRewriter(
                 {
                     foreach (var def in newDefinitions)
                     {
-                        sb.AppendLine($"#WAV{def.Index} {def.Path}");
+                        sb.AppendLine($"{AppConstants.Definition.WavPrefix}{def.Index} {def.Path}");
                     }
                     definitionsWritten = true;
                 }
@@ -419,15 +418,15 @@ internal partial class BmsFileRewriter(
         {
             foreach (var def in newDefinitions)
             {
-                sb.AppendLine($"#WAV{def.Index} {def.Path}");
+                sb.AppendLine($"{AppConstants.Definition.WavPrefix}{def.Index} {def.Path}");
             }
         }
 
         // 未定義参照があればワーニングログを出力
         if (undefinedReferences.Count > 0)
         {
-            Debug.WriteLine($"[BmsFileRewriter] WARNING: Found undefined WAV references in {Path.GetFileName(bmsFileName)}: {string.Join(", ", undefinedReferences)}");
-            Debug.WriteLine($"[BmsFileRewriter] These references were preserved as-is (non-destructive policy)");
+            PerfDebugLogger.WriteLine($"[BmsFileRewriter] WARNING: Found undefined WAV references in {Path.GetFileName(bmsFileName)}: {string.Join(", ", undefinedReferences)}");
+            PerfDebugLogger.WriteLine($"[BmsFileRewriter] These references were preserved as-is (non-destructive policy)");
         }
 
         return sb.ToString();
@@ -459,7 +458,7 @@ internal partial class BmsFileRewriter(
             if (i + 1 < data.Length)
             {
                 var id = data.Substring(i, 2);
-                if (id != "00" && !finalMap.ContainsKey(id))
+                if (id != AppConstants.Definition.Rest && !finalMap.ContainsKey(id))
                 {
                     undefinedReferences.Add(id);
                 }

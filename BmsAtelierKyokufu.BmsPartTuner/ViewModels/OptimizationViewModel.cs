@@ -1,7 +1,4 @@
-﻿using System.Threading;
-using BmsAtelierKyokufu.BmsPartTuner.Core;
-using BmsAtelierKyokufu.BmsPartTuner.Core.Helpers;
-using BmsAtelierKyokufu.BmsPartTuner.Services.Bms;
+﻿using BmsAtelierKyokufu.BmsPartTuner.Services.Bms;
 using BmsAtelierKyokufu.BmsPartTuner.Views.Controls;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.ViewModels;
@@ -300,10 +297,10 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
                 StatusMessage = "最適化エラー";
             });
 
-            Debug.WriteLine($"=== ExecuteThresholdOptimizationAsync Exception ===");
-            Debug.WriteLine($"Exception Type: {ex.GetType().FullName}");
-            Debug.WriteLine($"Message: {ex.Message}");
-            Debug.WriteLine($"StackTrace: {ex.StackTrace}");
+            PerfDebugLogger.WriteLine($"=== ExecuteThresholdOptimizationAsync Exception ===");
+            PerfDebugLogger.WriteLine($"Exception Type: {ex.GetType().FullName}");
+            PerfDebugLogger.WriteLine($"Message: {ex.Message}");
+            PerfDebugLogger.WriteLine($"StackTrace: {ex.StackTrace}");
 
             return null;
         }
@@ -403,7 +400,7 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
         {
             ErrorOccurred?.Invoke(this, $"処理エラー: {ex.Message}");
             StatusMessage = "処理エラー";
-            Debug.WriteLine($"ExecuteDefinitionReductionInternalAsync Exception: {ex}");
+            PerfDebugLogger.WriteLine($"ExecuteDefinitionReductionInternalAsync Exception: {ex}");
         }
         finally
         {
@@ -413,7 +410,7 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
             // メモリリーク対策: 処理完了後にキャッシュをクリアしてメモリを解放
             await Task.Run(() =>
             {
-                Debug.WriteLine("=== OptimizationViewModel: Clearing caches ===");
+                PerfDebugLogger.WriteLine("=== OptimizationViewModel: Clearing caches ===");
                 if (bmsFileList != null)
                 {
                     // キャッシュの解放は BmsOptimizationService 内部で実行されるため、ここでは何もしません
@@ -512,7 +509,7 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
                             break;
                         }
 
-                        if (DefinitionEnd.Equals("00", StringComparison.OrdinalIgnoreCase))
+                        if (DefinitionEnd.Equals(AppConstants.Definition.End, StringComparison.OrdinalIgnoreCase))
                         {
                             // 00は許可（ファイルから推定）
                         }
