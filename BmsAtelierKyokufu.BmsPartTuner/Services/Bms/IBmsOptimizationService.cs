@@ -35,7 +35,8 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Services.Bms
             int startDefinition,
             int endDefinition,
             bool isPhysicalDeletionEnabled,
+            string? inputBmsContent = null,
             IProgress<int>? progress = null,
-        IEnumerable<string>? selectedKeywords = null);
+            IEnumerable<string>? selectedKeywords = null);
     }
 }

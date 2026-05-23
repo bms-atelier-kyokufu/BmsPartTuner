@@ -9,25 +9,13 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Services.Bms.Bmson;
 /// bmsonのノート情報に基づき、元の音声ファイル（ステムなど）を指定時間で切り出し、
 /// BMS用の短いWAVスライスを生成するマネージャー。
 /// </summary>
-public class AudioSliceManager
+public class AudioSliceManager(string bmsonDir)
 {
-    private readonly string _bmsonDir;
-    private readonly string _outputDir;
+    private readonly string _bmsonDir = bmsonDir;
 
     // key: "fileName|offsetSec|durationSec", value: "outputFileName.wav"
     private readonly ConcurrentDictionary<string, Lazy<string>> _sliceCache = new();
     private int _sliceCounter = 1;
-
-    public AudioSliceManager(string bmsonDir, string outputDir)
-    {
-        _bmsonDir = bmsonDir;
-        _outputDir = outputDir;
-
-        if (!Directory.Exists(_outputDir))
-        {
-            Directory.CreateDirectory(_outputDir);
-        }
-    }
 
     /// <summary>
     /// 指定された音声ファイルの特定区間を切り出し、ステレオ・44.1kHz・16bitのWAVとして保存します。
@@ -59,7 +47,6 @@ public class AudioSliceManager
                 : char.ToUpper(nameWithoutExt[0]) + nameWithoutExt[1..];
             int currentCount = Interlocked.Increment(ref _sliceCounter) - 1;
             string outputFileName = $"{prefix}_{currentCount:D4}.wav";
-            string outputPath = Path.Combine(_outputDir, outputFileName);
 
             try
             {
@@ -105,8 +92,11 @@ public class AudioSliceManager
                     Take = TimeSpan.FromSeconds(actualDuration)
                 };
 
-                // 16bit PCMとして書き出し
-                WaveFileWriter.CreateWaveFile16(outputPath, cutProvider);
+                // 16bit PCMとしてメモリに書き出し
+                var provider16 = new SampleToWaveProvider16(cutProvider);
+                using var ms = new MemoryStream();
+                WaveFileWriter.WriteWavFileToStream(ms, provider16);
+                BmsAtelierKyokufu.BmsPartTuner.Core.Audio.VirtualAudioRegistry.AddFile(outputFileName, ms.ToArray());
 
                 return outputFileName;
             }

@@ -254,7 +254,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Models
             int samplesPerChannel_count = samplesPerChannel[0].Length;
 
             // 正規化波形を計算
-            NormalizedWaveform = ComputeNormalizedWaveform(samplesPerChannel, samplesPerChannel_count, Channels);
+            NormalizedWaveform = ComputeNormalizedWaveform(samplesPerChannel, Channels);
 
             // RMSを計算
             TotalRms = CalculateTotalRms(samplesPerChannel, samplesPerChannel_count, Channels);
@@ -276,80 +276,109 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Models
 
             try
             {
-                var fi = new FileInfo(path);
-                if (!fi.Exists)
+                var fileName = Path.GetFileName(path);
+                Stream? memoryStreamToDispose = null;
+                WaveStream stream;
+                ISampleProvider sampleProvider;
+
+                if (Core.Audio.VirtualAudioRegistry.TryGetFile(fileName, out var memoryData))
                 {
-                    throw new FileNotFoundException($"File not found: {path}");
+                    FileSize = memoryData.Length;
+                    memoryStreamToDispose = new MemoryStream(memoryData);
+                    var waveReader = new WaveFileReader(memoryStreamToDispose);
+                    stream = waveReader;
+                    sampleProvider = waveReader.ToSampleProvider();
                 }
-                FileSize = fi.Length;
-
-                using var reader = new AudioFileReader(path);
-                SampleRate = reader.WaveFormat.SampleRate;
-                Channels = reader.WaveFormat.Channels;
-                BitsPerSample = reader.WaveFormat.BitsPerSample;
-
-                // 全データをメモリに読み込む
-                // NAudio 2.x: reader.Length はバイト数、AudioFileReaderは常にfloat[]を返す
-                long totalSamples = reader.Length / sizeof(float);
-
-                if (totalSamples == 0)
+                else
                 {
-                    throw new InvalidOperationException($"File has zero samples: {path}");
-                }
-
-                float[] samplesArray = new float[totalSamples];
-
-                int totalRead = 0;
-                int bufferSize = Math.Min(reader.WaveFormat.SampleRate * reader.WaveFormat.Channels, (int)totalSamples);
-
-                while (totalRead < totalSamples)
-                {
-                    int toRead = (int)Math.Min(bufferSize, totalSamples - totalRead);
-                    int read = reader.Read(samplesArray, totalRead, toRead);
-
-                    if (read == 0)
+                    var fi = new FileInfo(path);
+                    if (!fi.Exists)
                     {
-                        Debug.WriteLine($"[CachedSoundData] WARNING: Read returned 0 at {totalRead}/{totalSamples} for {Path.GetFileName(path)}");
-                        break;
+                        throw new FileNotFoundException($"File not found: {path}");
+                    }
+                    FileSize = fi.Length;
+                    var audioReader = new AudioFileReader(path);
+                    stream = audioReader;
+                    sampleProvider = audioReader;
+                }
+
+                using (memoryStreamToDispose)
+                using (stream)
+                {
+                    SampleRate = stream.WaveFormat.SampleRate;
+                    Channels = stream.WaveFormat.Channels;
+                    BitsPerSample = stream.WaveFormat.BitsPerSample;
+
+                    // 全データをメモリに読み込む
+                    long totalSamples;
+                    if (stream is AudioFileReader)
+                    {
+                        totalSamples = stream.Length / sizeof(float);
+                    }
+                    else
+                    {
+                        totalSamples = stream.Length / (stream.WaveFormat.BitsPerSample / 8);
                     }
 
-                    totalRead += read;
+                    if (totalSamples == 0)
+                    {
+                        throw new InvalidOperationException($"File has zero samples: {path}");
+                    }
+
+                    float[] samplesArray = new float[totalSamples];
+
+                    int totalRead = 0;
+                    int bufferSize = Math.Min(stream.WaveFormat.SampleRate * stream.WaveFormat.Channels, (int)totalSamples);
+
+                    while (totalRead < totalSamples)
+                    {
+                        int toRead = (int)Math.Min(bufferSize, totalSamples - totalRead);
+                        int read = sampleProvider.Read(samplesArray, totalRead, toRead);
+
+                        if (read == 0)
+                        {
+                            Debug.WriteLine($"[CachedSoundData] WARNING: Read returned 0 at {totalRead}/{totalSamples} for {Path.GetFileName(path)}");
+                            break;
+                        }
+
+                        totalRead += read;
+                    }
+
+                    if (totalRead == 0)
+                    {
+                        throw new InvalidOperationException($"Failed to read any samples from file: {path}");
+                    }
+
+                    // 実際に読み込んだサンプル数が想定より少ない場合は配列をリサイズ
+                    if (totalRead < totalSamples)
+                    {
+                        Array.Resize(ref samplesArray, totalRead);
+                    }
+
+                    Samples = samplesArray;
+
+                    // チャンネル分離（デインターリーブ）を事前実行
+                    int samplesPerChannel = Samples.Length / Channels;
+                    SamplesPerChannel = DeinterleaveChannels(Samples, Channels, samplesPerChannel);
+
+                    // メモリ最適化: デインターリーブ後はインターリーブ配列を解放
+                    Samples = null;
+
+                    // 波形を正規化（指定された場合）
+                    if (normalizationMode != NormalizationMode.None)
+                    {
+                        ApplyNormalization(normalizationMode);
+                    }
+
+                    // Phase 2: 正規化波形を事前計算（ドット積でピアソン相関係数を計算可能に）
+                    NormalizedWaveform = ComputeNormalizedWaveform(SamplesPerChannel, Channels);
+
+                    // 先頭無音を検出（高速比較用）
+                    StartSilenceSamples = DetectStartSilence(SamplesPerChannel, samplesPerChannel, Channels);
+
+                    // RMS（音圧）を計算（高速フィルタ用）
+                    TotalRms = CalculateTotalRms(SamplesPerChannel, samplesPerChannel, Channels);
                 }
-
-                if (totalRead == 0)
-                {
-                    throw new InvalidOperationException($"Failed to read any samples from file: {path}");
-                }
-
-                // 実際に読み込んだサンプル数が想定より少ない場合は配列をリサイズ
-                if (totalRead < totalSamples)
-                {
-                    Array.Resize(ref samplesArray, totalRead);
-                }
-
-                Samples = samplesArray;
-
-                // チャンネル分離（デインターリーブ）を事前実行
-                int samplesPerChannel = Samples.Length / Channels;
-                SamplesPerChannel = DeinterleaveChannels(Samples, Channels, samplesPerChannel);
-
-                // メモリ最適化: デインターリーブ後はインターリーブ配列を解放
-                Samples = null;
-
-                // 波形を正規化（指定された場合）
-                if (normalizationMode != NormalizationMode.None)
-                {
-                    ApplyNormalization(normalizationMode);
-                }
-
-                // Phase 2: 正規化波形を事前計算（ドット積でピアソン相関係数を計算可能に）
-                NormalizedWaveform = ComputeNormalizedWaveform(SamplesPerChannel, samplesPerChannel, Channels);
-
-                // 先頭無音を検出（高速比較用）
-                StartSilenceSamples = DetectStartSilence(SamplesPerChannel, samplesPerChannel, Channels);
-
-                // RMS（音圧）を計算（高速フィルタ用）
-                TotalRms = CalculateTotalRms(SamplesPerChannel, samplesPerChannel, Channels);
             }
             catch (Exception ex)
             {
@@ -510,7 +539,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Models
         /// - 比較時の5変数の累積計算を1変数のドット積に削減
         /// - SIMD演算との相性向上
         /// </summary>
-        private static float[][] ComputeNormalizedWaveform(float[][] samplesPerChannel, int samplesPerChannelCount, int channels)
+        private static float[][] ComputeNormalizedWaveform(float[][] samplesPerChannel, int channels)
         {
             var normalized = new float[channels][];
 

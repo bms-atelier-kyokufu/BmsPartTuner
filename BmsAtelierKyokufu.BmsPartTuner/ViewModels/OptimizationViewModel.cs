@@ -326,6 +326,7 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
         BmsAtelierKyokufu.BmsPartTuner.Core.Bms.BmsDefinitionManager? bmsFileList,
         string? inputPath,
         string? outputPath,
+        string? inputBmsContent = null,
         IEnumerable<string>? selectedKeywords = null)
     {
         if (bmsFileList == null)
@@ -353,7 +354,7 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
             return;
         }
 
-        await ExecuteDefinitionReductionInternalAsync(bmsFileList, inputPath, outputPath, r2Result.Value, selectedKeywords);
+        await ExecuteDefinitionReductionInternalAsync(bmsFileList, inputPath, outputPath, r2Result.Value, inputBmsContent, selectedKeywords);
     }
 
     private async Task ExecuteDefinitionReductionInternalAsync(
@@ -361,6 +362,7 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
         string inputPath,
         string outputPath,
         float r2Val,
+        string? inputBmsContent = null,
         IEnumerable<string>? selectedKeywords = null)
     {
         var loaderCts = BeginBusyState("📁 ファイルを処理中...");
@@ -375,6 +377,7 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
                 RadixConvert.ZZToInt(DefinitionStart),
                 RadixConvert.ZZToInt(DefinitionEnd),
                 IsPhysicalDeletionEnabled,
+                inputBmsContent,
                 _progress,
                 selectedKeywords);
 

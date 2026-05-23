@@ -26,9 +26,12 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 /// BmsDefinitionManagerは単一のBMSファイルを管理するため、
 /// 楽器検出サービスのライフサイクルもこれに合わせます。
 /// </remarks>
-public class BmsDefinitionManager(string bmsFilePath)
+public partial class BmsDefinitionManager(string bmsFilePath, string? bmsContent = null)
 {
+    [System.Text.RegularExpressions.GeneratedRegex("[a-z]")]
+    private static partial System.Text.RegularExpressions.Regex LowerCaseRegex();
     private readonly string _bmsFilePath = bmsFilePath ?? throw new ArgumentNullException(nameof(bmsFilePath));
+    private readonly string? _bmsContent = bmsContent;
     private readonly string _bmsDirectory = Path.GetDirectoryName(bmsFilePath) ?? string.Empty;
     private readonly ObservableCollection<BmsAudioFile> _fileList = [];
     private readonly InstrumentNameDetectionService _instrumentDetectionService = new();
@@ -75,10 +78,10 @@ public class BmsDefinitionManager(string bmsFilePath)
     {
         MissingFiles.Clear();
 
-        var manager = new BmsManager(_bmsFilePath);
+        var manager = new BmsManager(_bmsFilePath, _bmsContent);
         var definitions = manager.ParseWavDefinitions();
 
-        bool isBase62 = definitions.Any(d => System.Text.RegularExpressions.Regex.IsMatch(d.def, "[a-z]"));
+        bool isBase62 = definitions.Any(d => LowerCaseRegex().IsMatch(d.def));
         int inputRadix = isBase62 ? AppConstants.Definition.RadixBase62 : AppConstants.Definition.RadixBase36;
 
         var tempList = new List<BmsAudioFile>();
@@ -89,21 +92,30 @@ public class BmsDefinitionManager(string bmsFilePath)
                 ? path
                 : Path.Combine(_bmsDirectory, path);
 
-            if (!File.Exists(fullPath))
+            if (!File.Exists(fullPath) && !Core.Audio.VirtualAudioRegistry.TryGetFile(path, out _))
             {
                 Debug.WriteLine($"[BmsDefinitionManager] Missing file: {path}");
                 MissingFiles.Add(path);
                 continue;
             }
 
-            var fileInfo = new FileInfo(fullPath);
+            long fileSize = 0;
+            if (Core.Audio.VirtualAudioRegistry.TryGetFile(path, out var memoryData))
+            {
+                fileSize = memoryData.Length;
+            }
+            else
+            {
+                var fileInfo = new FileInfo(fullPath);
+                fileSize = fileInfo.Length;
+            }
 
             tempList.Add(new BmsAudioFile
             {
                 Num = def,
                 NumInteger = RadixConvert.ZZToInt(def, inputRadix),
                 Name = fullPath,
-                FileSize = fileInfo.Length,
+                FileSize = fileSize,
                 AudioFingerprint = string.Empty,
                 InstrumentName = string.Empty
             });

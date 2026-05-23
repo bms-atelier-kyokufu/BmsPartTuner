@@ -32,7 +32,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 /// </remarks>
 /// <param name="bmsFilePath">BMSファイルのフルパス。</param>
 /// <exception cref="ArgumentNullException">bmsFilePathがnullの場合。</exception>
-internal partial class BmsManager(string bmsFilePath)
+internal partial class BmsManager(string bmsFilePath, string? bmsContent = null)
 {
     /// <summary>
     /// BMSコマンドの種別。
@@ -48,6 +48,7 @@ internal partial class BmsManager(string bmsFilePath)
     }
 
     private readonly string _bmsFilePath = bmsFilePath ?? throw new ArgumentNullException(nameof(bmsFilePath));
+    private readonly string? _bmsContent = bmsContent;
     private readonly string? _bmsDirectory = Path.GetDirectoryName(bmsFilePath);
 
     [GeneratedRegex(@"^#(WAV|BMP|BPM|STOP)[0-9A-Za-z]{2}")]
@@ -93,12 +94,14 @@ internal partial class BmsManager(string bmsFilePath)
     {
         var definitions = new List<(string def, string path)>();
 
-        if (!File.Exists(_bmsFilePath))
+        if (_bmsContent == null && !File.Exists(_bmsFilePath))
             return definitions;
 
         try
         {
-            using var sr = new StreamReader(_bmsFilePath, Encoding.GetEncoding("shift_jis"));
+            using TextReader sr = _bmsContent != null
+                ? new StringReader(_bmsContent)
+                : new StreamReader(_bmsFilePath, Encoding.GetEncoding("shift_jis"));
             string? line;
             while ((line = sr.ReadLine()) != null)
             {

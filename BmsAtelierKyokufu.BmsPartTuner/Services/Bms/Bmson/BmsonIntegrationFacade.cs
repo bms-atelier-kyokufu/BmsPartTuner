@@ -10,14 +10,13 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Services.Bms.Bmson;
 public class BmsonIntegrationFacade
 {
     /// <summary>
-    /// bmsonファイルをBMSファイルにダウンコンバートします。
-    /// 生成されたファイル群は、出力先ディレクトリに保存されます。
+    /// bmsonファイルをBMSフォーマットに変換し、結果のテキストを返します。
+    /// （音声スライスは VirtualAudioRegistry にオンメモリで保持されます）
     /// </summary>
     /// <param name="bmsonFilePath">入力bmsonファイルのフルパス</param>
-    /// <param name="outputDir">WAVスライスとBMSファイルを保存するディレクトリ</param>
     /// <param name="keyNotesOnly">trueの場合、BGMレーンを無視して演奏ノーツのみを抽出する</param>
-    /// <returns>生成されたBMSファイルのフルパス</returns>
-    public static string Downconvert(string bmsonFilePath, string outputDir, bool keyNotesOnly)
+    /// <returns>生成されたBMSテキスト</returns>
+    public static string GenerateBmsText(string bmsonFilePath, bool keyNotesOnly)
     {
         if (!File.Exists(bmsonFilePath))
             throw new FileNotFoundException("Bmson file not found.", bmsonFilePath);
@@ -36,22 +35,11 @@ public class BmsonIntegrationFacade
 
         // 4. 音声スライスエンジンの準備
         string bmsonDir = Path.GetDirectoryName(bmsonFilePath) ?? string.Empty;
-        var audioSlicer = new AudioSliceManager(bmsonDir, outputDir);
+        var audioSlicer = new AudioSliceManager(bmsonDir);
 
         // 5. スコアジェネレータの実行
         // ※内部でPre-Sliceを行い、スライス数を数えた上で最適な進数(36 or 62)を自動選択する
         var generator = new BmsScoreGenerator(bmson, timeCalc, realTimeCalc, audioSlicer, keyNotesOnly);
-        string bmsText = generator.GenerateBmsText();
-
-        // 6. BMSファイルとして保存
-        string fileNameWithoutExt = Path.GetFileNameWithoutExtension(bmsonFilePath);
-        string outBmsPath = Path.Combine(outputDir, $"{fileNameWithoutExt}_downconverted.bms");
-
-        // Shift_JIS (CP932) で保存
-        Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-        var shiftJis = Encoding.GetEncoding(932);
-        File.WriteAllText(outBmsPath, bmsText, shiftJis);
-
-        return outBmsPath;
+        return generator.GenerateBmsText();
     }
 }

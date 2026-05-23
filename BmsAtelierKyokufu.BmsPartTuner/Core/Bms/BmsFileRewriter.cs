@@ -39,21 +39,27 @@ internal partial class BmsFileRewriter(
     IReadOnlyList<BmsAudioFile> fileList,
     int[] replaces,
     int startPoint,
-    int endPoint)
+    int endPoint,
+    string? inputBmsContent = null)
 {
     private readonly IReadOnlyList<BmsAudioFile> _fileList = fileList ?? throw new ArgumentNullException(nameof(fileList));
     private readonly int[] _replaces = replaces ?? throw new ArgumentNullException(nameof(replaces));
     private readonly int _startPoint = startPoint;
     private readonly int _endPoint = endPoint;
+    private readonly string? _inputBmsContent = inputBmsContent;
 
     /// <summary>
     /// Shift_JISエンコーディングのプロバイダを登録する静的コンストラクタ。
     /// .NET 10では System.Text.Encoding.CodePages が必要。
     /// </summary>
+    /// </summary>
     static BmsFileRewriter()
     {
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
     }
+
+    [GeneratedRegex(@"^#(\d{3})([0-9A-Z]{2}):(.+)$")]
+    private static partial Regex BmsChannelDataRegex();
 
     /// <summary>
     /// 削減後に保持されるファイルのリスト。
@@ -107,7 +113,7 @@ internal partial class BmsFileRewriter(
     /// BMSフォーマットはShift_JISエンコーディングが標準です。
     /// 互換性維持のため、ファイル書き込みにはShift_JISを使用します。
     /// </remarks>
-    public void WriteBmsFile(string saveFileName, string writeData)
+    public static void WriteBmsFile(string saveFileName, string writeData)
     {
         // アトミック書き込み: 一時ファイルに書き込んでからリネーム
         var tempFileName = saveFileName + ".tmp";
@@ -232,9 +238,8 @@ internal partial class BmsFileRewriter(
             reductionMap[original] = reduced;
 
             // Add to kept files if this is the first time we see this reduced index
-            if (!keptIndices.Contains(reduced))
+            if (keptIndices.Add(reduced))
             {
-                keptIndices.Add(reduced);
                 var repFile = _fileList.FirstOrDefault(f => f.NumInteger == reduced);
                 if (repFile != null)
                 {
@@ -357,30 +362,21 @@ internal partial class BmsFileRewriter(
         bool definitionsWritten = false;
         var undefinedReferences = new HashSet<string>();
 
-        using (var sr = new StreamReader(bmsFileName, Encoding.GetEncoding("shift_jis")))
-        {
-            string? line;
-            while ((line = sr.ReadLine()) != null)
-            {
-                var command = BmsManager.GetLineCommand(line);
+        if (_inputBmsContent == null && !File.Exists(bmsFileName))
+            return sb.ToString();
 
-                if (command == BmsManager.BmsCommand.HEADER)
-                {
-                    if (IsWavDefinition(line))
-                    {
-                        if (!definitionsWritten)
-                        {
-                            foreach (var def in newDefinitions)
-                            {
-                                sb.AppendLine($"#WAV{def.Index} {def.Path}");
-                            }
-                            definitionsWritten = true;
-                        }
-                        continue;
-                    }
-                    sb.AppendLine(line);
-                }
-                else if (command == BmsManager.BmsCommand.MAIN)
+        using TextReader sr = _inputBmsContent != null
+            ? new StringReader(_inputBmsContent)
+            : new StreamReader(bmsFileName, Encoding.GetEncoding("shift_jis"));
+
+        string? line;
+        while ((line = sr.ReadLine()) != null)
+        {
+            var command = BmsManager.GetLineCommand(line);
+
+            if (command == BmsManager.BmsCommand.HEADER)
+            {
+                if (IsWavDefinition(line))
                 {
                     if (!definitionsWritten)
                     {
@@ -390,19 +386,32 @@ internal partial class BmsFileRewriter(
                         }
                         definitionsWritten = true;
                     }
-
-                    if (finalMap.Count > 0)
-                    {
-                        // 未定義参照を検出してログ出力
-                        DetectUndefinedReferences(line, finalMap, undefinedReferences);
-                        line = BmsManager.ChangeDefinition(line, finalMap);
-                    }
-                    sb.AppendLine(line);
+                    continue;
                 }
-                else
+                sb.AppendLine(line);
+            }
+            else if (command == BmsManager.BmsCommand.MAIN)
+            {
+                if (!definitionsWritten)
                 {
-                    sb.AppendLine(line);
+                    foreach (var def in newDefinitions)
+                    {
+                        sb.AppendLine($"#WAV{def.Index} {def.Path}");
+                    }
+                    definitionsWritten = true;
                 }
+
+                if (finalMap.Count > 0)
+                {
+                    // 未定義参照を検出してログ出力
+                    DetectUndefinedReferences(line, finalMap, undefinedReferences);
+                    line = BmsManager.ChangeDefinition(line, finalMap);
+                }
+                sb.AppendLine(line);
+            }
+            else
+            {
+                sb.AppendLine(line);
             }
         }
 
@@ -433,7 +442,7 @@ internal partial class BmsFileRewriter(
     private static void DetectUndefinedReferences(string line, Dictionary<string, string> finalMap, HashSet<string> undefinedReferences)
     {
         // WAVチャンネルのデータ行を解析
-        var match = System.Text.RegularExpressions.Regex.Match(line, @"^#(\d{3})([0-9A-Z]{2}):(.+)$");
+        var match = BmsChannelDataRegex().Match(line);
         if (!match.Success)
             return;
 

@@ -281,7 +281,7 @@ public class BmsOptimizationService : IBmsOptimizationService
     /// ファイル数がfileLimitを超えない範囲で、最も高いしきい値を選択します。
     /// しきい値が高いほど品質が保たれるため、制限を満たす最大しきい値が最適です。
     /// </remarks>
-    private (float Threshold, int Count) FindOptimalThreshold(
+    private static (float Threshold, int Count) FindOptimalThreshold(
         List<(double Threshold, int Count)> simulationData,
         int fileLimit)
     {
@@ -385,6 +385,7 @@ public class BmsOptimizationService : IBmsOptimizationService
         int startDefinition,
         int endDefinition,
         bool isPhysicalDeletionEnabled,
+        string? inputBmsContent = null,
         IProgress<int>? progress = null,
         IEnumerable<string>? selectedKeywords = null)
     {
@@ -394,6 +395,20 @@ public class BmsOptimizationService : IBmsOptimizationService
         if (string.IsNullOrWhiteSpace(outputPath))
             throw new ArgumentException("出力パスが指定されていません", nameof(outputPath));
 
+        if (inputBmsContent == null && !File.Exists(inputPath))
+        {
+            return new ReductionResult
+            {
+                OriginalCount = fileList.Count,
+                OptimizedCount = fileList.Count,
+                ReductionRate = 0,
+                ProcessingTime = TimeSpan.Zero,
+                Threshold = r2Threshold,
+                IsSuccess = false,
+                ErrorMessage = $"ファイルが見つかりません: {inputPath}"
+            };
+        }
+
         Stopwatch sw = Stopwatch.StartNew();
 
         // 音声データの事前ロード（キャッシュ構築）
@@ -402,7 +417,7 @@ public class BmsOptimizationService : IBmsOptimizationService
 
         // DefinitionReuse expects an ObservableCollection, so we need to convert
         ObservableCollection<BmsAudioFile> observableCollection = new(fileList);
-        DefinitionReuse dr = new(observableCollection, audioCache);
+        DefinitionReuse dr = new(observableCollection, audioCache, inputBmsContent);
 
         int originalCount = fileList.Count;
         int optimizedCount = originalCount;

@@ -36,6 +36,7 @@ public class DefinitionReuse
     private readonly DefinitionRangeManager _rangeManager;
     private DefinitionStatistics _statistics;
     private BmsFileRewriter? _rewriter;
+    private readonly string? _inputBmsContent;
 
     #endregion
 
@@ -51,10 +52,11 @@ public class DefinitionReuse
     /// <see cref="ObservableCollection{T}"/>はUI通知用で変更される可能性があるため、
     /// 内部処理用に不変のスナップショットを作成します。
     /// </remarks>
-    public DefinitionReuse(ObservableCollection<BmsAudioFile> fileList, IReadOnlyDictionary<string, CachedSoundData> audioCache)
+    public DefinitionReuse(ObservableCollection<BmsAudioFile> fileList, IReadOnlyDictionary<string, CachedSoundData> audioCache, string? inputBmsContent = null)
     {
         _fileList = fileList?.ToList() ?? throw new ArgumentNullException(nameof(fileList));
         _audioCache = audioCache ?? throw new ArgumentNullException(nameof(audioCache));
+        _inputBmsContent = inputBmsContent;
         _rangeManager = new DefinitionRangeManager(_fileList);
         _statistics = new DefinitionStatistics(_fileList, _replaces,
             _rangeManager.StartPoint, _rangeManager.EndPoint);
@@ -132,11 +134,14 @@ public class DefinitionReuse
 
         Debug.WriteLine("=== Phase 3: Rewriting and Aligning BMS file ===");
         _rewriter = new BmsFileRewriter(_fileList, _replaces,
-            _rangeManager.StartPoint, _rangeManager.EndPoint);
+            _rangeManager.StartPoint, _rangeManager.EndPoint, _inputBmsContent);
         var writeData = _rewriter.ReplaceAndAlignBmsFile(bmsFileName);
         progress.Report(AppConstants.Progress.RewriteComplete);
 
-        _rewriter.WriteBmsFile(saveFileName, writeData);
+        BmsFileRewriter.WriteBmsFile(saveFileName, writeData);
+
+        // メモリ上のスライスを物理ディスクに書き出す
+        FlushMemorySlicesToDisk(saveFileName);
 
         if (isPhysicalDeletionEnabled)
         {
@@ -149,6 +154,23 @@ public class DefinitionReuse
         Debug.WriteLine($"=== DefinitionReuse completed in {sw.ElapsedMilliseconds} ms ({sw.ElapsedMilliseconds / 1000.0:F2}s) ===");
 
         _statistics.LogStatistics();
+    }
+
+    private void FlushMemorySlicesToDisk(string saveFileName)
+    {
+        if (_rewriter == null) return;
+        string outDir = Path.GetDirectoryName(saveFileName) ?? string.Empty;
+        if (string.IsNullOrEmpty(outDir)) return;
+
+        foreach (var file in _rewriter.KeptFiles)
+        {
+            var fileName = Path.GetFileName(file.Name);
+            if (VirtualAudioRegistry.TryGetFile(fileName, out var data))
+            {
+                var targetPath = Path.Combine(outDir, fileName);
+                File.WriteAllBytes(targetPath, data);
+            }
+        }
     }
 
     private void PerformPhysicalDeletion()
