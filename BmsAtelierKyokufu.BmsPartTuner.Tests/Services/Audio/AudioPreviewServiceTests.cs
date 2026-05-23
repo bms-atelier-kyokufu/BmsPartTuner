@@ -1,9 +1,9 @@
-﻿using BmsAtelierKyokufu.BmsPartTuner.Models;
+using BmsAtelierKyokufu.BmsPartTuner.Models;
 using BmsAtelierKyokufu.BmsPartTuner.Services.Audio;
 using BmsAtelierKyokufu.BmsPartTuner.Services.Audio.AudioPlayer;
 using Moq;
 
-namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Services;
+namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Services.Audio;
 
 public class AudioPreviewServiceTests
 {

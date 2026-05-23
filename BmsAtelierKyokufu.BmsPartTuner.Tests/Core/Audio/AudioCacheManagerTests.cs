@@ -1,8 +1,8 @@
-﻿using System.IO;
+using System.IO;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
 using BmsAtelierKyokufu.BmsPartTuner.Models;
 
-namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Audio
+namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
 {
     /// <summary>
     /// AudioCacheManager の動作検証テスト。

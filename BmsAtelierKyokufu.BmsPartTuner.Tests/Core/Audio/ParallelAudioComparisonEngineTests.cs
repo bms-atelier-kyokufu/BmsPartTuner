@@ -1,7 +1,7 @@
-﻿using BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
+using BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
 using BmsAtelierKyokufu.BmsPartTuner.Models;
 
-namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Audio
+namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
 {
     /// <summary>
     /// ParallelAudioComparisonEngine の動作検証テスト。

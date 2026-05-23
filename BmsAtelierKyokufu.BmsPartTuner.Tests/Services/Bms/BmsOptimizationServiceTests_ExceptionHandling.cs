@@ -1,9 +1,9 @@
-﻿using System.IO;
+using System.IO;
 using BmsAtelierKyokufu.BmsPartTuner.Models;
 using BmsAtelierKyokufu.BmsPartTuner.Services.Bms;
 using BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers;
 
-namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Services;
+namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Services.Bms;
 
 /// <summary>
 /// <see cref="BmsOptimizationService"/> の異常系・エラーハンドリングテスト。
