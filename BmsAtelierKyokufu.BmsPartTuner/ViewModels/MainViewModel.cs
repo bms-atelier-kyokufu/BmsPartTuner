@@ -507,7 +507,8 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
 
     private bool ValidateInputs()
     {
-        return InputValidation.ValidateAll(InputPath, OutputPath);
+        var inputToUse = _workingBmsPath ?? InputPath;
+        return InputValidation.ValidateAll(inputToUse, OutputPath);
     }
 
     private static string GetSupportedExtensionsPattern()
@@ -610,7 +611,8 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
 
     private string ValidateInputPathError()
     {
-        var inputPath = InputPath?.Trim('"') ?? string.Empty;
+        // ダウンコンバート済みのパスが存在する場合はそちらを検証ベースにする
+        var inputPath = (_workingBmsPath ?? InputPath)?.Trim('"') ?? string.Empty;
 
         if (string.IsNullOrWhiteSpace(inputPath))
         {
