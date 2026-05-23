@@ -1,4 +1,4 @@
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Threading;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
@@ -9,7 +9,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Services.Bms.Bmson;
 /// bmsonのノート情報に基づき、元の音声ファイル（ステムなど）を指定時間で切り出し、
 /// BMS用の短いWAVスライスを生成するマネージャー。
 /// </summary>
-public class AudioSliceManager(string bmsonDir)
+public class AudioSliceManager(string bmsonDir, bool throwOnMissingFile = true)
 {
     private readonly string _bmsonDir = bmsonDir;
 
@@ -37,7 +37,11 @@ public class AudioSliceManager(string bmsonDir)
             string sourcePath = Path.Combine(_bmsonDir, sourceFileName);
             if (!File.Exists(sourcePath))
             {
-                throw new FileNotFoundException($"音源ファイルが見つかりません: {sourceFileName} (Path: {sourcePath})");
+                if (throwOnMissingFile)
+                {
+                    throw new FileNotFoundException($"音源ファイルが見つかりません: {sourceFileName} (Path: {sourcePath})");
+                }
+                return string.Empty;
             }
 
             // BmsPartTunerの命名規則に合わせたスライス名（スライス元のファイル名先頭大文字_0001.wav 等）

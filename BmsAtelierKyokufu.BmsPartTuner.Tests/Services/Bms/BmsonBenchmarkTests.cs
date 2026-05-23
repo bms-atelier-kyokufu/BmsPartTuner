@@ -71,7 +71,7 @@ public class BmsonBenchmarkTests(ITestOutputHelper output)
 
         // 実在しないパスを指定してファイルI/Oをスキップさせる
         var tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-        var audioSlicer = new AudioSliceManager(tempDir);
+        var audioSlicer = new AudioSliceManager(tempDir, false);
 
         // 3. ベンチマーク実行
         var sw = Stopwatch.StartNew();
@@ -126,7 +126,7 @@ public class BmsonBenchmarkTests(ITestOutputHelper output)
         var realTimeCalc = new PulseToRealTimeCalculator(bmson.Info.Resolution, bmson.Info.InitBpm, bmson.BpmEvents, bmson.StopEvents);
 
         var tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-        var audioSlicer = new AudioSliceManager(tempDir);
+        var audioSlicer = new AudioSliceManager(tempDir, false);
 
         var generator = new BmsScoreGenerator(bmson, timeCalc, realTimeCalc, audioSlicer, false);
         string result = generator.GenerateBmsText();
