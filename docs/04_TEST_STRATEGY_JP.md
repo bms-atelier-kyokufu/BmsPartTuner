@@ -1,4 +1,4 @@
-﻿# BMS Part Tuner テスト戦略書
+# BMS Part Tuner テスト戦略書
 
 ## 概要
 
@@ -14,14 +14,23 @@ UI補助機能や単純なプロパティGet/Setのテストは意図的に削�
 
 ### テストピラミッド
 
-```
-        /\
-       /  \      統合テスト (Scenarios)
-      /____\     
-     /      \    ドメインロジック (Core, Services)
-    /________\   
-   /          \  ユーティリティ (Helpers, Converters)
-  /____________\ 
+```mermaid
+flowchart BT
+    %% 各レイヤーのノード定義
+    Scenario["統合テスト (Scenarios)<br>・全体のシナリオ検証<br>・インメモリ結合テスト"]
+    Domain["ドメインロジック (Core, Services)<br>・ビジネスロジック<br>・ファイル書き換え・最適化フロー"]
+    Util["ユーティリティ (Helpers, Converters)<br>・数値変換、波形比較等の純粋関数<br>・基礎となるバリデーター"]
+
+    %% ボトムアップの結合・検証の流れ
+    Util -->|"基礎ロジックを依存先に結合"| Domain
+    Domain -->|"機能群を統合したシナリオ検証"| Scenario
+
+    %% スタイリング
+    classDef default fill:#FFFFFF,stroke:#1565C0,stroke-width:1px,color:#0D47A1;
+    classDef highlight fill:#E3F2FD,stroke:#0D47A1,stroke-width:2px,color:#0D47A1,font-weight:bold;
+    
+    class Util,Domain default;
+    class Scenario highlight;
 ```
 
 ##  必須維持テスト (Whitelist)
