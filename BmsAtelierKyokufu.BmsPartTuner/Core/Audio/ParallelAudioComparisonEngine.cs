@@ -1,6 +1,4 @@
-﻿using System.Threading;
-
-namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
+﻿namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
 
 /// <summary>
 /// 並列オーディオ比較エンジン。
@@ -168,12 +166,12 @@ internal class ParallelAudioComparisonEngine(
         }
         catch (OperationCanceledException)
         {
-            Debug.WriteLine("=== CompareGroups Cancelled ===");
+            PerfDebugLogger.WriteLine("=== CompareGroups Cancelled ===");
             throw;
         }
 
         sw.Stop();
-        Debug.WriteLine($"=== CompareGroups Complete: {totalComparisons} comparisons, {sw.ElapsedMilliseconds}ms ===");
+        PerfDebugLogger.WriteLine($"=== CompareGroups Complete: {totalComparisons} comparisons, {sw.ElapsedMilliseconds}ms ===");
     }
 
     #endregion

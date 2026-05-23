@@ -103,6 +103,6 @@ internal class DefinitionRangeManager(IReadOnlyList<BmsAudioFile> fileList)
         StartPoint = Math.Max(firstNum, defStart);
         EndPoint = Math.Min(maxDefined, defEnd);
 
-        Debug.WriteLine($"Processing range: {StartPoint} - {EndPoint} ({EndPoint - StartPoint + 1} definitions)");
+        PerfDebugLogger.WriteLine($"Processing range: {StartPoint} - {EndPoint} ({EndPoint - StartPoint + 1} definitions)");
     }
 }

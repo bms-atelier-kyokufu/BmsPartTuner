@@ -1,5 +1,4 @@
 ﻿using System.Collections.Concurrent;
-using System.Threading;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 
@@ -9,12 +8,13 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Services.Bms.Bmson;
 /// bmsonのノート情報に基づき、元の音声ファイル（ステムなど）を指定時間で切り出し、
 /// BMS用の短いWAVスライスを生成するマネージャー。
 /// </summary>
-public class AudioSliceManager(string bmsonDir, bool throwOnMissingFile = true)
+public class AudioSliceManager(string bmsonDir, bool throwOnMissingFile = true) : IDisposable
 {
     private readonly string _bmsonDir = bmsonDir;
 
     // key: "fileName|offsetSec|durationSec", value: "outputFileName.wav"
     private readonly ConcurrentDictionary<string, Lazy<string>> _sliceCache = new();
+    private readonly ConcurrentDictionary<string, CachedAudioSource?> _sourceCache = new(StringComparer.OrdinalIgnoreCase);
     private int _sliceCounter = 1;
 
     /// <summary>
@@ -34,15 +34,21 @@ public class AudioSliceManager(string bmsonDir, bool throwOnMissingFile = true)
 
         var lazyVal = _sliceCache.GetOrAdd(cacheKey, key => new Lazy<string>(() =>
         {
-            string sourcePath = Path.Combine(_bmsonDir, sourceFileName);
-            if (!File.Exists(sourcePath))
+            var source = _sourceCache.GetOrAdd(sourceFileName, name =>
             {
-                if (throwOnMissingFile)
+                string sourcePath = Path.Combine(_bmsonDir, name);
+                if (!File.Exists(sourcePath))
                 {
-                    throw new FileNotFoundException($"音源ファイルが見つかりません: {sourceFileName} (Path: {sourcePath})");
+                    if (throwOnMissingFile)
+                    {
+                        throw new FileNotFoundException($"音源ファイルが見つかりません: {name} (Path: {sourcePath})");
+                    }
+                    return null;
                 }
-                return string.Empty;
-            }
+                return new CachedAudioSource(sourcePath);
+            });
+
+            if (source == null) return string.Empty;
 
             // BmsPartTunerの命名規則に合わせたスライス名（スライス元のファイル名先頭大文字_0001.wav 等）
             string nameWithoutExt = Path.GetFileNameWithoutExtension(sourceFileName);
@@ -55,70 +61,59 @@ public class AudioSliceManager(string bmsonDir, bool throwOnMissingFile = true)
 
             try
             {
-                WaveStream reader;
-                if (sourcePath.EndsWith(".ogg", StringComparison.OrdinalIgnoreCase))
+                double totalSeconds = (double)source.Samples.Length / source.WaveFormat.SampleRate / source.WaveFormat.Channels;
+
+                // オフセットがファイル長を超えている場合は無音扱いとして出力しない
+                if (offsetSec >= totalSeconds)
                 {
-                    reader = new NAudio.Vorbis.VorbisWaveReader(sourcePath);
-                }
-                else
-                {
-                    reader = new AudioFileReader(sourcePath);
+                    return string.Empty;
                 }
 
-                using (reader)
+                // 長さの補正（ファイル終端を超えないようにする）
+                double actualDuration = durationSec;
+                if (offsetSec + actualDuration > totalSeconds)
                 {
-                    // オフセットがファイル長を超えている場合は無音扱いとして出力しない
-                    if (offsetSec >= reader.TotalTime.TotalSeconds)
-                    {
-                        return string.Empty;
-                    }
-
-                    // 長さの補正（ファイル終端を超えないようにする）
-                    double actualDuration = durationSec;
-                    if (offsetSec + actualDuration > reader.TotalTime.TotalSeconds)
-                    {
-                        actualDuration = reader.TotalTime.TotalSeconds - offsetSec;
-                    }
-
-                    if (actualDuration <= 0)
-                    {
-                        return string.Empty;
-                    }
-
-                    // 指定位置へシーク
-                    reader.CurrentTime = TimeSpan.FromSeconds(offsetSec);
-
-                    // ステレオ・44.1kHzに揃えるプロバイダチェーンの構築
-                    ISampleProvider sampleProvider = reader.ToSampleProvider();
-
-                    if (sampleProvider.WaveFormat.Channels == 1)
-                    {
-                        sampleProvider = new MonoToStereoSampleProvider(sampleProvider);
-                    }
-
-                    if (sampleProvider.WaveFormat.SampleRate != 44100)
-                    {
-                        sampleProvider = new WdlResamplingSampleProvider(sampleProvider, 44100);
-                    }
-
-                    // Durationでカットする
-                    var cutProvider = new OffsetSampleProvider(sampleProvider)
-                    {
-                        Take = TimeSpan.FromSeconds(actualDuration)
-                    };
-
-                    // 16bit PCMとしてメモリに書き出し
-                    var provider16 = new SampleToWaveProvider16(cutProvider);
-                    using var ms = new MemoryStream();
-                    WaveFileWriter.WriteWavFileToStream(ms, provider16);
-                    BmsAtelierKyokufu.BmsPartTuner.Core.Audio.VirtualAudioRegistry.AddFile(outputFileName, ms.ToArray());
-
-                    return outputFileName;
+                    actualDuration = totalSeconds - offsetSec;
                 }
+
+                if (actualDuration <= 0)
+                {
+                    return string.Empty;
+                }
+
+                // メモリ上のキャッシュデコードデータからカスタムサンプルプロバイダを構築
+                var arrayProvider = new ArraySampleProvider(source.Samples, source.WaveFormat);
+                arrayProvider.Seek(offsetSec);
+
+                ISampleProvider sampleProvider = arrayProvider;
+
+                if (sampleProvider.WaveFormat.Channels == 1)
+                {
+                    sampleProvider = new MonoToStereoSampleProvider(sampleProvider);
+                }
+
+                if (sampleProvider.WaveFormat.SampleRate != AppConstants.Audio.StandardSampleRate)
+                {
+                    sampleProvider = new WdlResamplingSampleProvider(sampleProvider, AppConstants.Audio.StandardSampleRate);
+                }
+
+                // Durationでカットする
+                var cutProvider = new OffsetSampleProvider(sampleProvider)
+                {
+                    Take = TimeSpan.FromSeconds(actualDuration)
+                };
+
+                // 16bit PCMとしてメモリに書き出し
+                var provider16 = new SampleToWaveProvider16(cutProvider);
+                using var ms = new MemoryStream();
+                WaveFileWriter.WriteWavFileToStream(ms, provider16);
+                Core.Audio.VirtualAudioRegistry.AddFile(outputFileName, ms.ToArray());
+
+                return outputFileName;
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[AudioSliceManager] スライス失敗: {sourceFileName} ({ex.Message})");
+                PerfDebugLogger.WriteLine($"[AudioSliceManager] スライス失敗: {sourceFileName} ({ex.Message})");
                 return string.Empty;
             }
         }));
@@ -130,4 +125,87 @@ public class AudioSliceManager(string bmsonDir, bool throwOnMissingFile = true)
     /// 生成されたスライスの総数を取得します。
     /// </summary>
     public int GetGeneratedSliceCount() => _sliceCache.Values.Count(v => !string.IsNullOrEmpty(v.Value));
+
+    public void Dispose()
+    {
+        _sourceCache.Clear();
+        _sliceCache.Clear();
+        GC.SuppressFinalize(this);
+    }
+
+    /// <summary>
+    /// 音声ソースファイルをメモリに一括ロードして保持するキャッシュクラス。
+    /// </summary>
+    private class CachedAudioSource
+    {
+        public float[] Samples { get; }
+        public WaveFormat WaveFormat { get; }
+
+        public CachedAudioSource(string path)
+        {
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+            WaveStream reader;
+            if (path.EndsWith(".ogg", StringComparison.OrdinalIgnoreCase))
+            {
+                reader = new NAudio.Vorbis.VorbisWaveReader(path);
+            }
+            else
+            {
+                reader = new AudioFileReader(path);
+            }
+
+            using (reader)
+            {
+                WaveFormat = reader.WaveFormat;
+                var sampleProvider = reader.ToSampleProvider();
+                long totalSamples;
+                if (reader is AudioFileReader)
+                {
+                    totalSamples = reader.Length / sizeof(float);
+                }
+                else
+                {
+                    totalSamples = reader.Length / (reader.WaveFormat.BitsPerSample / 8);
+                }
+
+                var samplesList = new float[totalSamples];
+                int read = sampleProvider.Read(samplesList, 0, (int)totalSamples);
+                if (read < totalSamples)
+                {
+                    Array.Resize(ref samplesList, read);
+                }
+                Samples = samplesList;
+            }
+            PerfDebugLogger.WriteLine($"    [CachedAudioSource] Loaded {Path.GetFileName(path)}: {sw.ElapsedMilliseconds} ms");
+        }
+    }
+
+    /// <summary>
+    /// メモリ上の float 配列からシーク・読み込みを行うカスタムサンプルプロバイダ。
+    /// </summary>
+    private class ArraySampleProvider(float[] samples, WaveFormat waveFormat) : ISampleProvider
+    {
+        private int _position;
+
+        public WaveFormat WaveFormat { get; } = waveFormat;
+
+        public void Seek(double seconds)
+        {
+            long sampleOffset = (long)(seconds * WaveFormat.SampleRate * WaveFormat.Channels);
+            // チャンネル境界にアライメント
+            sampleOffset -= sampleOffset % WaveFormat.Channels;
+            _position = (int)Math.Max(0, Math.Min(samples.Length, sampleOffset));
+        }
+
+        public int Read(float[] buffer, int offset, int count)
+        {
+            int available = samples.Length - _position;
+            int toCopy = Math.Min(available, count);
+            if (toCopy <= 0) return 0;
+
+            Array.Copy(samples, _position, buffer, offset, toCopy);
+            _position += toCopy;
+            return toCopy;
+        }
+    }
 }

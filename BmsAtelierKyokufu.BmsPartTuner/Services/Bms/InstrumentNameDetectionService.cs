@@ -134,7 +134,7 @@ public partial class InstrumentNameDetectionService(
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"[InstrumentNameDetectionService.DetectInstruments] ERROR: {ex.Message}");
+            PerfDebugLogger.WriteLine($"[InstrumentNameDetectionService.DetectInstruments] ERROR: {ex.Message}");
             return new InstrumentDetectionResult();
         }
     }
@@ -271,7 +271,7 @@ public partial class InstrumentNameDetectionService(
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"[InstrumentNameDetectionService.FindBestInstrumentMatch] ERROR: {ex.Message}");
+            PerfDebugLogger.WriteLine($"[InstrumentNameDetectionService.FindBestInstrumentMatch] ERROR: {ex.Message}");
         }
 
         return string.Empty;
@@ -335,7 +335,7 @@ public partial class InstrumentNameDetectionService(
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"[InstrumentNameDetectionService.ExtractInstrumentCandidates] ERROR: {ex.Message}");
+            PerfDebugLogger.WriteLine($"[InstrumentNameDetectionService.ExtractInstrumentCandidates] ERROR: {ex.Message}");
             return new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
         }
     }

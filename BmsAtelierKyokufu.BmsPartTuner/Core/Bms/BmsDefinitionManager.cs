@@ -1,5 +1,4 @@
-﻿using BmsAtelierKyokufu.BmsPartTuner.Core.Helpers;
-using BmsAtelierKyokufu.BmsPartTuner.Services.Bms;
+﻿using BmsAtelierKyokufu.BmsPartTuner.Services.Bms;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 
@@ -76,11 +75,16 @@ public partial class BmsDefinitionManager(string bmsFilePath, string? bmsContent
     /// </remarks>
     public ObservableCollection<BmsAudioFile> CreateFileList()
     {
+        PerfDebugLogger.WriteLine($"=== BmsDefinitionManager.CreateFileList Started for {Path.GetFileName(_bmsFilePath)} ===");
+        var swTotal = Stopwatch.StartNew();
+        var sw = Stopwatch.StartNew();
         MissingFiles.Clear();
 
         var manager = new BmsManager(_bmsFilePath, _bmsContent);
         var definitions = manager.ParseWavDefinitions();
+        PerfDebugLogger.WriteLine($"  [CreateFileList] ParseWavDefinitions (count={definitions.Count}): {sw.ElapsedMilliseconds} ms");
 
+        sw.Restart();
         bool isBase62 = definitions.Any(d => LowerCaseRegex().IsMatch(d.def));
         int inputRadix = isBase62 ? AppConstants.Definition.RadixBase62 : AppConstants.Definition.RadixBase36;
 
@@ -94,7 +98,7 @@ public partial class BmsDefinitionManager(string bmsFilePath, string? bmsContent
 
             if (!File.Exists(fullPath) && !Core.Audio.VirtualAudioRegistry.TryGetFile(path, out _))
             {
-                Debug.WriteLine($"[BmsDefinitionManager] Missing file: {path}");
+                PerfDebugLogger.WriteLine($"[BmsDefinitionManager] Missing file: {path}");
                 MissingFiles.Add(path);
                 continue;
             }
@@ -120,14 +124,21 @@ public partial class BmsDefinitionManager(string bmsFilePath, string? bmsContent
                 InstrumentName = string.Empty
             });
         }
+        PerfDebugLogger.WriteLine($"  [CreateFileList] File resolution and existence checks: {sw.ElapsedMilliseconds} ms");
 
+        sw.Restart();
         AssignInstrumentNames(tempList);
+        PerfDebugLogger.WriteLine($"  [CreateFileList] AssignInstrumentNames: {sw.ElapsedMilliseconds} ms");
 
+        sw.Restart();
         foreach (var file in tempList)
         {
             _fileList.Add(file);
         }
+        PerfDebugLogger.WriteLine($"  [CreateFileList] ObservableCollection.Add total: {sw.ElapsedMilliseconds} ms");
 
+        swTotal.Stop();
+        PerfDebugLogger.WriteLine($"=== BmsDefinitionManager.CreateFileList Finished: {swTotal.ElapsedMilliseconds} ms ===");
         return _fileList;
     }
 
@@ -159,7 +170,7 @@ public partial class BmsDefinitionManager(string bmsFilePath, string? bmsContent
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"[BmsDefinitionManager.AssignInstrumentNames] ERROR: {ex.Message}");
+            PerfDebugLogger.WriteLine($"[BmsDefinitionManager.AssignInstrumentNames] ERROR: {ex.Message}");
         }
     }
 

@@ -1,8 +1,8 @@
-﻿using BmsAtelierKyokufu.BmsPartTuner.Core;
-using BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
+﻿using BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Optimization;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Validation;
+using ValidationResult = BmsAtelierKyokufu.BmsPartTuner.Core.Validation.ValidationResult;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Services.Bms;
 
@@ -76,7 +76,9 @@ public class BmsOptimizationService : IBmsOptimizationService
         if (files == null || files.Count == 0)
             throw new ArgumentException("ファイルリストが空です", nameof(files));
 
+        PerfDebugLogger.WriteLine("=== FindOptimalThresholdsAsync: Starting ===");
         Stopwatch sw = Stopwatch.StartNew();
+        var swPhase = Stopwatch.StartNew();
         long memoryBefore = GC.GetTotalMemory(false);
         long peakMemory = memoryBefore;
 
@@ -84,15 +86,12 @@ public class BmsOptimizationService : IBmsOptimizationService
         ObservableCollection<BmsAudioFile> fileListItems = [];
         try
         {
-            Debug.WriteLine("=== FindOptimalThresholdsAsync: Starting ===");
-            Debug.WriteLine($"Files: {files.Count}, Definition range: {startDefinition}-{endDefinition}");
-
             // endDefinitionが0の場合、自動検出（ファイル数から計算）
             int actualEndDefinition = endDefinition;
             if (actualEndDefinition == 0)
             {
                 actualEndDefinition = startDefinition + files.Count - 1;
-                Debug.WriteLine($"Auto-detected end definition: {actualEndDefinition}");
+                PerfDebugLogger.WriteLine($"Auto-detected end definition: {actualEndDefinition}");
             }
 
 
@@ -125,13 +124,13 @@ public class BmsOptimizationService : IBmsOptimizationService
 
             if (originalCount == 0)
             {
-                Debug.WriteLine("ERROR: No valid files found");
+                PerfDebugLogger.WriteLine("ERROR: No valid files found");
                 return null;
             }
 
             // 実際の終了定義番号を更新（ロードしたファイル数に基づく）
             int actualEnd = startDefinition + originalCount - 1;
-            Debug.WriteLine($"Valid files loaded: {originalCount}, Actual range: {startDefinition}-{actualEnd}");
+            PerfDebugLogger.WriteLine($"Valid files loaded: {originalCount}, Actual range: {startDefinition}-{actualEnd}");
 
             // 音声キャッシュをプリロード
             progress?.Report(5);
@@ -139,29 +138,31 @@ public class BmsOptimizationService : IBmsOptimizationService
             List<string> failedFiles = [];
             try
             {
+                swPhase.Restart();
                 var (FailedFiles, Cache) = AudioCacheManager.PreloadAudioData(
                     fileListItems,
                     new Progress<int>(p => progress?.Report(5 + p / 20)), // 5-10%
                     Models.NormalizationMode.None);
                 failedFiles = FailedFiles;
                 audioCache = Cache;
+                PerfDebugLogger.WriteLine($"[FindOptimalThresholdsAsync] AudioCacheManager.PreloadAudioData: {swPhase.ElapsedMilliseconds} ms");
 
                 if (failedFiles.Count > 0)
                 {
-                    Debug.WriteLine($"WARNING: {failedFiles.Count} files failed to load");
+                    PerfDebugLogger.WriteLine($"WARNING: {failedFiles.Count} files failed to load");
                     foreach (string? file in failedFiles.Take(5))
                     {
-                        Debug.WriteLine($"  - {Path.GetFileName(file)}");
+                        PerfDebugLogger.WriteLine($"  - {Path.GetFileName(file)}");
                     }
                     if (failedFiles.Count > 5)
                     {
-                        Debug.WriteLine($"  ... and {failedFiles.Count - 5} more");
+                        PerfDebugLogger.WriteLine($"  ... and {failedFiles.Count - 5} more");
                     }
                 }
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"ERROR: Failed to preload audio data: {ex.Message}");
+                PerfDebugLogger.WriteLine($"ERROR: Failed to preload audio data: {ex.Message}");
                 // 音声ファイルの読み込みに失敗した場合は処理を中断
                 return null;
             }
@@ -178,24 +179,26 @@ public class BmsOptimizationService : IBmsOptimizationService
 
             Progress<int> simulationProgress = new(p => progress?.Report(10 + (int)(p * 0.6))); // 10-70%
 
+            swPhase.Restart();
             IReadOnlyList<SimulationPoint> simulationResults = await Task.Run(() =>
                 simulationEngine.RunParallelSimulation(
                     0.00f,      // 最小しきい値
                     1.00f,      // 最大しきい値
                     0.01f,      // ステップ
                     simulationProgress));
+            PerfDebugLogger.WriteLine($"[FindOptimalThresholdsAsync] SimulationEngine.RunParallelSimulation: {swPhase.ElapsedMilliseconds} ms");
 
             progress?.Report(70);
 
             // シミュレーション結果をOptimizationResult形式に変換
             List<(double, int FileCount)> simulationData = [.. simulationResults.Select(r => ((double)r.Threshold, r.FileCount))];
 
-            Debug.WriteLine($"Simulation results: {simulationData.Count} data points");
+            PerfDebugLogger.WriteLine($"Simulation results: {simulationData.Count} data points");
             if (simulationData.Count > 0)
             {
                 int minCount = simulationData.Min(d => d.FileCount);
                 int maxCount = simulationData.Max(d => d.FileCount);
-                Debug.WriteLine($"File count range in results: {minCount} - {maxCount}");
+                PerfDebugLogger.WriteLine($"File count range in results: {minCount} - {maxCount}");
             }
 
             // 70-90%: データソートと最適値探索
@@ -211,13 +214,13 @@ public class BmsOptimizationService : IBmsOptimizationService
             // Base62が見つからない場合はBase36と同じ値を使用（フォールバック）
             if (base62Count == 0 || base62Threshold < base36Threshold)
             {
-                Debug.WriteLine($"Base62: Using Base36 threshold as fallback (no better option found)");
+                PerfDebugLogger.WriteLine($"Base62: Using Base36 threshold as fallback (no better option found)");
                 base62Threshold = base36Threshold;
                 base62Count = base36Count;
             }
 
-            Debug.WriteLine($"Base36: Threshold={base36Threshold:F2}, Count={base36Count}");
-            Debug.WriteLine($"Base62: Threshold={base62Threshold:F2}, Count={base62Count}");
+            PerfDebugLogger.WriteLine($"Base36: Threshold={base36Threshold:F2}, Count={base36Count}");
+            PerfDebugLogger.WriteLine($"Base62: Threshold={base62Threshold:F2}, Count={base62Count}");
 
             progress?.Report(85);
 
@@ -243,26 +246,27 @@ public class BmsOptimizationService : IBmsOptimizationService
                     : $"{failedFiles.Count} 件の音声ファイルが読み込めなかったため、最適化から除外されました。";
                 result.Warnings.Add(warningMessage);
 
-                Debug.WriteLine($"Added warning to result: {warningMessage}");
+                PerfDebugLogger.WriteLine($"Added warning to result: {warningMessage}");
             }
 
             progress?.Report(100);
 
-            Debug.WriteLine($"=== FindOptimalThresholdsAsync: Complete ({sw.ElapsedMilliseconds}ms) ===");
-            Debug.WriteLine($"Base36 optimal: Threshold={base36Threshold:F2}, Count={base36Count}");
-            Debug.WriteLine($"Base62 optimal: Threshold={base62Threshold:F2}, Count={base62Count}");
-            Debug.WriteLine($"Memory used: {memoryUsed / 1024.0 / 1024.0:F2} MB");
-            Debug.WriteLine($"Simulation data points: {simulationData.Count}");
+            sw.Stop();
+            PerfDebugLogger.WriteLine($"=== FindOptimalThresholdsAsync: Complete ({sw.ElapsedMilliseconds}ms) ===");
+            PerfDebugLogger.WriteLine($"Base36 optimal: Threshold={base36Threshold:F2}, Count={base36Count}");
+            PerfDebugLogger.WriteLine($"Base62 optimal: Threshold={base62Threshold:F2}, Count={base62Count}");
+            PerfDebugLogger.WriteLine($"Memory used: {memoryUsed / 1024.0 / 1024.0:F2} MB");
+            PerfDebugLogger.WriteLine($"Simulation data points: {simulationData.Count}");
 
-            Debug.WriteLine("=== Clearing audio cache ===");
+            PerfDebugLogger.WriteLine("=== Clearing audio cache ===");
             fileListItems.Clear();
 
             return result;
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"ERROR in FindOptimalThresholdsAsync: {ex.Message}");
-            Debug.WriteLine($"StackTrace: {ex.StackTrace}");
+            PerfDebugLogger.WriteLine($"ERROR in FindOptimalThresholdsAsync: {ex.Message}");
+            PerfDebugLogger.WriteLine($"StackTrace: {ex.StackTrace}");
 
             fileListItems?.Clear();
 
@@ -287,14 +291,14 @@ public class BmsOptimizationService : IBmsOptimizationService
     {
         if (simulationData == null || simulationData.Count == 0)
         {
-            Debug.WriteLine($"FindOptimalThreshold: No simulation data, returning default");
+            PerfDebugLogger.WriteLine($"FindOptimalThreshold: No simulation data, returning default");
             return (0.60f, 0);
         }
 
         // ファイル数がfileLimit以下のエントリを抽出
         List<(double Threshold, int Count)> validEntries = [.. simulationData.Where(d => d.Count > 0 && d.Count <= fileLimit)];
 
-        Debug.WriteLine($"FindOptimalThreshold: {validEntries.Count} valid entries for limit {fileLimit}");
+        PerfDebugLogger.WriteLine($"FindOptimalThreshold: {validEntries.Count} valid entries for limit {fileLimit}");
 
         if (validEntries.Count == 0)
         {
@@ -304,12 +308,12 @@ public class BmsOptimizationService : IBmsOptimizationService
 
             if (nonZeroEntries.Count == 0)
             {
-                Debug.WriteLine($"FindOptimalThreshold: All entries have 0 count, returning default");
+                PerfDebugLogger.WriteLine($"FindOptimalThreshold: All entries have 0 count, returning default");
                 return (0.60f, 0);
             }
 
             (double Threshold, int Count) = nonZeroEntries.OrderBy(d => d.Count).First();
-            Debug.WriteLine($"FindOptimalThreshold: Using min count entry: Threshold={Threshold:F2}, Count={Count}");
+            PerfDebugLogger.WriteLine($"FindOptimalThreshold: Using min count entry: Threshold={Threshold:F2}, Count={Count}");
             return ((float)Threshold, Count);
         }
 
@@ -318,7 +322,7 @@ public class BmsOptimizationService : IBmsOptimizationService
             .OrderByDescending(d => d.Threshold)
             .First();
 
-        Debug.WriteLine($"FindOptimalThreshold: Optimal entry: Threshold={optimalEntry.Threshold:F2}, Count={optimalEntry.Count}");
+        PerfDebugLogger.WriteLine($"FindOptimalThreshold: Optimal entry: Threshold={optimalEntry.Threshold:F2}, Count={optimalEntry.Count}");
         return ((float)optimalEntry.Threshold, optimalEntry.Count);
     }
 
@@ -409,22 +413,27 @@ public class BmsOptimizationService : IBmsOptimizationService
             };
         }
 
+        PerfDebugLogger.WriteLine("=== ExecuteDefinitionReductionAsync: Starting ===");
         Stopwatch sw = Stopwatch.StartNew();
+        var swPhase = Stopwatch.StartNew();
 
         // 音声データの事前ロード（キャッシュ構築）
         var (FailedFiles, Cache) = AudioCacheManager.PreloadAudioData(fileList, progress);
         var audioCache = Cache;
+        PerfDebugLogger.WriteLine($"[ExecuteDefinitionReductionAsync] AudioCacheManager.PreloadAudioData: {swPhase.ElapsedMilliseconds} ms");
 
+        swPhase.Restart();
         // DefinitionReuse expects an ObservableCollection, so we need to convert
         ObservableCollection<BmsAudioFile> observableCollection = new(fileList);
         DefinitionReuse dr = new(observableCollection, audioCache, inputBmsContent);
+        PerfDebugLogger.WriteLine($"[ExecuteDefinitionReductionAsync] DefinitionReuse constructor: {swPhase.ElapsedMilliseconds} ms");
 
         int originalCount = fileList.Count;
         int optimizedCount = originalCount;
         int deletedFilesCount = 0;
         ReductionResult errorResult(string message)
         {
-            Debug.WriteLine($"ERROR in ExecuteDefinitionReductionAsync: {message}");
+            PerfDebugLogger.WriteLine($"ERROR in ExecuteDefinitionReductionAsync: {message}");
             sw.Stop();
             return new ReductionResult
             {
@@ -440,6 +449,7 @@ public class BmsOptimizationService : IBmsOptimizationService
 
         try
         {
+            swPhase.Restart();
             await Task.Run(() =>
             {
                 // isPhysicalDeletionEnabledは常にfalseを渡す
@@ -459,18 +469,23 @@ public class BmsOptimizationService : IBmsOptimizationService
                 // 物理削除処理
                 if (isPhysicalDeletionEnabled)
                 {
+                    var swDelete = Stopwatch.StartNew();
                     List<string> unusedFiles = dr.GetUnusedFilePaths();
                     deletedFilesCount = DeleteUnusedFiles(unusedFiles);
+                    PerfDebugLogger.WriteLine($"[ExecuteDefinitionReductionAsync] DeleteUnusedFiles: {swDelete.ElapsedMilliseconds} ms");
                 }
             });
+            PerfDebugLogger.WriteLine($"[ExecuteDefinitionReductionAsync] dr.ReductDefinition Task.Run total: {swPhase.ElapsedMilliseconds} ms");
 
             sw.Stop();
+            PerfDebugLogger.WriteLine($"=== ExecuteDefinitionReductionAsync: Complete ({sw.ElapsedMilliseconds}ms) ===");
 
             optimizedCount = dr.GetUniqueFileCount();
             double reductionRate = CalculateReductionRate(originalCount, optimizedCount);
 
-            Debug.WriteLine("=== Clearing audio cache after reduction ===");
+            swPhase.Restart();
             CleanupAudioCache(fileList, audioCache);
+            PerfDebugLogger.WriteLine($"[ExecuteDefinitionReductionAsync] CleanupAudioCache: {swPhase.ElapsedMilliseconds} ms");
 
             return new ReductionResult
             {
@@ -504,8 +519,8 @@ public class BmsOptimizationService : IBmsOptimizationService
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"ERROR in ExecuteDefinitionReductionAsync: {ex.Message}");
-            Debug.WriteLine($"StackTrace: {ex.StackTrace}");
+            PerfDebugLogger.WriteLine($"ERROR in ExecuteDefinitionReductionAsync: {ex.Message}");
+            PerfDebugLogger.WriteLine($"StackTrace: {ex.StackTrace}");
             Trace.TraceError($"Unexpected error: {ex}");
             return errorResult($"予期しないエラーが発生しました: {ex.Message}\n{ex.StackTrace}");
         }
@@ -538,7 +553,7 @@ public class BmsOptimizationService : IBmsOptimizationService
     /// </remarks>
     public ValidationResult<float> ValidateR2Threshold(string r2Text)
     {
-        return _r2ThresholdValidator.ValidateWithValue(r2Text);
+        return R2ThresholdValidator.ValidateWithValue(r2Text);
     }
 
     #endregion
@@ -563,7 +578,7 @@ public class BmsOptimizationService : IBmsOptimizationService
                 clearedCount++;
             }
         }
-        Debug.WriteLine($"Cleared {clearedCount} cached audio files");
+        PerfDebugLogger.WriteLine($"Cleared {clearedCount} cached audio files");
     }
 
     /// <summary>
@@ -587,12 +602,12 @@ public class BmsOptimizationService : IBmsOptimizationService
                 {
                     File.Delete(file);
                     deletedCount++;
-                    Debug.WriteLine($"Deleted unused file: {file}");
+                    PerfDebugLogger.WriteLine($"Deleted unused file: {file}");
                 }
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Failed to delete file {file}: {ex.Message}");
+                PerfDebugLogger.WriteLine($"Failed to delete file {file}: {ex.Message}");
             }
         }
         return deletedCount;

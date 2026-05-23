@@ -60,14 +60,14 @@ public static class AudioFileGroupingStrategy
 
         if (hasKeywordFilter)
         {
-            Debug.WriteLine($"=== GroupFiles with Keyword Filter ===");
-            Debug.WriteLine($"Selected Keywords: {string.Join(", ", keywordList!)}");
+            PerfDebugLogger.WriteLine($"=== GroupFiles with Keyword Filter ===");
+            PerfDebugLogger.WriteLine($"Selected Keywords: {string.Join(", ", keywordList!)}");
 
             return GroupFilesByKeywords(audioCache, fileList, startPoint, endPoint, keywordList!);
         }
         else
         {
-            Debug.WriteLine($"=== GroupFiles without Keyword Filter ===");
+            PerfDebugLogger.WriteLine($"=== GroupFiles without Keyword Filter ===");
 
             return GroupFilesTraditional(audioCache, fileList, startPoint, endPoint);
         }
@@ -195,20 +195,20 @@ public static class AudioFileGroupingStrategy
 
         sw.Stop();
 
-        Debug.WriteLine($"=== GroupFilesByKeywords Complete ===");
-        Debug.WriteLine($"Total in range: {totalFiles}");
-        Debug.WriteLine($"Out of range: {outOfRange}");
-        Debug.WriteLine($"No cache: {noCache}");
-        Debug.WriteLine($"Not matching keywords: {notMatchingKeywords}");
-        Debug.WriteLine($"Grouped files: {totalFiles - noCache - notMatchingKeywords}");
+        PerfDebugLogger.WriteLine($"=== GroupFilesByKeywords Complete ===");
+        PerfDebugLogger.WriteLine($"Total in range: {totalFiles}");
+        PerfDebugLogger.WriteLine($"Out of range: {outOfRange}");
+        PerfDebugLogger.WriteLine($"No cache: {noCache}");
+        PerfDebugLogger.WriteLine($"Not matching keywords: {notMatchingKeywords}");
+        PerfDebugLogger.WriteLine($"Grouped files: {totalFiles - noCache - notMatchingKeywords}");
 
         foreach (var (keyword, count) in keywordStats)
         {
-            Debug.WriteLine($"  Keyword '{keyword}': {count} files");
+            PerfDebugLogger.WriteLine($"  Keyword '{keyword}': {count} files");
         }
 
-        Debug.WriteLine($"Final groups: {finalGroups.Count}");
-        Debug.WriteLine($"Time: {sw.ElapsedMilliseconds}ms");
+        PerfDebugLogger.WriteLine($"Final groups: {finalGroups.Count}");
+        PerfDebugLogger.WriteLine($"Time: {sw.ElapsedMilliseconds}ms");
 
         return finalGroups;
     }
@@ -303,14 +303,14 @@ public static class AudioFileGroupingStrategy
 
         sw.Stop();
 
-        Debug.WriteLine($"=== GroupFilesTraditional Complete ===");
-        Debug.WriteLine($"Total in range: {totalFiles}");
-        Debug.WriteLine($"Out of range: {outOfRange}");
-        Debug.WriteLine($"No cache: {noCache}");
-        Debug.WriteLine($"Grouped files: {totalFiles - noCache}");
-        Debug.WriteLine($"Initial groups: {groups.Count}");
-        Debug.WriteLine($"Final groups (after split): {finalGroups.Count}");
-        Debug.WriteLine($"Time: {sw.ElapsedMilliseconds}ms");
+        PerfDebugLogger.WriteLine($"=== GroupFilesTraditional Complete ===");
+        PerfDebugLogger.WriteLine($"Total in range: {totalFiles}");
+        PerfDebugLogger.WriteLine($"Out of range: {outOfRange}");
+        PerfDebugLogger.WriteLine($"No cache: {noCache}");
+        PerfDebugLogger.WriteLine($"Grouped files: {totalFiles - noCache}");
+        PerfDebugLogger.WriteLine($"Initial groups: {groups.Count}");
+        PerfDebugLogger.WriteLine($"Final groups (after split): {finalGroups.Count}");
+        PerfDebugLogger.WriteLine($"Time: {sw.ElapsedMilliseconds}ms");
 
         return finalGroups;
     }

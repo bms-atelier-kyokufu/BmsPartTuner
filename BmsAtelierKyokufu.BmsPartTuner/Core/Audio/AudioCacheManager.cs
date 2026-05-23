@@ -68,9 +68,9 @@ internal static class AudioCacheManager
         IProgress<int>? progress,
         Models.NormalizationMode normalizationMode = Models.NormalizationMode.None)
     {
-        Debug.WriteLine($"=== PreloadAudioData Start ===");
-        Debug.WriteLine($"Total files to preload: {fileList.Count}");
-        Debug.WriteLine($"Normalization mode: {normalizationMode}");
+        PerfDebugLogger.WriteLine($"=== PreloadAudioData Start ===");
+        PerfDebugLogger.WriteLine($"Total files to preload: {fileList.Count}");
+        PerfDebugLogger.WriteLine($"Normalization mode: {normalizationMode}");
 
         int loaded = 0;
         int totalFiles = fileList.Count;
@@ -81,7 +81,7 @@ internal static class AudioCacheManager
 
         if (totalFiles == 0)
         {
-            Debug.WriteLine("WARNING: No files to preload");
+            PerfDebugLogger.WriteLine("WARNING: No files to preload");
             progress?.Report(AppConstants.Progress.PreloadComplete);
             return (new List<string>(), audioCache);
         }
@@ -89,7 +89,7 @@ internal static class AudioCacheManager
         int batchSize = CalculateOptimalBatchSize(totalFiles);
         var batches = CreateBatches(fileList, batchSize);
 
-        Debug.WriteLine($"Preloading {totalFiles} files in {batches.Count} batches (batch size: ~{batchSize})");
+        PerfDebugLogger.WriteLine($"Preloading {totalFiles} files in {batches.Count} batches (batch size: ~{batchSize})");
 
         var sw = Stopwatch.StartNew();
 
@@ -109,7 +109,7 @@ internal static class AudioCacheManager
 
             if (currentBatch % 5 == 0 || currentBatch == batches.Count)
             {
-                Debug.WriteLine($"Batch progress: {currentBatch}/{batches.Count} (Success: {successCount}, Fail: {failCount})");
+                PerfDebugLogger.WriteLine($"Batch progress: {currentBatch}/{batches.Count} (Success: {successCount}, Fail: {failCount})");
             }
 
             int percentage = (int)((float)currentBatch / batches.Count * AppConstants.Progress.PreloadComplete);
@@ -194,7 +194,7 @@ internal static class AudioCacheManager
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[AudioCacheManager] Exception loading {Path.GetFileName(file.Name)}: {ex.Message}");
+                PerfDebugLogger.WriteLine($"[AudioCacheManager] Exception loading {Path.GetFileName(file.Name)}: {ex.Message}");
                 fail++;
                 failedFiles.Add(file.Name);
             }
@@ -238,22 +238,22 @@ internal static class AudioCacheManager
             }
         }
 
-        Debug.WriteLine($"=== PreloadAudioData Complete ===");
-        Debug.WriteLine($"Preload completed: {loaded}/{totalFiles} files processed");
-        Debug.WriteLine($"Success: {successCount}, Failed: {failCount}");
-        Debug.WriteLine($"Actual cached count: {cachedCount}");
-        Debug.WriteLine($"Cache success rate: {(totalFiles > 0 ? (double)cachedCount / totalFiles * 100 : 0):F1}%");
-        Debug.WriteLine($"Total cached memory: {totalMemoryMB:F2} MB");
-        Debug.WriteLine($"Load time: {elapsedMs} ms");
-        Debug.WriteLine($"Throughput: {(elapsedMs > 0 ? (double)loaded / elapsedMs * 1000 : 0):F1} files/sec");
+        PerfDebugLogger.WriteLine($"=== PreloadAudioData Complete ===");
+        PerfDebugLogger.WriteLine($"Preload completed: {loaded}/{totalFiles} files processed");
+        PerfDebugLogger.WriteLine($"Success: {successCount}, Failed: {failCount}");
+        PerfDebugLogger.WriteLine($"Actual cached count: {cachedCount}");
+        PerfDebugLogger.WriteLine($"Cache success rate: {(totalFiles > 0 ? (double)cachedCount / totalFiles * 100 : 0):F1}%");
+        PerfDebugLogger.WriteLine($"Total cached memory: {totalMemoryMB:F2} MB");
+        PerfDebugLogger.WriteLine($"Load time: {elapsedMs} ms");
+        PerfDebugLogger.WriteLine($"Throughput: {(elapsedMs > 0 ? (double)loaded / elapsedMs * 1000 : 0):F1} files/sec");
 
         if (cachedCount == 0)
         {
-            Debug.WriteLine("CRITICAL ERROR: No audio data cached! This will cause 0% reduction rate.");
+            PerfDebugLogger.WriteLine("CRITICAL ERROR: No audio data cached! This will cause 0% reduction rate.");
         }
         else if (cachedCount < totalFiles * 0.9)
         {
-            Debug.WriteLine($"WARNING: Only {(double)cachedCount / totalFiles * 100:F1}% of files cached successfully");
+            PerfDebugLogger.WriteLine($"WARNING: Only {(double)cachedCount / totalFiles * 100:F1}% of files cached successfully");
         }
     }
 }

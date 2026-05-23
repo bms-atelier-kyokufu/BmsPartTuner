@@ -52,12 +52,12 @@ internal class DefinitionStatistics(
     {
         var stats = CalculateStatistics();
 
-        Debug.WriteLine($"=== Statistics ===");
-        Debug.WriteLine($"Processing range: {_startPoint} - {_endPoint}");
-        Debug.WriteLine($"Total definitions: {stats.TotalDefinitions}");
-        Debug.WriteLine($"Unique files: {stats.UniqueFiles}");
-        Debug.WriteLine($"Replaced: {stats.ReplacedFiles}");
-        Debug.WriteLine($"Reduction rate: {stats.ReductionRate:F1}%");
+        PerfDebugLogger.WriteLine($"=== Statistics ===");
+        PerfDebugLogger.WriteLine($"Processing range: {_startPoint} - {_endPoint}");
+        PerfDebugLogger.WriteLine($"Total definitions: {stats.TotalDefinitions}");
+        PerfDebugLogger.WriteLine($"Unique files: {stats.UniqueFiles}");
+        PerfDebugLogger.WriteLine($"Replaced: {stats.ReplacedFiles}");
+        PerfDebugLogger.WriteLine($"Reduction rate: {stats.ReductionRate:F1}%");
     }
 
     /// <summary>
@@ -80,11 +80,11 @@ internal class DefinitionStatistics(
     {
         var stats = CalculateStatistics();
 
-        Debug.WriteLine($"=== GetUniqueFileCount Detail ===");
-        Debug.WriteLine($"  Total in range: {stats.TotalInRange}");
-        Debug.WriteLine($"  Unique (self-ref): {stats.UniqueFiles}");
-        Debug.WriteLine($"  Not processed (==0): {stats.NotProcessed}");
-        Debug.WriteLine($"  Processed (>0): {stats.Processed}");
+        PerfDebugLogger.WriteLine($"=== GetUniqueFileCount Detail ===");
+        PerfDebugLogger.WriteLine($"  Total in range: {stats.TotalInRange}");
+        PerfDebugLogger.WriteLine($"  Unique (self-ref): {stats.UniqueFiles}");
+        PerfDebugLogger.WriteLine($"  Not processed (==0): {stats.NotProcessed}");
+        PerfDebugLogger.WriteLine($"  Processed (>0): {stats.Processed}");
 
         return stats.UniqueFiles;
     }
