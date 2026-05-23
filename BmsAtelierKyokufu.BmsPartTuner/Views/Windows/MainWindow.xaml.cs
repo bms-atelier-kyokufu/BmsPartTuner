@@ -53,9 +53,12 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Views.Windows
             InitializeUIBindings();
 
             // テーマ変更時にタイトルバー更新
-            viewModel.Settings.ThemeStateChanged += (_, isDark) =>
+            viewModel.Settings.PropertyChanged += (s, e) =>
             {
-                WindowThemeHelper.ApplyTitleBarTheme(this, isDark);
+                if (e.PropertyName == nameof(SettingsViewModel.IsDarkTheme))
+                {
+                    WindowThemeHelper.ApplyTitleBarTheme(this, viewModel.Settings.IsDarkTheme);
+                }
             };
 
             // ウィンドウクローズ時のクリーンアップ

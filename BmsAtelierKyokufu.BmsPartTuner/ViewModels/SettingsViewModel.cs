@@ -10,7 +10,6 @@ namespace BmsAtelierKyokufu.BmsPartTuner.ViewModels;
 /// </summary>
 public partial class SettingsViewModel : ObservableObject
 {
-    public event EventHandler<bool>? ThemeStateChanged;
 
     private readonly SettingsService _settingsService;
     private readonly ThemeService _themeService;
@@ -66,7 +65,6 @@ public partial class SettingsViewModel : ObservableObject
                 if (!UseSystemTheme)
                 {
                     _themeService.ApplyTheme(value);
-                    ThemeStateChanged?.Invoke(this, value);
                 }
             }
         }
@@ -89,12 +87,10 @@ public partial class SettingsViewModel : ObservableObject
                 if (value)
                 {
                     _themeService.ApplySystemTheme();
-                    ThemeStateChanged?.Invoke(this, _themeService.IsDarkTheme);
                 }
                 else
                 {
                     _themeService.ApplyTheme(IsDarkTheme);
-                    ThemeStateChanged?.Invoke(this, IsDarkTheme);
                 }
             }
         }
@@ -184,7 +180,6 @@ public partial class SettingsViewModel : ObservableObject
                 _settings.IsDarkTheme = isDark;
                 OnPropertyChanged(nameof(IsDarkTheme));
             }
-            ThemeStateChanged?.Invoke(this, isDark);
         };
 
         LoadLicenses();

@@ -159,18 +159,7 @@ public partial class FileListViewModel : ObservableObject, IDisposable
             FileListItems = fileList;
             PerformanceDebugLogger.WriteLine($"  [LoadBmsFile] BmsDefinitionManager construction and CreateFileList: {timer.Lap("BmsDefinitionManager construction and CreateFileList")} ms");
 
-            var chips = _filterService?.GenerateFilterChips(fileList) ?? [];
-
-            var instrumentGroups = chips
-                .Select(c => new InstrumentNameDetectionService.InstrumentGroup
-                {
-                    Name = c.Keyword,
-                    Count = c.Count,
-                    IsSelected = true
-                })
-                .ToList();
-
-            InstrumentGroups = new ObservableCollection<InstrumentNameDetectionService.InstrumentGroup>(instrumentGroups);
+            InitializeInstrumentFilters(fileList);
             PerformanceDebugLogger.WriteLine($"  [LoadBmsFile] FilterChips and InstrumentGroups generation: {timer.Lap("FilterChips and InstrumentGroups generation")} ms");
 
             if (_bmsFileList.MissingFiles.Count == 0 && fileList.Count > 0)
@@ -193,6 +182,22 @@ public partial class FileListViewModel : ObservableObject, IDisposable
                 ErrorMessage = ex.Message
             });
         }
+    }
+
+    private void InitializeInstrumentFilters(ObservableCollection<BmsAudioFile> fileList)
+    {
+        var chips = _filterService?.GenerateFilterChips(fileList) ?? [];
+
+        var instrumentGroups = chips
+            .Select(c => new InstrumentNameDetectionService.InstrumentGroup
+            {
+                Name = c.Keyword,
+                Count = c.Count,
+                IsSelected = true
+            })
+            .ToList();
+
+        InstrumentGroups = new ObservableCollection<InstrumentNameDetectionService.InstrumentGroup>(instrumentGroups);
     }
 
     /// <summary>
