@@ -185,14 +185,20 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Views.Controls
 
             // Windowレベルのマウスアップイベントを監視
             var window = Window.GetWindow(this);
-            if (window != null) window.PreviewMouseLeftButtonUp += Window_PreviewMouseLeftButtonUp;
+            if (window != null)
+            {
+                window.PreviewMouseLeftButtonUp += Window_PreviewMouseLeftButtonUp;
+            }
         }
 
         private void OnUnloaded(object sender, RoutedEventArgs e)
         {
             // Windowレベルのマウスアップイベントの購読を解除
             var window = Window.GetWindow(this);
-            if (window != null) window.PreviewMouseLeftButtonUp -= Window_PreviewMouseLeftButtonUp;
+            if (window != null)
+            {
+                window.PreviewMouseLeftButtonUp -= Window_PreviewMouseLeftButtonUp;
+            }
         }
 
         private void SlideThumb_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -435,7 +441,10 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Views.Controls
 
                 // 明示的に初期位置に設定
                 ThumbTransform.X = 0;
-                if (ProgressiveFill != null) ProgressiveFill.Width = 0;
+                if (ProgressiveFill != null)
+                {
+                    ProgressiveFill.Width = 0;
+                }
 
                 // ドラッグ状態を確実にリセット
                 _isDragging = false;
@@ -466,7 +475,10 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Views.Controls
 
             // 初期位置に戻す
             ThumbTransform.X = 0;
-            if (ProgressiveFill != null) ProgressiveFill.Width = 0;
+            if (ProgressiveFill != null)
+            {
+                ProgressiveFill.Width = 0;
+            }
         }
 
         #endregion

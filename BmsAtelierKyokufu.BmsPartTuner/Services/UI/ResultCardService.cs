@@ -241,7 +241,10 @@ public class ResultCardService : IUiElementService<ResultCardData>
     /// </summary>
     public void HideTechStats()
     {
-        if (_techStats != null) _techStats.Visibility = Visibility.Collapsed;
+        if (_techStats != null)
+        {
+            _techStats.Visibility = Visibility.Collapsed;
+        }
     }
 
     /// <summary>

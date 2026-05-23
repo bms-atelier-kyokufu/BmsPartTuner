@@ -8,7 +8,8 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Services.Audio.AudioPlayer;
 public class NAudioPlayer : IAudioPlayer
 {
     private WaveOutEvent? _waveOut;
-    private AudioFileReader? _audioFileReader;
+    private WaveStream? _audioReader;
+    private Stream? _memoryStreamToDispose;
 
     public event EventHandler? PlaybackStopped;
 
@@ -16,9 +17,19 @@ public class NAudioPlayer : IAudioPlayer
     {
         Stop(); // Ensure previous resources are cleaned up
 
-        _audioFileReader = new AudioFileReader(filePath);
+        var fileName = Path.GetFileName(filePath);
+        if (BmsAtelierKyokufu.BmsPartTuner.Core.Audio.VirtualAudioRegistry.TryGetFile(fileName, out var memoryData))
+        {
+            _memoryStreamToDispose = new MemoryStream(memoryData);
+            _audioReader = new WaveFileReader(_memoryStreamToDispose);
+        }
+        else
+        {
+            _audioReader = new AudioFileReader(filePath);
+        }
+
         _waveOut = new WaveOutEvent();
-        _waveOut.Init(_audioFileReader);
+        _waveOut.Init(_audioReader);
         _waveOut.PlaybackStopped += OnPlaybackStopped;
         _waveOut.Play();
     }
@@ -35,6 +46,7 @@ public class NAudioPlayer : IAudioPlayer
 
     public void Dispose()
     {
+        GC.SuppressFinalize(this);
         if (_waveOut != null)
         {
             _waveOut.PlaybackStopped -= OnPlaybackStopped;
@@ -42,7 +54,10 @@ public class NAudioPlayer : IAudioPlayer
             _waveOut = null;
         }
 
-        _audioFileReader?.Dispose();
-        _audioFileReader = null;
+        _audioReader?.Dispose();
+        _audioReader = null;
+
+        _memoryStreamToDispose?.Dispose();
+        _memoryStreamToDispose = null;
     }
 }

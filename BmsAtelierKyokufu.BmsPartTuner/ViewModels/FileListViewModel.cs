@@ -147,11 +147,11 @@ public partial class FileListViewModel : ObservableObject, IDisposable
     /// 読み込みエラー時は、<see cref="FileListLoaded"/>イベントで
     /// IsSuccess=falseとエラーメッセージを通知します。
     /// </remarks>
-    public void LoadBmsFile(string bmsFilePath)
+    public void LoadBmsFile(string bmsFilePath, string? bmsContent = null)
     {
         try
         {
-            _bmsFileList = new BmsDefinitionManager(bmsFilePath);
+            _bmsFileList = new BmsDefinitionManager(bmsFilePath, bmsContent);
             var fileList = _bmsFileList.CreateFileList();
             FileListItems = fileList;
 
@@ -305,10 +305,7 @@ public partial class FileListViewModel : ObservableObject, IDisposable
 
         foreach (var file in itemsToRemove)
         {
-            if (FileListItems.Contains(file))
-            {
-                FileListItems.Remove(file);
-            }
+            FileListItems.Remove(file);
         }
     }
 
