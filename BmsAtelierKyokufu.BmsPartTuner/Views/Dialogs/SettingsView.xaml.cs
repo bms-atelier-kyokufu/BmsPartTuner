@@ -1,6 +1,4 @@
-﻿using System.Windows.Controls;
-
-namespace BmsAtelierKyokufu.BmsPartTuner.Views.Dialogs;
+﻿namespace BmsAtelierKyokufu.BmsPartTuner.Views.Dialogs;
 
 /// <summary>
 /// SettingsView.xaml の相互作用ロジック

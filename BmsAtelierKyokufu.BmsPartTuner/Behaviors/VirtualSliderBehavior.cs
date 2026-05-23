@@ -1,6 +1,4 @@
-﻿using System.Windows.Controls;
-using System.Windows.Media;
-using BmsAtelierKyokufu.BmsPartTuner.Infrastructure.UI;
+﻿using BmsAtelierKyokufu.BmsPartTuner.Infrastructure.UI;
 using Microsoft.Xaml.Behaviors;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Behaviors

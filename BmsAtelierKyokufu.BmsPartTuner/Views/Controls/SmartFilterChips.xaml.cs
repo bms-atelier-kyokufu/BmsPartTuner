@@ -1,5 +1,4 @@
-﻿using System.Windows.Controls;
-using BmsAtelierKyokufu.BmsPartTuner.Services.Bms;
+﻿using BmsAtelierKyokufu.BmsPartTuner.Services.Bms;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Views.Controls
 {

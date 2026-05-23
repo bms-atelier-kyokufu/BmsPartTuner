@@ -1,6 +1,4 @@
-﻿using System.Windows.Controls;
-using System.Windows.Media;
-using System.Windows.Media.Animation;
+﻿using System.Windows.Media.Animation;
 using BmsAtelierKyokufu.BmsPartTuner.ViewModels;
 using BmsAtelierKyokufu.BmsPartTuner.Views.Controls;
 

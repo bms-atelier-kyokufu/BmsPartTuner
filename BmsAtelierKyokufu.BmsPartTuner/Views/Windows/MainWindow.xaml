@@ -274,7 +274,7 @@
                         <controls:SmartFilterChips
                             x:Name="FilterChipsControl"
                             ChipClick="FilterChip_Click"
-                            Chips="{Binding FileList.FilterChips}" />
+                            Chips="{Binding BmsDefinitionManager.FilterChips}" />
                     </StackPanel>
 
 
@@ -282,7 +282,7 @@
                     <!--  ファイルリスト  -->
                     <ListView
                         x:Name="FilesListView"
-                        ItemsSource="{Binding FileList.FileListItems}"
+                        ItemsSource="{Binding BmsDefinitionManager.FileListItems}"
                         SelectedItem="{Binding SelectedFile}">
                         <ListView.View>
                             <GridView>

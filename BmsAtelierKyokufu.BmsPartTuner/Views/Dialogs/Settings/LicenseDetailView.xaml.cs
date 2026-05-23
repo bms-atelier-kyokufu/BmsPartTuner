@@ -1,6 +1,4 @@
-﻿using System.Windows.Controls;
-
-namespace BmsAtelierKyokufu.BmsPartTuner.Views.Dialogs.Settings
+﻿namespace BmsAtelierKyokufu.BmsPartTuner.Views.Dialogs.Settings
 {
     /// <summary>
     /// LicenseDetailView.xaml の相互作用ロジック

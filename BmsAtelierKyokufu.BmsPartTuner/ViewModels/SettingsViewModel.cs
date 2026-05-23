@@ -1,5 +1,4 @@
 ﻿using System.Reflection;
-using BmsAtelierKyokufu.BmsPartTuner.Core;
 using BmsAtelierKyokufu.BmsPartTuner.Services.Common;
 using BmsAtelierKyokufu.BmsPartTuner.Services.UI;
 using Microsoft.Win32;
@@ -280,7 +279,7 @@ public partial class SettingsViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"URLを開けませんでした: {ex.Message}");
+            PerfDebugLogger.WriteLine($"URLを開けませんでした: {ex.Message}");
         }
     }
 

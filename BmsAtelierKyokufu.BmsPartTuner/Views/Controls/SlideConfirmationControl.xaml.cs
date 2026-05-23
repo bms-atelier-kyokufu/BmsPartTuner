@@ -1,6 +1,4 @@
-﻿using System.Windows.Controls;
-using System.Windows.Media;
-using System.Windows.Media.Animation;
+﻿using System.Windows.Media.Animation;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Views.Controls
 {
@@ -180,7 +178,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Views.Controls
             // コントロールが小さすぎる場合の警告
             if (ActualWidth > 0 && ActualWidth < ThumbWidth + 20)
             {
-                System.Diagnostics.Debug.WriteLine($"Warning: SlideConfirmationControl is too small (ActualWidth={ActualWidth}, MinRequired={ThumbWidth + 20})");
+                PerfDebugLogger.WriteLine($"Warning: SlideConfirmationControl is too small (ActualWidth={ActualWidth}, MinRequired={ThumbWidth + 20})");
             }
 
             // Windowレベルのマウスアップイベントを監視
@@ -276,24 +274,24 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Views.Controls
             {
                 // 最小値を0に制限（負の値にならないようにする）
                 _maxSlideDistance = Math.Max(0, ActualWidth - ThumbWidth - 10);
-                System.Diagnostics.Debug.WriteLine($"CalculateMaxSlideDistance: ActualWidth={ActualWidth}, ThumbWidth={ThumbWidth}, MaxSlideDistance={_maxSlideDistance}");
+                PerfDebugLogger.WriteLine($"CalculateMaxSlideDistance: ActualWidth={ActualWidth}, ThumbWidth={ThumbWidth}, MaxSlideDistance={_maxSlideDistance}");
 
                 // スライド不可能な場合の警告
                 if (_maxSlideDistance <= 0)
                 {
-                    System.Diagnostics.Debug.WriteLine($"Warning: Not enough space to slide (need at least {ThumbWidth + 10}px, got {ActualWidth}px)");
+                    PerfDebugLogger.WriteLine($"Warning: Not enough space to slide (need at least {ThumbWidth + 10}px, got {ActualWidth}px)");
                 }
             }
             else
             {
                 // ActualWidthがまだ0の場合、次のレンダリングサイクルで再計算
-                System.Diagnostics.Debug.WriteLine($"CalculateMaxSlideDistance: ActualWidth is 0, will recalculate on next render");
+                PerfDebugLogger.WriteLine($"CalculateMaxSlideDistance: ActualWidth is 0, will recalculate on next render");
                 Dispatcher.BeginInvoke(new Action(() =>
                 {
                     if (ActualWidth > 0)
                     {
                         _maxSlideDistance = Math.Max(0, ActualWidth - ThumbWidth - 10);
-                        System.Diagnostics.Debug.WriteLine($"CalculateMaxSlideDistance (delayed): ActualWidth={ActualWidth}, MaxSlideDistance={_maxSlideDistance}");
+                        PerfDebugLogger.WriteLine($"CalculateMaxSlideDistance (delayed): ActualWidth={ActualWidth}, MaxSlideDistance={_maxSlideDistance}");
                     }
                 }), System.Windows.Threading.DispatcherPriority.Loaded);
             }
@@ -316,7 +314,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Views.Controls
         {
             if (!_isDragging) return;
 
-            System.Diagnostics.Debug.WriteLine($"CompleteSlide: Releasing mouse capture");
+            PerfDebugLogger.WriteLine($"CompleteSlide: Releasing mouse capture");
 
             // マウスキャプチャを解放（ただし_isDraggingはアニメーション完了後にリセット）
             SlideThumb.ReleaseMouseCapture();
@@ -324,7 +322,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Views.Controls
             var currentOffset = ThumbTransform.X;
             var progress = _maxSlideDistance > 0 ? Math.Abs(currentOffset) / _maxSlideDistance : 0;
 
-            System.Diagnostics.Debug.WriteLine($"CompleteSlide: progress={progress:F2}, threshold={CompletionThreshold}");
+            PerfDebugLogger.WriteLine($"CompleteSlide: progress={progress:F2}, threshold={CompletionThreshold}");
 
             if (progress >= CompletionThreshold) // デフォルト80%以上でスライド完了
             {
@@ -374,7 +372,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Views.Controls
 
                 bounceAnimation.Completed += (bs, bargs) =>
                 {
-                    System.Diagnostics.Debug.WriteLine("AnimateCompletion: Bounce completed");
+                    PerfDebugLogger.WriteLine("AnimateCompletion: Bounce completed");
 
                     // アニメーション完了後、状態をクリア
                     ThumbTransform.BeginAnimation(TranslateTransform.XProperty, null);
@@ -433,7 +431,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Views.Controls
 
             thumbAnimation.Completed += (s, args) =>
             {
-                System.Diagnostics.Debug.WriteLine("AnimateCancellation: Animation completed, resetting state");
+                PerfDebugLogger.WriteLine("AnimateCancellation: Animation completed, resetting state");
 
                 // アニメーション完了後、アニメーションをクリアして状態をリセット
                 ThumbTransform.BeginAnimation(TranslateTransform.XProperty, null);

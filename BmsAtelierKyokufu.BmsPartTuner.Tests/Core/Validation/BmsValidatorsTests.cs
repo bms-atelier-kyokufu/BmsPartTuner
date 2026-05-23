@@ -193,7 +193,7 @@ public class R2ThresholdValidatorTests
         string input, float expectedInternal)
     {
         _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
-        ValidationResult<float> result = _validator.ValidateWithValue(input);
+        ValidationResult<float> result = R2ThresholdValidator.ValidateWithValue(input);
 
         Assert.True(result.IsValid);
         Assert.Equal(expectedInternal, result.Value, 0.001f);
@@ -212,7 +212,7 @@ public class R2ThresholdValidatorTests
         string input, float expectedInternal)
     {
         _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
-        ValidationResult<float> result = _validator.ValidateWithValue(input);
+        ValidationResult<float> result = R2ThresholdValidator.ValidateWithValue(input);
 
         Assert.True(result.IsValid);
         Assert.Equal(expectedInternal, result.Value, 0.001f);
@@ -229,7 +229,7 @@ public class R2ThresholdValidatorTests
         string input, float expectedInternal)
     {
         _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
-        ValidationResult<float> result = _validator.ValidateWithValue(input);
+        ValidationResult<float> result = R2ThresholdValidator.ValidateWithValue(input);
 
         Assert.True(result.IsValid);
         Assert.Equal(expectedInternal, result.Value, 0.001f);
@@ -246,7 +246,7 @@ public class R2ThresholdValidatorTests
     public void ValidateWithValue_EmptyOrWhitespace_ReturnsFailure(string? input)
     {
         _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
-        ValidationResult<float> result = _validator.ValidateWithValue(input!);
+        ValidationResult<float> result = R2ThresholdValidator.ValidateWithValue(input!);
 
         // UI上の用語が「相関係数」から「マッチ許容度」へ変更されました。
         // エラーメッセージにも新しい用語が反映されていることを検証します。
@@ -262,7 +262,7 @@ public class R2ThresholdValidatorTests
     public void ValidateWithValue_OutOfRange_ReturnsFailure(string input)
     {
         _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
-        ValidationResult<float> result = _validator.ValidateWithValue(input);
+        ValidationResult<float> result = R2ThresholdValidator.ValidateWithValue(input);
 
         Assert.False(result.IsValid);
         Assert.Contains("0～100の範囲で入力してください", result.GetFirstError());
@@ -275,7 +275,7 @@ public class R2ThresholdValidatorTests
     public void ValidateWithValue_InvalidFormat_ReturnsFailure(string input)
     {
         _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
-        ValidationResult<float> result = _validator.ValidateWithValue(input);
+        ValidationResult<float> result = R2ThresholdValidator.ValidateWithValue(input);
 
         Assert.False(result.IsValid);
         Assert.Contains("形式が正しくありません", result.GetFirstError());
@@ -314,7 +314,7 @@ public class R2ThresholdValidatorTests
     public void ValidateWithValue_BoundaryValues_ReturnsSuccess(string input)
     {
         _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
-        ValidationResult<float> result = _validator.ValidateWithValue(input);
+        ValidationResult<float> result = R2ThresholdValidator.ValidateWithValue(input);
 
         Assert.True(result.IsValid);
     }
@@ -323,7 +323,7 @@ public class R2ThresholdValidatorTests
     public void ValidateWithValue_LeadingZeros_ParsesCorrectly()
     {
         _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
-        ValidationResult<float> result = _validator.ValidateWithValue("095");
+        ValidationResult<float> result = R2ThresholdValidator.ValidateWithValue("095");
 
         Assert.True(result.IsValid);
         Assert.Equal(0.95f, result.Value, 0.001f);

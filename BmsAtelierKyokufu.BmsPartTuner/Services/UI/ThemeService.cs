@@ -1,5 +1,4 @@
-﻿using System.Windows.Media;
-using Microsoft.Win32;
+﻿using Microsoft.Win32;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Services.UI;
 
@@ -36,7 +35,7 @@ public class ThemeService
         {
             var mergedDictionaries = Application.Current.Resources.MergedDictionaries;
 
-            System.Diagnostics.Debug.WriteLine($"テーマ切り替え開始: {(isDark ? "Dark" : "Light")}");
+            PerfDebugLogger.WriteLine($"テーマ切り替え開始: {(isDark ? "Dark" : "Light")}");
 
             // 新しいテーマを読み込む
             var newTheme = new ResourceDictionary { Source = new Uri(themePath, UriKind.Relative) };
@@ -72,19 +71,19 @@ public class ThemeService
 
             ThemeChanged?.Invoke(this, isDark);
 
-            System.Diagnostics.Debug.WriteLine($"テーマを適用しました: {(isDark ? "Dark" : "Light")}");
+            PerfDebugLogger.WriteLine($"テーマを適用しました: {(isDark ? "Dark" : "Light")}");
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"テーマの適用に失敗しました: {ex.Message}");
-            System.Diagnostics.Debug.WriteLine(ex.StackTrace);
+            PerfDebugLogger.WriteLine($"テーマの適用に失敗しました: {ex.Message}");
+            PerfDebugLogger.WriteLine(ex.StackTrace);
         }
     }
 
     /// <summary>
     /// システムがダークモードかどうかを判定します。
     /// </summary>
-    public bool IsSystemDarkMode()
+    public static bool IsSystemDarkMode()
     {
         try
         {
@@ -94,7 +93,7 @@ public class ThemeService
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"システムテーマの読み取りエラー: {ex}");
+            PerfDebugLogger.WriteLine($"システムテーマの読み取りエラー: {ex}");
             return false;
         }
     }
@@ -115,7 +114,7 @@ public class ThemeService
     /// 動的リソースを参照していても更新されない場合があります。
     /// この問題を解決するため、全てのWindowとその子要素を再描画します。
     /// </remarks>
-    private void ForceUiRefresh()
+    private static void ForceUiRefresh()
     {
         Application.Current?.Dispatcher.BeginInvoke(new Action(() =>
         {
@@ -136,7 +135,7 @@ public class ThemeService
     /// <summary>
     /// ビジュアルツリーを再帰的に無効化します。
     /// </summary>
-    private void InvalidateVisualTree(DependencyObject parent)
+    private static void InvalidateVisualTree(DependencyObject parent)
     {
         if (parent == null) return;
 

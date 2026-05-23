@@ -1,5 +1,4 @@
-﻿using BmsAtelierKyokufu.BmsPartTuner.Core;
-using Microsoft.Win32;
+﻿using Microsoft.Win32;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.ViewModels;
 

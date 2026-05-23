@@ -1,6 +1,4 @@
-﻿using System.Windows.Threading;
-
-namespace BmsAtelierKyokufu.BmsPartTuner.Services.UI;
+﻿namespace BmsAtelierKyokufu.BmsPartTuner.Services.UI;
 
 public class WpfUIThreadDispatcher(Dispatcher dispatcher) : IUIThreadDispatcher
 {

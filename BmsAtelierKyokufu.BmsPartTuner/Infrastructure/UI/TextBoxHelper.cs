@@ -1,7 +1,4 @@
-﻿using System.Windows.Controls;
-using System.Windows.Media;
-
-namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.UI
+﻿namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.UI
 {
     /// <summary>
     /// TextBox用の添付プロパティヘルパー

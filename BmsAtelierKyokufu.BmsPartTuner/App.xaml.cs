@@ -1,6 +1,4 @@
 ﻿using System.Reflection;
-using System.Windows.Threading;
-using BmsAtelierKyokufu.BmsPartTuner.Core;
 using BmsAtelierKyokufu.BmsPartTuner.Services.Audio;
 using BmsAtelierKyokufu.BmsPartTuner.Services.Audio.AudioPlayer;
 using BmsAtelierKyokufu.BmsPartTuner.Services.Bms;
@@ -211,7 +209,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"ホストの停止中にエラーが発生しました: {ex}");
+                PerfDebugLogger.WriteLine($"ホストの停止中にエラーが発生しました: {ex}");
             }
             finally
             {

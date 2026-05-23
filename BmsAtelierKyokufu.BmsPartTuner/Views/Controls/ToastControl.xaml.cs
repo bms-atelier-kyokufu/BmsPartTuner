@@ -1,6 +1,4 @@
-﻿using System.Windows.Controls;
-
-namespace BmsAtelierKyokufu.BmsPartTuner.Views.Controls
+﻿namespace BmsAtelierKyokufu.BmsPartTuner.Views.Controls
 {
     /// <summary>
     /// ToastControl.xaml の相互作用ロジック

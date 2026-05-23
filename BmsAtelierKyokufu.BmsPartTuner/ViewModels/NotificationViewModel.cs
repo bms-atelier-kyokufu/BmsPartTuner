@@ -1,6 +1,4 @@
-﻿using System.Windows.Threading;
-
-namespace BmsAtelierKyokufu.BmsPartTuner.ViewModels;
+﻿namespace BmsAtelierKyokufu.BmsPartTuner.ViewModels;
 
 /// <summary>
 /// 通知表示ViewModel。

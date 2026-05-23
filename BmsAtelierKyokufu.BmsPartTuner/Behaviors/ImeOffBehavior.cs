@@ -1,5 +1,4 @@
-﻿using System.Windows.Controls;
-using Microsoft.Xaml.Behaviors;
+﻿using Microsoft.Xaml.Behaviors;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Behaviors;
 

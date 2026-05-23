@@ -1,6 +1,4 @@
-﻿using BmsAtelierKyokufu.BmsPartTuner.Core;
-
-namespace BmsAtelierKyokufu.BmsPartTuner.ViewModels;
+﻿namespace BmsAtelierKyokufu.BmsPartTuner.ViewModels;
 
 /// <summary>
 /// 入力値の検証を担当するViewModel。

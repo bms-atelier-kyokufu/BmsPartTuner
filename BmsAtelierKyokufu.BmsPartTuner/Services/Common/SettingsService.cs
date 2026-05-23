@@ -51,7 +51,7 @@ public class SettingsService
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"設定ファイルの読み込みに失敗しました: {ex.Message}");
+            PerfDebugLogger.WriteLine($"設定ファイルの読み込みに失敗しました: {ex.Message}");
             _cachedSettings = new AppSettings();
         }
 
@@ -71,7 +71,7 @@ public class SettingsService
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"設定ファイルの保存に失敗しました: {ex.Message}");
+            PerfDebugLogger.WriteLine($"設定ファイルの保存に失敗しました: {ex.Message}");
         }
     }
 

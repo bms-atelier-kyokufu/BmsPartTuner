@@ -1,5 +1,4 @@
-﻿using System.Threading;
-using BmsAtelierKyokufu.BmsPartTuner.Services.Audio.AudioPlayer;
+﻿using BmsAtelierKyokufu.BmsPartTuner.Services.Audio.AudioPlayer;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Services.Audio;
 
