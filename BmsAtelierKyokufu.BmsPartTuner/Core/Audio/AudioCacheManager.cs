@@ -148,7 +148,7 @@ internal static class AudioCacheManager
     /// <summary>
     /// ファイルリストをバッチに分割。
     /// </summary>
-    private static IReadOnlyList<IReadOnlyList<BmsAudioFile>> CreateBatches(
+    private static List<IReadOnlyList<BmsAudioFile>> CreateBatches(
         IReadOnlyList<BmsAudioFile> fileList,
         int batchSize)
     {
@@ -218,7 +218,7 @@ internal static class AudioCacheManager
     /// </remarks>
     private static void LogCacheStatistics(
         IReadOnlyList<BmsAudioFile> fileList,
-        IReadOnlyDictionary<string, CachedSoundData> audioCache,
+        System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData> audioCache,
         int loaded,
         int totalFiles,
         int successCount,

@@ -34,6 +34,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
                     // リソース管理のテスト失敗を示唆することが多い
                 }
             }
+            GC.SuppressFinalize(this);
         }
 
         private string CreateDummyWav(string fileName, bool isValid = true)
