@@ -183,73 +183,101 @@ public class BmsScoreGenerator(
     {
         if (_bmson.SoundChannels == null) return;
 
-        foreach (var ch in _bmson.SoundChannels)
+        Parallel.ForEach(_bmson.SoundChannels, ch =>
         {
-            if (ch.Notes == null || ch.Notes.Count == 0) continue;
+            if (ch.Notes == null || ch.Notes.Count == 0) return;
+
+            double lastCFalseSec = 0.0;
+            double currentSec = _realTimeCalc.GetTimeSec(ch.Notes[0].Y);
 
             for (int i = 0; i < ch.Notes.Count; i++)
             {
                 var n = ch.Notes[i];
 
-                if (_keyNotesOnly && n.X == 0) continue;
+                if (!n.C)
+                {
+                    lastCFalseSec = currentSec;
+                }
+
+                double nextSec = 0.0;
+                if (i + 1 < ch.Notes.Count)
+                {
+                    nextSec = _realTimeCalc.GetTimeSec(ch.Notes[i + 1].Y);
+                }
+
+                if (_keyNotesOnly && n.X == 0)
+                {
+                    currentSec = nextSec;
+                    continue;
+                }
 
                 double oSec = 0.0;
                 if (n.C)
                 {
-                    int lastCFalseIdx = i;
-                    while (lastCFalseIdx > 0 && ch.Notes[lastCFalseIdx].C)
-                    {
-                        lastCFalseIdx--;
-                    }
-                    oSec = _realTimeCalc.GetTimeSec(n.Y) - _realTimeCalc.GetTimeSec(ch.Notes[lastCFalseIdx].Y);
+                    oSec = currentSec - lastCFalseSec;
                 }
 
                 double dSec = double.PositiveInfinity;
                 if (i + 1 < ch.Notes.Count)
                 {
-                    dSec = _realTimeCalc.GetTimeSec(ch.Notes[i + 1].Y) - _realTimeCalc.GetTimeSec(n.Y);
+                    dSec = nextSec - currentSec;
                 }
 
                 _audioSliceManager.SliceAudio(ch.Name, oSec, dSec);
+
+                currentSec = nextSec;
             }
-        }
+        });
     }
 
     private void ProcessSoundChannels()
     {
         if (_bmson.SoundChannels == null) return;
 
-        foreach (var ch in _bmson.SoundChannels)
+        Parallel.ForEach(_bmson.SoundChannels, ch =>
         {
-            if (ch.Notes == null || ch.Notes.Count == 0) continue;
+            if (ch.Notes == null || ch.Notes.Count == 0) return;
+
+            double lastCFalseSec = 0.0;
+            double currentSec = _realTimeCalc.GetTimeSec(ch.Notes[0].Y);
 
             for (int i = 0; i < ch.Notes.Count; i++)
             {
                 var n = ch.Notes[i];
 
+                if (!n.C)
+                {
+                    lastCFalseSec = currentSec;
+                }
+
+                double nextSec = 0.0;
+                if (i + 1 < ch.Notes.Count)
+                {
+                    nextSec = _realTimeCalc.GetTimeSec(ch.Notes[i + 1].Y);
+                }
+
                 if (_keyNotesOnly && n.X == 0)
                 {
+                    currentSec = nextSec;
                     continue; // 演奏ノーツのみ抽出の場合はBGMレーンを無視
                 }
 
                 double oSec = 0.0;
                 if (n.C)
                 {
-                    int lastCFalseIdx = i;
-                    while (lastCFalseIdx > 0 && ch.Notes[lastCFalseIdx].C)
-                    {
-                        lastCFalseIdx--;
-                    }
-                    oSec = _realTimeCalc.GetTimeSec(n.Y) - _realTimeCalc.GetTimeSec(ch.Notes[lastCFalseIdx].Y);
+                    oSec = currentSec - lastCFalseSec;
                 }
 
                 double dSec = double.PositiveInfinity;
                 if (i + 1 < ch.Notes.Count)
                 {
-                    dSec = _realTimeCalc.GetTimeSec(ch.Notes[i + 1].Y) - _realTimeCalc.GetTimeSec(n.Y);
+                    dSec = nextSec - currentSec;
                 }
 
                 string sliceFile = _audioSliceManager.SliceAudio(ch.Name, oSec, dSec);
+
+                currentSec = nextSec;
+
                 if (string.IsNullOrEmpty(sliceFile)) continue;
 
                 string wavId = GetWavId(sliceFile);
@@ -273,7 +301,7 @@ public class BmsScoreGenerator(
                     AddNote(measure, bmsChannel, step, wavId);
                 }
             }
-        }
+        });
     }
 
     private void ProcessBpmEvents()
@@ -373,12 +401,15 @@ public class BmsScoreGenerator(
 
     private string GetWavId(string fileName)
     {
-        if (!_wavDefinitions.TryGetValue(fileName, out string? id))
+        lock (_wavDefinitions)
         {
-            id = RadixConvert.IntToZZ(_wavCounter++, _radix);
-            _wavDefinitions[fileName] = id;
+            if (!_wavDefinitions.TryGetValue(fileName, out string? id))
+            {
+                id = RadixConvert.IntToZZ(_wavCounter++, _radix);
+                _wavDefinitions[fileName] = id;
+            }
+            return id;
         }
-        return id;
     }
 
     private static string[] CreateEmptyArray(int size = 240)
@@ -390,33 +421,36 @@ public class BmsScoreGenerator(
 
     private void AddNote(int measure, string channel, int step, string id)
     {
-        if (!_measures.ContainsKey(measure)) _measures[measure] = [];
-        var mDict = _measures[measure];
-
-        if (!mDict.ContainsKey(channel)) mDict[channel] = [CreateEmptyArray()];
-
-        if (channel == "01")
+        lock (_measures)
         {
-            bool placed = false;
-            foreach (var arr in mDict[channel])
+            if (!_measures.ContainsKey(measure)) _measures[measure] = [];
+            var mDict = _measures[measure];
+
+            if (!mDict.ContainsKey(channel)) mDict[channel] = [CreateEmptyArray()];
+
+            if (channel == "01")
             {
-                if (arr[step] == "00")
+                bool placed = false;
+                foreach (var arr in mDict[channel])
                 {
-                    arr[step] = id;
-                    placed = true;
-                    break;
+                    if (arr[step] == "00")
+                    {
+                        arr[step] = id;
+                        placed = true;
+                        break;
+                    }
+                }
+                if (!placed)
+                {
+                    var newArr = CreateEmptyArray();
+                    newArr[step] = id;
+                    mDict[channel].Add(newArr);
                 }
             }
-            if (!placed)
+            else
             {
-                var newArr = CreateEmptyArray();
-                newArr[step] = id;
-                mDict[channel].Add(newArr);
+                mDict[channel][0][step] = id;
             }
-        }
-        else
-        {
-            mDict[channel][0][step] = id;
         }
     }
 

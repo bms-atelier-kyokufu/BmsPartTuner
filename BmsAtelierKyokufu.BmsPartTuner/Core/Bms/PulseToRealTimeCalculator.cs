@@ -103,34 +103,52 @@ public class PulseToRealTimeCalculator
     {
         if (_segments.Count == 0) return 0;
 
-        // y以下のStartYを持つ最新のセグメントを探す
-        // ただし、y と完全に等しいStartYを持つセグメントが複数ある場合（STOP後など）、
-        // ノーツはSTOPの影響を受けないため、IsAfterStop が false である最初のセグメントを採用する。
-        TimeSegment targetSegment = _segments[0];
-
-        foreach (var seg in _segments)
-        {
-            if (seg.StartY < y)
-            {
-                targetSegment = seg;
-            }
-            else if (seg.StartY == y)
-            {
-                if (!seg.IsAfterStop)
-                {
-                    targetSegment = seg;
-                }
-                // IsAfterStop が true の場合は無視（同じyにあるノーツはSTOP前の時間を使う）
-            }
-            else // seg.StartY > y
-            {
-                break;
-            }
-        }
+        // y以下のStartYを持つ最新のセグメントを二分探索で探す
+        var targetSegment = FindSegment(y);
 
         long diffPulses = y - targetSegment.StartY;
         double diffSec = PulsesToSeconds(diffPulses, targetSegment.Bpm);
 
         return targetSegment.StartTimeSec + diffSec;
+    }
+
+    private TimeSegment FindSegment(long y)
+    {
+        int low = 0;
+        int high = _segments.Count - 1;
+        int ans = 0;
+
+        while (low <= high)
+        {
+            int mid = low + (high - low) / 2;
+            if (_segments[mid].StartY <= y)
+            {
+                ans = mid;
+                low = mid + 1;
+            }
+            else
+            {
+                high = mid - 1;
+            }
+        }
+
+        if (_segments[ans].StartY == y)
+        {
+            int i = ans;
+            while (i >= 0 && _segments[i].StartY == y)
+            {
+                if (!_segments[i].IsAfterStop)
+                {
+                    return _segments[i];
+                }
+                i--;
+            }
+            if (i >= 0)
+            {
+                ans = i;
+            }
+        }
+
+        return _segments[ans];
     }
 }

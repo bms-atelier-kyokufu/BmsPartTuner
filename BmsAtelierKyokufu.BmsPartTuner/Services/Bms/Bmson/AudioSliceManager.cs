@@ -1,4 +1,6 @@
-﻿using NAudio.Wave;
+﻿using System.Collections.Concurrent;
+using System.Threading;
+using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Services.Bms.Bmson;
@@ -13,7 +15,7 @@ public class AudioSliceManager
     private readonly string _outputDir;
 
     // key: "fileName|offsetSec|durationSec", value: "outputFileName.wav"
-    private readonly Dictionary<string, string> _sliceCache = [];
+    private readonly ConcurrentDictionary<string, Lazy<string>> _sliceCache = new();
     private int _sliceCounter = 1;
 
     public AudioSliceManager(string bmsonDir, string outputDir)
@@ -42,83 +44,84 @@ public class AudioSliceManager
         // 小数点第6位までの精度でキャッシュキーを作成 (約1マイクロ秒の精度)
         string cacheKey = $"{sourceFileName}|{offsetSec:F6}|{durationSec:F6}";
 
-        if (_sliceCache.TryGetValue(cacheKey, out string? existingPath))
+        var lazyVal = _sliceCache.GetOrAdd(cacheKey, key => new Lazy<string>(() =>
         {
-            return existingPath;
-        }
-
-        string sourcePath = Path.Combine(_bmsonDir, sourceFileName);
-        if (!File.Exists(sourcePath))
-        {
-            return string.Empty;
-        }
-
-        // BmsPartTunerの命名規則に合わせたスライス名（_slice_0001.wav 等）
-        string outputFileName = $"_slice_{_sliceCounter:D4}.wav";
-        string outputPath = Path.Combine(_outputDir, outputFileName);
-
-        try
-        {
-            using var reader = new AudioFileReader(sourcePath);
-
-            // オフセットがファイル長を超えている場合は無音扱いとして出力しない
-            if (offsetSec >= reader.TotalTime.TotalSeconds)
+            string sourcePath = Path.Combine(_bmsonDir, sourceFileName);
+            if (!File.Exists(sourcePath))
             {
                 return string.Empty;
             }
 
-            // 長さの補正（ファイル終端を超えないようにする）
-            double actualDuration = durationSec;
-            if (offsetSec + actualDuration > reader.TotalTime.TotalSeconds)
-            {
-                actualDuration = reader.TotalTime.TotalSeconds - offsetSec;
-            }
+            // BmsPartTunerの命名規則に合わせたスライス名（スライス元のファイル名先頭大文字_0001.wav 等）
+            string nameWithoutExt = Path.GetFileNameWithoutExtension(sourceFileName);
+            string prefix = string.IsNullOrEmpty(nameWithoutExt)
+                ? "Slice"
+                : char.ToUpper(nameWithoutExt[0]) + nameWithoutExt[1..];
+            int currentCount = Interlocked.Increment(ref _sliceCounter) - 1;
+            string outputFileName = $"{prefix}_{currentCount:D4}.wav";
+            string outputPath = Path.Combine(_outputDir, outputFileName);
 
-            if (actualDuration <= 0)
+            try
             {
+                using var reader = new AudioFileReader(sourcePath);
+
+                // オフセットがファイル長を超えている場合は無音扱いとして出力しない
+                if (offsetSec >= reader.TotalTime.TotalSeconds)
+                {
+                    return string.Empty;
+                }
+
+                // 長さの補正（ファイル終端を超えないようにする）
+                double actualDuration = durationSec;
+                if (offsetSec + actualDuration > reader.TotalTime.TotalSeconds)
+                {
+                    actualDuration = reader.TotalTime.TotalSeconds - offsetSec;
+                }
+
+                if (actualDuration <= 0)
+                {
+                    return string.Empty;
+                }
+
+                // 指定位置へシーク
+                reader.CurrentTime = TimeSpan.FromSeconds(offsetSec);
+
+                // ステレオ・44.1kHzに揃えるプロバイダチェーンの構築
+                ISampleProvider sampleProvider = reader;
+
+                if (sampleProvider.WaveFormat.Channels == 1)
+                {
+                    sampleProvider = new MonoToStereoSampleProvider(sampleProvider);
+                }
+
+                if (sampleProvider.WaveFormat.SampleRate != 44100)
+                {
+                    sampleProvider = new WdlResamplingSampleProvider(sampleProvider, 44100);
+                }
+
+                // Durationでカットする
+                var cutProvider = new OffsetSampleProvider(sampleProvider)
+                {
+                    Take = TimeSpan.FromSeconds(actualDuration)
+                };
+
+                // 16bit PCMとして書き出し
+                WaveFileWriter.CreateWaveFile16(outputPath, cutProvider);
+
+                return outputFileName;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[AudioSliceManager] スライス失敗: {sourceFileName} ({ex.Message})");
                 return string.Empty;
             }
+        }));
 
-            // 指定位置へシーク
-            reader.CurrentTime = TimeSpan.FromSeconds(offsetSec);
-
-            // ステレオ・44.1kHzに揃えるプロバイダチェーンの構築
-            ISampleProvider sampleProvider = reader;
-
-            if (sampleProvider.WaveFormat.Channels == 1)
-            {
-                sampleProvider = new MonoToStereoSampleProvider(sampleProvider);
-            }
-
-            if (sampleProvider.WaveFormat.SampleRate != 44100)
-            {
-                sampleProvider = new WdlResamplingSampleProvider(sampleProvider, 44100);
-            }
-
-            // Durationでカットする
-            var cutProvider = new OffsetSampleProvider(sampleProvider)
-            {
-                Take = TimeSpan.FromSeconds(actualDuration)
-            };
-
-            // 16bit PCMとして書き出し
-            WaveFileWriter.CreateWaveFile16(outputPath, cutProvider);
-
-            // キャッシュに登録してインクリメント
-            _sliceCache[cacheKey] = outputFileName;
-            _sliceCounter++;
-
-            return outputFileName;
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"[AudioSliceManager] スライス失敗: {sourceFileName} ({ex.Message})");
-            return string.Empty;
-        }
+        return lazyVal.Value;
     }
 
     /// <summary>
     /// 生成されたスライスの総数を取得します。
     /// </summary>
-    public int GetGeneratedSliceCount() => _sliceCache.Count;
+    public int GetGeneratedSliceCount() => _sliceCache.Values.Count(v => !string.IsNullOrEmpty(v.Value));
 }
