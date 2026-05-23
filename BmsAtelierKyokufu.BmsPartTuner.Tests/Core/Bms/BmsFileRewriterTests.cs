@@ -30,6 +30,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
                 }
                 catch { /* クリーンアップエラーは無視 */ }
             }
+            GC.SuppressFinalize(this);
         }
 
         private BmsAudioFile CreateWavFile(int num, string name)
@@ -136,12 +137,12 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
 
             var fileList = new List<BmsAudioFile>();
             var replaces = new int[1];
-            var rewriter = new BmsFileRewriter(fileList, replaces, 0, 0);
+            _ = new BmsFileRewriter(fileList, replaces, 0, 0);
 
             string outputPath = Path.Combine(_tempDir, "output.bms");
             string content = "test content";
 
-            rewriter.WriteBmsFile(outputPath, content);
+            BmsFileRewriter.WriteBmsFile(outputPath, content);
 
             Assert.True(File.Exists(outputPath));
             Assert.Equal(content, File.ReadAllText(outputPath, Encoding.GetEncoding("shift_jis")));

@@ -71,7 +71,7 @@ public class BmsonBenchmarkTests(ITestOutputHelper output)
 
         // 実在しないパスを指定してファイルI/Oをスキップさせる
         var tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-        var audioSlicer = new AudioSliceManager(tempDir, tempDir);
+        var audioSlicer = new AudioSliceManager(tempDir);
 
         // 3. ベンチマーク実行
         var sw = Stopwatch.StartNew();
@@ -86,5 +86,60 @@ public class BmsonBenchmarkTests(ITestOutputHelper output)
 
         // 出力されたことをアサート（適当なチェック）
         Assert.NotEmpty(result);
+    }
+
+    [Fact]
+    public void Test_DoublePlay_And_BpmRounding_Guardrails()
+    {
+        // 1. ダミーの BmsonFormat を作成
+        var bmson = new BmsonFormat
+        {
+            Info = new BmsonInfo
+            {
+                Resolution = 240,
+                InitBpm = 130.0004 // 130 に丸められるはず
+            }
+        };
+
+        // BPMイベントを追加。丸めると同じ 145.123 になる2つのイベント
+        bmson.BpmEvents.Add(new BmsonBpmEvent { Y = 240, Bpm = 145.1234 });
+        bmson.BpmEvents.Add(new BmsonBpmEvent { Y = 480, Bpm = 145.1226 });
+
+        // 2Pキー (X = 9) のノーツを追加し、ダブルプレイとして判定されるようにする
+        var channel = new BmsonSoundChannel
+        {
+            Name = "test.wav",
+            Notes =
+            [
+                new BmsonNote { X = 9, Y = 0, C = false }
+            ]
+        };
+        bmson.SoundChannels.Add(channel);
+
+        // 小節線
+        bmson.Lines.Add(new BmsonLineEvent { Y = 960 });
+
+        // サニタイズ（Y=0 の小節線挿入やソート）
+        BmsonSanitizer.Sanitize(bmson);
+
+        var timeCalc = new PulseToBmsTimeCalculator(bmson.Info.Resolution, bmson.Lines);
+        var realTimeCalc = new PulseToRealTimeCalculator(bmson.Info.Resolution, bmson.Info.InitBpm, bmson.BpmEvents, bmson.StopEvents);
+
+        var tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        var audioSlicer = new AudioSliceManager(tempDir);
+
+        var generator = new BmsScoreGenerator(bmson, timeCalc, realTimeCalc, audioSlicer, false);
+        string result = generator.GenerateBmsText();
+
+        // アサーション
+        // 1. ダブルプレイ判定により #PLAYER 3 が出力されていること
+        Assert.Contains("#PLAYER 3", result);
+
+        // 2. 初期BPMが丸められて #BPM 130 になっていること
+        Assert.Contains("#BPM 130", result);
+
+        // 3. 重複するBPMイベントが 145.123 に丸められ、マージされて #BPM01 145.123 のみが定義されていること
+        Assert.Contains("#BPM01 145.123", result);
+        Assert.DoesNotContain("#BPM02", result); // 2個目のBPMスロットは生成されないはず
     }
 }

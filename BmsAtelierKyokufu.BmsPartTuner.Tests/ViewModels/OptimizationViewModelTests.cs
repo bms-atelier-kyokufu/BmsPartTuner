@@ -46,6 +46,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.ViewModels
             int startDefinition,
             int endDefinition,
             bool isPhysicalDeletionEnabled,
+            string? inputBmsContent = null,
             IProgress<int>? progress = null,
             IEnumerable<string>? selectedKeywords = null)
         {
@@ -308,6 +309,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.ViewModels
             int startDefinition,
             int endDefinition,
             bool isPhysicalDeletionEnabled,
+            string? inputBmsContent = null,
             IProgress<int>? progress = null,
             IEnumerable<string>? selectedKeywords = null)
         {
@@ -344,6 +346,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.ViewModels
             int startDefinition,
             int endDefinition,
             bool isPhysicalDeletionEnabled,
+            string? inputBmsContent = null,
             IProgress<int>? progress = null,
             IEnumerable<string>? selectedKeywords = null)
         {

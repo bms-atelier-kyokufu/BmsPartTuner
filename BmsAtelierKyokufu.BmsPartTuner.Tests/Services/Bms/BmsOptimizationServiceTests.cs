@@ -554,6 +554,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Services.Bms
                 2,
                 false,
                 null,
+                null,
                 ["kick"]); // kickのみをフィルタ
 
             Assert.NotNull(result);

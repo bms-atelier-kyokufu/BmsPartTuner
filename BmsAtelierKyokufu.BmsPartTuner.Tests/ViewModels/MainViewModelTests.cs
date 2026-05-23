@@ -78,9 +78,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.ViewModels
                 // Under Strategy B, InputPath remains showing the original .bmson file path
                 Assert.Equal(bmsonPath, viewModel.InputPath);
 
-                // The output bms file should exist
-                var expectedBmsPath = Path.Combine(context.TempDirectory, "test_downconverted.bms");
-                Assert.True(File.Exists(expectedBmsPath));
+                // Instead of checking for a physical file (which is no longer created),
+                // we assert that the downconversion completed successfully.
+                Assert.Equal("準備完了", viewModel.StatusMessage);
             });
         }
 

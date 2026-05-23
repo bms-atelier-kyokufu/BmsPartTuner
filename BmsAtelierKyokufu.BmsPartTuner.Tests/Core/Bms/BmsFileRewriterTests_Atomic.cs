@@ -44,7 +44,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
                 // Then the move fails.
                 // The original file should be untouched.
 
-                Assert.Throws<IOException>(() => rewriter.WriteBmsFile(bmsPath, newContent));
+                Assert.Throws<IOException>(() => BmsFileRewriter.WriteBmsFile(bmsPath, newContent));
             }
 
             // 4. Verify content
@@ -68,7 +68,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
 
             var rewriter = new BmsFileRewriter([], new int[1], 0, 0);
 
-            rewriter.WriteBmsFile(bmsPath, content);
+            BmsFileRewriter.WriteBmsFile(bmsPath, content);
 
             Assert.True(File.Exists(bmsPath));
             string currentContent = File.ReadAllText(bmsPath, Encoding.GetEncoding("shift_jis"));
