@@ -1,4 +1,4 @@
-﻿# BMS Part Tuner: Test Strategy
+# BMS Part Tuner: Test Strategy
 
 ## Overview
 
@@ -14,15 +14,23 @@ Tests for supplementary UI features or simple property getters/setters have been
 
 ### The Test Pyramid
 
-```
-        /\
-       /  \      Integration Tests (Scenarios)
-      /____\     
-     /      \    Domain Logic (Core, Services)
-    /________\   
-   /          \  Utilities (Helpers, Converters)
-  /____________\ 
+```mermaid
+flowchart BT
+    %% Node definitions for each layer
+    Scenario["Integration Tests (Scenarios)<br>・Full scenario validation<br>・In-memory integration tests"]
+    Domain["Domain Logic (Core, Services)<br>・Core business logic<br>・File rewriting & optimization flows"]
+    Util["Utilities (Helpers, Converters)<br>・Pure functions like radix conversion/audio comparison<br>・Base validators"]
 
+    %% Bottom-up flow of integration and validation
+    Util -->|"Integrate base logic into dependencies"| Domain
+    Domain -->|"Validate scenarios by integrating features"| Scenario
+
+    %% Styling
+    classDef default fill:#FFFFFF,stroke:#1565C0,stroke-width:1px,color:#0D47A1;
+    classDef highlight fill:#E3F2FD,stroke:#0D47A1,stroke-width:2px,color:#0D47A1,font-weight:bold;
+    
+    class Util,Domain default;
+    class Scenario highlight;
 ```
 
 ## Mandatory Tests (Whitelist)
