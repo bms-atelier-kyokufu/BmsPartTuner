@@ -1,8 +1,7 @@
-﻿---
+---
 agent: 'agent'
 model: Claude Sonnet 4.5
-tools: [read, search]
-title: PRドラフトを生成
+name: PRドラフトを生成
 description: 指針に基づきファイル単位の論理的分析を行い、PRドラフトを生成します。
 ---
 

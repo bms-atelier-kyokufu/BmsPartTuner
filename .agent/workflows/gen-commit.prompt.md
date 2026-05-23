@@ -1,8 +1,7 @@
-﻿---
+---
 agent: 'agent'
 model: any
-tools: [read, search, terminal]
-title: 'コミットメッセージを生成'
+name: 'コミットメッセージを生成'
 description: ターミナルを自律操作し、変更内容を分析して論理的なコミットメッセージを作成します
 ---
 
@@ -73,3 +72,4 @@ git add path/to/file2.xaml
 
 削除事項:
 - [未使用コードの廃止等]
+```
