@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
 using BmsAtelierKyokufu.BmsPartTuner.Models;
 
@@ -20,7 +20,6 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
 
         public void Dispose()
         {
-            _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
             if (Directory.Exists(_tempDirectory))
             {
                 try
@@ -82,7 +81,6 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
         [Fact]
         public void PreloadAudioData_WithValidFile_LoadsData()
         {
-            _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
             string path = CreateDummyWav("valid.wav");
             BmsAudioFile wavFile = new()
             {
@@ -105,7 +103,6 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
         [Fact]
         public void PreloadAudioData_WithMissingFile_DoesNotCrash()
         {
-            _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
             string path = Path.Combine(_tempDirectory, "missing.wav");
             BmsAudioFile wavFile = new() { Name = path };
             List<BmsAudioFile> list = [wavFile];
@@ -121,7 +118,6 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
         [Fact]
         public void PreloadAudioData_WithCorruptFile_DoesNotCrash()
         {
-            _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
             string path = CreateDummyWav("corrupt.wav", isValid: false);
             BmsAudioFile wavFile = new() { Name = path, FileSize = new FileInfo(path).Length };
             List<BmsAudioFile> list = [wavFile];
@@ -137,7 +133,6 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
         [Fact]
         public void PreloadAudioData_WithZeroByteFile_DoesNotCrash()
         {
-            _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
             string path = Path.Combine(_tempDirectory, "empty.wav");
             File.Create(path).Dispose();
             BmsAudioFile wavFile = new() { Name = path, FileSize = 0 };
@@ -154,7 +149,6 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
         [Fact]
         public void PreloadAudioData_WithLockedFile_DoesNotCrash()
         {
-            _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
             string path = CreateDummyWav("locked.wav");
             BmsAudioFile wavFile = new() { Name = path, FileSize = new FileInfo(path).Length };
             List<BmsAudioFile> list = [wavFile];
@@ -172,7 +166,6 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
         [Fact]
         public void PreloadAudioData_ResourceManagement_VerifyHandlesClosed()
         {
-            _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
             string path = CreateDummyWav("resource_test.wav");
             BmsAudioFile wavFile = new() { Name = path, FileSize = new FileInfo(path).Length };
             List<BmsAudioFile> list = [wavFile];

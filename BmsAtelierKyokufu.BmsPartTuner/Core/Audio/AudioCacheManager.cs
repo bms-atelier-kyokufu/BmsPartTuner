@@ -100,10 +100,7 @@ internal static class AudioCacheManager
             MaxDegreeOfParallelism = Environment.ProcessorCount
         }, batch =>
         {
-            int batchSuccess = 0;
-            int batchFail = 0;
-
-            LoadBatch(batch, ref loaded, ref batchSuccess, ref batchFail, normalizationMode, failedFiles, audioCache);
+            var (batchSuccess, batchFail) = LoadBatch(batch, normalizationMode, failedFiles, audioCache);
 
             System.Threading.Interlocked.Add(ref successCount, batchSuccess);
             System.Threading.Interlocked.Add(ref failCount, batchFail);
@@ -121,6 +118,7 @@ internal static class AudioCacheManager
 
         sw.Stop();
 
+        loaded = successCount + failCount;
         LogCacheStatistics(fileList, audioCache, loaded, totalFiles, successCount, failCount, sw.ElapsedMilliseconds);
 
         return (failedFiles.ToList(), audioCache);
@@ -178,31 +176,30 @@ internal static class AudioCacheManager
     /// <remarks>
     /// バッチ間は並列、バッチ内は順次でディスク負荷を制御します。
     /// </remarks>
-    private static void LoadBatch(
+    private static (int SuccessCount, int FailCount) LoadBatch(
         IReadOnlyList<BmsAudioFile> batch,
-        ref int loaded,
-        ref int successCount,
-        ref int failCount,
         Models.NormalizationMode normalizationMode,
         System.Collections.Concurrent.ConcurrentBag<string> failedFiles,
         System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData> audioCache)
     {
+        int success = 0;
+        int fail = 0;
         foreach (var file in batch)
         {
             try
             {
                 var cachedData = new CachedSoundData(file.Name, normalizationMode);
                 audioCache[file.Name] = cachedData;
-                System.Threading.Interlocked.Increment(ref loaded);
-                System.Threading.Interlocked.Increment(ref successCount);
+                success++;
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"[AudioCacheManager] Exception loading {Path.GetFileName(file.Name)}: {ex.Message}");
-                System.Threading.Interlocked.Increment(ref failCount);
+                fail++;
                 failedFiles.Add(file.Name);
             }
         }
+        return (success, fail);
     }
 
     /// <summary>
