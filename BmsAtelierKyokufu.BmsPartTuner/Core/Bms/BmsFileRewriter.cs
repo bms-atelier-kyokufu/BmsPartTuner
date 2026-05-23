@@ -145,7 +145,7 @@ internal partial class BmsFileRewriter(
             }
             File.Move(tempFileName, saveFileName);
 
-            PerfDebugLogger.WriteLine($"BMS file written atomically: {saveFileName}");
+            PerformanceDebugLogger.WriteLine($"BMS file written atomically: {saveFileName}");
         }
         catch (IOException)
         {
@@ -162,11 +162,11 @@ internal partial class BmsFileRewriter(
                     if (originalExists)
                     {
                         File.Delete(tempFileName);
-                        PerfDebugLogger.WriteLine($"Cleanup: Incomplete temp file deleted: {tempFileName}");
+                        PerformanceDebugLogger.WriteLine($"Cleanup: Incomplete temp file deleted: {tempFileName}");
                     }
                     else
                     {
-                        PerfDebugLogger.WriteLine($"CRITICAL WARNING: Original file lost, keeping temp file for recovery: {tempFileName}");
+                        PerformanceDebugLogger.WriteLine($"CRITICAL WARNING: Original file lost, keeping temp file for recovery: {tempFileName}");
                     }
                 }
             }
@@ -184,7 +184,7 @@ internal partial class BmsFileRewriter(
                 if (File.Exists(tempFileName))
                 {
                     File.Delete(tempFileName);
-                    PerfDebugLogger.WriteLine($"Cleanup: Temp file deleted due to access denied: {tempFileName}");
+                    PerformanceDebugLogger.WriteLine($"Cleanup: Temp file deleted due to access denied: {tempFileName}");
                 }
             }
             catch
@@ -425,8 +425,8 @@ internal partial class BmsFileRewriter(
         // 未定義参照があればワーニングログを出力
         if (undefinedReferences.Count > 0)
         {
-            PerfDebugLogger.WriteLine($"[BmsFileRewriter] WARNING: Found undefined WAV references in {Path.GetFileName(bmsFileName)}: {string.Join(", ", undefinedReferences)}");
-            PerfDebugLogger.WriteLine($"[BmsFileRewriter] These references were preserved as-is (non-destructive policy)");
+            PerformanceDebugLogger.WriteLine($"[BmsFileRewriter] WARNING: Found undefined WAV references in {Path.GetFileName(bmsFileName)}: {string.Join(", ", undefinedReferences)}");
+            PerformanceDebugLogger.WriteLine($"[BmsFileRewriter] These references were preserved as-is (non-destructive policy)");
         }
 
         return sb.ToString();

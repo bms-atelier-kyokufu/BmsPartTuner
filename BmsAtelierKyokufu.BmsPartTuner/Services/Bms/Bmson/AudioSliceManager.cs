@@ -34,6 +34,7 @@ public class AudioSliceManager(string bmsonDir, bool throwOnMissingFile = true) 
 
         var lazyVal = _sliceCache.GetOrAdd(cacheKey, key => new Lazy<string>(() =>
         {
+            var timer = PerformanceDebugLogger.StartTimer();
             var source = _sourceCache.GetOrAdd(sourceFileName, name =>
             {
                 string sourcePath = Path.Combine(_bmsonDir, name);
@@ -47,6 +48,7 @@ public class AudioSliceManager(string bmsonDir, bool throwOnMissingFile = true) 
                 }
                 return new CachedAudioSource(sourcePath);
             });
+            timer.Lap("SourceGet");
 
             if (source == null) return string.Empty;
 
@@ -103,17 +105,22 @@ public class AudioSliceManager(string bmsonDir, bool throwOnMissingFile = true) 
                     Take = TimeSpan.FromSeconds(actualDuration)
                 };
 
+                timer.Lap("ProviderSetup");
+
                 // 16bit PCMとしてメモリに書き出し
                 var provider16 = new SampleToWaveProvider16(cutProvider);
                 using var ms = new MemoryStream();
                 WaveFileWriter.WriteWavFileToStream(ms, provider16);
+                timer.Lap("WriteWav");
+
                 Core.Audio.VirtualAudioRegistry.AddFile(outputFileName, ms.ToArray());
+                timer.Lap("Registry");
 
                 return outputFileName;
             }
             catch (Exception ex)
             {
-                PerfDebugLogger.WriteLine($"[AudioSliceManager] スライス失敗: {sourceFileName} ({ex.Message})");
+                PerformanceDebugLogger.WriteLine($"[AudioSliceManager] スライス失敗: {sourceFileName} ({ex.Message})");
                 return string.Empty;
             }
         }));
@@ -143,7 +150,7 @@ public class AudioSliceManager(string bmsonDir, bool throwOnMissingFile = true) 
 
         public CachedAudioSource(string path)
         {
-            var sw = System.Diagnostics.Stopwatch.StartNew();
+            var timer = PerformanceDebugLogger.StartTimer();
             WaveStream reader;
             if (path.EndsWith(".ogg", StringComparison.OrdinalIgnoreCase))
             {
@@ -176,7 +183,7 @@ public class AudioSliceManager(string bmsonDir, bool throwOnMissingFile = true) 
                 }
                 Samples = samplesList;
             }
-            PerfDebugLogger.WriteLine($"    [CachedAudioSource] Loaded {Path.GetFileName(path)}: {sw.ElapsedMilliseconds} ms");
+            timer.Lap("CachedAudioSource Load");
         }
     }
 

@@ -140,7 +140,7 @@ internal class ParallelAudioComparisonEngine(
             CancellationToken = cancellationToken
         };
 
-        var sw = Stopwatch.StartNew();
+        var timer = PerformanceDebugLogger.StartTimer();
 
         try
         {
@@ -166,12 +166,11 @@ internal class ParallelAudioComparisonEngine(
         }
         catch (OperationCanceledException)
         {
-            PerfDebugLogger.WriteLine("=== CompareGroups Cancelled ===");
+            PerformanceDebugLogger.WriteLine("=== CompareGroups Cancelled ===");
             throw;
         }
 
-        sw.Stop();
-        PerfDebugLogger.WriteLine($"=== CompareGroups Complete: {totalComparisons} comparisons, {sw.ElapsedMilliseconds}ms ===");
+        PerformanceDebugLogger.WriteLine($"=== CompareGroups Complete: {totalComparisons} comparisons, {timer.Lap("CompareGroups")}ms ===");
     }
 
     #endregion

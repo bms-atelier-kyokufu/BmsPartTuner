@@ -116,12 +116,12 @@ internal partial class BmsManager(string bmsFilePath, string? bmsContent = null)
         }
         catch (ArgumentException ex)
         {
-            PerfDebugLogger.WriteLine($"[BmsManager] Encoding Error: {ex.Message}");
+            PerformanceDebugLogger.WriteLine($"[BmsManager] Encoding Error: {ex.Message}");
             throw;
         }
         catch (Exception ex)
         {
-            PerfDebugLogger.WriteLine($"[BmsManager] Parse Error in file '{Path.GetFileName(_bmsFilePath)}': {ex.Message}");
+            PerformanceDebugLogger.WriteLine($"[BmsManager] Parse Error in file '{Path.GetFileName(_bmsFilePath)}': {ex.Message}");
         }
 
         return definitions;

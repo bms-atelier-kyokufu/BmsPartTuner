@@ -53,34 +53,32 @@ public class BmsScoreGenerator(
 
     public string GenerateBmsText()
     {
-        PerfDebugLogger.WriteLine("  [BmsScoreGenerator] Start GenerateBmsText");
-        var sw = System.Diagnostics.Stopwatch.StartNew();
+        PerformanceDebugLogger.ClearAccumulated();
+        PerformanceDebugLogger.WriteLine("  [BmsScoreGenerator] Start GenerateBmsText");
+        var timer = PerformanceDebugLogger.StartTimer();
 
-        // 0. Y座標データの事前計算 (次元の分離)
+        // 0. Y座標データの事前計算 (次元 of 分離)
         PrecalculateYPositions();
-        PerfDebugLogger.WriteLine($"  [BmsScoreGenerator] PrecalculateYPositions: {sw.ElapsedMilliseconds} ms");
+        PerformanceDebugLogger.WriteLine($"  [BmsScoreGenerator] PrecalculateYPositions: {timer.Lap("PrecalculateYPositions")} ms");
 
         // 1. Pre-pass slicing to determine exact number of unique definitions needed
-        sw.Restart();
         PreSliceAudio();
         int uniqueSlices = _audioSliceManager.GetGeneratedSliceCount();
-        PerfDebugLogger.WriteLine($"  [BmsScoreGenerator] PreSliceAudio (uniqueSlices={uniqueSlices}): {sw.ElapsedMilliseconds} ms");
+        PerformanceDebugLogger.WriteLine($"  [BmsScoreGenerator] PreSliceAudio (uniqueSlices={uniqueSlices}): {timer.Lap("PreSliceAudio")} ms");
+        PerformanceDebugLogger.PrintAccumulated("    [AudioSliceManager Metrics]");
 
         // 2. Choose optimal radix
         _radix = uniqueSlices <= AppConstants.Definition.MaxNumberBase36 ? AppConstants.Definition.RadixBase36 : AppConstants.Definition.RadixBase62;
 
-        sw.Restart();
         ProcessSoundChannels();
-        PerfDebugLogger.WriteLine($"  [BmsScoreGenerator] ProcessSoundChannels: {sw.ElapsedMilliseconds} ms");
+        PerformanceDebugLogger.WriteLine($"  [BmsScoreGenerator] ProcessSoundChannels: {timer.Lap("ProcessSoundChannels")} ms");
 
-        sw.Restart();
         ProcessBpmEvents();
         ProcessStopEvents();
         ProcessBgaEvents();
         ProcessMeasureLengths();
-        PerfDebugLogger.WriteLine($"  [BmsScoreGenerator] Other events processing: {sw.ElapsedMilliseconds} ms");
+        PerformanceDebugLogger.WriteLine($"  [BmsScoreGenerator] Other events processing: {timer.Lap("OtherEventsProcessing")} ms");
 
-        sw.Restart();
         var sb = new StringBuilder();
 
         // 1. ヘッダー出力
@@ -92,7 +90,7 @@ public class BmsScoreGenerator(
         // 3. データブロック出力
         WriteDataBlocks(sb);
 
-        PerfDebugLogger.WriteLine($"  [BmsScoreGenerator] StringBuilder formatting: {sw.ElapsedMilliseconds} ms");
+        PerformanceDebugLogger.WriteLine($"  [BmsScoreGenerator] StringBuilder formatting: {timer.Lap("StringBuilderFormatting")} ms");
         return sb.ToString();
     }
 

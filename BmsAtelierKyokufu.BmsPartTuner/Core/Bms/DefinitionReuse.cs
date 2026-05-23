@@ -112,9 +112,8 @@ public class DefinitionReuse
         Models.NormalizationMode normalizationMode = Models.NormalizationMode.None,
         IEnumerable<string>? selectedKeywords = null)
     {
-        PerfDebugLogger.WriteLine("=== DefinitionReuse.ReductDefinition Started ===");
-        var sw = Stopwatch.StartNew();
-        var swPhase = Stopwatch.StartNew();
+        var timerTotal = PerformanceDebugLogger.StartTimer();
+        var timer = PerformanceDebugLogger.StartTimer();
         progress.Report(0);
 
         _rangeManager.DetermineProcessingRange(defStart, defEnd);
@@ -123,46 +122,40 @@ public class DefinitionReuse
         // Why: コンストラクタ時点では範囲が未確定(0-0)のため、正しい範囲で作り直す必要がある
         _statistics = new DefinitionStatistics(_fileList, _replaces,
             _rangeManager.StartPoint, _rangeManager.EndPoint);
-        PerfDebugLogger.WriteLine($"  [ReductDefinition] DetermineProcessingRange: {swPhase.ElapsedMilliseconds} ms");
+        PerformanceDebugLogger.WriteLine($"  [ReductDefinition] DetermineProcessingRange: {timer.Lap("DetermineProcessingRange")} ms");
 
-        swPhase.Restart();
         var (_, loadedCache) = AudioCacheManager.PreloadAudioData(_fileList, progress, normalizationMode);
         _audioCache = loadedCache;
-        PerfDebugLogger.WriteLine($"  [ReductDefinition] PreloadAudioData: {swPhase.ElapsedMilliseconds} ms");
+        PerformanceDebugLogger.WriteLine($"  [ReductDefinition] PreloadAudioData: {timer.Lap("PreloadAudioData")} ms");
         progress.Report(AppConstants.Progress.PreloadComplete);
 
-        swPhase.Restart();
         CreateReplaceTable(progress, r2Val, selectedKeywords);
-        PerfDebugLogger.WriteLine($"  [ReductDefinition] CreateReplaceTable: {swPhase.ElapsedMilliseconds} ms");
+        PerformanceDebugLogger.WriteLine($"  [ReductDefinition] CreateReplaceTable: {timer.Lap("CreateReplaceTable")} ms");
         progress.Report(AppConstants.Progress.ComparisonComplete);
 
-        swPhase.Restart();
         _rewriter = new BmsFileRewriter(_fileList, _replaces,
             _rangeManager.StartPoint, _rangeManager.EndPoint, _inputBmsContent);
         var writeData = _rewriter.ReplaceAndAlignBmsFile(bmsFileName);
-        PerfDebugLogger.WriteLine($"  [ReductDefinition] ReplaceAndAlignBmsFile: {swPhase.ElapsedMilliseconds} ms");
+        PerformanceDebugLogger.WriteLine($"  [ReductDefinition] ReplaceAndAlignBmsFile: {timer.Lap("ReplaceAndAlignBmsFile")} ms");
         progress.Report(AppConstants.Progress.RewriteComplete);
 
-        swPhase.Restart();
         BmsFileRewriter.WriteBmsFile(saveFileName, writeData);
-        PerfDebugLogger.WriteLine($"  [ReductDefinition] WriteBmsFile to disk: {swPhase.ElapsedMilliseconds} ms");
+        PerformanceDebugLogger.WriteLine($"  [ReductDefinition] WriteBmsFile to disk: {timer.Lap("WriteBmsFile to disk")} ms");
 
-        swPhase.Restart();
         // メモリ上のスライスを物理ディスクに書き出す
         FlushMemorySlicesToDisk(saveFileName);
-        PerfDebugLogger.WriteLine($"  [ReductDefinition] FlushMemorySlicesToDisk: {swPhase.ElapsedMilliseconds} ms");
+        PerformanceDebugLogger.WriteLine($"  [ReductDefinition] FlushMemorySlicesToDisk: {timer.Lap("FlushMemorySlicesToDisk")} ms");
 
         if (isPhysicalDeletionEnabled)
         {
-            swPhase.Restart();
             PerformPhysicalDeletion();
-            PerfDebugLogger.WriteLine($"  [ReductDefinition] PerformPhysicalDeletion: {swPhase.ElapsedMilliseconds} ms");
+            PerformanceDebugLogger.WriteLine($"  [ReductDefinition] PerformPhysicalDeletion: {timer.Lap("PerformPhysicalDeletion")} ms");
         }
 
         progress.Report(AppConstants.Progress.Complete);
 
-        sw.Stop();
-        PerfDebugLogger.WriteLine($"=== DefinitionReuse completed in {sw.ElapsedMilliseconds} ms ({sw.ElapsedMilliseconds / 1000.0:F2}s) ===");
+        long totalElapsed = timerTotal.Lap("Total");
+        PerformanceDebugLogger.WriteLine($"=== DefinitionReuse completed in {totalElapsed} ms ({totalElapsed / 1000.0:F2}s) ===");
 
         _statistics.LogStatistics();
     }
@@ -189,7 +182,7 @@ public class DefinitionReuse
         if (_rewriter == null) return;
 
         var unusedFiles = _fileList.Except(_rewriter.KeptFiles).ToList();
-        PerfDebugLogger.WriteLine($"=== Physical Deletion: {unusedFiles.Count} files to delete ===");
+        PerformanceDebugLogger.WriteLine($"=== Physical Deletion: {unusedFiles.Count} files to delete ===");
 
         int deletedCount = 0;
         foreach (var file in unusedFiles)
@@ -200,15 +193,15 @@ public class DefinitionReuse
                 {
                     File.Delete(file.Name);
                     deletedCount++;
-                    PerfDebugLogger.WriteLine($"Deleted: {file.Name}");
+                    PerformanceDebugLogger.WriteLine($"Deleted: {file.Name}");
                 }
             }
             catch (Exception ex)
             {
-                PerfDebugLogger.WriteLine($"Failed to delete {file.Name}: {ex.Message}");
+                PerformanceDebugLogger.WriteLine($"Failed to delete {file.Name}: {ex.Message}");
             }
         }
-        PerfDebugLogger.WriteLine($"=== Physical Deletion Complete: {deletedCount}/{unusedFiles.Count} files deleted ===");
+        PerformanceDebugLogger.WriteLine($"=== Physical Deletion Complete: {deletedCount}/{unusedFiles.Count} files deleted ===");
     }
 
     /// <summary>
@@ -281,14 +274,13 @@ public class DefinitionReuse
     private void CreateReplaceTable(IProgress<int> progress, float r2val,
         IEnumerable<string>? selectedKeywords)
     {
-        var sw = Stopwatch.StartNew();
+        var timer = PerformanceDebugLogger.StartTimer();
         var groups = AudioFileGroupingStrategy.GroupFiles(_audioCache, _fileList, _rangeManager.StartPoint, _rangeManager.EndPoint, selectedKeywords);
-        PerfDebugLogger.WriteLine($"    [CreateReplaceTable] GroupFiles (groups={groups.Count}): {sw.ElapsedMilliseconds} ms");
+        PerformanceDebugLogger.WriteLine($"    [CreateReplaceTable] GroupFiles (groups={groups.Count}): {timer.Lap("GroupFiles")} ms");
 
-        sw.Restart();
         var comparisonEngine = new ParallelAudioComparisonEngine(_fileList, _audioCache, _replaces, _rangeManager.StartPoint, _rangeManager.EndPoint);
         comparisonEngine.CompareGroups(groups, r2val, progress);
-        PerfDebugLogger.WriteLine($"    [CreateReplaceTable] CompareGroups: {sw.ElapsedMilliseconds} ms");
+        PerformanceDebugLogger.WriteLine($"    [CreateReplaceTable] CompareGroups: {timer.Lap("CompareGroups")} ms");
     }
 
     #endregion

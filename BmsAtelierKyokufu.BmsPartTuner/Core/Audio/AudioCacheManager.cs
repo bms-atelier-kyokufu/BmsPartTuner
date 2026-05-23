@@ -68,9 +68,9 @@ internal static class AudioCacheManager
         IProgress<int>? progress,
         Models.NormalizationMode normalizationMode = Models.NormalizationMode.None)
     {
-        PerfDebugLogger.WriteLine($"=== PreloadAudioData Start ===");
-        PerfDebugLogger.WriteLine($"Total files to preload: {fileList.Count}");
-        PerfDebugLogger.WriteLine($"Normalization mode: {normalizationMode}");
+        PerformanceDebugLogger.WriteLine($"=== PreloadAudioData Start ===");
+        PerformanceDebugLogger.WriteLine($"Total files to preload: {fileList.Count}");
+        PerformanceDebugLogger.WriteLine($"Normalization mode: {normalizationMode}");
 
         int loaded = 0;
         int totalFiles = fileList.Count;
@@ -81,7 +81,7 @@ internal static class AudioCacheManager
 
         if (totalFiles == 0)
         {
-            PerfDebugLogger.WriteLine("WARNING: No files to preload");
+            PerformanceDebugLogger.WriteLine("WARNING: No files to preload");
             progress?.Report(AppConstants.Progress.PreloadComplete);
             return (new List<string>(), audioCache);
         }
@@ -89,37 +89,35 @@ internal static class AudioCacheManager
         int batchSize = CalculateOptimalBatchSize(totalFiles);
         var batches = CreateBatches(fileList, batchSize);
 
-        PerfDebugLogger.WriteLine($"Preloading {totalFiles} files in {batches.Count} batches (batch size: ~{batchSize})");
+        PerformanceDebugLogger.WriteLine($"Preloading {totalFiles} files in {batches.Count} batches (batch size: ~{batchSize})");
 
-        var sw = Stopwatch.StartNew();
+        var timer = PerformanceDebugLogger.StartTimer();
 
         int completedBatches = 0;
 
-        Parallel.ForEach(batches, new ParallelOptions
+        _ = Parallel.ForEach(batches, new ParallelOptions
         {
             MaxDegreeOfParallelism = Environment.ProcessorCount
         }, batch =>
         {
             var (batchSuccess, batchFail) = LoadBatch(batch, normalizationMode, failedFiles, audioCache);
 
-            System.Threading.Interlocked.Add(ref successCount, batchSuccess);
-            System.Threading.Interlocked.Add(ref failCount, batchFail);
+            Interlocked.Add(ref successCount, batchSuccess);
+            Interlocked.Add(ref failCount, batchFail);
 
-            int currentBatch = System.Threading.Interlocked.Increment(ref completedBatches);
+            int currentBatch = Interlocked.Increment(ref completedBatches);
 
             if (currentBatch % 5 == 0 || currentBatch == batches.Count)
             {
-                PerfDebugLogger.WriteLine($"Batch progress: {currentBatch}/{batches.Count} (Success: {successCount}, Fail: {failCount})");
+                PerformanceDebugLogger.WriteLine($"Batch progress: {currentBatch}/{batches.Count} (Success: {successCount}, Fail: {failCount})");
             }
 
             int percentage = (int)((float)currentBatch / batches.Count * AppConstants.Progress.PreloadComplete);
             progress?.Report(percentage);
         });
 
-        sw.Stop();
-
         loaded = successCount + failCount;
-        LogCacheStatistics(fileList, audioCache, loaded, totalFiles, successCount, failCount, sw.ElapsedMilliseconds);
+        LogCacheStatistics(fileList, audioCache, loaded, totalFiles, successCount, failCount, timer.Lap("AudioCacheManager.PreloadAudioData"));
 
         return (failedFiles.ToList(), audioCache);
     }
@@ -194,7 +192,7 @@ internal static class AudioCacheManager
             }
             catch (Exception ex)
             {
-                PerfDebugLogger.WriteLine($"[AudioCacheManager] Exception loading {Path.GetFileName(file.Name)}: {ex.Message}");
+                PerformanceDebugLogger.WriteLine($"[AudioCacheManager] Exception loading {Path.GetFileName(file.Name)}: {ex.Message}");
                 fail++;
                 failedFiles.Add(file.Name);
             }
@@ -238,22 +236,22 @@ internal static class AudioCacheManager
             }
         }
 
-        PerfDebugLogger.WriteLine($"=== PreloadAudioData Complete ===");
-        PerfDebugLogger.WriteLine($"Preload completed: {loaded}/{totalFiles} files processed");
-        PerfDebugLogger.WriteLine($"Success: {successCount}, Failed: {failCount}");
-        PerfDebugLogger.WriteLine($"Actual cached count: {cachedCount}");
-        PerfDebugLogger.WriteLine($"Cache success rate: {(totalFiles > 0 ? (double)cachedCount / totalFiles * 100 : 0):F1}%");
-        PerfDebugLogger.WriteLine($"Total cached memory: {totalMemoryMB:F2} MB");
-        PerfDebugLogger.WriteLine($"Load time: {elapsedMs} ms");
-        PerfDebugLogger.WriteLine($"Throughput: {(elapsedMs > 0 ? (double)loaded / elapsedMs * 1000 : 0):F1} files/sec");
+        PerformanceDebugLogger.WriteLine($"=== PreloadAudioData Complete ===");
+        PerformanceDebugLogger.WriteLine($"Preload completed: {loaded}/{totalFiles} files processed");
+        PerformanceDebugLogger.WriteLine($"Success: {successCount}, Failed: {failCount}");
+        PerformanceDebugLogger.WriteLine($"Actual cached count: {cachedCount}");
+        PerformanceDebugLogger.WriteLine($"Cache success rate: {(totalFiles > 0 ? (double)cachedCount / totalFiles * 100 : 0):F1}%");
+        PerformanceDebugLogger.WriteLine($"Total cached memory: {totalMemoryMB:F2} MB");
+        PerformanceDebugLogger.WriteLine($"Load time: {elapsedMs} ms");
+        PerformanceDebugLogger.WriteLine($"Throughput: {(elapsedMs > 0 ? (double)loaded / elapsedMs * 1000 : 0):F1} files/sec");
 
         if (cachedCount == 0)
         {
-            PerfDebugLogger.WriteLine("CRITICAL ERROR: No audio data cached! This will cause 0% reduction rate.");
+            PerformanceDebugLogger.WriteLine("CRITICAL ERROR: No audio data cached! This will cause 0% reduction rate.");
         }
         else if (cachedCount < totalFiles * 0.9)
         {
-            PerfDebugLogger.WriteLine($"WARNING: Only {(double)cachedCount / totalFiles * 100:F1}% of files cached successfully");
+            PerformanceDebugLogger.WriteLine($"WARNING: Only {(double)cachedCount / totalFiles * 100:F1}% of files cached successfully");
         }
     }
 }

@@ -58,42 +58,42 @@ public class UpdateService : IDisposable
     {
         try
         {
-            PerfDebugLogger.WriteLine("=== Checking for updates ===");
+            PerformanceDebugLogger.WriteLine("=== Checking for updates ===");
 
             Version? currentVersion = Assembly.GetExecutingAssembly().GetName().Version;
-            PerfDebugLogger.WriteLine($"Current version: {currentVersion}");
+            PerformanceDebugLogger.WriteLine($"Current version: {currentVersion}");
 
             GitHubRelease? releaseInfo = await GetLatestReleaseInfoAsync();
             if (releaseInfo == null)
             {
-                PerfDebugLogger.WriteLine("Failed to get release info");
+                PerformanceDebugLogger.WriteLine("Failed to get release info");
                 return;
             }
 
             Version? latestVersion = ParseVersion(releaseInfo.TagName);
             if (latestVersion == null)
             {
-                PerfDebugLogger.WriteLine($"Failed to parse version from tag: {releaseInfo.TagName}");
+                PerformanceDebugLogger.WriteLine($"Failed to parse version from tag: {releaseInfo.TagName}");
                 return;
             }
 
-            PerfDebugLogger.WriteLine($"Latest version: {latestVersion}");
+            PerformanceDebugLogger.WriteLine($"Latest version: {latestVersion}");
 
             if (currentVersion != null && latestVersion > currentVersion)
             {
                 AvailableVersion = latestVersion;
-                PerfDebugLogger.WriteLine($"New version available: {latestVersion}");
+                PerformanceDebugLogger.WriteLine($"New version available: {latestVersion}");
 
                 await DownloadInstallerAsync(releaseInfo);
             }
             else
             {
-                PerfDebugLogger.WriteLine("Already up to date");
+                PerformanceDebugLogger.WriteLine("Already up to date");
             }
         }
         catch (Exception ex)
         {
-            PerfDebugLogger.WriteLine($"Update check failed: {ex.Message}");
+            PerformanceDebugLogger.WriteLine($"Update check failed: {ex.Message}");
         }
     }
 
@@ -107,7 +107,7 @@ public class UpdateService : IDisposable
             HttpResponseMessage response = await _httpClient.GetAsync(GitHubApiUrl);
             if (!response.IsSuccessStatusCode)
             {
-                PerfDebugLogger.WriteLine($"GitHub API returned {response.StatusCode}");
+                PerformanceDebugLogger.WriteLine($"GitHub API returned {response.StatusCode}");
                 return null;
             }
 
@@ -120,7 +120,7 @@ public class UpdateService : IDisposable
         }
         catch (Exception ex)
         {
-            PerfDebugLogger.WriteLine($"Failed to fetch release info: {ex.Message}");
+            PerformanceDebugLogger.WriteLine($"Failed to fetch release info: {ex.Message}");
             return null;
         }
     }
@@ -138,13 +138,13 @@ public class UpdateService : IDisposable
 
         if (installerAsset?.Name == null || string.IsNullOrEmpty(installerAsset.BrowserDownloadUrl))
         {
-            PerfDebugLogger.WriteLine("No installer asset found in release");
+            PerformanceDebugLogger.WriteLine("No installer asset found in release");
             return;
         }
 
         try
         {
-            PerfDebugLogger.WriteLine($"Downloading installer: {installerAsset.Name}");
+            PerformanceDebugLogger.WriteLine($"Downloading installer: {installerAsset.Name}");
 
             string tempPath = Path.Combine(Path.GetTempPath(), installerAsset.Name);
 
@@ -155,11 +155,11 @@ public class UpdateService : IDisposable
             await response.Content.CopyToAsync(fileStream);
 
             _updateInstallerPath = tempPath;
-            PerfDebugLogger.WriteLine($"Installer downloaded to: {tempPath}");
+            PerformanceDebugLogger.WriteLine($"Installer downloaded to: {tempPath}");
         }
         catch (Exception ex)
         {
-            PerfDebugLogger.WriteLine($"Failed to download installer: {ex.Message}");
+            PerformanceDebugLogger.WriteLine($"Failed to download installer: {ex.Message}");
         }
     }
 
@@ -174,13 +174,13 @@ public class UpdateService : IDisposable
     {
         if (!IsUpdateReady)
         {
-            PerfDebugLogger.WriteLine("No update ready to install");
+            PerformanceDebugLogger.WriteLine("No update ready to install");
             return;
         }
 
         try
         {
-            PerfDebugLogger.WriteLine($"Launching installer: {_updateInstallerPath}");
+            PerformanceDebugLogger.WriteLine($"Launching installer: {_updateInstallerPath}");
             Process.Start(new ProcessStartInfo
             {
                 FileName = _updateInstallerPath,
@@ -189,7 +189,7 @@ public class UpdateService : IDisposable
         }
         catch (Exception ex)
         {
-            PerfDebugLogger.WriteLine($"Failed to launch installer: {ex.Message}");
+            PerformanceDebugLogger.WriteLine($"Failed to launch installer: {ex.Message}");
         }
     }
 

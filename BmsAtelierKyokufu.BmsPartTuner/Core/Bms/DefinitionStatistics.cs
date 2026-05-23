@@ -52,12 +52,12 @@ internal class DefinitionStatistics(
     {
         var stats = CalculateStatistics();
 
-        PerfDebugLogger.WriteLine($"=== Statistics ===");
-        PerfDebugLogger.WriteLine($"Processing range: {_startPoint} - {_endPoint}");
-        PerfDebugLogger.WriteLine($"Total definitions: {stats.TotalDefinitions}");
-        PerfDebugLogger.WriteLine($"Unique files: {stats.UniqueFiles}");
-        PerfDebugLogger.WriteLine($"Replaced: {stats.ReplacedFiles}");
-        PerfDebugLogger.WriteLine($"Reduction rate: {stats.ReductionRate:F1}%");
+        PerformanceDebugLogger.WriteLine($"=== Statistics ===");
+        PerformanceDebugLogger.WriteLine($"Processing range: {_startPoint} - {_endPoint}");
+        PerformanceDebugLogger.WriteLine($"Total definitions: {stats.TotalDefinitions}");
+        PerformanceDebugLogger.WriteLine($"Unique files: {stats.UniqueFiles}");
+        PerformanceDebugLogger.WriteLine($"Replaced: {stats.ReplacedFiles}");
+        PerformanceDebugLogger.WriteLine($"Reduction rate: {stats.ReductionRate:F1}%");
     }
 
     /// <summary>
@@ -80,11 +80,11 @@ internal class DefinitionStatistics(
     {
         var stats = CalculateStatistics();
 
-        PerfDebugLogger.WriteLine($"=== GetUniqueFileCount Detail ===");
-        PerfDebugLogger.WriteLine($"  Total in range: {stats.TotalInRange}");
-        PerfDebugLogger.WriteLine($"  Unique (self-ref): {stats.UniqueFiles}");
-        PerfDebugLogger.WriteLine($"  Not processed (==0): {stats.NotProcessed}");
-        PerfDebugLogger.WriteLine($"  Processed (>0): {stats.Processed}");
+        PerformanceDebugLogger.WriteLine($"=== GetUniqueFileCount Detail ===");
+        PerformanceDebugLogger.WriteLine($"  Total in range: {stats.TotalInRange}");
+        PerformanceDebugLogger.WriteLine($"  Unique (self-ref): {stats.UniqueFiles}");
+        PerformanceDebugLogger.WriteLine($"  Not processed (==0): {stats.NotProcessed}");
+        PerformanceDebugLogger.WriteLine($"  Processed (>0): {stats.Processed}");
 
         return stats.UniqueFiles;
     }

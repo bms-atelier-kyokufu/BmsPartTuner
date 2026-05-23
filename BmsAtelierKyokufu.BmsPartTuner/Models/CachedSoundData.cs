@@ -337,7 +337,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Models
 
                         if (read == 0)
                         {
-                            PerfDebugLogger.WriteLine($"[CachedSoundData] WARNING: Read returned 0 at {totalRead}/{totalSamples} for {Path.GetFileName(path)}");
+                            PerformanceDebugLogger.WriteLine($"[CachedSoundData] WARNING: Read returned 0 at {totalRead}/{totalSamples} for {Path.GetFileName(path)}");
                             break;
                         }
 
@@ -382,7 +382,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Models
             }
             catch (Exception ex)
             {
-                PerfDebugLogger.WriteLine($"[CachedSoundData] ERROR loading {Path.GetFileName(path)}: {ex.Message}");
+                PerformanceDebugLogger.WriteLine($"[CachedSoundData] ERROR loading {Path.GetFileName(path)}: {ex.Message}");
                 throw new InvalidOperationException($"音声ファイルの読み込みに失敗: {path}", ex);
             }
         }

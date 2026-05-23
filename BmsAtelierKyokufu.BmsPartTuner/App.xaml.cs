@@ -209,7 +209,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner
             }
             catch (Exception ex)
             {
-                PerfDebugLogger.WriteLine($"ホストの停止中にエラーが発生しました: {ex}");
+                PerformanceDebugLogger.WriteLine($"ホストの停止中にエラーが発生しました: {ex}");
             }
             finally
             {

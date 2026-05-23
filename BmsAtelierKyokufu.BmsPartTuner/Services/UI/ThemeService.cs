@@ -35,7 +35,7 @@ public class ThemeService
         {
             var mergedDictionaries = Application.Current.Resources.MergedDictionaries;
 
-            PerfDebugLogger.WriteLine($"テーマ切り替え開始: {(isDark ? "Dark" : "Light")}");
+            PerformanceDebugLogger.WriteLine($"テーマ切り替え開始: {(isDark ? "Dark" : "Light")}");
 
             // 新しいテーマを読み込む
             var newTheme = new ResourceDictionary { Source = new Uri(themePath, UriKind.Relative) };
@@ -71,12 +71,12 @@ public class ThemeService
 
             ThemeChanged?.Invoke(this, isDark);
 
-            PerfDebugLogger.WriteLine($"テーマを適用しました: {(isDark ? "Dark" : "Light")}");
+            PerformanceDebugLogger.WriteLine($"テーマを適用しました: {(isDark ? "Dark" : "Light")}");
         }
         catch (Exception ex)
         {
-            PerfDebugLogger.WriteLine($"テーマの適用に失敗しました: {ex.Message}");
-            PerfDebugLogger.WriteLine(ex.StackTrace);
+            PerformanceDebugLogger.WriteLine($"テーマの適用に失敗しました: {ex.Message}");
+            PerformanceDebugLogger.WriteLine(ex.StackTrace);
         }
     }
 
@@ -93,7 +93,7 @@ public class ThemeService
         }
         catch (Exception ex)
         {
-            PerfDebugLogger.WriteLine($"システムテーマの読み取りエラー: {ex}");
+            PerformanceDebugLogger.WriteLine($"システムテーマの読み取りエラー: {ex}");
             return false;
         }
     }

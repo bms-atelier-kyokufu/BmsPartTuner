@@ -149,17 +149,16 @@ public partial class FileListViewModel : ObservableObject, IDisposable
     /// </remarks>
     public void LoadBmsFile(string bmsFilePath, string? bmsContent = null)
     {
-        PerfDebugLogger.WriteLine($"=== FileListViewModel.LoadBmsFile Started for {Path.GetFileName(bmsFilePath)} ===");
-        var swTotal = Stopwatch.StartNew();
-        var sw = Stopwatch.StartNew();
+        PerformanceDebugLogger.WriteLine($"=== FileListViewModel.LoadBmsFile Started for {Path.GetFileName(bmsFilePath)} ===");
+        var timerTotal = PerformanceDebugLogger.StartTimer();
+        var timer = PerformanceDebugLogger.StartTimer();
         try
         {
             _bmsFileList = new BmsDefinitionManager(bmsFilePath, bmsContent);
             var fileList = _bmsFileList.CreateFileList();
             FileListItems = fileList;
-            PerfDebugLogger.WriteLine($"  [LoadBmsFile] BmsDefinitionManager construction and CreateFileList: {sw.ElapsedMilliseconds} ms");
+            PerformanceDebugLogger.WriteLine($"  [LoadBmsFile] BmsDefinitionManager construction and CreateFileList: {timer.Lap("BmsDefinitionManager construction and CreateFileList")} ms");
 
-            sw.Restart();
             var chips = _filterService?.GenerateFilterChips(fileList) ?? [];
 
             var instrumentGroups = chips
@@ -172,7 +171,7 @@ public partial class FileListViewModel : ObservableObject, IDisposable
                 .ToList();
 
             InstrumentGroups = new ObservableCollection<InstrumentNameDetectionService.InstrumentGroup>(instrumentGroups);
-            PerfDebugLogger.WriteLine($"  [LoadBmsFile] FilterChips and InstrumentGroups generation: {sw.ElapsedMilliseconds} ms");
+            PerformanceDebugLogger.WriteLine($"  [LoadBmsFile] FilterChips and InstrumentGroups generation: {timer.Lap("FilterChips and InstrumentGroups generation")} ms");
 
             if (_bmsFileList.MissingFiles.Count == 0 && fileList.Count > 0)
             {
@@ -183,8 +182,7 @@ public partial class FileListViewModel : ObservableObject, IDisposable
                     IsSuccess = true
                 });
             }
-            swTotal.Stop();
-            PerfDebugLogger.WriteLine($"=== FileListViewModel.LoadBmsFile Finished: {swTotal.ElapsedMilliseconds} ms ===");
+            PerformanceDebugLogger.WriteLine($"=== FileListViewModel.LoadBmsFile Finished: {timerTotal.Lap("Total")} ms ===");
         }
         catch (Exception ex)
         {

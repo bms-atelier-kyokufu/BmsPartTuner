@@ -297,10 +297,10 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
                 StatusMessage = "最適化エラー";
             });
 
-            PerfDebugLogger.WriteLine($"=== ExecuteThresholdOptimizationAsync Exception ===");
-            PerfDebugLogger.WriteLine($"Exception Type: {ex.GetType().FullName}");
-            PerfDebugLogger.WriteLine($"Message: {ex.Message}");
-            PerfDebugLogger.WriteLine($"StackTrace: {ex.StackTrace}");
+            PerformanceDebugLogger.WriteLine($"=== ExecuteThresholdOptimizationAsync Exception ===");
+            PerformanceDebugLogger.WriteLine($"Exception Type: {ex.GetType().FullName}");
+            PerformanceDebugLogger.WriteLine($"Message: {ex.Message}");
+            PerformanceDebugLogger.WriteLine($"StackTrace: {ex.StackTrace}");
 
             return null;
         }
@@ -400,7 +400,7 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
         {
             ErrorOccurred?.Invoke(this, $"処理エラー: {ex.Message}");
             StatusMessage = "処理エラー";
-            PerfDebugLogger.WriteLine($"ExecuteDefinitionReductionInternalAsync Exception: {ex}");
+            PerformanceDebugLogger.WriteLine($"ExecuteDefinitionReductionInternalAsync Exception: {ex}");
         }
         finally
         {
@@ -410,7 +410,7 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
             // メモリリーク対策: 処理完了後にキャッシュをクリアしてメモリを解放
             await Task.Run(() =>
             {
-                PerfDebugLogger.WriteLine("=== OptimizationViewModel: Clearing caches ===");
+                PerformanceDebugLogger.WriteLine("=== OptimizationViewModel: Clearing caches ===");
                 if (bmsFileList != null)
                 {
                     // キャッシュの解放は BmsOptimizationService 内部で実行されるため、ここでは何もしません

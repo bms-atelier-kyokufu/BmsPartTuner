@@ -279,7 +279,7 @@ public partial class SettingsViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            PerfDebugLogger.WriteLine($"URLを開けませんでした: {ex.Message}");
+            PerformanceDebugLogger.WriteLine($"URLを開けませんでした: {ex.Message}");
         }
     }
 
