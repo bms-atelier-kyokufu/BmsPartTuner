@@ -1,4 +1,4 @@
-using BmsAtelierKyokufu.BmsPartTuner.Models;
+﻿using BmsAtelierKyokufu.BmsPartTuner.Models;
 using BmsAtelierKyokufu.BmsPartTuner.Services.Audio;
 using BmsAtelierKyokufu.BmsPartTuner.Services.Audio.AudioPlayer;
 using Moq;
