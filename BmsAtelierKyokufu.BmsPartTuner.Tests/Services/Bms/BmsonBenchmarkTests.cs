@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.IO;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 using BmsAtelierKyokufu.BmsPartTuner.Models.Bmson;
@@ -12,6 +12,7 @@ public class BmsonBenchmarkTests(ITestOutputHelper output)
     private readonly ITestOutputHelper _output = output;
 
     [Fact]
+    [Trait("Category", "Benchmark")]
     public void Benchmark_Downconvert_Performance()
     {
         // 1. ダミーの BmsonFormat を作成

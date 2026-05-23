@@ -1,4 +1,4 @@
-using BmsAtelierKyokufu.BmsPartTuner.Core.Optimization;
+﻿using BmsAtelierKyokufu.BmsPartTuner.Core.Optimization;
 using BmsAtelierKyokufu.BmsPartTuner.Models;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
@@ -46,7 +46,6 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
         [Fact]
         public void FindRoot_DirectParent_ReturnsParent()
         {
-            _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
 
             int[] table = new int[10];
             table[2] = 1;
@@ -62,7 +61,6 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
         [Fact]
         public void FindRoot_TransitiveParent_ReturnsRoot()
         {
-            _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
 
             int[] table = new int[10];
             table[3] = 2;
@@ -79,7 +77,6 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
         [Fact]
         public void FindRoot_Uninitialized_ReturnsSelf()
         {
-            _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
 
             int[] table = new int[10];
 
@@ -94,7 +91,6 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
         [Fact]
         public void UpdateReplaceTable_MergesSetsCorrectly()
         {
-            _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
 
             int[] table = new int[10];
 
@@ -111,7 +107,6 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
         [Fact]
         public void UpdateReplaceTable_TransitiveMerge_WorksCorrectly()
         {
-            _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
 
             int[] table = new int[10];
 
@@ -129,7 +124,6 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
         [Fact]
         public void UpdateReplaceTable_AlreadyMerged_NoChange()
         {
-            _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
 
             int[] table = new int[10];
             SimulationEngine.UpdateReplaceTable(table, 2, 3);
@@ -146,7 +140,6 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
         [Fact]
         public void UpdateReplaceTable_MultipleGroups_MaintainsSeparation()
         {
-            _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
             // 準備
             int[] table = new int[20];
 
@@ -181,7 +174,6 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
         [Fact]
         public void CalculateRmsRange_SilentAudio_ReturnsZeroToThreshold()
         {
-            _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
             // 実行
             var (min, max) = SimulationEngine.CalculateRmsRange(0.0005f);
 
@@ -193,7 +185,6 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
         [Fact]
         public void CalculateRmsRange_NormalAudio_ReturnsProportionalRange()
         {
-            _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
             // 実行
             var (min, max) = SimulationEngine.CalculateRmsRange(0.5f);
 
@@ -206,7 +197,6 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
         [Fact]
         public void CalculateRmsRange_HighRmsAudio_ReturnsWiderRange()
         {
-            _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
             // 実行
             var (min1, max1) = SimulationEngine.CalculateRmsRange(0.1f);
             var (min2, max2) = SimulationEngine.CalculateRmsRange(1.0f);
@@ -224,7 +214,6 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
         [Fact]
         public void GenerateThresholds_ValidRange_ReturnsDescendingList()
         {
-            _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
             // 実行
             var thresholds = SimulationEngine.GenerateThresholds(0.5f, 0.9f, 0.1f);
 
@@ -254,7 +243,6 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
         [Fact]
         public void GenerateThresholds_SingleValue_ReturnsSingleElement()
         {
-            _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
             // 実行
             var thresholds = SimulationEngine.GenerateThresholds(0.8f, 0.8f, 0.1f);
 
@@ -266,7 +254,6 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
         [Fact]
         public void GenerateThresholds_SmallStep_ReturnsMoreElements()
         {
-            _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
             // 実行
             var thresholds1 = SimulationEngine.GenerateThresholds(0.5f, 0.9f, 0.1f);
             var thresholds2 = SimulationEngine.GenerateThresholds(0.5f, 0.9f, 0.05f);
@@ -299,11 +286,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
         [Fact]
         public void RunParallelSimulation_SingleFile_ReturnsCountOne()
         {
-            var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
-            var file1 = new BmsAudioFile { Name = "a.wav", NumInteger = 1 };
-            audioCache["a.wav"] = CreateDummyCache();
-            var fileList = new List<BmsAudioFile> { file1 };
-            var engine = new SimulationEngine(fileList, audioCache, 1, 1);
+            var engine = new TestEngineBuilder()
+                .AddFile("a.wav", 1, CreateDummyCache())
+                .Build(1, 1);
 
             // 実行
             var results = engine.RunParallelSimulation(0.5f, 0.5f, 0.1f, null);
@@ -316,13 +301,10 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
         [Fact]
         public void RunParallelSimulation_TwoDifferentFiles_ReturnsCountTwo()
         {
-            var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
-            var file1 = new BmsAudioFile { Name = "a.wav", NumInteger = 1 };
-            audioCache["a.wav"] = CreateDistinctCache(440.0);
-            var file2 = new BmsAudioFile { Name = "b.wav", NumInteger = 2 };
-            audioCache["b.wav"] = CreateDistinctCache(880.0);
-            var fileList = new List<BmsAudioFile> { file1, file2 };
-            var engine = new SimulationEngine(fileList, audioCache, 1, 2);
+            var engine = new TestEngineBuilder()
+                .AddFile("a.wav", 1, CreateDistinctCache(440.0))
+                .AddFile("b.wav", 2, CreateDistinctCache(880.0))
+                .Build(1, 2);
 
             // 実行: 厳密なしきい値（0.99）で異なるファイルは統合されないことを確認
             var results = engine.RunParallelSimulation(0.99f, 0.99f, 0.1f, null);
@@ -335,13 +317,10 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
         [Fact]
         public void RunParallelSimulation_TwoIdenticalNames_MergesCorrectly()
         {
-            var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
-            var file1 = new BmsAudioFile { Name = "a.wav", NumInteger = 1 };
-            audioCache["a.wav"] = CreateDummyCache();
-            var file2 = new BmsAudioFile { Name = "a.wav", NumInteger = 2 };
-            audioCache["a.wav"] = CreateDummyCache();
-            var fileList = new List<BmsAudioFile> { file1, file2 };
-            var engine = new SimulationEngine(fileList, audioCache, 1, 2);
+            var engine = new TestEngineBuilder()
+                .AddFile("a.wav", 1, CreateDummyCache())
+                .AddFile("a.wav", 2, CreateDummyCache())
+                .Build(1, 2);
 
             // 実行
             var results = engine.RunParallelSimulation(0.5f, 0.5f, 0.1f, null);
@@ -438,16 +417,11 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
         [Fact]
         public void RunParallelSimulation_Base36ConditionMet_TerminatesEarly()
         {
-            var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
-            // 準備
-            // Base36の上限は1295。3ファイルは常に条件以下なので、
-            // 最初の閾値で早期終了するはず
-            var file1 = new BmsAudioFile { Name = "a.wav", NumInteger = 1 };
-            var file2 = new BmsAudioFile { Name = "a.wav", NumInteger = 2 };
-            var file3 = new BmsAudioFile { Name = "a.wav", NumInteger = 3 };
-
-            var fileList = new List<BmsAudioFile> { file1, file2, file3 };
-            var engine = new SimulationEngine(fileList, audioCache, 1, 3);
+            var engine = new TestEngineBuilder()
+                .AddFile("a.wav", 1)
+                .AddFile("a.wav", 2)
+                .AddFile("a.wav", 3)
+                .Build(1, 3);
 
             // 実行
             var results = engine.RunParallelSimulation(0.1f, 0.5f, 0.1f, null);
@@ -571,7 +545,6 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
         [Fact]
         public void GenerateThresholds_VerySmallStep_GeneratesManyThresholds()
         {
-            _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
             var thresholds = SimulationEngine.GenerateThresholds(0.90f, 0.91f, 0.001f);
 
             // 0.001刻みで0.90-0.91なら約10個生成されるはず
@@ -584,7 +557,6 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
         [Fact]
         public void GenerateThresholds_StepLargerThanRange_ReturnsSingleMaxValue()
         {
-            _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
             var thresholds = SimulationEngine.GenerateThresholds(0.5f, 0.6f, 1.0f);
 
             Assert.Single(thresholds);
@@ -728,7 +700,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
         {
             var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
             var progressValues = new List<int>();
-            var progress = new Progress<int>(p => progressValues.Add(p));
+            var progress = new SyncProgress<int>(progressValues.Add);
 
             var fileList = new List<BmsAudioFile>
             {
@@ -737,9 +709,6 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
             var engine = new SimulationEngine(fileList, audioCache, 1, 1);
 
             engine.RunParallelSimulation(0.1f, 0.5f, 0.1f, progress);
-
-            // Progress<T>は非同期なので少し待つ
-            Thread.Sleep(100);
 
             // 最終進捗が70%（残り30%はデータ処理用）であること
             Assert.Contains(70, progressValues);
@@ -819,7 +788,6 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
         [Fact]
         public void CalculateRmsRange_VeryLowRms_ReturnsNonNegativeRange()
         {
-            _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
             var (min, max) = SimulationEngine.CalculateRmsRange(0.00001f);
 
             Assert.True(min >= 0.0f, "RMS範囲の最小値は非負であるべき");
@@ -832,7 +800,6 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
         [Fact]
         public void CalculateRmsRange_VeryHighRms_ReturnsValidRange()
         {
-            _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
             var (min, max) = SimulationEngine.CalculateRmsRange(0.99f);
 
             Assert.True(min >= 0.0f);
@@ -869,7 +836,6 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
         [Fact]
         public void GenerateThresholds_LargeNumberOfThresholds_CompletsesQuickly()
         {
-            _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
             var sw = System.Diagnostics.Stopwatch.StartNew();
 
             var thresholds = SimulationEngine.GenerateThresholds(0.0f, 1.0f, 0.001f);
@@ -955,7 +921,6 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
         [Fact]
         public void FindRoot_PathCompression_CompressesDeepChain()
         {
-            _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
             int[] table = new int[10];
 
             // 深いチェーンを作成: 1 <- 2 <- 3 <- 4 <- 5
@@ -980,7 +945,6 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
         [Fact]
         public void UpdateReplaceTable_SelfMerge_NoChange()
         {
-            _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
             int[] table = new int[10];
 
             // 自分自身にマージを試みる
@@ -1039,5 +1003,36 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
         }
 
         #endregion
+
+        private class TestEngineBuilder
+        {
+            public System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData> Cache { get; } = new();
+            public List<BmsAudioFile> Files { get; } = [];
+
+            public TestEngineBuilder AddFile(string name, int num, CachedSoundData? data = null)
+            {
+                Files.Add(new BmsAudioFile { Name = name, NumInteger = num });
+                if (data != null)
+                {
+                    Cache[name] = data;
+                }
+                return this;
+            }
+
+            public TestEngineBuilder AddDummyFile(string name, int num)
+            {
+                return AddFile(name, num, CreateDummyCache());
+            }
+
+            public SimulationEngine Build(int start, int end)
+            {
+                return new SimulationEngine(Files, Cache, start, end);
+            }
+        }
+
+        private class SyncProgress<T>(Action<T> handler) : IProgress<T>
+        {
+            public void Report(T value) => handler(value);
+        }
     }
 }
