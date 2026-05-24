@@ -56,8 +56,8 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Views.Dialogs.Settings
         private void UpdateLogo(bool isDark)
         {
             var logoName = isDark ? "BmpPartTunerLogo_dark.svg" : "BmpPartTunerLogo_light.svg";
-            string path = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Properties", "Resources", logoName);
-            if (System.IO.File.Exists(path))
+            string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Properties", "Resources", logoName);
+            if (File.Exists(path))
             {
                 LogoViewbox.Source = new Uri(path, UriKind.Absolute);
             }

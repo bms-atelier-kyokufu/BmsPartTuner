@@ -1,5 +1,4 @@
 using System.Collections.Concurrent;
-using System.IO;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
 
@@ -42,18 +41,16 @@ public static class VirtualAudioRegistry
                 return true;
             }
 
-            using (var stream = vf.Open())
+            using var stream = vf.Open();
+            data = new byte[vf.Length];
+            int read = 0;
+            while (read < data.Length)
             {
-                data = new byte[vf.Length];
-                int read = 0;
-                while (read < data.Length)
-                {
-                    int r = stream.Read(data, read, data.Length - read);
-                    if (r <= 0) break;
-                    read += r;
-                }
-                return true;
+                int r = stream.Read(data, read, data.Length - read);
+                if (r <= 0) break;
+                read += r;
             }
+            return true;
         }
         data = [];
         return false;

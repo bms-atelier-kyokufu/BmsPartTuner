@@ -1,5 +1,3 @@
-using System.IO;
-
 namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
 
 /// <summary>
