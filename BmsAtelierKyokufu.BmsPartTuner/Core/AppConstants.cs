@@ -10,11 +10,6 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Core;
 /// <item>パフォーマンスチューニングのパラメータを集約</item>
 /// <item>環境に応じた調整を容易にする</item>
 /// </list>
-/// 
-/// <para>【調整ガイド】</para>
-/// 各定数には、環境（メモリ量、CPU性能）に応じた調整指針を記載しています。
-/// デフォルト値は一般的な環境（8コア、16GB RAM）を想定しています。
-/// </remarks>
 public static class AppConstants
 {
     /// <summary>
@@ -91,6 +86,37 @@ public static class AppConstants
 
         /// <summary>62進数の基数。</summary>
         public const int RadixBase62 = 62;
+    }
+
+    /// <summary>
+    /// BMSのTOTAL値の自動計算（bmsonからの変換等）に関する定数。
+    /// </summary>
+    public static class BmsTotal
+    {
+        /// <summary>
+        /// 本家IIDXのNORMALゲージ回復量に基づいた近似式（black train式）の係数。
+        /// </summary>
+        public const double IidxMultiplier = 7.605;
+
+        /// <summary>
+        /// black train式の分母の一次係数（総ノーツ数に対する倍率）。
+        /// </summary>
+        public const double IidxNotesCoefficient = 0.01;
+
+        /// <summary>
+        /// black train式の分母の定数項。
+        /// </summary>
+        public const double IidxConstantTerm = 6.5;
+
+        /// <summary>
+        /// 低ノーツ数曲において、ゲームバランス（クリア可能性）を担保するための最低保証TOTAL値。
+        /// </summary>
+        public const double MinimumFloor = 260.0;
+
+        /// <summary>
+        /// bmsonにおけるデフォルトのtotal割合値 (100.0%)。
+        /// </summary>
+        public const double DefaultPercentage = 100.0;
     }
 
     /// <summary>

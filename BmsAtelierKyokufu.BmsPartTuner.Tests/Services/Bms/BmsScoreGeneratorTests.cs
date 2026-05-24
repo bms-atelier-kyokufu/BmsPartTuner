@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 using BmsAtelierKyokufu.BmsPartTuner.Models.Bmson;
 using BmsAtelierKyokufu.BmsPartTuner.Services.Bms.Bmson;
@@ -155,6 +155,70 @@ public class BmsScoreGeneratorTests
             // 検証: #BPM01 145.123 が定義され、#BPM02 などの定義は存在しない
             Assert.Contains("#BPM01 145.123", result);
             Assert.DoesNotContain("#BPM02", result);
+        }
+        finally
+        {
+            if (Directory.Exists(tempDir))
+            {
+                Directory.Delete(tempDir, true);
+            }
+        }
+    }
+
+    [Fact]
+    public void GenerateBmsText_TotalValue_ApproachB()
+    {
+        var tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        Directory.CreateDirectory(tempDir);
+        try
+        {
+            BmsTestWavHelper.CreateSilenceWavFile(Path.Combine(tempDir, "bgm.wav"), 0.1, 2);
+
+            // 1. total = 100 (デフォルト値) の場合は #TOTAL が出力されないことの検証
+            var bmsonDefault = CreateBaseBmson();
+            bmsonDefault.Info.Total = 100; // デフォルト割合
+            var chDefault = new BmsonSoundChannel
+            {
+                Name = "bgm.wav",
+                Notes = [new BmsonNote { X = 1, Y = 0, C = false }] // playable note (X=1)
+            };
+            bmsonDefault.SoundChannels.Add(chDefault);
+            bmsonDefault.Lines.Add(new BmsonLineEvent { Y = 960 });
+
+            BmsonSanitizer.Sanitize(bmsonDefault);
+            var timeCalcDef = new PulseToBmsTimeCalculator(bmsonDefault.Info.Resolution, bmsonDefault.Lines);
+            var realTimeCalcDef = new PulseToRealTimeCalculator(bmsonDefault.Info.Resolution, bmsonDefault.Info.InitBpm, bmsonDefault.BpmEvents, bmsonDefault.StopEvents);
+            var audioSlicerDef = new AudioSliceManager(tempDir, false);
+
+            var genDefault = new BmsScoreGenerator(bmsonDefault, timeCalcDef, realTimeCalcDef, audioSlicerDef, false);
+            string resultDefault = genDefault.GenerateBmsText();
+
+            Assert.DoesNotContain("#TOTAL", resultDefault);
+
+            // 2. total = 80 (カスタム値) の場合は #TOTAL が計算値 (基準デフォルト * 0.8) で出力されることの検証
+            var bmsonCustom = CreateBaseBmson();
+            bmsonCustom.Info.Total = 80; // カスタム割合
+            var chCustom = new BmsonSoundChannel
+            {
+                Name = "bgm.wav",
+                Notes = [new BmsonNote { X = 1, Y = 0, C = false }] // playable note (N=1)
+            };
+            bmsonCustom.SoundChannels.Add(chCustom);
+            bmsonCustom.Lines.Add(new BmsonLineEvent { Y = 960 });
+
+            BmsonSanitizer.Sanitize(bmsonCustom);
+            var timeCalcCust = new PulseToBmsTimeCalculator(bmsonCustom.Info.Resolution, bmsonCustom.Lines);
+            var realTimeCalcCust = new PulseToRealTimeCalculator(bmsonCustom.Info.Resolution, bmsonCustom.Info.InitBpm, bmsonCustom.BpmEvents, bmsonCustom.StopEvents);
+            var audioSlicerCust = new AudioSliceManager(tempDir, false);
+
+            var genCustom = new BmsScoreGenerator(bmsonCustom, timeCalcCust, realTimeCalcCust, audioSlicerCust, false);
+            string resultCustom = genCustom.GenerateBmsText();
+
+            // N = 1 のとき:
+            // 7.605 * 1 / (0.01 * 1 + 6.5) = 7.605 / 6.51 = 1.168
+            // 最低値 260.0 が適用され、defaultTotal = 260.0
+            // 260.0 * 80 / 100 = 208.0
+            Assert.Contains("#TOTAL 208", resultCustom);
         }
         finally
         {

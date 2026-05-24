@@ -222,8 +222,23 @@ public class BmsScoreGenerator(
         else if (_bmson.Info.JudgeRank <= 99) rank = 2; // Normal
         sb.AppendLine($"#RANK {rank}");
 
-        // TOTAL
-        sb.AppendLine($"#TOTAL {_bmson.Info.Total}");
+        // TOTAL (Approach B: bmsonの%トータル値が100%の場合は省略し、それ以外はプレイアブルノーツ数から算出した絶対値を実数で出力)
+        int playableNotes = _bmson.SoundChannels?
+            .Sum(ch => ch.Notes?.Count(n => n.X > 0) ?? 0) ?? 0;
+
+        if (Math.Abs(_bmson.Info.Total - AppConstants.BmsTotal.DefaultPercentage) > 0.0001 && playableNotes > 0)
+        {
+            // bmsonの基準式（black train近似式）により、100%時のデフォルト値を計算
+            double defaultTotal = Math.Max(
+                AppConstants.BmsTotal.MinimumFloor,
+                (AppConstants.BmsTotal.IidxMultiplier * playableNotes) / 
+                (AppConstants.BmsTotal.IidxNotesCoefficient * playableNotes + AppConstants.BmsTotal.IidxConstantTerm)
+            );
+            
+            // %値を掛け合わせて絶対値を算出
+            double realTotal = defaultTotal * (_bmson.Info.Total / AppConstants.BmsTotal.DefaultPercentage);
+            sb.AppendLine($"#TOTAL {Math.Round(realTotal, 4)}");
+        }
 
         // LNTYPE (bmsonのLNはType1相当だが、BMSでの互換性のためにLNTYPE 1を指定)
         sb.AppendLine("#LNTYPE 1");
