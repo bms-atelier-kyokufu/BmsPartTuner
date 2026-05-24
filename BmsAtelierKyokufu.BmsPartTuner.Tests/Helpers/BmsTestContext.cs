@@ -1,7 +1,6 @@
 ﻿using System.IO;
 using System.Text;
 using BmsAtelierKyokufu.BmsPartTuner.Core;
-using BmsAtelierKyokufu.BmsPartTuner.Models;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
 {
@@ -32,7 +31,6 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
 
         public void Dispose()
         {
-            _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
             if (_disposed) return;
             try
             {
@@ -79,13 +77,14 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
         /// <param name="index">The integer index (e.g., 1 -> 01, 36 -> 10).</param>
         /// <param name="filename">The filename of the wav.</param>
         /// <param name="createFile">If true, creates a dummy file. If false, assumes file already exists.</param>
-        public BmsFileBuilder WithWav(int index, string filename, bool createFile = true)
+        /// <param name="writeToDisk">If true, writes the dummy WAV file to disk. If false, registers it only in VirtualAudioRegistry.</param>
+        public BmsFileBuilder WithWav(int index, string filename, bool createFile = true, bool writeToDisk = true)
         {
             string indexStr = ToBmsIndex(index);
             _wavDefinitions.AppendLine($"#WAV{indexStr} {filename}");
             if (createFile)
             {
-                CreateDummyFile(filename);
+                CreateDummyFile(filename, writeToDisk);
             }
             return this;
         }
@@ -96,15 +95,17 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
         /// <param name="indexStr">The custom index string.</param>
         /// <param name="filename">The filename of the wav.</param>
         /// <param name="createFile">If true, creates a dummy file. If false, assumes file already exists.</param>
-        public BmsFileBuilder WithWav(string indexStr, string filename, bool createFile = true)
+        /// <param name="writeToDisk">If true, writes the dummy WAV file to disk. If false, registers it only in VirtualAudioRegistry.</param>
+        public BmsFileBuilder WithWav(string indexStr, string filename, bool createFile = true, bool writeToDisk = true)
         {
             _wavDefinitions.AppendLine($"#WAV{indexStr} {filename}");
             if (createFile)
             {
-                CreateDummyFile(filename);
+                CreateDummyFile(filename, writeToDisk);
             }
             return this;
         }
+
 
         /// <summary>
         /// Adds main data to the BMS file.
@@ -162,57 +163,15 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
             return path;
         }
 
-        private void CreateDummyFile(string filename)
+        private void CreateDummyFile(string filename, bool writeToDisk = true)
         {
             var path = Path.Combine(_context.TempDirectory, filename);
-            // Create a minimal valid-ish WAV header (44 bytes) to be safe against some parsers,
-            // though the requirement just said "dummy".
-            // RIFF header + fmt chunk + data chunk (empty)
-            byte[] wavHeader = new byte[44];
-
-            // RIFF
-            Encoding.ASCII.GetBytes("RIFF").CopyTo(wavHeader, 0);
-            BitConverter.GetBytes(36).CopyTo(wavHeader, 4); // ChunkSize (36 + data size 0)
-            Encoding.ASCII.GetBytes("WAVE").CopyTo(wavHeader, 8);
-
-            // fmt
-            Encoding.ASCII.GetBytes("fmt ").CopyTo(wavHeader, 12);
-            BitConverter.GetBytes(16).CopyTo(wavHeader, 16); // Subchunk1Size
-            BitConverter.GetBytes((short)1).CopyTo(wavHeader, 20); // AudioFormat (PCM)
-            BitConverter.GetBytes((short)1).CopyTo(wavHeader, 22); // NumChannels
-            BitConverter.GetBytes(44100).CopyTo(wavHeader, 24); // SampleRate
-            BitConverter.GetBytes(44100 * 2).CopyTo(wavHeader, 28); // ByteRate
-            BitConverter.GetBytes((short)2).CopyTo(wavHeader, 32); // BlockAlign
-            BitConverter.GetBytes((short)16).CopyTo(wavHeader, 34); // BitsPerSample
-
-            // data
-            Encoding.ASCII.GetBytes("data").CopyTo(wavHeader, 36);
-            BitConverter.GetBytes(0).CopyTo(wavHeader, 40); // Subchunk2Size
-
-            File.WriteAllBytes(path, wavHeader);
+            BmsTestWavHelper.CreateDummyWavFile(path, writeToDisk);
         }
 
         private static string ToBmsIndex(int index)
         {
-            // Standard BMS is Base36 00-ZZ.
-            // However, typical usage is often 01-ZZ.
-            // 1 -> 01
-            // 35 -> 0Z
-            // 36 -> 10
-
             ArgumentOutOfRangeException.ThrowIfNegative(index);
-
-            // If index is small, just format as D2 if it fits?
-            // No, BMS index is alphanumeric. 10 is '0A' in base36?
-            // Wait, BMS usually uses 0-9 then A-Z.
-            // But typical indices in file are: #WAV01, #WAV02 ... #WAV09, #WAV0A ... #WAV0Z, #WAV10...
-            // So it IS Base36.
-
-            // Let's implement proper Base36 for 2 digits.
-            // If > 1295 (ZZ), we might overflow 2 chars.
-            // The prompt asks for support for "Huge definition numbers: #WAVZZ (1295) or more".
-            // If more than 1295, we need more than 2 chars.
-
             string result = "";
             int target = index;
 
