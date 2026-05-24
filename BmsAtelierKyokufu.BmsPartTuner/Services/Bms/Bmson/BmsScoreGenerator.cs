@@ -1,4 +1,4 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 using BmsAtelierKyokufu.BmsPartTuner.Models.Bmson;
 
@@ -64,8 +64,10 @@ public class BmsScoreGenerator(
         // 1. Pre-pass slicing to determine exact number of unique definitions needed
         PreSliceAudio();
         int uniqueSlices = _audioSliceManager.GetGeneratedSliceCount();
-        PerformanceDebugLogger.WriteLine($"  [BmsScoreGenerator] PreSliceAudio (uniqueSlices={uniqueSlices}): {timer.Lap("PreSliceAudio")} ms");
-        PerformanceDebugLogger.PrintAccumulated("    [AudioSliceManager Metrics]");
+        int hits = _audioSliceManager.GetCacheHitCount();
+        int misses = _audioSliceManager.GetCacheMissCount();
+        PerformanceDebugLogger.WriteLine($"  [BmsScoreGenerator] PreSliceAudio (uniqueSlices={uniqueSlices}, CacheHits={hits}, CacheMisses={misses}): {timer.Lap("PreSliceAudio")} ms");
+        PerformanceDebugLogger.PrintAccumulatedGrouped("AudioSliceManager Metrics (Grouped by Channel)", LogLevel.Debug);
 
         // 2. Choose optimal radix
         _radix = uniqueSlices <= AppConstants.Definition.MaxNumberBase36 ? AppConstants.Definition.RadixBase36 : AppConstants.Definition.RadixBase62;
@@ -325,6 +327,9 @@ public class BmsScoreGenerator(
         {
             if (ch.Notes == null || ch.Notes.Count == 0) return;
 
+            var chTimer = PerformanceDebugLogger.StartTimer();
+            int notesCount = ch.Notes.Count;
+
             var blocks = SplitNotesIntoBlocks(ch.Notes);
 
             for (int bIndex = 0; bIndex < blocks.Count; bIndex++)
@@ -349,6 +354,9 @@ public class BmsScoreGenerator(
                     _audioSliceManager.SliceAudio(ch.Name, oSec, dSec);
                 }
             }
+
+            long elapsed = chTimer.Lap(ch.Name);
+            PerformanceDebugLogger.WriteLine($"    [PreSliceAudio] Channel '{ch.Name}' ({notesCount} notes) processed in {elapsed} ms", LogLevel.Verbose);
         });
     }
 

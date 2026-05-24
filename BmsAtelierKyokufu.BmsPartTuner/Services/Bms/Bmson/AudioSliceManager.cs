@@ -1,4 +1,4 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 
@@ -16,6 +16,11 @@ public class AudioSliceManager(string bmsonDir, bool throwOnMissingFile = true) 
     private readonly ConcurrentDictionary<string, Lazy<string>> _sliceCache = new();
     private readonly ConcurrentDictionary<string, CachedAudioSource?> _sourceCache = new(StringComparer.OrdinalIgnoreCase);
     private int _sliceCounter = 1;
+    private int _cacheHitCount = 0;
+    private int _cacheMissCount = 0;
+
+    public int GetCacheHitCount() => _cacheHitCount;
+    public int GetCacheMissCount() => _cacheMissCount;
 
     /// <summary>
     /// 指定された音声ファイルの特定区間を切り出し、ステレオ・44.1kHz・16bitのWAVとして保存します。
@@ -32,11 +37,16 @@ public class AudioSliceManager(string bmsonDir, bool throwOnMissingFile = true) 
         // 小数点第6位までの精度でキャッシュキーを作成 (約1マイクロ秒の精度)
         string cacheKey = $"{sourceFileName}|{offsetSec:F6}|{durationSec:F6}";
 
-        var lazyVal = _sliceCache.GetOrAdd(cacheKey, key => new Lazy<string>(() =>
+        bool isNew = false;
+        var lazyVal = _sliceCache.GetOrAdd(cacheKey, key =>
         {
-            var timer = PerformanceDebugLogger.StartTimer();
-            var source = _sourceCache.GetOrAdd(sourceFileName, name =>
+            isNew = true;
+            return new Lazy<string>(() =>
             {
+                Interlocked.Increment(ref _cacheMissCount);
+                var timer = PerformanceDebugLogger.StartTimer();
+                var source = _sourceCache.GetOrAdd(sourceFileName, name =>
+                {
                 string sourcePath = Path.Combine(_bmsonDir, name);
                 if (!File.Exists(sourcePath))
                 {
@@ -48,7 +58,7 @@ public class AudioSliceManager(string bmsonDir, bool throwOnMissingFile = true) 
                 }
                 return new CachedAudioSource(sourcePath);
             });
-            timer.Lap("SourceGet");
+            timer.Lap($"{sourceFileName}|SourceGet");
 
             if (source == null) return string.Empty;
 
@@ -87,16 +97,18 @@ public class AudioSliceManager(string bmsonDir, bool throwOnMissingFile = true) 
                 var arrayProvider = new ArraySampleProvider(source.Samples, source.WaveFormat);
                 arrayProvider.Seek(offsetSec);
 
-                ISampleProvider sampleProvider = arrayProvider;
+                ISampleProvider sampleProvider = new TimingSampleProvider(arrayProvider, $"{sourceFileName}|SampleRead_Base");
 
                 if (sampleProvider.WaveFormat.Channels == 1)
                 {
                     sampleProvider = new MonoToStereoSampleProvider(sampleProvider);
+                    sampleProvider = new TimingSampleProvider(sampleProvider, $"{sourceFileName}|SampleRead_MonoToStereo");
                 }
 
                 if (sampleProvider.WaveFormat.SampleRate != AppConstants.Audio.StandardSampleRate)
                 {
                     sampleProvider = new WdlResamplingSampleProvider(sampleProvider, AppConstants.Audio.StandardSampleRate);
+                    sampleProvider = new TimingSampleProvider(sampleProvider, $"{sourceFileName}|SampleRead_Resample");
                 }
 
                 // Durationでカットする
@@ -105,25 +117,33 @@ public class AudioSliceManager(string bmsonDir, bool throwOnMissingFile = true) 
                     Take = TimeSpan.FromSeconds(actualDuration)
                 };
 
-                timer.Lap("ProviderSetup");
+                timer.Lap($"{sourceFileName}|ProviderSetup");
 
                 // 16bit PCMとしてメモリに書き出し
                 var provider16 = new SampleToWaveProvider16(cutProvider);
+                var timingProvider16 = new TimingWaveProvider(provider16, $"{sourceFileName}|WaveProvider16_Read");
+
                 using var ms = new MemoryStream();
-                WaveFileWriter.WriteWavFileToStream(ms, provider16);
-                timer.Lap("WriteWav");
+                WaveFileWriter.WriteWavFileToStream(ms, timingProvider16);
+                timer.Lap($"{sourceFileName}|WriteWav");
 
                 Core.Audio.VirtualAudioRegistry.AddFile(outputFileName, ms.ToArray());
-                timer.Lap("Registry");
+                timer.Lap($"{sourceFileName}|Registry");
 
                 return outputFileName;
             }
             catch (Exception ex)
             {
-                PerformanceDebugLogger.WriteLine($"[AudioSliceManager] スライス失敗: {sourceFileName} ({ex.Message})");
+                PerformanceDebugLogger.WriteError($"[AudioSliceManager] スライス失敗: {sourceFileName}", ex);
                 return string.Empty;
             }
-        }));
+            });
+        });
+
+        if (!isNew)
+        {
+            Interlocked.Increment(ref _cacheHitCount);
+        }
 
         return lazyVal.Value;
     }
@@ -183,7 +203,8 @@ public class AudioSliceManager(string bmsonDir, bool throwOnMissingFile = true) 
                 }
                 Samples = samplesList;
             }
-            timer.Lap("CachedAudioSource Load");
+            long elapsed = timer.Lap($"{Path.GetFileName(path)}|CachedAudioSource Load");
+            PerformanceDebugLogger.WriteLine($"[CachedAudioSource Load] {Path.GetFileName(path)} (SampleRate: {WaveFormat.SampleRate}, Channels: {WaveFormat.Channels}, Length: {Samples.Length} samples) loaded in {elapsed} ms", LogLevel.Verbose);
         }
     }
 
@@ -213,6 +234,44 @@ public class AudioSliceManager(string bmsonDir, bool throwOnMissingFile = true) 
             Array.Copy(samples, _position, buffer, offset, toCopy);
             _position += toCopy;
             return toCopy;
+        }
+    }
+
+    /// <summary>
+    /// 各変換ステージの処理時間を測定するためのデコレータ SampleProvider。
+    /// </summary>
+    private class TimingSampleProvider(ISampleProvider inner, string timerKey) : ISampleProvider
+    {
+        private readonly ISampleProvider _inner = inner;
+        private readonly string _timerKey = timerKey;
+
+        public WaveFormat WaveFormat => _inner.WaveFormat;
+
+        public int Read(float[] buffer, int offset, int count)
+        {
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+            int read = _inner.Read(buffer, offset, count);
+            PerformanceDebugLogger.AddInterval(_timerKey, sw.ElapsedMilliseconds);
+            return read;
+        }
+    }
+
+    /// <summary>
+    /// 各変換ステージの処理時間を測定するためのデコレータ WaveProvider。
+    /// </summary>
+    private class TimingWaveProvider(IWaveProvider inner, string timerKey) : IWaveProvider
+    {
+        private readonly IWaveProvider _inner = inner;
+        private readonly string _timerKey = timerKey;
+
+        public WaveFormat WaveFormat => _inner.WaveFormat;
+
+        public int Read(byte[] buffer, int offset, int count)
+        {
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+            int read = _inner.Read(buffer, offset, count);
+            PerformanceDebugLogger.AddInterval(_timerKey, sw.ElapsedMilliseconds);
+            return read;
         }
     }
 }
