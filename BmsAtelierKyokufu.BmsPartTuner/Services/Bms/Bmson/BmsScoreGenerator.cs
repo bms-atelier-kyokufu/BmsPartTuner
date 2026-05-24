@@ -291,6 +291,32 @@ public class BmsScoreGenerator(
         return arr;
     }
 
+    private readonly struct PendingNote(int measure, string channel, int step, int measureLength, string id)
+    {
+        public readonly int Measure = measure;
+        public readonly string Channel = channel;
+        public readonly int Step = step;
+        public readonly int MeasureLength = measureLength;
+        public readonly string Id = id;
+    }
+
+    private static List<List<BmsonNote>> SplitNotesIntoBlocks(IReadOnlyList<BmsonNote> notes)
+    {
+        var blocks = new List<List<BmsonNote>>();
+        List<BmsonNote>? currentBlock = null;
+
+        foreach (var n in notes)
+        {
+            if (!n.C || currentBlock == null)
+            {
+                currentBlock = [];
+                blocks.Add(currentBlock);
+            }
+            currentBlock.Add(n);
+        }
+        return blocks;
+    }
+
     private void PreSliceAudio()
     {
         if (_bmson.SoundChannels == null) return;
@@ -299,19 +325,7 @@ public class BmsScoreGenerator(
         {
             if (ch.Notes == null || ch.Notes.Count == 0) return;
 
-            // 連(Block)ごとに分割して依存関係を排除
-            var blocks = new List<List<BmsonNote>>();
-            List<BmsonNote>? currentBlock = null;
-
-            foreach (var n in ch.Notes)
-            {
-                if (!n.C || currentBlock == null)
-                {
-                    currentBlock = [];
-                    blocks.Add(currentBlock);
-                }
-                currentBlock.Add(n);
-            }
+            var blocks = SplitNotesIntoBlocks(ch.Notes);
 
             for (int bIndex = 0; bIndex < blocks.Count; bIndex++)
             {
@@ -342,23 +356,13 @@ public class BmsScoreGenerator(
     {
         if (_bmson.SoundChannels == null) return;
 
+        var pendingNotes = new ConcurrentQueue<PendingNote>();
+
         Parallel.ForEach(_bmson.SoundChannels, ch =>
         {
             if (ch.Notes == null || ch.Notes.Count == 0) return;
 
-            // 連(Block)ごとに分割して依存関係を排除
-            var blocks = new List<List<BmsonNote>>();
-            List<BmsonNote>? currentBlock = null;
-
-            foreach (var n in ch.Notes)
-            {
-                if (!n.C || currentBlock == null)
-                {
-                    currentBlock = [];
-                    blocks.Add(currentBlock);
-                }
-                currentBlock.Add(n);
-            }
+            var blocks = SplitNotesIntoBlocks(ch.Notes);
 
             for (int bIndex = 0; bIndex < blocks.Count; bIndex++)
             {
@@ -395,24 +399,30 @@ public class BmsScoreGenerator(
                         var endYData = _yDataMap[n.Y + n.L];
 
                         // LNの開始と終了をLNチャンネルに配置
-                        AddNote(yData.Measure, lnChannel, yData.StepIndex, yData.MeasureLength, wavId);
-                        AddNote(endYData.Measure, lnChannel, endYData.StepIndex, endYData.MeasureLength, wavId);
+                        pendingNotes.Enqueue(new PendingNote(yData.Measure, lnChannel, yData.StepIndex, yData.MeasureLength, wavId));
+                        pendingNotes.Enqueue(new PendingNote(endYData.Measure, lnChannel, endYData.StepIndex, endYData.MeasureLength, wavId));
                     }
                     else
                     {
                         // 鍵盤レーンであっても、depth > 0 (和音)の場合はBGMレーンに逃がす
                         if (n.X > 0 && depth > 0)
                         {
-                            AddNote(yData.Measure, "01", yData.StepIndex, yData.MeasureLength, wavId);
+                            pendingNotes.Enqueue(new PendingNote(yData.Measure, "01", yData.StepIndex, yData.MeasureLength, wavId));
                         }
                         else
                         {
-                            AddNote(yData.Measure, bmsChannel, yData.StepIndex, yData.MeasureLength, wavId);
+                            pendingNotes.Enqueue(new PendingNote(yData.Measure, bmsChannel, yData.StepIndex, yData.MeasureLength, wavId));
                         }
                     }
                 }
             }
         });
+
+        // 一括マージ（ロック不要）
+        foreach (var note in pendingNotes)
+        {
+            AddNoteDirect(note.Measure, note.Channel, note.Step, note.MeasureLength, note.Id);
+        }
     }
 
     private void ProcessBpmEvents()
@@ -522,36 +532,41 @@ public class BmsScoreGenerator(
     {
         lock (_measures)
         {
-            if (!_measures.ContainsKey(measure)) _measures[measure] = [];
-            var mDict = _measures[measure];
+            AddNoteDirect(measure, channel, step, measureLength, id);
+        }
+    }
 
-            if (!mDict.ContainsKey(channel)) mDict[channel] = [CreateEmptyArray(measureLength)];
+    private void AddNoteDirect(int measure, string channel, int step, int measureLength, string id)
+    {
+        if (!_measures.ContainsKey(measure)) _measures[measure] = [];
+        var mDict = _measures[measure];
 
-            if (channel == "01")
+        if (!mDict.ContainsKey(channel)) mDict[channel] = [CreateEmptyArray(measureLength)];
+
+        if (channel == "01")
+        {
+            bool placed = false;
+            foreach (var arr in mDict[channel])
             {
-                bool placed = false;
-                foreach (var arr in mDict[channel])
+                if (arr.Length == measureLength && arr[step] == AppConstants.Definition.Rest)
                 {
-                    if (arr.Length == measureLength && arr[step] == AppConstants.Definition.Rest)
-                    {
-                        arr[step] = id;
-                        placed = true;
-                        break;
-                    }
-                }
-                if (!placed)
-                {
-                    var newArr = CreateEmptyArray(measureLength);
-                    newArr[step] = id;
-                    mDict[channel].Add(newArr);
+                    arr[step] = id;
+                    placed = true;
+                    break;
                 }
             }
-            else
+            if (!placed)
             {
-                if (mDict[channel][0].Length == measureLength)
-                {
-                    mDict[channel][0][step] = id;
-                }
+                var newArr = CreateEmptyArray(measureLength);
+                newArr[step] = id;
+                mDict[channel].Add(newArr);
+            }
+        }
+        else
+        {
+            if (mDict[channel][0].Length == measureLength)
+            {
+                mDict[channel][0][step] = id;
             }
         }
     }
