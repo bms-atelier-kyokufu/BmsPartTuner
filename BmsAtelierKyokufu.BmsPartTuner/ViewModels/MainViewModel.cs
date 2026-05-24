@@ -411,45 +411,7 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
 
                 if (_isDownconverting) return;
 
-                _isDownconverting = true;
-                IsBusy = true;
-                StatusMessage = "bmsonをダウンコンバート中...";
-                try
-                {
-                    using (PerformanceDebugLogger.MeasureTime("Total Flow (Downconvert + LoadBmsFile)"))
-                    {
-                        Core.Audio.VirtualAudioRegistry.Clear();
-                        string bmsText = await Task.Run(() =>
-                            Services.Bms.Bmson.BmsonIntegrationFacade.GenerateBmsText(path, keyNotesOnly: false));
-
-                        _workingBmsPath = path;
-                        _workingBmsContent = bmsText;
-                        _lastDownconvertedBmsonPath = path; // 成功時にパスを記憶
-
-                        BmsDefinitionManager.LoadBmsFile(path, bmsText);
-                    }
-                    ShowToast($"bmsonをダウンコンバートしました: {Path.GetFileName(path)}", "📁", false);
-                }
-                catch (Exception ex)
-                {
-                    string errorMessage = ex.Message;
-                    if (ex is AggregateException aggEx && aggEx.InnerExceptions.Count > 0)
-                    {
-                        errorMessage = aggEx.InnerExceptions[0].Message;
-                    }
-
-                    ShowToast($"bmson変換失敗: {errorMessage}", "⚠", true);
-                    BmsDefinitionManager.FileListItems.Clear();
-                    _lastDownconvertedBmsonPath = null; // 失敗時はクリア
-                    _workingBmsContent = null;
-                }
-                finally
-                {
-                    _isDownconverting = false;
-                    IsBusy = false;
-                    StatusMessage = "準備完了";
-                    OnPropertyChanged(nameof(CanExecuteReduction));
-                }
+                await DownconvertBmsonAsync(path);
             }
             else
             {
@@ -469,6 +431,47 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
                 StatusMessage = $"対応形式: {GetSupportedExtensionsPattern()}";
                 BmsDefinitionManager.FileListItems.Clear();
             }
+        }
+    }
+
+    private async Task DownconvertBmsonAsync(string path)
+    {
+        _isDownconverting = true;
+        IsBusy = true;
+        StatusMessage = "bmsonをダウンコンバート中...";
+        try
+        {
+            using (PerformanceDebugLogger.MeasureTime("Total Flow (Downconvert + LoadBmsFile)"))
+            {
+                Core.Audio.VirtualAudioRegistry.Clear();
+                string bmsText = await Task.Run(() =>
+                    Services.Bms.Bmson.BmsonIntegrationFacade.GenerateBmsText(path, keyNotesOnly: false));
+
+                _workingBmsPath = path;
+                _workingBmsContent = bmsText;
+                _lastDownconvertedBmsonPath = path; // 成功時にパスを記憶
+
+                BmsDefinitionManager.LoadBmsFile(path, bmsText);
+            }
+            ShowToast($"bmsonをダウンコンバートしました: {Path.GetFileName(path)}", "📁", false);
+        }
+        catch (Exception ex)
+        {
+            string errorMessage = ex is AggregateException aggEx && aggEx.InnerExceptions.Count > 0
+                ? aggEx.InnerExceptions[0].Message
+                : ex.Message;
+
+            ShowToast($"bmson変換失敗: {errorMessage}", "⚠", true);
+            BmsDefinitionManager.FileListItems.Clear();
+            _lastDownconvertedBmsonPath = null; // 失敗時はクリア
+            _workingBmsContent = null;
+        }
+        finally
+        {
+            _isDownconverting = false;
+            IsBusy = false;
+            StatusMessage = "準備完了";
+            OnPropertyChanged(nameof(CanExecuteReduction));
         }
     }
 
