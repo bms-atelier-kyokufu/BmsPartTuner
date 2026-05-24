@@ -285,7 +285,8 @@ internal class SimulationEngine(
     /// </remarks>
     private int SimulateThreshold(float threshold, IReadOnlyList<IReadOnlyList<int>> groups)
     {
-        var replaceTable = new int[AppConstants.Definition.ReplaceTableSize]; // BMSの最大定義番号
+        var uf = new UnionFind(AppConstants.Definition.ReplaceTableSize); // BMSの最大定義番号
+        int[] replaceTable = uf.GetRawTable();
 
         int totalComparisons = 0;
         int totalMatches = 0;
@@ -296,7 +297,7 @@ internal class SimulationEngine(
         {
             int groupComparisons = 0;
             int groupMatches = 0;
-            ProcessGroup(group, replaceTable, threshold, ref groupComparisons, ref groupMatches);
+            ProcessGroup(group, uf, threshold, ref groupComparisons, ref groupMatches);
 
             System.Threading.Interlocked.Add(ref totalComparisons, groupComparisons);
             System.Threading.Interlocked.Add(ref totalMatches, groupMatches);
@@ -315,7 +316,7 @@ internal class SimulationEngine(
                 totalInRange++;
 
                 // 代表値（ルート）を見つける
-                int root = FindRoot(replaceTable, fileNum);
+                int root = uf.Find(fileNum);
 
                 // 自分がルートならユニークファイル
                 if (root == fileNum)
@@ -352,30 +353,16 @@ internal class SimulationEngine(
     /// <summary>
     /// グループ比較（Union-Find方式・スレッドセーフ）。
     /// </summary>
-    /// <remarks>
-    /// <para>【処理フロー】</para>
-    /// <list type="number">
-    /// <item>単一ファイルグループは自分自身を登録</item>
-    /// <item>RMS値でソート</item>
-    /// <item>各ファイルと後続の近傍ファイルを比較（Sort &amp; Sweep）</item>
-    /// <item>一致した場合、Union-Findで統合</item>
-    /// </list>
-    /// 
-    /// <para>【高速化パス】</para>
-    /// <list type="bullet">
-    /// <item>Fast path 1: ファイル名完全一致</item>
-    /// <item>Fast path 2: フィンガープリント一致</item>
-    /// <item>Slow path: 波形比較（<see cref="FastWaveCompare"/>）</item>
-    /// </list>
-    /// </remarks>
     private void ProcessGroup(
         IReadOnlyList<int> group,
-        int[] replaceTable,
+        UnionFind uf,
         float threshold,
         ref int comparisons,
         ref int matches)
     {
         if (group == null || group.Count == 0) return;
+
+        int[] replaceTable = uf.GetRawTable();
 
         // 単一ファイルのグループでも自分自身を登録
         if (group.Count == 1)
@@ -420,24 +407,9 @@ internal class SimulationEngine(
                 if (jVal < _startPoint || jVal > _endPoint) continue;
                 if (replaceTable[jVal] != 0) continue;
 
-                // Fast path: exact name match
-                if (_fileList[iIdx].Name.Equals(_fileList[jIdx].Name))
+                // Fast path checking (Name & Fingerprint)
+                if (TryFastPathMatch(iIdx, jIdx, replaceTable, iVal, jVal, ref matches))
                 {
-                    if (System.Threading.Interlocked.CompareExchange(ref replaceTable[jVal], iVal, 0) == 0)
-                    {
-                        System.Threading.Interlocked.Increment(ref matches);
-                    }
-                    continue;
-                }
-
-                // Fast path: fingerprint match
-                if (!string.IsNullOrEmpty(_fileList[iIdx].AudioFingerprint) &&
-                    _fileList[iIdx].AudioFingerprint.Equals(_fileList[jIdx].AudioFingerprint))
-                {
-                    if (System.Threading.Interlocked.CompareExchange(ref replaceTable[jVal], iVal, 0) == 0)
-                    {
-                        System.Threading.Interlocked.Increment(ref matches);
-                    }
                     continue;
                 }
 
@@ -446,33 +418,78 @@ internal class SimulationEngine(
                     continue;
 
                 // Actual audio comparison
-                try
+                CompareAndMergeAudio(iIdx, jIdx, iVal, jVal, threshold, uf, ref comparisons, ref matches);
+            }
+        }
+    }
+
+    private bool TryFastPathMatch(
+        int iIdx,
+        int jIdx,
+        int[] replaceTable,
+        int iVal,
+        int jVal,
+        ref int matches)
+    {
+        // Fast path: exact name match
+        if (_fileList[iIdx].Name.Equals(_fileList[jIdx].Name))
+        {
+            if (System.Threading.Interlocked.CompareExchange(ref replaceTable[jVal], iVal, 0) == 0)
+            {
+                System.Threading.Interlocked.Increment(ref matches);
+            }
+            return true;
+        }
+
+        // Fast path: fingerprint match
+        if (!string.IsNullOrEmpty(_fileList[iIdx].AudioFingerprint) &&
+            _fileList[iIdx].AudioFingerprint.Equals(_fileList[jIdx].AudioFingerprint))
+        {
+            if (System.Threading.Interlocked.CompareExchange(ref replaceTable[jVal], iVal, 0) == 0)
+            {
+                System.Threading.Interlocked.Increment(ref matches);
+            }
+            return true;
+        }
+
+        return false;
+    }
+
+    private void CompareAndMergeAudio(
+        int iIdx,
+        int jIdx,
+        int iVal,
+        int jVal,
+        float threshold,
+        UnionFind uf,
+        ref int comparisons,
+        ref int matches)
+    {
+        try
+        {
+            _audioCache.TryGetValue(_fileList[iIdx].Name, out var cachedData1);
+            _audioCache.TryGetValue(_fileList[jIdx].Name, out var cachedData2);
+
+            if (cachedData1 != null && cachedData2 != null)
+            {
+                System.Threading.Interlocked.Increment(ref comparisons);
+
+                bool isMatch = FastWaveCompare.IsMatch(
+                    cachedData1,
+                    cachedData2,
+                    threshold);
+
+                if (isMatch)
                 {
-                    _audioCache.TryGetValue(_fileList[iIdx].Name, out var cachedData1);
-                    _audioCache.TryGetValue(_fileList[jIdx].Name, out var cachedData2);
-
-                    if (cachedData1 != null && cachedData2 != null)
-                    {
-                        System.Threading.Interlocked.Increment(ref comparisons);
-
-                        bool isMatch = FastWaveCompare.IsMatch(
-                            cachedData1,
-                            cachedData2,
-                            threshold);
-
-                        if (isMatch)
-                        {
-                            // Union-Find: 統合
-                            UpdateReplaceTable(replaceTable, iVal, jVal);
-                            System.Threading.Interlocked.Increment(ref matches);
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    PerformanceDebugLogger.WriteLine($"ERROR: Audio comparison failed [{iIdx}] vs [{jIdx}]: {ex.Message}");
+                    // Union-Find: 統合
+                    uf.Union(iVal, jVal);
+                    System.Threading.Interlocked.Increment(ref matches);
                 }
             }
+        }
+        catch (Exception ex)
+        {
+            PerformanceDebugLogger.WriteLine($"ERROR: Audio comparison failed [{iIdx}] vs [{jIdx}]: {ex.Message}");
         }
     }
 
@@ -494,94 +511,6 @@ internal class SimulationEngine(
 
         entries.Sort((a, b) => a.Rms.CompareTo(b.Rms));
         return entries;
-    }
-
-    /// <summary>
-    /// Union-Findアルゴリズム: 代表値（ルート）を見つける（経路圧縮付き）
-    /// </summary>
-    /// <param name="replaceTable">置換テーブル。</param>
-    /// <param name="fileNum">検索するファイル番号。</param>
-    /// <returns>代表値（ルート）。</returns>
-    /// <remarks>
-    /// <para>【アルゴリズム】</para>
-    /// 親を辿って代表値に到達するまで繰り返し、経路圧縮を行います。
-    /// 
-    /// <para>【ターミネーション条件】</para>
-    /// - parent == 0: 未設定（自分自身がルート）
-    /// - parent == current: 自分自身を指している（ルート）
-    /// 
-    /// <para>【非再帰版】</para>
-    /// スタックオーバーフロー防止のため、whileループで実装。
-    /// 深いツリーでも安全です。
-    /// 
-    /// <para>【経路圧縮（Path Compression）】</para>
-    /// 探索経路上の全ノードが直接ルートを指すように更新し、
-    /// 後続の探索を高速化します。
-    /// </remarks>
-    internal static int FindRoot(int[] replaceTable, int fileNum)
-    {
-        int current = fileNum;
-        var pathNodes = new List<int>();
-
-        // ルートまで辿り、経路を記録
-        while (true)
-        {
-            int parent = replaceTable[current];
-
-            // 自分自身が代表値、または未設定の場合
-            if (parent == 0 || parent == current)
-                break;
-
-            pathNodes.Add(current);
-            current = parent;
-        }
-
-        // 経路圧縮：経路上の全ノードが直接ルートを指すように更新
-        int root = current;
-        foreach (var node in pathNodes)
-        {
-            replaceTable[node] = root;
-        }
-
-        return root;
-    }
-
-    /// <summary>
-    /// Union-Findアルゴリズム: 2つの集合を統合
-    /// </summary>
-    /// <param name="replaceTable">置換テーブル。</param>
-    /// <param name="iVal">ファイル番号1。</param>
-    /// <param name="jVal">ファイル番号2。</param>
-    /// <remarks>
-    /// <para>【アルゴリズム】</para>
-    /// <list type="number">
-    /// <item>両方の代表値（ルート）を取得</item>
-    /// <item>既に同じグループなら何もしない</item>
-    /// <item>小さい方を親、大きい方を子にする</item>
-    /// <item>CAS操作（Compare-And-Swap）で排他制御</item>
-    /// </list>
-    /// 
-    /// <para>【スレッドセーフ性】</para>
-    /// Interlocked.CompareExchangeを使用することで、
-    /// ロックレスに統合を実現します。
-    /// </remarks>
-    internal static void UpdateReplaceTable(int[] replaceTable, int iVal, int jVal)
-    {
-        // 両方の代表値を見つける
-        int rootI = FindRoot(replaceTable, iVal);
-        int rootJ = FindRoot(replaceTable, jVal);
-
-        // 既に同じグループなら何もしない
-        if (rootI == rootJ)
-            return;
-
-        // より小さい値を代表値にする
-        int minRoot = Math.Min(rootI, rootJ);
-        int maxRoot = Math.Max(rootI, rootJ);
-
-        // CASで統合
-        System.Threading.Interlocked.CompareExchange(ref replaceTable[maxRoot], minRoot, 0);
-        System.Threading.Interlocked.CompareExchange(ref replaceTable[maxRoot], minRoot, maxRoot);
     }
 
     /// <summary>
