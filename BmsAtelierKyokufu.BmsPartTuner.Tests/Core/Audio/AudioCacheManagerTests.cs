@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Text;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
 using BmsAtelierKyokufu.BmsPartTuner.Models;
 
@@ -52,12 +53,12 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
                 int fileSize = 36 + dataSize;
 
                 // RIFFヘッダー
-                bw.Write(System.Text.Encoding.ASCII.GetBytes("RIFF"));
+                bw.Write(Encoding.ASCII.GetBytes("RIFF"));
                 bw.Write(fileSize);
-                bw.Write(System.Text.Encoding.ASCII.GetBytes("WAVE"));
+                bw.Write(Encoding.ASCII.GetBytes("WAVE"));
 
                 // fmtチャンク
-                bw.Write(System.Text.Encoding.ASCII.GetBytes("fmt "));
+                bw.Write(Encoding.ASCII.GetBytes("fmt "));
                 bw.Write(16); // chunk size
                 bw.Write((short)1); // PCM
                 bw.Write((short)channels);
@@ -67,7 +68,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
                 bw.Write(bitsPerSample);
 
                 // dataチャンク
-                bw.Write(System.Text.Encoding.ASCII.GetBytes("data"));
+                bw.Write(Encoding.ASCII.GetBytes("data"));
                 bw.Write(dataSize);
                 bw.Write(new byte[dataSize]); // 無音
             }
@@ -101,68 +102,41 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
 
         }
 
-        [Fact]
-        public void PreloadAudioData_WithMissingFile_DoesNotCrash()
+        private void RunPreloadFailureTest(Func<string, IDisposable?> setupAction, string fileName)
         {
-            string path = Path.Combine(_tempDirectory, "missing.wav");
-            BmsAudioFile wavFile = new() { Name = path };
-            List<BmsAudioFile> list = [wavFile];
+            string path = Path.Combine(_tempDirectory, fileName);
+            using (setupAction?.Invoke(path))
+            {
+                BmsAudioFile wavFile = new() { Name = path, FileSize = File.Exists(path) ? new FileInfo(path).Length : 0 };
+                List<BmsAudioFile> list = [wavFile];
 
-            var (failedFiles, cache) = AudioCacheManager.PreloadAudioData(list, null);
+                var (failedFiles, cache) = AudioCacheManager.PreloadAudioData(list, null);
 
-            // 存在しないファイルはキャッシュされない
-            Assert.False(cache.ContainsKey(wavFile.Name));
-            Assert.Single(failedFiles);
-            Assert.Equal(path, failedFiles[0]);
+                Assert.False(cache.ContainsKey(wavFile.Name));
+                Assert.Single(failedFiles);
+                Assert.Equal(path, failedFiles[0]);
+            }
         }
 
         [Fact]
-        public void PreloadAudioData_WithCorruptFile_DoesNotCrash()
-        {
-            string path = CreateDummyWav("corrupt.wav", isValid: false);
-            BmsAudioFile wavFile = new() { Name = path, FileSize = new FileInfo(path).Length };
-            List<BmsAudioFile> list = [wavFile];
-
-            var (failedFiles, cache) = AudioCacheManager.PreloadAudioData(list, null);
-
-            // 破損ファイルはキャッシュされない
-            Assert.False(cache.ContainsKey(wavFile.Name));
-            Assert.Single(failedFiles);
-            Assert.Equal(path, failedFiles[0]);
-        }
+        public void PreloadAudioData_WithMissingFile_DoesNotCrash() =>
+            RunPreloadFailureTest(_ => null, "missing.wav");
 
         [Fact]
-        public void PreloadAudioData_WithZeroByteFile_DoesNotCrash()
-        {
-            string path = Path.Combine(_tempDirectory, "empty.wav");
-            File.Create(path).Dispose();
-            BmsAudioFile wavFile = new() { Name = path, FileSize = 0 };
-            List<BmsAudioFile> list = [wavFile];
-
-            var (failedFiles, cache) = AudioCacheManager.PreloadAudioData(list, null);
-
-            // 0バイトファイルはキャッシュされない
-            Assert.False(cache.ContainsKey(wavFile.Name));
-            Assert.Single(failedFiles);
-            Assert.Equal(path, failedFiles[0]);
-        }
+        public void PreloadAudioData_WithCorruptFile_DoesNotCrash() =>
+            RunPreloadFailureTest(path => { CreateDummyWav(Path.GetFileName(path), isValid: false); return null; }, "corrupt.wav");
 
         [Fact]
-        public void PreloadAudioData_WithLockedFile_DoesNotCrash()
-        {
-            string path = CreateDummyWav("locked.wav");
-            BmsAudioFile wavFile = new() { Name = path, FileSize = new FileInfo(path).Length };
-            List<BmsAudioFile> list = [wavFile];
+        public void PreloadAudioData_WithZeroByteFile_DoesNotCrash() =>
+            RunPreloadFailureTest(path => { File.Create(path).Dispose(); return null; }, "empty.wav");
 
-            using FileStream fs = new(path, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
-            // ファイルをロックした状態で読み込みを試行
-            var (failedFiles, cache) = AudioCacheManager.PreloadAudioData(list, null);
-
-            // ロック中のファイルはキャッシュされない
-            Assert.False(cache.ContainsKey(wavFile.Name));
-            Assert.Single(failedFiles);
-            Assert.Equal(path, failedFiles[0]);
-        }
+        [Fact]
+        public void PreloadAudioData_WithLockedFile_DoesNotCrash() =>
+            RunPreloadFailureTest(path =>
+            {
+                CreateDummyWav(Path.GetFileName(path));
+                return new FileStream(path, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+            }, "locked.wav");
 
         [Fact]
         public void PreloadAudioData_ResourceManagement_VerifyHandlesClosed()

@@ -1,19 +1,9 @@
 ﻿using BmsAtelierKyokufu.BmsPartTuner.Core.Validation;
-using BmsAtelierKyokufu.BmsPartTuner.Models;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Validation;
 
 /// <summary>
 /// <see cref="DefinitionRangeValidator"/> のテストクラス。
-/// 
-/// 【テスト対象】
-/// - 定義範囲の妥当性検証
-/// - 境界値チェック
-/// - 形式チェック
-/// 
-/// 【テスト設計方針】
-/// - 境界値: 01, zz, 大文字小文字
-/// - 異常系: null, 空文字, 不正形式
 /// </summary>
 public class DefinitionRangeValidatorTests
 {
@@ -30,7 +20,6 @@ public class DefinitionRangeValidatorTests
     [InlineData("0a", "0z")]     // 小文字範囲
     public void Validate_ValidRange_ReturnsSuccess(string start, string end)
     {
-        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         DefinitionRange range = new(start, end);
 
         ValidationResult result = _validator.Validate(range);
@@ -46,7 +35,6 @@ public class DefinitionRangeValidatorTests
     [Fact]
     public void Validate_NullRange_ReturnsFailure()
     {
-        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         ValidationResult result = _validator.Validate(null!);
 
         Assert.False(result.IsValid);
@@ -63,7 +51,6 @@ public class DefinitionRangeValidatorTests
     [InlineData("", "ZZ")]       // 開始が空
     public void Validate_InvalidStartLength_ReturnsFailure(string start, string end)
     {
-        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         DefinitionRange range = new(start, end);
 
         ValidationResult result = _validator.Validate(range);
@@ -78,7 +65,6 @@ public class DefinitionRangeValidatorTests
     [InlineData("01", "")]       // 終了が空
     public void Validate_InvalidEndLength_ReturnsFailure(string start, string end)
     {
-        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         DefinitionRange range = new(start, end);
 
         ValidationResult result = _validator.Validate(range);
@@ -94,7 +80,6 @@ public class DefinitionRangeValidatorTests
     [Fact]
     public void Validate_StartBelowMinimum_ReturnsFailure()
     {
-        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // "00" = 0 < 最小値1
         DefinitionRange range = new("00", "ZZ");
 
@@ -107,7 +92,6 @@ public class DefinitionRangeValidatorTests
     [Fact]
     public void Validate_EndGreaterThanStart_RequiredForSuccess()
     {
-        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // 終了 < 開始
         DefinitionRange range = new("20", "10");
 
@@ -120,7 +104,6 @@ public class DefinitionRangeValidatorTests
     [Fact]
     public void Validate_EndEqualsStart_ReturnsFailure()
     {
-        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // 終了 == 開始
         DefinitionRange range = new("10", "10");
 
@@ -140,7 +123,6 @@ public class DefinitionRangeValidatorTests
     [InlineData("  ", "ZZ")]     // 空白
     public void Validate_InvalidCharacters_ReturnsFailure(string start, string end)
     {
-        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         DefinitionRange range = new(start, end);
 
         ValidationResult result = _validator.Validate(range);
@@ -155,7 +137,6 @@ public class DefinitionRangeValidatorTests
     [Fact]
     public void Validate_MixedCase_AcceptsBoth()
     {
-        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // 大文字と小文字の混在
         DefinitionRange range = new("0A", "0z");
 
@@ -169,14 +150,6 @@ public class DefinitionRangeValidatorTests
 
 /// <summary>
 /// <see cref="R2ThresholdValidator"/> のテストクラス。
-/// 
-/// 【テスト対象】
-/// - 相関係数しきい値の検証
-/// - 表示値（0-100）と内部値（0.0-1.0）の両対応
-/// 
-/// 【テスト設計方針】
-/// - 境界値: 0, 100, 0.0, 1.0
-/// - 異常系: null, 空文字, 範囲外
 /// </summary>
 public class R2ThresholdValidatorTests
 {
@@ -192,7 +165,6 @@ public class R2ThresholdValidatorTests
     public void ValidateWithValue_IntegerDisplayValue_ReturnsConvertedInternalValue(
         string input, float expectedInternal)
     {
-        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         ValidationResult<float> result = R2ThresholdValidator.ValidateWithValue(input);
 
         Assert.True(result.IsValid);
@@ -211,7 +183,6 @@ public class R2ThresholdValidatorTests
     public void ValidateWithValue_DecimalInternalValue_PreservesValue(
         string input, float expectedInternal)
     {
-        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         ValidationResult<float> result = R2ThresholdValidator.ValidateWithValue(input);
 
         Assert.True(result.IsValid);
@@ -228,7 +199,6 @@ public class R2ThresholdValidatorTests
     public void ValidateWithValue_DecimalDisplayValue_ConvertsCorrectly(
         string input, float expectedInternal)
     {
-        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         ValidationResult<float> result = R2ThresholdValidator.ValidateWithValue(input);
 
         Assert.True(result.IsValid);
@@ -245,11 +215,8 @@ public class R2ThresholdValidatorTests
     [InlineData(null)]
     public void ValidateWithValue_EmptyOrWhitespace_ReturnsFailure(string? input)
     {
-        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         ValidationResult<float> result = R2ThresholdValidator.ValidateWithValue(input!);
 
-        // UI上の用語が「相関係数」から「マッチ許容度」へ変更されました。
-        // エラーメッセージにも新しい用語が反映されていることを検証します。
         Assert.False(result.IsValid);
         Assert.Contains("マッチ許容度を入力してください", result.GetFirstError());
     }
@@ -261,7 +228,6 @@ public class R2ThresholdValidatorTests
     [InlineData("200")]
     public void ValidateWithValue_OutOfRange_ReturnsFailure(string input)
     {
-        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         ValidationResult<float> result = R2ThresholdValidator.ValidateWithValue(input);
 
         Assert.False(result.IsValid);
@@ -274,7 +240,6 @@ public class R2ThresholdValidatorTests
     [InlineData("1.2.3")]
     public void ValidateWithValue_InvalidFormat_ReturnsFailure(string input)
     {
-        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         ValidationResult<float> result = R2ThresholdValidator.ValidateWithValue(input);
 
         Assert.False(result.IsValid);
@@ -288,7 +253,6 @@ public class R2ThresholdValidatorTests
     [Fact]
     public void Validate_ValidInput_ReturnsSuccess()
     {
-        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         ValidationResult result = _validator.Validate("95");
 
         Assert.True(result.IsValid);
@@ -297,7 +261,6 @@ public class R2ThresholdValidatorTests
     [Fact]
     public void Validate_InvalidInput_ReturnsFailure()
     {
-        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         ValidationResult result = _validator.Validate("invalid");
 
         Assert.False(result.IsValid);
@@ -313,7 +276,6 @@ public class R2ThresholdValidatorTests
     [InlineData("100")]    // 最大境界
     public void ValidateWithValue_BoundaryValues_ReturnsSuccess(string input)
     {
-        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         ValidationResult<float> result = R2ThresholdValidator.ValidateWithValue(input);
 
         Assert.True(result.IsValid);
@@ -322,7 +284,6 @@ public class R2ThresholdValidatorTests
     [Fact]
     public void ValidateWithValue_LeadingZeros_ParsesCorrectly()
     {
-        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         ValidationResult<float> result = R2ThresholdValidator.ValidateWithValue("095");
 
         Assert.True(result.IsValid);
@@ -342,7 +303,6 @@ public class ValidationResultTests
     [Fact]
     public void Success_CreatesValidResult()
     {
-        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         ValidationResult result = ValidationResult.Success();
 
         Assert.True(result.IsValid);
@@ -352,7 +312,6 @@ public class ValidationResultTests
     [Fact]
     public void Failure_SingleError_CreatesInvalidResult()
     {
-        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         ValidationResult result = ValidationResult.Failure("エラーメッセージ");
 
         Assert.False(result.IsValid);
@@ -363,7 +322,6 @@ public class ValidationResultTests
     [Fact]
     public void Failure_MultipleErrors_CreatesInvalidResult()
     {
-        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         var errors = new[] { "エラー1", "エラー2", "エラー3" };
 
         ValidationResult result = ValidationResult.Failure(errors);
@@ -375,7 +333,6 @@ public class ValidationResultTests
     [Fact]
     public void GetAllErrors_JoinsWithSeparator()
     {
-        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         var errors = new[] { "エラー1", "エラー2" };
         ValidationResult result = ValidationResult.Failure(errors);
 
@@ -387,7 +344,6 @@ public class ValidationResultTests
     [Fact]
     public void GetFirstError_NoErrors_ReturnsEmptyString()
     {
-        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         ValidationResult result = ValidationResult.Success();
 
         var firstError = result.GetFirstError();
@@ -402,7 +358,6 @@ public class ValidationResultTests
     [Fact]
     public void Success_WithValue_CreatesValidResultWithValue()
     {
-        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         ValidationResult<float> result = ValidationResult<float>.Success(0.95f);
 
         Assert.True(result.IsValid);
@@ -413,7 +368,6 @@ public class ValidationResultTests
     [Fact]
     public void Failure_WithValue_CreatesInvalidResult()
     {
-        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         ValidationResult<float> result = ValidationResult<float>.Failure("エラー");
 
         Assert.False(result.IsValid);
