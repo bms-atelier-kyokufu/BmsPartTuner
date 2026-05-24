@@ -1,8 +1,15 @@
-﻿using System.Text.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 using BmsAtelierKyokufu.BmsPartTuner.Models.Bmson;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Services.Bms.Bmson;
+
+[JsonSourceGenerationOptions(WriteIndented = false)]
+[JsonSerializable(typeof(BmsonFormat))]
+internal partial class BmsonJsonContext : JsonSerializerContext
+{
+}
 
 /// <summary>
 /// bmsonファイルを入力として受け取り、解析・クリーンアップ・スライス・BMSスコア生成までを一貫して行うファサード。
@@ -27,9 +34,9 @@ public class BmsonIntegrationFacade
 
         var timer = PerformanceDebugLogger.StartTimer();
 
-        // 1. JSONパース
-        string json = File.ReadAllText(bmsonFilePath, Encoding.UTF8);
-        var bmson = JsonSerializer.Deserialize<BmsonFormat>(json)
+        // 1. JSONパース (Source Generation + Streamを使用)
+        using var stream = File.OpenRead(bmsonFilePath);
+        var bmson = JsonSerializer.Deserialize(stream, BmsonJsonContext.Default.BmsonFormat)
             ?? throw new InvalidOperationException("Failed to parse the bmson file (returned null).");
         PerformanceDebugLogger.WriteLine($"[GenerateBmsText] JSON read & parse: {timer.Lap("JSON read & parse")} ms");
 

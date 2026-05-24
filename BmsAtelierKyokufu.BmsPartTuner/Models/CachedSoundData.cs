@@ -1,4 +1,5 @@
-﻿using NAudio.Wave;
+using BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
+using NAudio.Wave;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Models
 {
@@ -281,10 +282,11 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Models
                 WaveStream stream;
                 ISampleProvider sampleProvider;
 
-                if (Core.Audio.VirtualAudioRegistry.TryGetFile(fileName, out var memoryData))
+                if (VirtualAudioRegistry.TryGetStream(fileName, out var vStream))
                 {
-                    FileSize = memoryData.Length;
-                    memoryStreamToDispose = new MemoryStream(memoryData);
+                    VirtualAudioRegistry.TryGetFileSize(fileName, out var size);
+                    FileSize = size;
+                    memoryStreamToDispose = vStream;
                     var waveReader = new WaveFileReader(memoryStreamToDispose);
                     stream = waveReader;
                     sampleProvider = waveReader.ToSampleProvider();

@@ -22,8 +22,20 @@ public class BmsScoreGenerator(
     private int _radix = AppConstants.Definition.RadixBase62; // Default, will be recalculated
     private readonly bool _isDoublePlay = DetermineIsDoublePlay(bmson);
 
+    private static readonly string[] MeasureStrings = GenerateMeasureStrings();
+
+    private static string[] GenerateMeasureStrings()
+    {
+        var arr = new string[1000];
+        for (int i = 0; i < 1000; i++)
+        {
+            arr[i] = i.ToString("D3");
+        }
+        return arr;
+    }
+
     // #WAV定義の管理
-    private readonly ConcurrentDictionary<string, string> _wavDefinitions = new();
+    private readonly ConcurrentDictionary<(string, int), string> _wavDefinitions = new();
     private int _wavCounter = 1;
 
     // #BMP定義の管理
@@ -38,8 +50,38 @@ public class BmsScoreGenerator(
     private readonly Dictionary<long, string> _stopDefinitions = [];
     private int _stopCounter = 1;
 
-    // 小節ごとのデータ管理: measure -> channel -> list of 240-step string arrays
-    private readonly Dictionary<int, Dictionary<string, List<string[]>>> _measures = [];
+    private class ChannelLayer
+    {
+        public readonly string[] Notes;
+        public int CurrentGcd;
+
+        public ChannelLayer(int length)
+        {
+            Notes = new string[length];
+            Array.Fill(Notes, AppConstants.Definition.Rest);
+            CurrentGcd = length;
+        }
+
+        public void SetNote(int step, string id)
+        {
+            Notes[step] = id;
+            CurrentGcd = GCD(CurrentGcd, step);
+        }
+
+        private static int GCD(int a, int b)
+        {
+            while (b != 0)
+            {
+                int temp = b;
+                b = a % b;
+                a = temp;
+            }
+            return a;
+        }
+    }
+
+    // 小節ごとのデータ管理: measure -> channel -> list of ChannelLayer
+    private readonly Dictionary<int, Dictionary<string, List<ChannelLayer>>> _measures = [];
 
     // Y座標の事前計算データ
     private class YPositionData
@@ -61,19 +103,17 @@ public class BmsScoreGenerator(
         PrecalculateYPositions();
         PerformanceDebugLogger.WriteLine($"  [BmsScoreGenerator] PrecalculateYPositions: {timer.Lap("PrecalculateYPositions")} ms");
 
-        // 1. Pre-pass slicing to determine exact number of unique definitions needed
-        PreSliceAudio();
-        int uniqueSlices = _audioSliceManager.GetGeneratedSliceCount();
-        int hits = _audioSliceManager.GetCacheHitCount();
-        int misses = _audioSliceManager.GetCacheMissCount();
-        PerformanceDebugLogger.WriteLine($"  [BmsScoreGenerator] PreSliceAudio (uniqueSlices={uniqueSlices}, CacheHits={hits}, CacheMisses={misses}): {timer.Lap("PreSliceAudio")} ms");
-        PerformanceDebugLogger.PrintAccumulatedGrouped("AudioSliceManager Metrics (Grouped by Channel)", LogLevel.Debug);
+        // 音声ソースの投機的並列プリロード
+        PreloadAudioSources();
+        PerformanceDebugLogger.WriteLine($"  [BmsScoreGenerator] PreloadAudioSources (Parallel): {timer.Lap("PreloadAudioSources")} ms");
 
-        // 2. Choose optimal radix
-        _radix = uniqueSlices <= AppConstants.Definition.MaxNumberBase36 ? AppConstants.Definition.RadixBase36 : AppConstants.Definition.RadixBase62;
+        // 1. Choose optimal radix based on total upper bound notes
+        int totalNotesUpperBound = _bmson.SoundChannels?.Sum(c => c.Notes?.Count ?? 0) ?? 0;
+        _radix = totalNotesUpperBound <= AppConstants.Definition.MaxNumberBase36 ? AppConstants.Definition.RadixBase36 : AppConstants.Definition.RadixBase62;
 
         ProcessSoundChannels();
         PerformanceDebugLogger.WriteLine($"  [BmsScoreGenerator] ProcessSoundChannels: {timer.Lap("ProcessSoundChannels")} ms");
+        PerformanceDebugLogger.PrintAccumulatedGrouped("AudioSliceManager Metrics (Grouped by Channel)", LogLevel.Debug);
 
         ProcessBpmEvents();
         ProcessStopEvents();
@@ -81,7 +121,7 @@ public class BmsScoreGenerator(
         ProcessMeasureLengths();
         PerformanceDebugLogger.WriteLine($"  [BmsScoreGenerator] Other events processing: {timer.Lap("OtherEventsProcessing")} ms");
 
-        var sb = new StringBuilder();
+        var sb = new StringBuilder(262144);
 
         // 1. ヘッダー出力
         WriteHeader(sb);
@@ -196,7 +236,7 @@ public class BmsScoreGenerator(
         // WAV
         foreach (var kvp in _wavDefinitions.OrderBy(k => k.Value))
         {
-            string fileName = kvp.Key.Split('|')[0];
+            string fileName = kvp.Key.Item1;
             sb.AppendLine($"{AppConstants.Definition.WavPrefix}{kvp.Value} {fileName}");
         }
 
@@ -241,56 +281,20 @@ public class BmsScoreGenerator(
             // チャンネルごとにソートして出力
             foreach (var ch in channels.Keys.OrderBy(k => k))
             {
-                foreach (var arr in channels[ch])
+                foreach (var layer in channels[ch])
                 {
-                    string mStr = m.ToString("D3");
-                    string dataStr = string.Join("", DownSampleArray(arr));
-
-                    // すべて00の場合は出力しない（ただし小節長変更02などは出力する）
-                    if (ch != "02" && dataStr.All(c => c == '0'))
+                    string mStr = (m < 1000) ? MeasureStrings[m] : m.ToString("D3");
+                    sb.Append('#').Append(mStr).Append(ch).Append(':');
+                    
+                    int gcd = layer.CurrentGcd;
+                    for (int i = 0; i < layer.Notes.Length; i += gcd)
                     {
-                        continue;
+                        sb.Append(layer.Notes[i]);
                     }
-
-                    sb.AppendLine($"#{mStr}{ch}:{dataStr}");
+                    sb.AppendLine();
                 }
             }
         }
-    }
-
-    private static int GCD(int a, int b)
-    {
-        while (b != 0)
-        {
-            int temp = b;
-            b = a % b;
-            a = temp;
-        }
-        return a;
-    }
-
-    private static string[] DownSampleArray(string[] arr)
-    {
-        int gcd = arr.Length;
-        for (int i = 0; i < arr.Length; i++)
-        {
-            if (arr[i] != AppConstants.Definition.Rest)
-            {
-                gcd = GCD(gcd, i);
-            }
-        }
-
-        if (gcd > 1)
-        {
-            int newLength = arr.Length / gcd;
-            var newArr = new string[newLength];
-            for (int i = 0; i < newLength; i++)
-            {
-                newArr[i] = arr[i * gcd];
-            }
-            return newArr;
-        }
-        return arr;
     }
 
     private readonly struct PendingNote(int measure, string channel, int step, int measureLength, string id)
@@ -319,44 +323,13 @@ public class BmsScoreGenerator(
         return blocks;
     }
 
-    private void PreSliceAudio()
+    private void PreloadAudioSources()
     {
         if (_bmson.SoundChannels == null) return;
-
         Parallel.ForEach(_bmson.SoundChannels, ch =>
         {
             if (ch.Notes == null || ch.Notes.Count == 0) return;
-
-            var chTimer = PerformanceDebugLogger.StartTimer();
-            int notesCount = ch.Notes.Count;
-
-            var blocks = SplitNotesIntoBlocks(ch.Notes);
-
-            for (int bIndex = 0; bIndex < blocks.Count; bIndex++)
-            {
-                var block = blocks[bIndex];
-                double blockStartSec = _yDataMap[block[0].Y].TimeSec;
-
-                double nextBlockStartSec = double.PositiveInfinity;
-                if (bIndex + 1 < blocks.Count)
-                {
-                    nextBlockStartSec = _yDataMap[blocks[bIndex + 1][0].Y].TimeSec;
-                }
-
-                foreach (var n in block)
-                {
-                    if (_keyNotesOnly && n.X == 0) continue;
-
-                    double currentSec = _yDataMap[n.Y].TimeSec;
-                    double oSec = currentSec - blockStartSec;
-                    double dSec = nextBlockStartSec - currentSec;
-
-                    _audioSliceManager.SliceAudio(ch.Name, oSec, dSec);
-                }
-            }
-
-            long elapsed = chTimer.Lap(ch.Name);
-            PerformanceDebugLogger.WriteLine($"    [PreSliceAudio] Channel '{ch.Name}' ({notesCount} notes) processed in {elapsed} ms", LogLevel.Verbose);
+            _audioSliceManager.PreloadAudioSource(ch.Name);
         });
     }
 
@@ -364,7 +337,11 @@ public class BmsScoreGenerator(
     {
         if (_bmson.SoundChannels == null) return;
 
-        var pendingNotes = new ConcurrentQueue<PendingNote>();
+        int totalNotes = _bmson.SoundChannels.Sum(ch => ch.Notes?.Count ?? 0);
+        if (totalNotes == 0) return;
+
+        var pendingNotes = new PendingNote[totalNotes * 2]; // *2 for LNs
+        int noteIndex = 0;
 
         Parallel.ForEach(_bmson.SoundChannels, ch =>
         {
@@ -406,29 +383,23 @@ public class BmsScoreGenerator(
                         string lnChannel = MapLaneToChannel(n.X, true);
                         var endYData = _yDataMap[n.Y + n.L];
 
-                        // LNの開始と終了をLNチャンネルに配置
-                        pendingNotes.Enqueue(new PendingNote(yData.Measure, lnChannel, yData.StepIndex, yData.MeasureLength, wavId));
-                        pendingNotes.Enqueue(new PendingNote(endYData.Measure, lnChannel, endYData.StepIndex, endYData.MeasureLength, wavId));
+                        int idx1 = Interlocked.Add(ref noteIndex, 2) - 2;
+                        pendingNotes[idx1] = new PendingNote(yData.Measure, lnChannel, yData.StepIndex, yData.MeasureLength, wavId);
+                        pendingNotes[idx1 + 1] = new PendingNote(endYData.Measure, lnChannel, endYData.StepIndex, endYData.MeasureLength, wavId);
                     }
                     else
                     {
-                        // 鍵盤レーンであっても、depth > 0 (和音)の場合はBGMレーンに逃がす
-                        if (n.X > 0 && depth > 0)
-                        {
-                            pendingNotes.Enqueue(new PendingNote(yData.Measure, "01", yData.StepIndex, yData.MeasureLength, wavId));
-                        }
-                        else
-                        {
-                            pendingNotes.Enqueue(new PendingNote(yData.Measure, bmsChannel, yData.StepIndex, yData.MeasureLength, wavId));
-                        }
+                        string targetChannel = (n.X > 0 && depth > 0) ? "01" : bmsChannel;
+                        int idx = Interlocked.Increment(ref noteIndex) - 1;
+                        pendingNotes[idx] = new PendingNote(yData.Measure, targetChannel, yData.StepIndex, yData.MeasureLength, wavId);
                     }
                 }
             }
         });
 
-        // 一括マージ（ロック不要）
-        foreach (var note in pendingNotes)
+        for (int i = 0; i < noteIndex; i++)
         {
+            var note = pendingNotes[i];
             AddNoteDirect(note.Measure, note.Channel, note.Step, note.MeasureLength, note.Id);
         }
     }
@@ -514,26 +485,24 @@ public class BmsScoreGenerator(
             {
                 string multStr = mult.ToString("0.000000").TrimEnd('0').TrimEnd('.');
                 if (!_measures.ContainsKey(m)) _measures[m] = [];
-                if (!_measures[m].ContainsKey("02")) _measures[m]["02"] = [[multStr]];
+                if (!_measures[m].ContainsKey("02")) 
+                {
+                    var layer = new ChannelLayer(1);
+                    layer.SetNote(0, multStr);
+                    _measures[m]["02"] = [layer];
+                }
             }
         }
     }
 
     private string GetWavId(string fileName, int depth = 0)
     {
-        string key = $"{fileName}|{depth}";
+        var key = (fileName, depth);
         return _wavDefinitions.GetOrAdd(key, _ =>
         {
             int counter = Interlocked.Increment(ref _wavCounter) - 1;
             return RadixConvert.IntToZZ(counter, _radix);
         });
-    }
-
-    private static string[] CreateEmptyArray(int size)
-    {
-        var arr = new string[size];
-        for (int i = 0; i < size; i++) arr[i] = AppConstants.Definition.Rest;
-        return arr;
     }
 
     private void AddNote(int measure, string channel, int step, int measureLength, string id)
@@ -546,35 +515,42 @@ public class BmsScoreGenerator(
 
     private void AddNoteDirect(int measure, string channel, int step, int measureLength, string id)
     {
-        if (!_measures.ContainsKey(measure)) _measures[measure] = [];
-        var mDict = _measures[measure];
+        if (!_measures.TryGetValue(measure, out var mDict))
+        {
+            mDict = [];
+            _measures[measure] = mDict;
+        }
 
-        if (!mDict.ContainsKey(channel)) mDict[channel] = [CreateEmptyArray(measureLength)];
+        if (!mDict.TryGetValue(channel, out var layers))
+        {
+            layers = [new ChannelLayer(measureLength)];
+            mDict[channel] = layers;
+        }
 
         if (channel == "01")
         {
             bool placed = false;
-            foreach (var arr in mDict[channel])
+            foreach (var layer in layers)
             {
-                if (arr.Length == measureLength && arr[step] == AppConstants.Definition.Rest)
+                if (layer.Notes.Length == measureLength && layer.Notes[step] == AppConstants.Definition.Rest)
                 {
-                    arr[step] = id;
+                    layer.SetNote(step, id);
                     placed = true;
                     break;
                 }
             }
             if (!placed)
             {
-                var newArr = CreateEmptyArray(measureLength);
-                newArr[step] = id;
-                mDict[channel].Add(newArr);
+                var newLayer = new ChannelLayer(measureLength);
+                newLayer.SetNote(step, id);
+                layers.Add(newLayer);
             }
         }
         else
         {
-            if (mDict[channel][0].Length == measureLength)
+            if (layers[0].Notes.Length == measureLength)
             {
-                mDict[channel][0][step] = id;
+                layers[0].SetNote(step, id);
             }
         }
     }

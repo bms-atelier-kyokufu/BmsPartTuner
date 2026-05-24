@@ -1,4 +1,5 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
+using System.IO;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
 
@@ -8,28 +9,82 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
 /// </summary>
 public static class VirtualAudioRegistry
 {
-    // キー: ファイル名 (例: Slice_0001.wav), 値: WAVデータのバイト配列
-    private static readonly ConcurrentDictionary<string, byte[]> _files = new(StringComparer.OrdinalIgnoreCase);
+    // キー: ファイル名 (例: Slice_0001.wav), 値: 仮想ファイルオブジェクト
+    private static readonly ConcurrentDictionary<string, IVirtualFile> _files = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
     /// 音声データをレジストリに追加します。
     /// </summary>
     public static void AddFile(string fileName, byte[] data)
     {
-        _files[fileName] = data;
+        _files[fileName] = new MemoryVirtualFile(data);
     }
 
     /// <summary>
-    /// 指定したファイル名の音声データを取得します。
+    /// 仮想音声ファイルをレジストリに追加します。
+    /// </summary>
+    public static void AddFile(string fileName, IVirtualFile virtualFile)
+    {
+        _files[fileName] = virtualFile;
+    }
+
+    /// <summary>
+    /// 指定したファイル名の音声データを取得します（後方互換性用）。
+    /// 仮想ファイルの場合は一時的にバイト配列をアロケートしてコピーします。
     /// </summary>
     public static bool TryGetFile(string fileName, out byte[] data)
     {
-        if (fileName == null)
+        if (fileName != null && _files.TryGetValue(fileName, out var vf))
         {
-            data = [];
-            return false;
+            if (vf is MemoryVirtualFile mvf)
+            {
+                data = mvf.Data;
+                return true;
+            }
+
+            using (var stream = vf.Open())
+            {
+                data = new byte[vf.Length];
+                int read = 0;
+                while (read < data.Length)
+                {
+                    int r = stream.Read(data, read, data.Length - read);
+                    if (r <= 0) break;
+                    read += r;
+                }
+                return true;
+            }
         }
-        return _files.TryGetValue(fileName, out data!);
+        data = [];
+        return false;
+    }
+
+    /// <summary>
+    /// 指定したファイル名の音声データをストリームとして取得します。
+    /// </summary>
+    public static bool TryGetStream(string fileName, out Stream stream)
+    {
+        if (fileName != null && _files.TryGetValue(fileName, out var vf))
+        {
+            stream = vf.Open();
+            return true;
+        }
+        stream = Stream.Null;
+        return false;
+    }
+
+    /// <summary>
+    /// 指定したファイル名の音声データのサイズを取得します。
+    /// </summary>
+    public static bool TryGetFileSize(string fileName, out long size)
+    {
+        if (fileName != null && _files.TryGetValue(fileName, out var vf))
+        {
+            size = vf.Length;
+            return true;
+        }
+        size = 0;
+        return false;
     }
 
     /// <summary>
