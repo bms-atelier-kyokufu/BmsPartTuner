@@ -345,62 +345,70 @@ public class BmsScoreGenerator(
 
         Parallel.ForEach(_bmson.SoundChannels, ch =>
         {
-            if (ch.Notes == null || ch.Notes.Count == 0) return;
-
-            var blocks = SplitNotesIntoBlocks(ch.Notes);
-
-            for (int bIndex = 0; bIndex < blocks.Count; bIndex++)
-            {
-                var block = blocks[bIndex];
-                double blockStartSec = _yDataMap[block[0].Y].TimeSec;
-
-                double nextBlockStartSec = double.PositiveInfinity;
-                if (bIndex + 1 < blocks.Count)
-                {
-                    nextBlockStartSec = _yDataMap[blocks[bIndex + 1][0].Y].TimeSec;
-                }
-
-                // depth は「ブロック内でのインデックス」に代数的に等価
-                for (int depth = 0; depth < block.Count; depth++)
-                {
-                    var n = block[depth];
-
-                    if (_keyNotesOnly && n.X == 0) continue;
-
-                    double currentSec = _yDataMap[n.Y].TimeSec;
-                    double oSec = currentSec - blockStartSec;
-                    double dSec = nextBlockStartSec - currentSec;
-
-                    string sliceFile = _audioSliceManager.SliceAudio(ch.Name, oSec, dSec);
-                    if (string.IsNullOrEmpty(sliceFile)) continue;
-
-                    string wavId = GetWavId(sliceFile, depth);
-                    string bmsChannel = MapLaneToChannel(n.X, false);
-                    var yData = _yDataMap[n.Y];
-
-                    if (n.L > 0 && n.X > 0)
-                    {
-                        string lnChannel = MapLaneToChannel(n.X, true);
-                        var endYData = _yDataMap[n.Y + n.L];
-
-                        int idx1 = Interlocked.Add(ref noteIndex, 2) - 2;
-                        pendingNotes[idx1] = new PendingNote(yData.Measure, lnChannel, yData.StepIndex, yData.MeasureLength, wavId);
-                        pendingNotes[idx1 + 1] = new PendingNote(endYData.Measure, lnChannel, endYData.StepIndex, endYData.MeasureLength, wavId);
-                    }
-                    else
-                    {
-                        string targetChannel = (n.X > 0 && depth > 0) ? "01" : bmsChannel;
-                        int idx = Interlocked.Increment(ref noteIndex) - 1;
-                        pendingNotes[idx] = new PendingNote(yData.Measure, targetChannel, yData.StepIndex, yData.MeasureLength, wavId);
-                    }
-                }
-            }
+            ProcessChannel(ch, pendingNotes, ref noteIndex);
         });
 
         for (int i = 0; i < noteIndex; i++)
         {
             var note = pendingNotes[i];
             AddNoteDirect(note.Measure, note.Channel, note.Step, note.MeasureLength, note.Id);
+        }
+    }
+
+    private void ProcessChannel(BmsonSoundChannel ch, PendingNote[] pendingNotes, ref int noteIndex)
+    {
+        if (ch.Notes == null || ch.Notes.Count == 0) return;
+
+        var blocks = SplitNotesIntoBlocks(ch.Notes);
+
+        for (int bIndex = 0; bIndex < blocks.Count; bIndex++)
+        {
+            var block = blocks[bIndex];
+            double blockStartSec = _yDataMap[block[0].Y].TimeSec;
+
+            double nextBlockStartSec = bIndex + 1 < blocks.Count
+                ? _yDataMap[blocks[bIndex + 1][0].Y].TimeSec
+                : double.PositiveInfinity;
+
+            ProcessBlock(ch.Name, block, blockStartSec, nextBlockStartSec, pendingNotes, ref noteIndex);
+        }
+    }
+
+    private void ProcessBlock(string channelName, List<BmsonNote> block, double blockStartSec, double nextBlockStartSec, PendingNote[] pendingNotes, ref int noteIndex)
+    {
+        // depth は「ブロック内でのインデックス」に代数的に等価
+        for (int depth = 0; depth < block.Count; depth++)
+        {
+            var n = block[depth];
+
+            if (_keyNotesOnly && n.X == 0) continue;
+
+            double currentSec = _yDataMap[n.Y].TimeSec;
+            double oSec = currentSec - blockStartSec;
+            double dSec = nextBlockStartSec - currentSec;
+
+            string sliceFile = _audioSliceManager.SliceAudio(channelName, oSec, dSec);
+            if (string.IsNullOrEmpty(sliceFile)) continue;
+
+            string wavId = GetWavId(sliceFile, depth);
+            var yData = _yDataMap[n.Y];
+
+            if (n.L > 0 && n.X > 0)
+            {
+                string lnChannel = MapLaneToChannel(n.X, true);
+                var endYData = _yDataMap[n.Y + n.L];
+
+                int idx1 = Interlocked.Add(ref noteIndex, 2) - 2;
+                pendingNotes[idx1] = new PendingNote(yData.Measure, lnChannel, yData.StepIndex, yData.MeasureLength, wavId);
+                pendingNotes[idx1 + 1] = new PendingNote(endYData.Measure, lnChannel, endYData.StepIndex, endYData.MeasureLength, wavId);
+            }
+            else
+            {
+                string bmsChannel = MapLaneToChannel(n.X, false);
+                string targetChannel = (n.X > 0 && depth > 0) ? "01" : bmsChannel;
+                int idx = Interlocked.Increment(ref noteIndex) - 1;
+                pendingNotes[idx] = new PendingNote(yData.Measure, targetChannel, yData.StepIndex, yData.MeasureLength, wavId);
+            }
         }
     }
 
