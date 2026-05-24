@@ -10,14 +10,14 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
     /// </summary>
     public class FastWaveCompareTests
     {
-        private void RunIsMatchTest(float[] data1, float[] data2, float threshold, Action<bool> assertMatch, int channels = 1)
+        private static void RunIsMatchTest(float[] data1, float[] data2, float threshold, Action<bool> assertMatch, int channels = 1)
         {
             using var sound1 = BmsTestAudioHelper.CreateCachedSoundData(data1, channels);
             using var sound2 = BmsTestAudioHelper.CreateCachedSoundData(data2, channels);
             assertMatch(FastWaveCompare.IsMatch(sound1, sound2, threshold));
         }
 
-        private void RunCorrelationTest(float[] data1, float[] data2, Action<float> assertCorrelation, int channels = 1)
+        private static void RunCorrelationTest(float[] data1, float[] data2, Action<float> assertCorrelation, int channels = 1)
         {
             using var sound1 = BmsTestAudioHelper.CreateCachedSoundData(data1, channels);
             using var sound2 = BmsTestAudioHelper.CreateCachedSoundData(data2, channels);
