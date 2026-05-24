@@ -1,6 +1,8 @@
-﻿using System.IO;
+using System.IO;
 using System.Text;
 using BmsAtelierKyokufu.BmsPartTuner.Core;
+
+[assembly: Xunit.CollectionBehavior(DisableTestParallelization = true)]
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
 {
