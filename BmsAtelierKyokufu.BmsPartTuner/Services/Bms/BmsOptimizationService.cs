@@ -382,21 +382,16 @@ public class BmsOptimizationService : IBmsOptimizationService
         IReadOnlyList<BmsAudioFile> fileList,
         string inputPath,
         string outputPath,
-        float r2Threshold,
-        int startDefinition,
-        int endDefinition,
-        bool isPhysicalDeletionEnabled,
-        string? inputBmsContent = null,
-        IProgress<int>? progress = null,
-        IEnumerable<string>? selectedKeywords = null)
+        DefinitionReductionOptions options)
     {
         ArgumentNullException.ThrowIfNull(fileList);
+        ArgumentNullException.ThrowIfNull(options);
         if (string.IsNullOrWhiteSpace(inputPath))
             throw new ArgumentException("入力パスが指定されていません", nameof(inputPath));
         if (string.IsNullOrWhiteSpace(outputPath))
             throw new ArgumentException("出力パスが指定されていません", nameof(outputPath));
 
-        if (inputBmsContent == null && !File.Exists(inputPath))
+        if (options.InputBmsContent == null && !File.Exists(inputPath))
         {
             return new ReductionResult
             {
@@ -404,7 +399,7 @@ public class BmsOptimizationService : IBmsOptimizationService
                 OptimizedCount = fileList.Count,
                 ReductionRate = 0,
                 ProcessingTime = TimeSpan.Zero,
-                Threshold = r2Threshold,
+                Threshold = options.R2Threshold,
                 IsSuccess = false,
                 ErrorMessage = $"ファイルが見つかりません: {inputPath}"
             };
@@ -414,13 +409,13 @@ public class BmsOptimizationService : IBmsOptimizationService
         var timer = PerformanceDebugLogger.StartTimer();
 
         // 音声データの事前ロード（キャッシュ構築）
-        var (FailedFiles, Cache) = AudioCacheManager.PreloadAudioData(fileList, progress);
+        var (FailedFiles, Cache) = AudioCacheManager.PreloadAudioData(fileList, options.Progress);
         var audioCache = Cache;
         PerformanceDebugLogger.WriteLine($"[ExecuteDefinitionReductionAsync] AudioCacheManager.PreloadAudioData: {timer.Lap("AudioCacheManager.PreloadAudioData")} ms");
 
         // DefinitionReuse expects an ObservableCollection, so we need to convert
         ObservableCollection<BmsAudioFile> observableCollection = new(fileList);
-        DefinitionReuse dr = new(observableCollection, audioCache, inputBmsContent);
+        DefinitionReuse dr = new(observableCollection, audioCache, options.InputBmsContent);
         PerformanceDebugLogger.WriteLine($"[ExecuteDefinitionReductionAsync] DefinitionReuse constructor: {timer.Lap("DefinitionReuse constructor")} ms");
 
         var originalCount = fileList.Count;
@@ -435,7 +430,7 @@ public class BmsOptimizationService : IBmsOptimizationService
                 OptimizedCount = optimizedCount,
                 ReductionRate = 0,
                 ProcessingTime = TimeSpan.FromMilliseconds(timerTotal.Lap("Total")),
-                Threshold = r2Threshold,
+                Threshold = options.R2Threshold,
                 IsSuccess = false,
                 ErrorMessage = message
             };
@@ -451,16 +446,20 @@ public class BmsOptimizationService : IBmsOptimizationService
                 //      物理削除はサービス側で一元管理する。
                 dr.ReductDefinition(
                     inputPath,
-                    progress ?? new Progress<int>(),
-                    r2Threshold,
                     outputPath,
-                    startDefinition,
-                    endDefinition,
-                    isPhysicalDeletionEnabled: false,
-                    selectedKeywords: selectedKeywords);
+                    new DefinitionReductionOptions
+                    {
+                        R2Threshold = options.R2Threshold,
+                        StartDefinition = options.StartDefinition,
+                        EndDefinition = options.EndDefinition,
+                        IsPhysicalDeletionEnabled = false,
+                        InputBmsContent = options.InputBmsContent,
+                        Progress = options.Progress ?? new Progress<int>(),
+                        SelectedKeywords = options.SelectedKeywords
+                    });
 
                 // 物理削除処理
-                if (isPhysicalDeletionEnabled)
+                if (options.IsPhysicalDeletionEnabled)
                 {
                     var timerDelete = PerformanceDebugLogger.StartTimer();
                     List<string> unusedFiles = dr.GetUnusedFilePaths();
@@ -485,7 +484,7 @@ public class BmsOptimizationService : IBmsOptimizationService
                 OptimizedCount = optimizedCount,
                 ReductionRate = reductionRate,
                 ProcessingTime = TimeSpan.FromMilliseconds(totalElapsed),
-                Threshold = r2Threshold,
+                Threshold = options.R2Threshold,
                 IsSuccess = true,
                 DeletedFilesCount = deletedFilesCount
             };

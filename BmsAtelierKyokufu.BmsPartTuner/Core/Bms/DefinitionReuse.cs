@@ -103,20 +103,17 @@ public class DefinitionReuse
     /// </remarks>
     public void ReductDefinition(
         string bmsFileName,
-        IProgress<int> progress,
-        float r2Val,
         string saveFileName,
-        int defStart,
-        int defEnd,
-        bool isPhysicalDeletionEnabled,
-        Models.NormalizationMode normalizationMode = Models.NormalizationMode.None,
-        IEnumerable<string>? selectedKeywords = null)
+        DefinitionReductionOptions options,
+        NormalizationMode normalizationMode = NormalizationMode.None)
     {
+        ArgumentNullException.ThrowIfNull(options);
         var timerTotal = PerformanceDebugLogger.StartTimer();
         var timer = PerformanceDebugLogger.StartTimer();
+        var progress = options.Progress ?? new Progress<int>();
         progress.Report(0);
 
-        _rangeManager.DetermineProcessingRange(defStart, defEnd);
+        _rangeManager.DetermineProcessingRange(options.StartDefinition, options.EndDefinition);
 
         // 範囲確定後に統計クラスを再初期化
         // Why: コンストラクタ時点では範囲が未確定(0-0)のため、正しい範囲で作り直す必要がある
@@ -129,7 +126,7 @@ public class DefinitionReuse
         PerformanceDebugLogger.WriteLine($"  [ReductDefinition] PreloadAudioData: {timer.Lap("PreloadAudioData")} ms");
         progress.Report(AppConstants.Progress.PreloadComplete);
 
-        CreateReplaceTable(progress, r2Val, selectedKeywords);
+        CreateReplaceTable(progress, options.R2Threshold, options.SelectedKeywords);
         PerformanceDebugLogger.WriteLine($"  [ReductDefinition] CreateReplaceTable: {timer.Lap("CreateReplaceTable")} ms");
         progress.Report(AppConstants.Progress.ComparisonComplete);
 
@@ -146,7 +143,7 @@ public class DefinitionReuse
         FlushMemorySlicesToDisk(saveFileName);
         PerformanceDebugLogger.WriteLine($"  [ReductDefinition] FlushMemorySlicesToDisk: {timer.Lap("FlushMemorySlicesToDisk")} ms");
 
-        if (isPhysicalDeletionEnabled)
+        if (options.IsPhysicalDeletionEnabled)
         {
             PerformPhysicalDeletion();
             PerformanceDebugLogger.WriteLine($"  [ReductDefinition] PerformPhysicalDeletion: {timer.Lap("PerformPhysicalDeletion")} ms");

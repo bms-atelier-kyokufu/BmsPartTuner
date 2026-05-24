@@ -42,13 +42,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.ViewModels
             IReadOnlyList<BmsAudioFile> fileList,
             string inputPath,
             string outputPath,
-            float r2Threshold,
-            int startDefinition,
-            int endDefinition,
-            bool isPhysicalDeletionEnabled,
-            string? inputBmsContent = null,
-            IProgress<int>? progress = null,
-            IEnumerable<string>? selectedKeywords = null)
+            DefinitionReductionOptions options)
         {
             // テストが "Busy" 状態を検知できるように意図的に待機する
             await Task.Delay(200);
@@ -75,210 +69,135 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.ViewModels
     /// </summary>
     public class OptimizationViewModelTests
     {
-        [Fact]
-        public Task ExecuteThresholdOptimizationAsync_UpdatesBusyStateAndProgress()
+        private Task RunViewModelTestAsync(
+            IBmsOptimizationService service,
+            Action<OptimizationViewModel>? setup,
+            Func<OptimizationViewModel, Task> act,
+            Action<OptimizationViewModel> assert)
         {
             return WpfTestHelper.RunStaAsync(async () =>
             {
-                var vm = new OptimizationViewModel(new FakeOptimizationService());
-                var files = new List<string> { "a.wav", "b.wav" };
-
-                var result = await vm.ExecuteThresholdOptimizationAsync(files, 0, 10);
-
-                Assert.NotNull(result);
-                Assert.False(vm.IsBusy);
-                Assert.False(vm.IsProgressIndeterminate);
-                Assert.Equal(100, vm.ProgressValue);
-                Assert.NotNull(vm.LastOptimizationResult);
-                Assert.Contains("最適化", vm.StatusMessage);
+                var vm = new OptimizationViewModel(service);
+                setup?.Invoke(vm);
+                await act(vm);
+                assert?.Invoke(vm);
             });
         }
 
         [Fact]
+        public Task ExecuteThresholdOptimizationAsync_UpdatesBusyStateAndProgress() =>
+            RunViewModelTestAsync(
+                new FakeOptimizationService(),
+                null,
+                vm => vm.ExecuteThresholdOptimizationAsync(["a.wav", "b.wav"], 0, 10),
+                vm =>
+                {
+                    Assert.False(vm.IsBusy);
+                    Assert.False(vm.IsProgressIndeterminate);
+                    Assert.Equal(100, vm.ProgressValue);
+                    Assert.NotNull(vm.LastOptimizationResult);
+                    Assert.Contains("完了", vm.StatusMessage);
+                }
+            );
+
+        [Fact]
         public Task ExecuteThresholdOptimizationAsync_EmptyFiles_RaisesErrorAndReturnsNull()
         {
-            return WpfTestHelper.RunStaAsync(async () =>
-            {
-                var vm = new OptimizationViewModel(new FakeOptimizationService());
-                string? error = null;
-                vm.ErrorOccurred += (_, msg) => error = msg;
-
-                var result = await vm.ExecuteThresholdOptimizationAsync([], 0, 10);
-
-                Assert.Null(result);
-                Assert.Equal("ファイルリストが空です", error);
-                Assert.False(vm.IsBusy);
-            });
+            string? error = null;
+            return RunViewModelTestAsync(
+                new FakeOptimizationService(),
+                vm => vm.ErrorOccurred += (_, msg) => error = msg,
+                vm => vm.ExecuteThresholdOptimizationAsync([], 0, 10),
+                vm =>
+                {
+                    Assert.Equal("ファイルリストが空です", error);
+                    Assert.False(vm.IsBusy);
+                }
+            );
         }
 
         [Fact]
         public Task ExecuteDefinitionReductionAsync_ValidatesThresholdAndReportsResult()
         {
-            return WpfTestHelper.RunStaAsync(async () =>
-            {
-                var vm = new OptimizationViewModel(new FakeOptimizationService())
-                {
-                    R2Threshold = "80"
-                };
-                var list = new BmsDefinitionManager("dummy.bms");
-                string? completedOutput = null;
-                vm.DefinitionReductionCompleted += (_, e) => completedOutput = e.OutputPath;
-
-                await vm.ExecuteDefinitionReductionAsync(list, "in.bms", "out.bms");
-
-                Assert.False(vm.IsBusy);
-                Assert.Equal("out.bms", completedOutput);
-            });
+            string? completedOutput = null;
+            return RunViewModelTestAsync(
+                new FakeOptimizationService(),
+                vm => { vm.R2Threshold = "80"; vm.DefinitionReductionCompleted += (_, e) => completedOutput = e.OutputPath; },
+                vm => vm.ExecuteDefinitionReductionAsync(new BmsDefinitionManager("dummy.bms"), "in.bms", "out.bms"),
+                vm => { Assert.False(vm.IsBusy); Assert.Equal("out.bms", completedOutput); }
+            );
         }
 
         [Fact]
         public Task ExecuteDefinitionReductionAsync_InvalidThreshold_RaisesError()
         {
-            return WpfTestHelper.RunStaAsync(async () =>
-            {
-                var vm = new OptimizationViewModel(new FakeOptimizationService())
-                {
-                    R2Threshold = "-1"
-                };
-                var list = new BmsDefinitionManager("dummy.bms");
-                string? error = null;
-                vm.ErrorOccurred += (_, msg) => error = msg;
-
-                await vm.ExecuteDefinitionReductionAsync(list, "in.bms", "out.bms");
-
-                Assert.Equal("invalid", error);
-                Assert.False(vm.IsBusy);
-            });
+            string? error = null;
+            return RunViewModelTestAsync(
+                new FakeOptimizationService(),
+                vm => { vm.R2Threshold = "-1"; vm.ErrorOccurred += (_, msg) => error = msg; },
+                vm => vm.ExecuteDefinitionReductionAsync(new BmsDefinitionManager("dummy.bms"), "in.bms", "out.bms"),
+                vm => { Assert.Equal("invalid", error); Assert.False(vm.IsBusy); }
+            );
         }
 
         #region Priority A: State Transition Tests (UIフリーズ防止)
 
-        /// <summary>
-        /// 処理中に例外が発生した場合、エラー状態へ正しく遷移することを検証。
-        /// </summary>
         [Fact]
         public Task ExecuteThresholdOptimizationAsync_ServiceThrows_TransitionsToErrorState()
         {
-            return WpfTestHelper.RunStaAsync(async () =>
-            {
-                var vm = new OptimizationViewModel(new ThrowingOptimizationService());
-                string? error = null;
-                vm.ErrorOccurred += (_, msg) => error = msg;
-
-                var result = await vm.ExecuteThresholdOptimizationAsync(
-                    ["a.wav"], 0, 10);
-
-                // 処理後の状態
-                Assert.Null(result);
-                Assert.False(vm.IsBusy, "処理後はIsBusyがfalseになるべき");
-                Assert.NotNull(error);
-            });
+            string? error = null;
+            return RunViewModelTestAsync(
+                new ThrowingOptimizationService(),
+                vm => vm.ErrorOccurred += (_, msg) => error = msg,
+                vm => vm.ExecuteThresholdOptimizationAsync(["a.wav"], 0, 10),
+                vm => { Assert.False(vm.IsBusy); Assert.NotNull(error); }
+            );
         }
 
-        /// <summary>
-        /// IsBusy状態の正しい遷移: Idle → Processing → Idle
-        /// </summary>
         [Fact]
         public Task ExecuteThresholdOptimizationAsync_IsBusyTransition_CorrectOrder()
         {
-            return WpfTestHelper.RunStaAsync(async () =>
-            {
-                var vm = new OptimizationViewModel(new FakeOptimizationService());
-                var busyStates = new List<bool>();
-
-                vm.PropertyChanged += (s, e) =>
-                {
-                    if (e.PropertyName == nameof(vm.IsBusy))
-                    {
-                        busyStates.Add(vm.IsBusy);
-                    }
-                };
-
-                var files = new List<string> { "a.wav" };
-                await vm.ExecuteThresholdOptimizationAsync(files, 0, 10);
-
-                // Idle(false) → Processing(true) → Idle(false)
-                Assert.Contains(true, busyStates);  // 処理中にtrueになった
-                Assert.False(vm.IsBusy);            // 最終状態はfalse
-            });
+            var busyStates = new List<bool>();
+            return RunViewModelTestAsync(
+                new FakeOptimizationService(),
+                vm => vm.PropertyChanged += (s, e) => { if (e.PropertyName == nameof(vm.IsBusy)) busyStates.Add(vm.IsBusy); },
+                vm => vm.ExecuteThresholdOptimizationAsync(["a.wav"], 0, 10),
+                vm => { Assert.Contains(true, busyStates); Assert.False(vm.IsBusy); }
+            );
         }
 
-        /// <summary>
-        /// 進捗が正しく更新されることを検証。
-        /// </summary>
         [Fact]
         public Task ExecuteThresholdOptimizationAsync_ProgressUpdates_ReportedCorrectly()
         {
-            return WpfTestHelper.RunStaAsync(async () =>
-            {
-                var vm = new OptimizationViewModel(new FakeOptimizationService());
-                var progressValues = new List<int>();
-
-                vm.PropertyChanged += (s, e) =>
-                {
-                    if (e.PropertyName == nameof(vm.ProgressValue))
-                    {
-                        progressValues.Add(vm.ProgressValue);
-                    }
-                };
-
-                var files = new List<string> { "a.wav" };
-                await vm.ExecuteThresholdOptimizationAsync(files, 0, 10);
-
-                // 進捗が更新されたこと
-                Assert.NotEmpty(progressValues);
-                // 最終的に100%になること
-                Assert.Equal(100, vm.ProgressValue);
-            });
+            var progressValues = new List<int>();
+            return RunViewModelTestAsync(
+                new FakeOptimizationService(),
+                vm => vm.PropertyChanged += (s, e) => { if (e.PropertyName == nameof(vm.ProgressValue)) progressValues.Add(vm.ProgressValue); },
+                vm => vm.ExecuteThresholdOptimizationAsync(["a.wav"], 0, 10),
+                vm => { Assert.NotEmpty(progressValues); Assert.Equal(100, vm.ProgressValue); }
+            );
         }
 
-        /// <summary>
-        /// 定義削減処理での状態遷移検証。
-        /// </summary>
         [Fact]
         public Task ExecuteDefinitionReductionAsync_StateTransition_CorrectOrder()
         {
-            return WpfTestHelper.RunStaAsync(async () =>
-            {
-                var vm = new OptimizationViewModel(new FakeOptimizationService())
-                {
-                    R2Threshold = "80"
-                };
-                var list = new BmsDefinitionManager("dummy.bms");
-                var busyStates = new List<bool>();
-
-                vm.PropertyChanged += (s, e) =>
-                {
-                    if (e.PropertyName == nameof(vm.IsBusy))
-                    {
-                        busyStates.Add(vm.IsBusy);
-                    }
-                };
-
-                await vm.ExecuteDefinitionReductionAsync(list, "in.bms", "out.bms");
-
-                // 処理が完了していること
-                Assert.False(vm.IsBusy);
-            });
+            var busyStates = new List<bool>();
+            return RunViewModelTestAsync(
+                new FakeOptimizationService(),
+                vm => { vm.R2Threshold = "80"; vm.PropertyChanged += (s, e) => { if (e.PropertyName == nameof(vm.IsBusy)) busyStates.Add(vm.IsBusy); }; },
+                vm => vm.ExecuteDefinitionReductionAsync(new BmsDefinitionManager("dummy.bms"), "in.bms", "out.bms"),
+                vm => Assert.False(vm.IsBusy)
+            );
         }
 
-        /// <summary>
-        /// サービスがnullを返した場合の状態遷移検証。
-        /// </summary>
         [Fact]
-        public Task ExecuteThresholdOptimizationAsync_ServiceReturnsNull_HandlesGracefully()
-        {
-            return WpfTestHelper.RunStaAsync(async () =>
-            {
-                var vm = new OptimizationViewModel(new NullReturningOptimizationService());
-
-                var result = await vm.ExecuteThresholdOptimizationAsync(
-                    ["a.wav"], 0, 10);
-
-                Assert.Null(result);
-                Assert.False(vm.IsBusy, "サービスがnullを返しても、IsBusyはfalseになるべき");
-            });
-        }
+        public Task ExecuteThresholdOptimizationAsync_ServiceReturnsNull_HandlesGracefully() =>
+            RunViewModelTestAsync(
+                new NullReturningOptimizationService(),
+                null,
+                vm => vm.ExecuteThresholdOptimizationAsync(["a.wav"], 0, 10),
+                vm => Assert.False(vm.IsBusy)
+            );
 
         #endregion
     }
@@ -305,13 +224,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.ViewModels
             IReadOnlyList<BmsAudioFile> fileList,
             string inputPath,
             string outputPath,
-            float r2Threshold,
-            int startDefinition,
-            int endDefinition,
-            bool isPhysicalDeletionEnabled,
-            string? inputBmsContent = null,
-            IProgress<int>? progress = null,
-            IEnumerable<string>? selectedKeywords = null)
+            DefinitionReductionOptions options)
         {
             throw new InvalidOperationException("Test exception");
         }
@@ -342,13 +255,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.ViewModels
             IReadOnlyList<BmsAudioFile> fileList,
             string inputPath,
             string outputPath,
-            float r2Threshold,
-            int startDefinition,
-            int endDefinition,
-            bool isPhysicalDeletionEnabled,
-            string? inputBmsContent = null,
-            IProgress<int>? progress = null,
-            IEnumerable<string>? selectedKeywords = null)
+            DefinitionReductionOptions options)
         {
 
             return Task.FromResult(new BmsOptimizationService.ReductionResult

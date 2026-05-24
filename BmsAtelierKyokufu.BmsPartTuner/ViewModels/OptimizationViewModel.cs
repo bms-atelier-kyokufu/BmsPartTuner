@@ -370,13 +370,16 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
                 bmsFileList.GetFileList(),
                 inputPath.Trim('"'),
                 outputPath.Trim('"'),
-                r2Val,
-                RadixConvert.ZZToInt(DefinitionStart),
-                RadixConvert.ZZToInt(DefinitionEnd),
-                IsPhysicalDeletionEnabled,
-                inputBmsContent,
-                _progress,
-                selectedKeywords);
+                new DefinitionReductionOptions
+                {
+                    R2Threshold = r2Val,
+                    StartDefinition = RadixConvert.ZZToInt(DefinitionStart),
+                    EndDefinition = RadixConvert.ZZToInt(DefinitionEnd),
+                    IsPhysicalDeletionEnabled = IsPhysicalDeletionEnabled,
+                    InputBmsContent = inputBmsContent,
+                    Progress = _progress,
+                    SelectedKeywords = selectedKeywords
+                });
 
             if (result.IsSuccess)
             {

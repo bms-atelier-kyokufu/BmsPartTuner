@@ -31,12 +31,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Services.Bms
             IReadOnlyList<BmsAudioFile> fileList,
             string inputPath,
             string outputPath,
-            float r2Threshold,
-            int startDefinition,
-            int endDefinition,
-            bool isPhysicalDeletionEnabled,
-            string? inputBmsContent = null,
-            IProgress<int>? progress = null,
-            IEnumerable<string>? selectedKeywords = null);
+            DefinitionReductionOptions options);
     }
 }
+
