@@ -1,4 +1,4 @@
-﻿using BmsAtelierKyokufu.BmsPartTuner.Services.UI;
+using BmsAtelierKyokufu.BmsPartTuner.Services.UI;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Views.Dialogs.Settings
 {
