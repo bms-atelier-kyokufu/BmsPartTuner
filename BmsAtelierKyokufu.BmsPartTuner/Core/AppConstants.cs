@@ -1,4 +1,4 @@
-﻿namespace BmsAtelierKyokufu.BmsPartTuner.Core;
+namespace BmsAtelierKyokufu.BmsPartTuner.Core;
 
 /// <summary>
 /// アプリケーション全体で使用される定数を一元管理します。
@@ -421,5 +421,14 @@ public static class AppConstants
         /// 連続クリック時に最後の選択のみを再生するための遅延。
         /// </remarks>
         public const int AudioPreviewDelayMs = 300;
+    }
+
+    /// <summary>
+    /// ログ設定に関する定数。
+    /// </summary>
+    public static class Logging
+    {
+        /// <summary>デフォルトの最小出力ログレベル（DEBUGビルド時のみ機能）</summary>
+        public const LogLevel DefaultLogLevel = LogLevel.Debug;
     }
 }
