@@ -1,8 +1,5 @@
 ﻿using System.Collections.Concurrent;
 using System.IO;
-using System.Reflection;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using Microsoft.CodeAnalysis;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Tests.MutationFramework;
@@ -256,7 +253,7 @@ public class MutationTestRunner
 
         if (sourceFiles.Count == 0)
         {
-            return CreateEmptyReport(stopwatch.Elapsed);
+            return MutationTestReporter.CreateEmptyReport(stopwatch.Elapsed, _config);
         }
 
         // 変異生成
@@ -285,7 +282,7 @@ public class MutationTestRunner
 
         Parallel.ForEach(allMutations, new ParallelOptions { MaxDegreeOfParallelism = _config.MaxParallelism }, mutation =>
         {
-            var result = TestMutation(mutation.Root, mutation.Info);
+            var result = MutationTestExecutor.TestMutation(mutation.Root, mutation.Info, _config, _testCaseRegistry);
             results.Add(result);
 
             var current = System.Threading.Interlocked.Increment(ref progress);
@@ -296,7 +293,7 @@ public class MutationTestRunner
         });
 
         stopwatch.Stop();
-        return CreateReport([.. results], stopwatch.Elapsed);
+        return MutationTestReporter.CreateReport([.. results], stopwatch.Elapsed, _config, _logger);
     }
 
     /// <summary>
@@ -344,7 +341,7 @@ public class MutationTestRunner
         if (!File.Exists(filePath))
         {
             _logger?.Invoke($"[ERROR] File not found");
-            return CreateEmptyReport(stopwatch.Elapsed);
+            return MutationTestReporter.CreateEmptyReport(stopwatch.Elapsed, _config);
         }
 
         var mutations = MutationGenerator.GenerateFromFile(filePath).ToList();
@@ -356,7 +353,7 @@ public class MutationTestRunner
 
         Parallel.ForEach(mutations, new ParallelOptions { MaxDegreeOfParallelism = _config.MaxParallelism }, mutation =>
         {
-            var result = TestMutation(mutation.Root, mutation.Info);
+            var result = MutationTestExecutor.TestMutation(mutation.Root, mutation.Info, _config, _testCaseRegistry);
             results.Add(result);
 
             var current = System.Threading.Interlocked.Increment(ref progress);
@@ -367,181 +364,6 @@ public class MutationTestRunner
         });
 
         stopwatch.Stop();
-        return CreateReport([.. results], stopwatch.Elapsed);
-    }
-
-    private MutationTestResult TestMutation(SyntaxNode mutatedRoot, MutationInfo info)
-    {
-        var (assembly, _) = MutationCompiler.Compile(mutatedRoot.SyntaxTree, _config.AdditionalReferences);
-
-        if (assembly == null)
-        {
-            return new MutationTestResult(info, true, "コンパイルエラー");
-        }
-
-        var isKilled = CheckIfMutantIsKilled(assembly, info);
-        return new MutationTestResult(info, isKilled);
-    }
-
-    private bool CheckIfMutantIsKilled(Assembly assembly, MutationInfo info)
-    {
-        try
-        {
-            var typeName = Path.GetFileNameWithoutExtension(info.FilePath);
-
-            // 登録されたテストケースがあれば使用
-            var testCase = _testCaseRegistry.GetTestCase(typeName);
-            if (testCase != null)
-            {
-                return testCase.TestMutant(assembly);
-            }
-
-            // 汎用テスト
-            return GenericMutantTest(assembly, typeName);
-        }
-        catch
-        {
-            return true; // 例外 = Killed
-        }
-    }
-
-    private static bool GenericMutantTest(Assembly assembly, string typeName)
-    {
-        var types = assembly.GetTypes().Where(t => t.Name == typeName || t.Name.EndsWith(typeName)).ToList();
-        if (types.Count == 0) return true;
-
-        foreach (var type in types)
-        {
-            try
-            {
-                // 静的メソッドをテスト
-                foreach (var method in type.GetMethods(BindingFlags.Public | BindingFlags.Static).Where(m => m.GetParameters().Length == 0))
-                {
-                    try { method.Invoke(null, null); }
-                    catch { return true; }
-                }
-
-                // インスタンスメソッドをテスト
-                if (type.GetConstructor(Type.EmptyTypes) != null)
-                {
-                    var instance = Activator.CreateInstance(type);
-                    foreach (var method in type.GetMethods(BindingFlags.Public | BindingFlags.Instance).Where(m => m.GetParameters().Length == 0 && m.ReturnType != typeof(void)))
-                    {
-                        try { method.Invoke(instance, null); }
-                        catch { return true; }
-                    }
-                }
-            }
-            catch { return true; }
-        }
-
-        return false;
-    }
-
-    private MutationTestReport CreateReport(List<MutationTestResult> results, TimeSpan duration)
-    {
-        var killed = results.Count(r => r.IsKilled);
-        var survived = results.Count(r => !r.IsKilled);
-        var compileErrors = results.Count(r => r.ErrorMessage == "コンパイルエラー");
-        var score = results.Count > 0 ? (double)killed / results.Count * 100 : 0;
-
-        var report = new MutationTestReport
-        {
-            Timestamp = DateTime.Now,
-            SourceDirectory = _config.SourceDirectory,
-            TotalMutations = results.Count,
-            Killed = killed,
-            Survived = survived,
-            CompileErrors = compileErrors,
-            MutationScore = score,
-            Duration = duration,
-            Mutations = [.. results.Select(r => new MutationResultDto
-            {
-                FilePath = Path.GetRelativePath(_config.SourceDirectory, r.Mutation.FilePath),
-                MutationType = r.Mutation.Type.ToString(),
-                Line = r.Mutation.Line,
-                Column = r.Mutation.Column,
-                OriginalCode = r.Mutation.OriginalCode,
-                MutatedCode = r.Mutation.MutatedCode,
-                IsKilled = r.IsKilled,
-                ErrorMessage = r.ErrorMessage
-            })]
-        };
-
-        LogReport(report);
-
-        if (_config.SaveResultsToJson)
-        {
-            SaveReportToJson(report, "MutationTest");
-        }
-
-        return report;
-    }
-
-    private MutationTestReport CreateEmptyReport(TimeSpan duration)
-    {
-        return new MutationTestReport
-        {
-            Timestamp = DateTime.Now,
-            SourceDirectory = _config.SourceDirectory,
-            Duration = duration
-        };
-    }
-
-    private void LogReport(MutationTestReport report)
-    {
-        _logger?.Invoke($"\n========================================");
-        _logger?.Invoke($"=== Mutation Test Report ===");
-        _logger?.Invoke($"========================================");
-        _logger?.Invoke($"[TIME] Execution time: {report.Duration.TotalSeconds:F1}s");
-        _logger?.Invoke($"[TOTAL] Total mutations: {report.TotalMutations}");
-        _logger?.Invoke($"[KILLED] Killed: {report.Killed} ({(report.TotalMutations > 0 ? report.Killed * 100.0 / report.TotalMutations : 0):F1}%)");
-        _logger?.Invoke($"  +-- Compile errors: {report.CompileErrors}");
-        _logger?.Invoke($"  +-- Detected by tests: {report.Killed - report.CompileErrors}");
-        _logger?.Invoke($"[SURVIVED] Survived: {report.Survived} ({(report.TotalMutations > 0 ? report.Survived * 100.0 / report.TotalMutations : 0):F1}%)");
-        _logger?.Invoke($"[SCORE] Mutation score: {report.MutationScore:F1}%");
-        _logger?.Invoke($"========================================");
-
-        if (report.Survived > 0)
-        {
-            _logger?.Invoke($"\n=== Survived Mutations (Details) ===");
-            var survivedByType = report.Mutations.Where(m => !m.IsKilled).GroupBy(m => m.MutationType).OrderByDescending(g => g.Count());
-
-            foreach (var group in survivedByType.Take(5))
-            {
-                _logger?.Invoke($"\n[TYPE] {group.Key}: {group.Count()} mutations");
-                foreach (var result in group.Take(3))
-                {
-                    _logger?.Invoke($"  [FILE] {result.FilePath}:{result.Line}");
-                    _logger?.Invoke($"     {result.OriginalCode} -> {result.MutatedCode}");
-                }
-                if (group.Count() > 3)
-                {
-                    _logger?.Invoke($"  ... and {group.Count() - 3} more");
-                }
-            }
-        }
-    }
-
-    private void SaveReportToJson(MutationTestReport report, string testName)
-    {
-        var resultsDir = Path.IsPathRooted(_config.ResultsDirectory)
-            ? _config.ResultsDirectory
-            : Path.GetFullPath(_config.ResultsDirectory);
-
-        Directory.CreateDirectory(resultsDir);
-
-        var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
-        var fileName = $"{testName}_{timestamp}.json";
-        var filePath = Path.Combine(resultsDir, fileName);
-
-        var options = new JsonSerializerOptions
-        {
-            WriteIndented = true,
-            Converters = { new JsonStringEnumConverter() }
-        };
-
-        File.WriteAllText(filePath, JsonSerializer.Serialize(report, options));
-        _logger?.Invoke($"[SAVED] Results saved to: {filePath}");
+        return MutationTestReporter.CreateReport([.. results], stopwatch.Elapsed, _config, _logger);
     }
 }
