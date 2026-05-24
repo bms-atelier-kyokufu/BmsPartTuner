@@ -1,4 +1,4 @@
-﻿using BmsAtelierKyokufu.BmsPartTuner.Services.Audio;
+using BmsAtelierKyokufu.BmsPartTuner.Services.Audio;
 using BmsAtelierKyokufu.BmsPartTuner.Services.Bms;
 using BmsAtelierKyokufu.BmsPartTuner.Services.Common;
 using BmsAtelierKyokufu.BmsPartTuner.Services.UI;
@@ -416,15 +416,18 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
                 StatusMessage = "bmsonをダウンコンバート中...";
                 try
                 {
-                    Core.Audio.VirtualAudioRegistry.Clear();
-                    string bmsText = await Task.Run(() =>
-                        Services.Bms.Bmson.BmsonIntegrationFacade.GenerateBmsText(path, keyNotesOnly: false));
+                    using (PerformanceDebugLogger.MeasureTime("Total Flow (Downconvert + LoadBmsFile)"))
+                    {
+                        Core.Audio.VirtualAudioRegistry.Clear();
+                        string bmsText = await Task.Run(() =>
+                            Services.Bms.Bmson.BmsonIntegrationFacade.GenerateBmsText(path, keyNotesOnly: false));
 
-                    _workingBmsPath = path;
-                    _workingBmsContent = bmsText;
-                    _lastDownconvertedBmsonPath = path; // 成功時にパスを記憶
+                        _workingBmsPath = path;
+                        _workingBmsContent = bmsText;
+                        _lastDownconvertedBmsonPath = path; // 成功時にパスを記憶
 
-                    BmsDefinitionManager.LoadBmsFile(path, bmsText);
+                        BmsDefinitionManager.LoadBmsFile(path, bmsText);
+                    }
                     ShowToast($"bmsonをダウンコンバートしました: {Path.GetFileName(path)}", "📁", false);
                 }
                 catch (Exception ex)

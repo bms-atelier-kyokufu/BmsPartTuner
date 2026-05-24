@@ -1,4 +1,4 @@
-﻿using System.Text.RegularExpressions;
+using System.Text.RegularExpressions;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Services.Bms;
 
@@ -113,16 +113,45 @@ public partial class InstrumentNameDetectionService(
         try
         {
             var fileList = files.ToList();
-            var instrumentCandidates = ExtractInstrumentCandidates(fileList);
-            var fileInstrumentMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-
+            var fileWordsMap = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
+            
+            // 1. 各ファイルの単語を1回だけ抽出
             foreach (var file in fileList)
             {
-                if (file?.Name == null)
-                    continue;
+                if (file?.Name == null) continue;
+                var fileName = Path.GetFileNameWithoutExtension(file.Name);
+                fileWordsMap[file.Name] = ExtractWordsFromFileName(fileName);
+            }
+
+            // 2. 楽器候補の抽出（事前抽出した単語リストを使用）
+            var instrumentCandidates = ExtractInstrumentCandidates(fileWordsMap);
+            var sortedCandidates = instrumentCandidates.OrderByDescending(kvp => kvp.Value).ToList();
+            
+            var fileInstrumentMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+            // 3. マッチング処理
+            foreach (var file in fileList)
+            {
+                if (file?.Name == null) continue;
 
                 var fileName = Path.GetFileNameWithoutExtension(file.Name);
-                var instrumentName = FindBestInstrumentMatch(fileName, instrumentCandidates);
+                var words = fileWordsMap[file.Name];
+                
+                var instrumentName = string.Empty;
+                foreach (var candidate in sortedCandidates)
+                {
+                    if (words.Any(w => string.Equals(w, candidate.Key, StringComparison.OrdinalIgnoreCase)))
+                    {
+                        instrumentName = candidate.Key;
+                        break;
+                    }
+                    if (fileName.Contains(candidate.Key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        instrumentName = candidate.Key;
+                        break;
+                    }
+                }
+                
                 fileInstrumentMap[file.Name] = instrumentName;
             }
 
@@ -300,22 +329,18 @@ public partial class InstrumentNameDetectionService(
     /// → "kick": 3回（採用）、"snare": 1回（除外）、"cymbal": 1回（除外）
     /// </code>
     /// </remarks>
-    private Dictionary<string, int> ExtractInstrumentCandidates(List<BmsAudioFile> files)
+    private Dictionary<string, int> ExtractInstrumentCandidates(Dictionary<string, List<string>> fileWordsMap)
     {
         var candidates = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
 
-        if (files == null || files.Count == 0)
+        if (fileWordsMap == null || fileWordsMap.Count == 0)
             return candidates;
 
         try
         {
-            foreach (var file in files)
+            foreach (var kvp in fileWordsMap)
             {
-                if (file?.Name == null)
-                    continue;
-
-                var fileName = Path.GetFileNameWithoutExtension(file.Name);
-                var words = ExtractWordsFromFileName(fileName);
+                var words = kvp.Value;
 
                 foreach (var word in words)
                 {

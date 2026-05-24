@@ -16,6 +16,7 @@ public static class PerformanceDebugLogger
     private static readonly Lock LockObj = new();
     private static readonly string LogPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "perf_measure.log");
 
+
     public static LogLevel ActiveLogLevel { get; set; } = LogLevel.Debug;
 
     static PerformanceDebugLogger()

@@ -1,4 +1,5 @@
-﻿using BmsAtelierKyokufu.BmsPartTuner.Services.Bms;
+using BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
+using BmsAtelierKyokufu.BmsPartTuner.Services.Bms;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 
@@ -95,7 +96,7 @@ public partial class BmsDefinitionManager(string bmsFilePath, string? bmsContent
                 ? path
                 : Path.Combine(_bmsDirectory, path);
 
-            if (!File.Exists(fullPath) && !Core.Audio.VirtualAudioRegistry.TryGetFile(path, out _))
+            if (!VirtualAudioRegistry.TryGetFileSize(path, out _) && !File.Exists(fullPath))
             {
                 PerformanceDebugLogger.WriteLine($"[BmsDefinitionManager] Missing file: {path}");
                 MissingFiles.Add(path);
@@ -103,9 +104,9 @@ public partial class BmsDefinitionManager(string bmsFilePath, string? bmsContent
             }
 
             long fileSize = 0;
-            if (Core.Audio.VirtualAudioRegistry.TryGetFile(path, out var memoryData))
+            if (VirtualAudioRegistry.TryGetFileSize(path, out var memorySize))
             {
-                fileSize = memoryData.Length;
+                fileSize = memorySize;
             }
             else
             {

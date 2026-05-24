@@ -1,4 +1,4 @@
-﻿using BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
+using BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 
@@ -166,7 +166,16 @@ public class DefinitionReuse
         foreach (var file in _rewriter.KeptFiles)
         {
             var fileName = Path.GetFileName(file.Name);
-            if (VirtualAudioRegistry.TryGetFile(fileName, out var data))
+            if (VirtualAudioRegistry.TryGetStream(fileName, out var stream))
+            {
+                using (stream)
+                {
+                    var targetPath = Path.Combine(outDir, fileName);
+                    using var fs = new FileStream(targetPath, FileMode.Create, FileAccess.Write, FileShare.None, 4096, useAsync: false);
+                    stream.CopyTo(fs);
+                }
+            }
+            else if (VirtualAudioRegistry.TryGetFile(fileName, out var data))
             {
                 var targetPath = Path.Combine(outDir, fileName);
                 File.WriteAllBytes(targetPath, data);
