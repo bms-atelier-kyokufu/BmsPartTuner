@@ -1,8 +1,9 @@
 {
     "version": "0.2.0",
     "configurations": [
+        
         {
-            "name": ".NET Core Launch (console)",
+            "name": ".NET Core Launch (WPF App) - Antigravity IDE",
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
@@ -13,28 +14,10 @@
             "console": "internalConsole"
         },
         {
-            "name": "NetCoreDbg: Launch App",
-            "type": "coreclr",
+            "name": "C# Dev Kit: Launch WPF App (VS Code)",
+            "type": "dotnet",
             "request": "launch",
-            "preLaunchTask": "build",
-            "program": "${workspaceFolder}/BmsAtelierKyokufu.BmsPartTuner/bin/Debug/net10.0-windows7.0/BmsPartTuner.exe",
-            "args": [],
-            "cwd": "${workspaceFolder}/BmsAtelierKyokufu.BmsPartTuner",
-            "stopAtEntry": false,
-            "console": "internalConsole"
-        },
-        {
-            "name": "NetCoreDbg: Debug Tests",
-            "type": "coreclr",
-            "request": "launch",
-            "preLaunchTask": "build",
-            "program": "dotnet",
-            "args": [
-                "test",
-                "${workspaceFolder}/BmsAtelierKyokufu.BmsPartTuner.Tests/BmsAtelierKyokufu.BmsPartTuner.Tests.csproj"
-            ],
-            "cwd": "${workspaceFolder}/BmsAtelierKyokufu.BmsPartTuner.Tests",
-            "stopAtEntry": false
+            "projectPath": "${workspaceFolder}/BmsAtelierKyokufu.BmsPartTuner/BmsAtelierKyokufu.BmsPartTuner.csproj"
         }
     ]
 }

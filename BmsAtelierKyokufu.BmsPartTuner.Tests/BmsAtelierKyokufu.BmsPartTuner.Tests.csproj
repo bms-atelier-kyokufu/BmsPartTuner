@@ -33,13 +33,4 @@
   <ItemGroup>
     <Folder Include="TestResults\" />
   </ItemGroup>
-  <!-- ビルド前に using の整理を自動実行 -->
-  <Target Name="AutoFormatUsings" BeforeTargets="BeforeBuild">
-    <Message Text="Running dotnet format to clean up usings..." Importance="high" />
-    <!-- 
-      fix-style オプションは廃止されたため削除。
-      diagnostics IDE0005: 不要なusingの削除を指定
-    -->
-    <Exec Command="dotnet format &quot;$(ProjectPath)&quot; --diagnostics IDE0005" IgnoreExitCode="true" />
-  </Target>
 </Project>
