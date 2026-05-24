@@ -1,23 +1,15 @@
 {
     "version": "0.2.0",
     "configurations": [
-        
         {
             "name": ".NET Core Launch (WPF App) - Antigravity IDE",
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
-            "program": "${workspaceFolder}/BmsAtelierKyokufu.BmsPartTuner/bin/Debug/net10.0-windows7.0/BmsPartTuner.exe",
+            "program": "${workspaceFolder}/BmsAtelierKyokufu.BmsPartTuner/bin/Debug/net10.0-windows/BmsPartTuner.dll",
             "args": [],
             "cwd": "${workspaceFolder}/BmsAtelierKyokufu.BmsPartTuner",
-            "stopAtEntry": false,
             "console": "internalConsole"
-        },
-        {
-            "name": "C# Dev Kit: Launch WPF App (VS Code)",
-            "type": "dotnet",
-            "request": "launch",
-            "projectPath": "${workspaceFolder}/BmsAtelierKyokufu.BmsPartTuner/BmsAtelierKyokufu.BmsPartTuner.csproj"
         }
     ]
 }
