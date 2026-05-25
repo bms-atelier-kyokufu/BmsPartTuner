@@ -10,20 +10,20 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Converters;
 /// <remarks>
 /// <para>【責務】</para>
 /// オブジェクトの存在チェックをbool値に変換し、XAMLバインディングで使用可能にします。
-/// 
+///
 /// <para>【用途】</para>
 /// Material Design 3 TextBoxのLeading/Trailing Iconの表示判定に使用。
 /// アイコンが設定されている（null以外）場合のみ表示します。
-/// 
+///
 /// <para>【変換ロジック】</para>
 /// value != null → true/false
-/// 
+///
 /// <para>【Singletonパターン + MarkupExtension】</para>
 /// <list type="bullet">
 /// <item><see cref="Instance"/>により単一インスタンスを共有</item>
 /// <item><see cref="ProvideValue"/>により、XAMLで{local:ObjectToBoolConverter}と記述可能</item>
 /// </list>
-/// 
+///
 /// <para>【Why Singleton】</para>
 /// Converterはステートレスなため、インスタンスを共有することで
 /// メモリ効率を向上させます。

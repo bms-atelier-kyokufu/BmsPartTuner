@@ -1,4 +1,4 @@
-using System.Windows.Media.Animation;
+﻿using System.Windows.Media.Animation;
 using BmsAtelierKyokufu.BmsPartTuner.ViewModels;
 using BmsAtelierKyokufu.BmsPartTuner.Views.Controls;
 
@@ -14,7 +14,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Services.UI;
 /// <item>アニメーション（表示→維持→非表示）の制御</item>
 /// <item>エラー/通常状態の視覚的区別</item>
 /// </list>
-/// 
+///
 /// <para>【アニメーション】</para>
 /// ToastSequence Storyboardを使用して、以下のシーケンスを実行:
 /// <list type="number">
@@ -22,7 +22,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Services.UI;
 /// <item>3秒間表示</item>
 /// <item>フェードアウト</item>
 /// </list>
-/// 
+///
 /// <para>【テーマ対応】</para>
 /// M3ErrorBrush、ToastBackgroundBrushをResourcesから取得し、
 /// テーマに応じた色を自動適用します。
@@ -61,10 +61,7 @@ public class ToastNotificationService : IUiElementService<ToastViewModel>
             _showStoryboard = toastSequence;
             _showStoryboard.Completed += (s, e) =>
             {
-                if (_container != null)
-                {
-                    _container.Visibility = Visibility.Collapsed;
-                }
+                _container?.Visibility = Visibility.Collapsed;
             };
         }
     }
@@ -107,10 +104,7 @@ public class ToastNotificationService : IUiElementService<ToastViewModel>
     /// </summary>
     public void Hide()
     {
-        if (_container != null)
-        {
-            _container.Visibility = Visibility.Collapsed;
-        }
+        _container?.Visibility = Visibility.Collapsed;
     }
 
     /// <summary>
@@ -136,7 +130,7 @@ public class ToastNotificationService : IUiElementService<ToastViewModel>
     /// <item>エラー状態に応じて背景色を変更</item>
     /// <item>アニメーション開始</item>
     /// </list>
-    /// 
+    ///
     /// <para>【テーマ対応】</para>
     /// <list type="bullet">
     /// <item>エラー: M3ErrorBrush（Material 3 Error Color）</item>
@@ -150,14 +144,8 @@ public class ToastNotificationService : IUiElementService<ToastViewModel>
 
         _showStoryboard?.Stop();
 
-        if (_message != null)
-        {
-            _message.Text = data.Message;
-        }
-        if (_icon != null)
-        {
-            _icon.Text = data.Icon;
-        }
+        _message?.Text = data.Message;
+        _icon?.Text = data.Icon;
 
         if (data.IsError)
         {

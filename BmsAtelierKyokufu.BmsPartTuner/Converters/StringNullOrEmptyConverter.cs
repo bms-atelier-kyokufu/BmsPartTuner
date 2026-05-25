@@ -9,17 +9,17 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Converters;
 /// <remarks>
 /// <para>【責務】</para>
 /// 文字列の存在チェックをbool値に変換し、XAMLバインディングで使用可能にします。
-/// 
+///
 /// <para>【用途】</para>
 /// <list type="bullet">
 /// <item>TextBoxの入力検証表示</item>
 /// <item>ボタンの有効/無効制御</item>
 /// <item>エラーメッセージの表示/非表示</item>
 /// </list>
-/// 
+///
 /// <para>【変換ロジック】</para>
 /// string.IsNullOrEmpty(value) → true/false
-/// 
+///
 /// <para>【Singletonパターン】</para>
 /// <see cref="Instance"/>により、アプリケーション全体で
 /// 単一のインスタンスを共有します。

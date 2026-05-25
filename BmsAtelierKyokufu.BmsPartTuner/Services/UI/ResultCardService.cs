@@ -1,4 +1,4 @@
-using System.Windows.Media.Animation;
+﻿using System.Windows.Media.Animation;
 using BmsAtelierKyokufu.BmsPartTuner.ViewModels;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Services.UI;
@@ -14,7 +14,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Services.UI;
 /// <item>フェードインアニメーション</item>
 /// <item>パフォーマンス統計（Tech Stats）の表示</item>
 /// </list>
-/// 
+///
 /// <para>【表示項目】</para>
 /// <list type="bullet">
 /// <item>閾値（Threshold）</item>
@@ -25,7 +25,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Services.UI;
 /// <item>安全マージン（Margin）</item>
 /// <item>Tech Stats（処理時間・メモリ使用量）</item>
 /// </list>
-/// 
+///
 /// <para>【アニメーション】</para>
 /// 結果表示時にフェードイン（0.3秒）を適用し、
 /// 視覚的なフィードバックを提供します。
@@ -183,7 +183,7 @@ public class ResultCardService : IUiElementService<ResultCardData>
     /// <para>【用途】</para>
     /// FindOptimalThresholdsAsyncの結果を視覚的に表示する際に使用します。
     /// Base36/Base62の推奨値とパフォーマンス統計を表示します。
-    /// 
+    ///
     /// <para>【表示優先度】</para>
     /// ユーザーが最も知りたいのは「推奨しきい値」なので、これを最も大きく表示します。
     /// しきい値は36進数と62進数の両方を満たす最高品質（しきい値が最大）の値です。
@@ -240,10 +240,7 @@ public class ResultCardService : IUiElementService<ResultCardData>
     /// </summary>
     public void HideTechStats()
     {
-        if (_techStats != null)
-        {
-            _techStats.Visibility = Visibility.Collapsed;
-        }
+        _techStats?.Visibility = Visibility.Collapsed;
     }
 
     /// <summary>

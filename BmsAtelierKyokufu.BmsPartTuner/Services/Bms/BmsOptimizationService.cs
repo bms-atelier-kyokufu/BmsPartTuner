@@ -16,7 +16,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Services.Bms;
 /// <item>入力検証（定義範囲、相関係数しきい値）← IInputValidationService</item>
 /// <item>しきい値最適化シミュレーション（100回シミュレーション）</item>
 /// </list>
-/// 
+///
 /// <para>【設計パターン】</para>
 /// <list type="bullet">
 /// <item>Strategy Pattern: Validator（<see cref="DefinitionRangeValidator"/>, <see cref="R2ThresholdValidator"/>）</item>
@@ -56,14 +56,14 @@ public class BmsOptimizationService : IBmsOptimizationService
     /// <item>実行時間とメモリ使用量を計測</item>
     /// <item>結果をOptimizationResultに詰めて返す</item>
     /// </list>
-    /// 
+    ///
     /// <para>【最適値探索ロジック】</para>
     /// <list type="bullet">
     /// <item>Base36: ファイル数がBase36Limit（1295）以下で、かつしきい値が最大のもを選択</item>
     /// <item>Base62: ファイル数がBase62Limit（3843）以下で、かつしきい値が最大のものを選択</item>
     /// <item>制限を超える場合は、制限以下で最も高いしきい値を選択</item>
     /// </list>
-    /// 
+    ///
     /// <para>【メモリ計測】</para>
     /// GC.GetTotalMemory(false)で推定メモリ使用量を計測します。
     /// </remarks>
@@ -84,6 +84,7 @@ public class BmsOptimizationService : IBmsOptimizationService
 
         // ファイルリストからObservableCollectionを作成
         ObservableCollection<BmsAudioFile> fileListItems = [];
+        System.Collections.Concurrent.ConcurrentDictionary<string, Models.CachedSoundData>? audioCache = null;
         try
         {
             // endDefinitionが0の場合、自動検出（ファイル数から計算）
@@ -134,13 +135,12 @@ public class BmsOptimizationService : IBmsOptimizationService
 
             // 音声キャッシュをプリロード
             progress?.Report(5);
-            System.Collections.Concurrent.ConcurrentDictionary<string, BmsAtelierKyokufu.BmsPartTuner.Models.CachedSoundData>? audioCache = null;
             List<string> failedFiles = [];
             try
             {
                 var (FailedFiles, Cache) = AudioCacheManager.PreloadAudioData(
                     fileListItems,
-                    new Progress<int>(p => progress?.Report(5 + p / 20)), // 5-10%
+                    new Progress<int>(p => progress?.Report(5 + (p / 20))), // 5-10%
                     Models.NormalizationMode.None);
                 failedFiles = FailedFiles;
                 audioCache = Cache;
@@ -212,7 +212,7 @@ public class BmsOptimizationService : IBmsOptimizationService
             // Base62が見つからない場合はBase36と同じ値を使用（フォールバック）
             if (base62Count == 0 || base62Threshold < base36Threshold)
             {
-                PerformanceDebugLogger.WriteLine($"Base62: Using Base36 threshold as fallback (no better option found)");
+                PerformanceDebugLogger.WriteLine("Base62: Using Base36 threshold as fallback (no better option found)");
                 base62Threshold = base36Threshold;
                 base62Count = base36Count;
             }
@@ -256,6 +256,10 @@ public class BmsOptimizationService : IBmsOptimizationService
             PerformanceDebugLogger.WriteLine($"Simulation data points: {simulationData.Count}");
 
             PerformanceDebugLogger.WriteLine("=== Clearing audio cache ===");
+            if (audioCache != null)
+            {
+                CleanupAudioCache(fileListItems, audioCache);
+            }
             fileListItems.Clear();
 
             return result;
@@ -265,6 +269,10 @@ public class BmsOptimizationService : IBmsOptimizationService
             PerformanceDebugLogger.WriteLine($"ERROR in FindOptimalThresholdsAsync: {ex.Message}");
             PerformanceDebugLogger.WriteLine($"StackTrace: {ex.StackTrace}");
 
+            if (fileListItems != null && audioCache != null)
+            {
+                CleanupAudioCache(fileListItems, audioCache);
+            }
             fileListItems?.Clear();
 
             return null;
@@ -288,7 +296,7 @@ public class BmsOptimizationService : IBmsOptimizationService
     {
         if (simulationData == null || simulationData.Count == 0)
         {
-            PerformanceDebugLogger.WriteLine($"FindOptimalThreshold: No simulation data, returning default");
+            PerformanceDebugLogger.WriteLine("FindOptimalThreshold: No simulation data, returning default");
             return (0.60f, 0);
         }
 
@@ -305,7 +313,7 @@ public class BmsOptimizationService : IBmsOptimizationService
 
             if (nonZeroEntries.Count == 0)
             {
-                PerformanceDebugLogger.WriteLine($"FindOptimalThreshold: All entries have 0 count, returning default");
+                PerformanceDebugLogger.WriteLine("FindOptimalThreshold: All entries have 0 count, returning default");
                 return (0.60f, 0);
             }
 
@@ -359,11 +367,7 @@ public class BmsOptimizationService : IBmsOptimizationService
     /// <param name="fileList">ファイルリスト。</param>
     /// <param name="inputPath">入力BMSファイルパス。</param>
     /// <param name="outputPath">出力BMSファイルパス。</param>
-    /// <param name="r2Threshold">相関係数しきい値。</param>
-    /// <param name="startDefinition">開始定義。</param>
-    /// <param name="endDefinition">終了定義。</param>
-    /// <param name="progress">進捗報告。</param>
-    /// <param name="selectedKeywords">選択されたキーワード（nullまたは空の場合は全て処理）。</param>
+    /// <param name="options">削減実行オプション。</param>
     /// <returns>最適化結果。</returns>
     /// <remarks>
     /// <para>【処理フロー】</para>
@@ -373,7 +377,7 @@ public class BmsOptimizationService : IBmsOptimizationService
     /// <item>削減率を計算</item>
     /// <item>結果を返す</item>
     /// </list>
-    /// 
+    ///
     /// <para>【Why Task.Run】</para>
     /// 削減処理は長時間かかるため、UIスレッドをブロックしないよう
     /// バックグラウンドスレッドで実行します。

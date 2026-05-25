@@ -30,7 +30,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner
             InitializeComponent();
 
             _host = Host.CreateDefaultBuilder()
-                .ConfigureServices((context, services) => services.ConfigureAppServices())
+                .ConfigureServices((_, services) => services.ConfigureAppServices())
                 .Build();
         }
 
@@ -75,7 +75,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner
             SystemEvents.UserPreferenceChanged -= OnUserPreferenceChanged;
 
             // アップデートの準備ができていればインストーラーを起動
-            if (_updateService?.IsUpdateReady == true)
+            if (_updateService?.IsUpdateReady is true)
             {
                 _updateService.LaunchUpdateInstaller();
             }
@@ -107,7 +107,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner
                 var settingsService = _host.Services.GetService<SettingsService>();
                 var settings = settingsService?.Load();
 
-                if (settings?.UseSystemTheme == true && _themeService != null)
+                if (settings?.UseSystemTheme is true && _themeService != null)
                 {
                     Dispatcher.Invoke(() => _themeService.ApplySystemTheme());
                 }

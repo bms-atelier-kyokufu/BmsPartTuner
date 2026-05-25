@@ -13,18 +13,18 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Converters;
 /// <item>相関係数（0.0～1.0）をプログレスバーの幅に変換</item>
 /// <item>App.xamlのグローバルリソースを優先して使用（インスタンス重複回避）</item>
 /// </list>
-/// 
+///
 /// <para>【用途】</para>
 /// 相関係数入力TextBoxに、現在値を視覚的に表示するプログレスバー背景として使用。
-/// 
+///
 /// <para>【変換式】</para>
 /// 幅 = totalWidth × clamp(value, 0.0, 1.0)
-/// 
+///
 /// <para>【Why MarkupExtension】</para>
 /// <see cref="ProvideValue"/>をオーバーライドすることで、
 /// XAMLで{local:ValueToWidthConverter}と記述した際に、
 /// App.xamlのグローバルリソースを再利用できます。
-/// 
+///
 /// <para>【メリット】</para>
 /// <list type="bullet">
 /// <item>Converterインスタンスの重複定義を防止</item>
@@ -73,7 +73,7 @@ public class ValueToWidthConverter : MarkupExtension, IMultiValueConverter
     /// <para>【計算】</para>
     /// 1. 値を0.0～1.0の範囲にクランプ
     /// 2. 総幅を乗算
-    /// 
+    ///
     /// <para>【例】</para>
     /// values[0] = 0.75, values[1] = 200.0 → 150.0
     /// </remarks>

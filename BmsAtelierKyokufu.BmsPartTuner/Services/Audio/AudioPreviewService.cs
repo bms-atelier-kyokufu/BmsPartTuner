@@ -12,16 +12,16 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Services.Audio;
 /// <item>デバウンス機能（連続クリック対策）</item>
 /// <item>再生状態の通知（イベント駆動）</item>
 /// </list>
-/// 
+///
 /// <para>【デバウンス機構】</para>
 /// ユーザーが連続してファイルを選択した場合、
 /// 300msの遅延を設けることで、最後に選択されたファイルのみを再生します。
 /// これにより、無駄なディスクI/Oと再生処理を削減します。
-/// 
+///
 /// <para>【非同期処理】</para>
 /// UIスレッドをブロックしないよう、ファイル読み込みと再生を
 /// 非同期で実行します。
-/// 
+///
 /// <para>【リソース管理】</para>
 /// WaveOutとAudioFileReaderは適切にDispose処理を行い、
 /// メモリリークを防ぎます。
@@ -88,11 +88,11 @@ public class AudioPreviewService(BmsAtelierKyokufu.BmsPartTuner.Services.UI.IUIT
     /// <item>UIスレッドで再生開始</item>
     /// <item>再生状態をイベントで通知</item>
     /// </list>
-    /// 
+    ///
     /// <para>【Why デバウンス】</para>
     /// ユーザーがリストを素早くスクロールしたり、連続でファイルを選択した場合、
     /// 最後に選択されたファイルのみを再生することで、無駄なリソース消費を抑えます。
-    /// 
+    ///
     /// <para>【エラーハンドリング】</para>
     /// ファイル読み込みエラーや再生エラーは、
     /// <see cref="PlaybackStateChanged"/>イベントで通知されます。

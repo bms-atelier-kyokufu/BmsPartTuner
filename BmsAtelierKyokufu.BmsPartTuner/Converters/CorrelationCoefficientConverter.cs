@@ -1,18 +1,20 @@
-﻿using System.Globalization;
+using System.Globalization;
 using System.Windows.Data;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Converters
 {
     /// <summary>
-    /// 相関係数の表示値(1-100)と内部値(0.00-1.00)を変換するコンバーター
-    /// 
-    /// 【変換規則】
-    /// - 表示: 1-100の整数（ユーザーフレンドリー）
-    /// - 内部: 0.00-1.00の小数（計算用）
-    /// 
-    /// 【例】
-    /// 表示値 95 → 内部値 0.95
+    /// <para>相関係数の表示値(1-100)と内部値(0.00-1.00)を変換するコンバーター</para>
+    /// <para>【変換規則】</para>
+    /// <list type="bullet">
+    /// <item><description>表示: 1-100の整数（ユーザーフレンドリー）</description></item>
+    /// <item><description>内部: 0.00-1.00の小数（計算用）</description></item>
+    /// </list>
+    /// <para>【例】</para>
+    /// <para>
+    /// 表示値 95 → 内部値 0.95<br/>
     /// 内部値 0.98 → 表示値 98
+    /// </para>
     /// </summary>
     public class CorrelationCoefficientConverter : IValueConverter
     {
