@@ -19,8 +19,6 @@
 /// イミュータブルなデータ点なので、コンストラクタで初期化し、
 /// 後から変更不可能にすることでスレッドセーフを保証します。
 /// </remarks>
-/// <param name="threshold">相関係数しきい値（0.0～1.0）。</param>
-/// <param name="fileCount">予測される最適化後のファイル数。</param>
 public class SimulationPoint(float threshold, int fileCount)
 {
     /// <summary>相関係数しきい値（この値以上の類似度を持つファイルを統合）。</summary>

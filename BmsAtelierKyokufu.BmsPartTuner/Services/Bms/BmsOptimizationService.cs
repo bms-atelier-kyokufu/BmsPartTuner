@@ -1,4 +1,4 @@
-﻿using BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
+using BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Optimization;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Validation;
@@ -388,6 +388,9 @@ public class BmsOptimizationService : IBmsOptimizationService
         string outputPath,
         DefinitionReductionOptions options)
     {
+        // Manage static registries automatically using a scoped using session
+        using var registrySession = new AudioRegistrySession();
+
         ArgumentNullException.ThrowIfNull(fileList);
         ArgumentNullException.ThrowIfNull(options);
         if (string.IsNullOrWhiteSpace(inputPath))

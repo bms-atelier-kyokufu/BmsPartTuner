@@ -1,4 +1,4 @@
-﻿using BmsAtelierKyokufu.BmsPartTuner.Services.Audio;
+using BmsAtelierKyokufu.BmsPartTuner.Services.Audio;
 using BmsAtelierKyokufu.BmsPartTuner.Services.Bms;
 using BmsAtelierKyokufu.BmsPartTuner.Services.Common;
 using BmsAtelierKyokufu.BmsPartTuner.Services.UI;
@@ -415,6 +415,9 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
             }
             else
             {
+                Core.Audio.VirtualAudioRegistry.Clear();
+                Core.Audio.PointerAudioRegistry.Clear();
+
                 _workingBmsPath = path;
                 _workingBmsContent = null;
                 _lastDownconvertedBmsonPath = null; // 別のファイルが来たらクリア
@@ -423,6 +426,9 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
         }
         else
         {
+            Core.Audio.VirtualAudioRegistry.Clear();
+            Core.Audio.PointerAudioRegistry.Clear();
+
             _workingBmsPath = null;
             _workingBmsContent = null;
             _lastDownconvertedBmsonPath = null; // ファイルが存在しない場合もクリア
@@ -444,6 +450,7 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
             using (PerformanceDebugLogger.MeasureTime("Total Flow (Downconvert + LoadBmsFile)"))
             {
                 Core.Audio.VirtualAudioRegistry.Clear();
+                Core.Audio.PointerAudioRegistry.Clear();
                 string bmsText = await Task.Run(() =>
                     Services.Bms.Bmson.BmsonIntegrationFacade.GenerateBmsText(path, keyNotesOnly: false));
 
@@ -708,6 +715,10 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
             (BmsDefinitionManager as IDisposable)?.Dispose();
             (Notification as IDisposable)?.Dispose();
             _audioPreviewService?.Dispose();
+
+            // Clear static registries on disposal to release static caches
+            Core.Audio.PointerAudioRegistry.Clear();
+            Core.Audio.VirtualAudioRegistry.Clear();
         }
 
         _disposed = true;
