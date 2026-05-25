@@ -288,6 +288,35 @@ public class AudioSliceManager(string bmsonDir, bool throwOnMissingFile = true) 
         public byte[] RawBytes { get; }
         public int PcmOffset { get; }
         public int PcmLength { get; }
+        private float[][]? _samplesPerChannel;
+        public float[][] SamplesPerChannel
+        {
+            get
+            {
+                if (_samplesPerChannel != null) return _samplesPerChannel;
+                lock (this)
+                {
+                    if (_samplesPerChannel != null) return _samplesPerChannel;
+                    _samplesPerChannel = DecodeToFloatArray();
+                    return _samplesPerChannel;
+                }
+            }
+        }
+
+        private float[][] DecodeToFloatArray()
+        {
+            int frames = PcmLength / 4; // 16bit stereo = 4 bytes per frame
+            float[][] result = [new float[frames], new float[frames]];
+            ReadOnlySpan<byte> data = new ReadOnlySpan<byte>(RawBytes, PcmOffset, PcmLength);
+            for (int i = 0; i < frames; i++)
+            {
+                short l = System.Buffers.Binary.BinaryPrimitives.ReadInt16LittleEndian(data.Slice(i * 4, 2));
+                short r = System.Buffers.Binary.BinaryPrimitives.ReadInt16LittleEndian(data.Slice(i * 4 + 2, 2));
+                result[0][i] = l / 32768f;
+                result[1][i] = r / 32768f;
+            }
+            return result;
+        }
         public WaveFormat WaveFormat { get; } = new WaveFormat(AppConstants.Audio.StandardSampleRate, 16, 2);
 
         public CachedAudioSource(string path)

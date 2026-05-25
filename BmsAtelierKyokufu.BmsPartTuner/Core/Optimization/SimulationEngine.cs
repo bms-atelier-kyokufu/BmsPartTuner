@@ -39,14 +39,14 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Core.Optimization;
 /// <exception cref="ArgumentNullException">fileListがnullの場合。</exception>
 internal class SimulationEngine(
     IReadOnlyList<BmsAudioFile> fileList,
-    IReadOnlyDictionary<string, CachedSoundData> audioCache,
+    IReadOnlyDictionary<string, ICachedSoundData> audioCache,
     int startPoint,
     int endPoint)
 {
     private readonly IReadOnlyList<BmsAudioFile> _fileList = fileList ?? throw new ArgumentNullException(nameof(fileList));
     private readonly int _startPoint = startPoint;
     private readonly int _endPoint = endPoint;
-    private readonly IReadOnlyDictionary<string, CachedSoundData> _audioCache = audioCache ?? throw new ArgumentNullException(nameof(audioCache));
+    private readonly IReadOnlyDictionary<string, ICachedSoundData> _audioCache = audioCache ?? throw new ArgumentNullException(nameof(audioCache));
     private readonly int _parallelDegree = Math.Max(1, Environment.ProcessorCount - 1);
 
     /// <summary>

@@ -1,4 +1,4 @@
-namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
+﻿namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
 
 /// <summary>
 /// 並列オーディオ比較エンジン。
@@ -40,7 +40,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
 /// </summary>
 internal record AudioComparisonParameters(
     IReadOnlyList<BmsAudioFile> FileList,
-    IReadOnlyDictionary<string, CachedSoundData> AudioCache,
+    IReadOnlyDictionary<string, ICachedSoundData> AudioCache,
     int[] ReplaceTable,
     int StartPoint,
     int EndPoint
@@ -61,7 +61,7 @@ internal class ParallelAudioComparisonEngine(AudioComparisonParameters parameter
     private readonly int[] _replaceTable = parameters.ReplaceTable ?? throw new ArgumentNullException(nameof(parameters.ReplaceTable));
     private readonly int _startPoint = parameters.StartPoint;
     private readonly int _endPoint = parameters.EndPoint;
-    private readonly IReadOnlyDictionary<string, CachedSoundData> _audioCache = parameters.AudioCache ?? throw new ArgumentNullException(nameof(parameters.AudioCache));
+    private readonly IReadOnlyDictionary<string, ICachedSoundData> _audioCache = parameters.AudioCache ?? throw new ArgumentNullException(nameof(parameters.AudioCache));
 
     #endregion
 
@@ -298,7 +298,7 @@ internal class ParallelAudioComparisonEngine(AudioComparisonParameters parameter
     /// RMS差がしきい値を超えた時点で比較を打ち切ります。
     /// ソート済みなので、それ以降のファイルも条件を満たしません。
     /// </remarks>
-    private void CompareWithNearbyEntries(AudioEntry[] entries, int currentIndex, CachedSoundData cachedData1, float r2Threshold, ref int comparisons, ref int matches, ref int skipped)
+    private void CompareWithNearbyEntries(AudioEntry[] entries, int currentIndex, ICachedSoundData cachedData1, float r2Threshold, ref int comparisons, ref int matches, ref int skipped)
     {
         float rms1 = entries[currentIndex].Rms;
         var (_, max) = CalculateRmsThresholds(rms1);
@@ -339,7 +339,7 @@ internal class ParallelAudioComparisonEngine(AudioComparisonParameters parameter
     /// <item>一致した場合、置換テーブル更新</item>
     /// </list>
     /// </remarks>
-    private void CompareFilePair(int iIdx, int jIdx, CachedSoundData cachedData1, float r2Threshold, ref int comparisons, ref int matches, ref int skipped)
+    private void CompareFilePair(int iIdx, int jIdx, ICachedSoundData cachedData1, float r2Threshold, ref int comparisons, ref int matches, ref int skipped)
     {
         _ = _fileList[iIdx].NumInteger;
         int jVal = _fileList[jIdx].NumInteger;

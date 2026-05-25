@@ -52,7 +52,7 @@ public static class AudioFileGroupingStrategy
     /// </list>
     /// </remarks>
     public static IReadOnlyList<IReadOnlyList<int>> GroupFiles(
-        IReadOnlyDictionary<string, CachedSoundData> audioCache,
+        IReadOnlyDictionary<string, ICachedSoundData> audioCache,
         IReadOnlyList<BmsAudioFile> fileList,
         int startPoint,
         int endPoint,
@@ -100,7 +100,7 @@ public static class AudioFileGroupingStrategy
     /// </list>
     /// </remarks>
     private static List<IReadOnlyList<int>> GroupFilesByKeywords(
-        IReadOnlyDictionary<string, CachedSoundData> audioCache,
+        IReadOnlyDictionary<string, ICachedSoundData> audioCache,
         IReadOnlyList<BmsAudioFile> fileList,
         int startPoint,
         int endPoint,
@@ -232,7 +232,7 @@ public static class AudioFileGroupingStrategy
     /// 整数化することで、近いRMS値を持つファイルを同じグループに分類します。
     /// </remarks>
     private static List<IReadOnlyList<int>> GroupFilesTraditional(
-        IReadOnlyDictionary<string, CachedSoundData> audioCache,
+        IReadOnlyDictionary<string, ICachedSoundData> audioCache,
         IReadOnlyList<BmsAudioFile> fileList,
         int startPoint,
         int endPoint)

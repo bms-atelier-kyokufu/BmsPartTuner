@@ -1,4 +1,4 @@
-namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
+﻿namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
 
 /// <summary>
 /// オンメモリキャッシュされた音声データの高速比較クラス。
@@ -31,18 +31,17 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
 /// </list>
 ///
 /// <para>【数式変形】</para>
-/// ピアソン相関係数 $r$ の定義式を変形すると、以下のようになります:
-///
+/// <para>ピアソン相関係数 $r$ の定義式を変形すると、以下のようになります:</para>
+/// <para>
 /// $$
 /// \begin{aligned}
 /// r &amp;= \frac{\sum(x_i - \bar{x})(y_i - \bar{y})}{\sqrt{\sum(x_i - \bar{x})^2} \sqrt{\sum(y_i - \bar{y})^2}} \\
 /// &amp;= \frac{1}{n} \sum_{i=1}^{n} \left( \frac{x_i - \bar{x}}{s_x} \right) \left( \frac{y_i - \bar{y}}{s_y} \right)
 /// \end{aligned}
 /// $$
-///
-/// ※ $s_x, s_y$ は標準偏差
-///
-/// この $\left( \frac{x_i - \bar{x}}{s_x} \right)$ という項はデータを正規化（標準化）していることを示しています。
+/// </para>
+/// <para>※ $s_x, s_y$ は標準偏差</para>
+/// <para>この $\left( \frac{x_i - \bar{x}}{s_x} \right)$ という項はデータを正規化（標準化）していることを示しています。</para>
 ///
 /// <para>【Phase 2の変換】</para>
 /// 正規化波形 $\hat{x}_i$ を事前計算することで:
@@ -75,17 +74,18 @@ internal static class FastWaveCompare
     /// </list>
     ///
     /// <para>【Phase 2の数学的背景】</para>
-    /// 事前処理で波形を正規化:
-    ///
+    /// <para>事前処理で波形を正規化:</para>
+    /// <para>
     /// $$
     /// \hat{x}_i = \frac{x_i - \bar{x}}{\sqrt{\sum_{j=1}^{n}(x_j - \bar{x})^2}}
     /// $$
-    ///
-    /// これにより、ピアソン相関係数はドット積に帰着:
-    ///
+    /// </para>
+    /// <para>これにより、ピアソン相関係数はドット積に帰着:</para>
+    /// <para>
     /// $$
     /// r = \sum_{i=1}^{n} \hat{x}_i \cdot \hat{y}_i
     /// $$
+    /// </para>
     ///
     /// <para>【演算効率の改善】</para>
     /// <list type="bullet">
@@ -102,7 +102,7 @@ internal static class FastWaveCompare
     /// <item>逆相を確実に検出（相関係数 = -1.0）</item>
     /// </list>
     /// </remarks>
-    public static bool IsMatch(CachedSoundData data1, CachedSoundData data2, float threshold)
+    public static bool IsMatch(ICachedSoundData data1, ICachedSoundData data2, float threshold)
     {
         if (data1.SampleRate != data2.SampleRate ||
             data1.Channels != data2.Channels ||
@@ -111,10 +111,10 @@ internal static class FastWaveCompare
         if (data1.TotalSamples != data2.TotalSamples) return false;
 
         // Try using normalized regions if available
-        if (data1.NormalizedRegions != null && data2.NormalizedRegions != null)
+        if (data1.GetActiveRegions() != null && data2.GetActiveRegions() != null)
         {
-            var regions1 = data1.NormalizedRegions[0];
-            var regions2 = data2.NormalizedRegions[0];
+            var regions1 = data1.GetActiveRegions()[0];
+            var regions2 = data2.GetActiveRegions()[0];
 
             // If both are entirely silent
             if ((regions1 == null || regions1.Count == 0) && (regions2 == null || regions2.Count == 0))
@@ -167,7 +167,7 @@ internal static class FastWaveCompare
     /// <item>閾値調整のための統計収集</item>
     /// </list>
     /// </remarks>
-    public static float GetCorrelation(CachedSoundData data1, CachedSoundData data2)
+    public static float GetCorrelation(ICachedSoundData data1, ICachedSoundData data2)
     {
         if (data1.SampleRate != data2.SampleRate ||
             data1.Channels != data2.Channels ||
@@ -176,10 +176,10 @@ internal static class FastWaveCompare
         if (data1.TotalSamples != data2.TotalSamples) return 0.0f;
 
         // Try using normalized regions if available
-        if (data1.NormalizedRegions != null && data2.NormalizedRegions != null)
+        if (data1.GetActiveRegions() != null && data2.GetActiveRegions() != null)
         {
-            var regions1 = data1.NormalizedRegions[0];
-            var regions2 = data2.NormalizedRegions[0];
+            var regions1 = data1.GetActiveRegions()[0];
+            var regions2 = data2.GetActiveRegions()[0];
 
             // If both are entirely silent
             if ((regions1 == null || regions1.Count == 0) && (regions2 == null || regions2.Count == 0))

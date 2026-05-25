@@ -1,4 +1,4 @@
-namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
+﻿namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
 
 /// <summary>
 /// オーディオファイルのキャッシュ管理。
@@ -63,7 +63,7 @@ internal static class AudioCacheManager
     /// 破損ファイルや読み込みに失敗したファイルは無視して処理を続行しますが、
     /// そのファイルパスをリストで返却します。呼び出し元でユーザーに警告を表示できます。
     /// </remarks>
-    public static (List<string> FailedFiles, System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData> Cache) PreloadAudioData(
+    public static (List<string> FailedFiles, System.Collections.Concurrent.ConcurrentDictionary<string, ICachedSoundData> Cache) PreloadAudioData(
         IReadOnlyList<BmsAudioFile> fileList,
         IProgress<int>? progress,
         Models.NormalizationMode normalizationMode = Models.NormalizationMode.None)
@@ -77,7 +77,7 @@ internal static class AudioCacheManager
         int successCount = 0;
         int failCount = 0;
         var failedFiles = new System.Collections.Concurrent.ConcurrentBag<string>();
-        var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
+        var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, ICachedSoundData>();
 
         if (totalFiles == 0)
         {
@@ -183,7 +183,7 @@ internal static class AudioCacheManager
         IReadOnlyList<BmsAudioFile> batch,
         Models.NormalizationMode normalizationMode,
         System.Collections.Concurrent.ConcurrentBag<string> failedFiles,
-        System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData> audioCache)
+        System.Collections.Concurrent.ConcurrentDictionary<string, ICachedSoundData> audioCache)
     {
         int success = 0;
         int fail = 0;
@@ -191,9 +191,17 @@ internal static class AudioCacheManager
         {
             try
             {
-                var cachedData = new CachedSoundData(file.Name, normalizationMode);
-                audioCache[file.Name] = cachedData;
-                success++;
+                if (PointerAudioRegistry.TryGet(file.Name, out var pointerData))
+                {
+                    audioCache[file.Name] = pointerData;
+                    success++;
+                }
+                else
+                {
+                    var cachedData = new PreNormalizedSoundData(file.Name, normalizationMode);
+                    audioCache[file.Name] = cachedData;
+                    success++;
+                }
             }
             catch (Exception ex)
             {
@@ -221,7 +229,7 @@ internal static class AudioCacheManager
     /// </remarks>
     private static void LogCacheStatistics(
         IReadOnlyList<BmsAudioFile> fileList,
-        System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData> audioCache,
+        System.Collections.Concurrent.ConcurrentDictionary<string, ICachedSoundData> audioCache,
         int loaded,
         int totalFiles,
         int successCount,

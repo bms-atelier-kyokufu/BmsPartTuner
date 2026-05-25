@@ -30,7 +30,7 @@ public class DefinitionReuse
     #region フィールド
 
     private readonly IReadOnlyList<BmsAudioFile> _fileList;
-    private IReadOnlyDictionary<string, CachedSoundData> _audioCache;
+    private IReadOnlyDictionary<string, ICachedSoundData> _audioCache;
     private readonly int[] _replaces = new int[AppConstants.Definition.ReplaceTableSize];
     private readonly DefinitionRangeManager _rangeManager;
     private DefinitionStatistics _statistics;
@@ -51,7 +51,7 @@ public class DefinitionReuse
     /// <see cref="ObservableCollection{T}"/>はUI通知用で変更される可能性があるため、
     /// 内部処理用に不変のスナップショットを作成します。
     /// </remarks>
-    public DefinitionReuse(ObservableCollection<BmsAudioFile> fileList, IReadOnlyDictionary<string, CachedSoundData> audioCache, string? inputBmsContent = null)
+    public DefinitionReuse(ObservableCollection<BmsAudioFile> fileList, IReadOnlyDictionary<string, ICachedSoundData> audioCache, string? inputBmsContent = null)
     {
         _fileList = fileList?.ToList() ?? throw new ArgumentNullException(nameof(fileList));
         _audioCache = audioCache ?? throw new ArgumentNullException(nameof(audioCache));

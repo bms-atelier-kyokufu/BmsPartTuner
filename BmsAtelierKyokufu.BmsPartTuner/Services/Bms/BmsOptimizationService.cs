@@ -84,7 +84,7 @@ public class BmsOptimizationService : IBmsOptimizationService
 
         // ファイルリストからObservableCollectionを作成
         ObservableCollection<BmsAudioFile> fileListItems = [];
-        System.Collections.Concurrent.ConcurrentDictionary<string, Models.CachedSoundData>? audioCache = null;
+        System.Collections.Concurrent.ConcurrentDictionary<string, Models.ICachedSoundData>? audioCache = null;
         try
         {
             // endDefinitionが0の場合、自動検出（ファイル数から計算）
@@ -560,7 +560,7 @@ public class BmsOptimizationService : IBmsOptimizationService
     /// </summary>
     /// <param name="files">クリア対象のファイルリスト。</param>
     /// <param name="audioCache">音声キャッシュディクショナリ。</param>
-    private static void CleanupAudioCache(IEnumerable<BmsAudioFile>? files, System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData> audioCache)
+    private static void CleanupAudioCache(IEnumerable<BmsAudioFile>? files, System.Collections.Concurrent.ConcurrentDictionary<string, ICachedSoundData> audioCache)
     {
         if (files == null || audioCache == null) return;
 

@@ -275,8 +275,8 @@ public static class PerformanceDebugLogger
             WriteLine(report, LogLevel.Trace);
             WriteLine("Memory diagnosis halt triggered: 5 seconds elapsed.", LogLevel.Trace);
 
-            Thread.Sleep(100);
-            Environment.FailFast("Memory diagnosis halt triggered: 5 seconds elapsed.");
+            //Thread.Sleep(100);
+            //Environment.FailFast("Memory diagnosis halt triggered: 5 seconds elapsed.");
         }
     }
 }

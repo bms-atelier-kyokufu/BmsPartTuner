@@ -1,4 +1,4 @@
-using System.Numerics;
+﻿using System.Numerics;
 using Vector = System.Numerics.Vector;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
@@ -343,7 +343,7 @@ static public class WaveValidation
     /// 計算を完全にサボり、時間軸上で重なる有音区間のみのドット積を計算します。
     /// これにより、BGMノートのように長い無音を含む波形でもメモリと計算時間を劇的に節約できます。
     /// </remarks>
-    static public float CalculatePearsonFromRegionsSIMD(List<BmsAtelierKyokufu.BmsPartTuner.Models.ActiveRegion> regions1, List<BmsAtelierKyokufu.BmsPartTuner.Models.ActiveRegion> regions2)
+    static public float CalculatePearsonFromRegionsSIMD(IReadOnlyList<BmsAtelierKyokufu.BmsPartTuner.Models.ActiveRegion> regions1, IReadOnlyList<BmsAtelierKyokufu.BmsPartTuner.Models.ActiveRegion> regions2)
     {
         if (regions1 == null || regions2 == null || regions1.Count == 0 || regions2.Count == 0)
             return 0.0F;
