@@ -1,7 +1,8 @@
-﻿using System.IO;
+using System.IO;
 using BmsAtelierKyokufu.BmsPartTuner.Models;
 using BmsAtelierKyokufu.BmsPartTuner.Services.Bms;
 using BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers;
+using BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Services.Bms;
 
@@ -224,8 +225,22 @@ public class BmsOptimizationServiceExceptionTests : IDisposable
         });
 
     [Fact]
-    public Task ExecuteDefinitionReductionAsync_WithException_ClearsCache() =>
-        RunDefinitionReductionTestAsync(new()
+    public async Task ExecuteDefinitionReductionAsync_WithException_ClearsCache()
+    {
+        // 1. レジストリにダミーデータを事前登録しておく
+        VirtualAudioRegistry.AddFile("dummy_slice.wav", [1, 2, 3, 4]);
+
+        var samples = new float[][] { [0.5f], [0.5f] };
+        var prefixSum = new double[][] { [0.0, 0.5], [0.0, 0.5] };
+        var prefixSumSq = new double[][] { [0.0, 0.25], [0.0, 0.25] };
+        var signLsh = new ulong[][] { [1UL], [1UL] };
+        var signLshMask = new ulong[][] { [1UL], [1UL] };
+        var baseData = new BaseAudioOptimizationData(samples, prefixSum, prefixSumSq, signLsh, signLshMask);
+        var pointerData = new PointerSoundData("dummy_slice.wav", baseData, 0, 1);
+        PointerAudioRegistry.Register("dummy_slice.wav", pointerData);
+
+        // 2. 例外（入力ファイルなし）が発生するテストを実行
+        await RunDefinitionReductionTestAsync(new()
         {
             BuildBms = b => { },
             CreateFiles = dir => [new() { Name = "nonexistent.wav", Num = "01", NumInteger = 1 }],
@@ -236,4 +251,9 @@ public class BmsOptimizationServiceExceptionTests : IDisposable
             EndDef = 1,
             PhysicalDeletion = false
         });
+
+        // 3. 例外による脱出後、レジストリがクリアされていることを検証
+        Assert.False(VirtualAudioRegistry.TryGetFileSize("dummy_slice.wav", out _));
+        Assert.False(PointerAudioRegistry.TryGet("dummy_slice.wav", out _));
+    }
 }

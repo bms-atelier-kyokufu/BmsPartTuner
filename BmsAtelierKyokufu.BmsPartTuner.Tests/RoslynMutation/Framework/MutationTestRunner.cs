@@ -207,7 +207,9 @@ public class MutationTestRunner
             // 包含パターンのチェック（指定されている場合のみ）
             if (_config.IncludePatterns.Count > 0 &&
                 !_config.IncludePatterns.Any(p => relativePath.StartsWith(p, StringComparison.OrdinalIgnoreCase)))
+            {
                 continue;
+            }
 
             yield return file;
         }

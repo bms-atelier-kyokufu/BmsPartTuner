@@ -164,5 +164,45 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
                 Assert.Fail("ファイルハンドルが解放されていません。");
             }
         }
+
+        [Fact]
+        public void PointerSoundData_Dispose_NullsOutReferences_AndThrowsObjectDisposedException()
+        {
+            var samples = new float[][] { [0.5f], [0.5f] };
+            var prefixSum = new double[][] { [0.0, 0.5], [0.0, 0.5] };
+            var prefixSumSq = new double[][] { [0.0, 0.25], [0.0, 0.25] };
+            var signLsh = new ulong[][] { [1UL], [1UL] };
+            var signLshMask = new ulong[][] { [1UL], [1UL] };
+
+            var baseData = new BaseAudioOptimizationData(samples, prefixSum, prefixSumSq, signLsh, signLshMask);
+            var pointerData = new PointerSoundData("test.wav", baseData, 0, 1);
+
+            // Access before dispose
+            Assert.Equal(1UL, pointerData.GetLsh(0)[0]);
+
+            // Dispose
+            pointerData.Dispose();
+
+            // Access after dispose should throw ObjectDisposedException
+            Assert.Throws<ObjectDisposedException>(() => pointerData.GetLsh(0));
+            Assert.Throws<ObjectDisposedException>(() => pointerData.GetRawSpan(0, 0, 1));
+        }
+
+        [Fact]
+        public void PreNormalizedSoundData_Dispose_NullsOutLshAndSamples()
+        {
+            var samples = new float[][] { [0.5f, -0.5f] };
+            var soundData = new PreNormalizedSoundData(samples, 44100, 16);
+
+            // Access before dispose
+            Assert.True(soundData.GetLsh(0).Length > 0);
+
+            // Dispose
+            soundData.Dispose();
+
+            // After dispose, LSH and samples should be cleared
+            Assert.True(soundData.GetLsh(0).IsEmpty);
+            Assert.Null(soundData.SamplesPerChannel);
+        }
     }
 }
