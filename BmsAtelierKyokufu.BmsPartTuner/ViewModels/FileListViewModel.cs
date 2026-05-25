@@ -1,4 +1,4 @@
-using BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
+﻿using BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 using BmsAtelierKyokufu.BmsPartTuner.Services.Audio;
 using BmsAtelierKyokufu.BmsPartTuner.Services.Bms;
 
@@ -15,22 +15,22 @@ namespace BmsAtelierKyokufu.BmsPartTuner.ViewModels;
 /// <item>音声プレビュー機能の制御</item>
 /// <item>選択されたキーワードの管理</item>
 /// </list>
-/// 
+///
 /// <para>【フィルタリング機能】</para>
 /// <list type="number">
 /// <item>テキストフィルタ: ファイル名による部分一致検索</item>
 /// <item>楽器種別フィルタ: kick, snare等のキーワードによる分類</item>
 /// </list>
-/// 
+///
 /// <para>【楽器種別検出】</para>
 /// <see cref="InstrumentNameDetectionService"/>により、
 /// ファイル名から楽器種別を自動検出し、フィルタチップとして表示します。
-/// 
+///
 /// <para>【Why フィルタリング】</para>
 /// BMSファイルには数百～数千のWAVファイルが含まれるため、
 /// 楽器種別で絞り込むことで、特定のパート（ドラムのみ等）の
 /// 最適化が可能になります。
-/// 
+///
 /// <para>【音声プレビュー】</para>
 /// ファイルリストでファイルを選択すると、
 /// <see cref="AudioPreviewService"/>により自動的に音声が再生されます。
@@ -142,7 +142,7 @@ public partial class FileListViewModel : ObservableObject, IDisposable
     /// <item>楽器種別を検出してフィルタチップを生成</item>
     /// <item><see cref="FileListLoaded"/>イベントを発火</item>
     /// </list>
-    /// 
+    ///
     /// <para>【エラーハンドリング】</para>
     /// 読み込みエラー時は、<see cref="FileListLoaded"/>イベントで
     /// IsSuccess=falseとエラーメッセージを通知します。
@@ -222,7 +222,7 @@ public partial class FileListViewModel : ObservableObject, IDisposable
     /// <remarks>
     /// <para>【用途】</para>
     /// 定義削減処理時に、特定の楽器種別のみを対象にする場合に使用されます。
-    /// 
+    ///
     /// <para>【例】</para>
     /// ["kick", "snare"] → ドラム系のみを処理
     /// </remarks>

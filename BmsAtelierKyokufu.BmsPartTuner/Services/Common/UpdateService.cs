@@ -16,7 +16,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Services.Common;
 /// <item>新しいバージョンがあればインストーラーを一時フォルダにダウンロード</item>
 /// <item>アプリ終了時にインストーラーを起動</item>
 /// </list>
-/// 
+///
 /// <para>【Why 終了時更新】</para>
 /// ユーザーの作業を中断させず、次回起動時に最新版にするため。
 /// </remarks>

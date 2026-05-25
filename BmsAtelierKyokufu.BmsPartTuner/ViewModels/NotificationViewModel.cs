@@ -10,18 +10,18 @@
 /// <item>結果カードの表示・非表示</item>
 /// <item>スライド確認ダイアログの表示・非表示</item>
 /// </list>
-/// 
+///
 /// <para>【UI要素】</para>
 /// <list type="number">
 /// <item>トースト通知: 短時間のフィードバック（成功/エラー）</item>
 /// <item>結果カード: 最適化・削減の詳細結果表示</item>
 /// <item>スライド確認: ファイル上書き確認</item>
 /// </list>
-/// 
+///
 /// <para>【設計思想】</para>
 /// UI表示ロジックをViewModelに集約し、MainViewModelから分離することで、
 /// 責任の明確化と再利用性を向上させています。
-/// 
+///
 /// <para>【Why 分離】</para>
 /// 通知機能は横断的関心事であり、複数の操作から呼ばれるため、
 /// 独立したViewModelとして管理することで保守性が向上します。
@@ -47,7 +47,7 @@ public partial class NotificationViewModel : ObservableObject
     /// <remarks>
     /// <para>【用途】</para>
     /// 処理の成功/失敗を短時間（数秒）ユーザーに通知します。
-    /// 
+    ///
     /// <para>【アイコン例】</para>
     /// <list type="bullet">
     /// <item>"✓": 成功</item>
@@ -89,7 +89,7 @@ public partial class NotificationViewModel : ObservableObject
     /// <remarks>
     /// <para>【用途】</para>
     /// 自動最適化または定義削減の詳細結果を表示します。
-    /// 
+    ///
     /// <para>【表示優先度】</para>
     /// <list type="number">
     /// <item>推奨しきい値（大見出し）: ユーザーが最も知りたい情報</item>

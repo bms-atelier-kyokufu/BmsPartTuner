@@ -1,4 +1,4 @@
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
@@ -45,13 +45,27 @@ public class AudioSliceManager(string bmsonDir, bool throwOnMissingFile = true) 
 
     // key: "fileName|offsetSec|durationSec", value: "outputFileName.wav"
     private readonly ConcurrentDictionary<string, Lazy<string>> _sliceCache = new();
-    private readonly ConcurrentDictionary<string, CachedAudioSource?> _sourceCache = new(StringComparer.OrdinalIgnoreCase);
+    private readonly ConcurrentDictionary<string, Lazy<CachedAudioSource?>> _sourceCache = new(StringComparer.OrdinalIgnoreCase);
     private int _sliceCounter = 1;
     private int _cacheHitCount = 0;
     private int _cacheMissCount = 0;
 
     public int GetCacheHitCount() => _cacheHitCount;
     public int GetCacheMissCount() => _cacheMissCount;
+
+    /// <summary>
+    /// 無音判定のエネルギー閾値（実行前に1度だけ計算）。
+    /// </summary>
+    private static readonly long E_threshold = CalculateEnergyThreshold();
+    private const int WindowFrames = 1024; // 約23msのウィンドウサイズ
+
+    private static long CalculateEnergyThreshold()
+    {
+        const double dbThreshold = -45.0; // -45dBを無音とみなす（フロアノイズ対応）
+        const double maxAmp = 32768.0;    // 16bit PCMの最大振幅
+        const int totalSamples = WindowFrames * 2; // ステレオなのでフレーム数の2倍
+        return (long)(totalSamples * maxAmp * maxAmp * Math.Pow(10, dbThreshold / 10.0));
+    }
 
     /// <summary>
     /// 指定された音声ファイルの特定区間を切り出し、ステレオ・44.1kHz・16bitのWAVとして保存します。
@@ -65,41 +79,41 @@ public class AudioSliceManager(string bmsonDir, bool throwOnMissingFile = true) 
     {
         if (string.IsNullOrWhiteSpace(sourceFileName)) return string.Empty;
 
-        // 小数点第6位までの精度でキャッシュキーを作成 (約1マイクロ秒の精度)
-        string cacheKey = $"{sourceFileName}|{offsetSec:F6}|{durationSec:F6}";
+        // 1. まず音源のキャッシュを取得（スレッドセーフにロードされる）
+        var source = GetOrLoadAudioSource(sourceFileName);
+        if (source == null) return string.Empty;
+
+        // 2. 要求された開始位置と長さを計算
+        var (startByte, lengthBytes) = CalculateByteRange(source.PcmLength, offsetSec, durationSec);
+        if (lengthBytes <= 0) return string.Empty;
+
+        // 3. 末尾の無音部分をトリミングして、本当に必要な長さに切り詰める
+        int trimmedLengthBytes = TrimSilenceFromEnd(source.RawBytes, source.PcmOffset + startByte, lengthBytes);
+        if (trimmedLengthBytes <= 0) return string.Empty;
+
+        if (trimmedLengthBytes < lengthBytes)
+        {
+            PerformanceDebugLogger.WriteTrace($"[AudioSliceManager] Trimmed silence: {sourceFileName} (offset={offsetSec:F2}s, duration={durationSec:F2}s) from {lengthBytes / 1024.0:F1}KB to {trimmedLengthBytes / 1024.0:F1}KB");
+        }
+
+        // 4. トリミング後の真の長さを用いてキャッシュキーを作成
+        // これにより、要求長(durationSec)が異なっていても、実体が同じなら100%キャッシュヒットする
+        string cacheKey = $"{sourceFileName}|{startByte}|{trimmedLengthBytes}";
 
         bool isNew = false;
-        var lazyVal = _sliceCache.GetOrAdd(cacheKey, key =>
+        var lazyVal = _sliceCache.GetOrAdd(cacheKey, _ =>
         {
             isNew = true;
             return new Lazy<string>(() =>
             {
                 Interlocked.Increment(ref _cacheMissCount);
-                var timer = PerformanceDebugLogger.StartTimer();
-
-                var source = GetOrLoadAudioSource(sourceFileName);
-                timer.Lap($"{sourceFileName}|SourceGet");
-
-                if (source == null) return string.Empty;
-
                 string outputFileName = GenerateSliceFileName(sourceFileName);
 
                 try
                 {
-                    var (startByte, lengthBytes) = CalculateByteRange(source.PcmLength, offsetSec, durationSec);
-                    if (lengthBytes <= 0)
-                    {
-                        return string.Empty;
-                    }
-
-                    timer.Lap($"{sourceFileName}|ProviderSetup");
-
                     // 実バイト配列を作成せず、仮想ファイルを登録（遅延生成）
-                    var virtualFile = new SlicedVirtualFile(source.RawBytes, source.PcmOffset + startByte, lengthBytes, WavHeaderTemplate);
-                    timer.Lap($"{sourceFileName}|WriteWav");
-
+                    var virtualFile = new SlicedVirtualFile(source.RawBytes, source.PcmOffset + startByte, trimmedLengthBytes, WavHeaderTemplate);
                     VirtualAudioRegistry.AddFile(outputFileName, virtualFile);
-                    timer.Lap($"{sourceFileName}|Registry");
 
                     return outputFileName;
                 }
@@ -136,7 +150,7 @@ public class AudioSliceManager(string bmsonDir, bool throwOnMissingFile = true) 
     /// </summary>
     private CachedAudioSource? GetOrLoadAudioSource(string sourceFileName)
     {
-        return _sourceCache.GetOrAdd(sourceFileName, name =>
+        var lazySource = _sourceCache.GetOrAdd(sourceFileName, name => new Lazy<CachedAudioSource?>(() =>
         {
             string sourcePath = Path.Combine(_bmsonDir, name);
             if (!File.Exists(sourcePath))
@@ -148,7 +162,9 @@ public class AudioSliceManager(string bmsonDir, bool throwOnMissingFile = true) 
                 return null;
             }
             return new CachedAudioSource(sourcePath);
-        });
+        }, LazyThreadSafetyMode.ExecutionAndPublication));
+
+        return lazySource.Value;
     }
 
     /// <summary>
@@ -200,6 +216,59 @@ public class AudioSliceManager(string bmsonDir, bool throwOnMissingFile = true) 
         endByte -= endByte % 4;
 
         return ((int)startByte, (int)(endByte - startByte));
+    }
+
+    /// <summary>
+    /// O(1) の差分更新スライディングウィンドウを用いて、末尾の無音部分をトリミングします。
+    /// </summary>
+    private static int TrimSilenceFromEnd(byte[] data, int startOffset, int length)
+    {
+        const int frameSize = 4; // 16bit Stereo = 4 bytes per frame
+        int totalFrames = length / frameSize;
+
+        // ウィンドウサイズより短い場合はトリミングしない（安全策）
+        if (totalFrames <= WindowFrames) return length;
+
+        // 初期ウィンドウ (末尾の WindowFrames フレーム) のエネルギーを計算 (O(N))
+        long currentEnergy = 0;
+        int windowStartFrame = totalFrames - WindowFrames;
+
+        for (int i = 0; i < WindowFrames; i++)
+        {
+            currentEnergy += GetFrameEnergy(data, startOffset + ((windowStartFrame + i) * frameSize));
+        }
+
+        int trimFrames = 0;
+
+        // 後方探索 (O(1) のスライディングウィンドウ)
+        while (windowStartFrame > 0)
+        {
+            if (currentEnergy >= E_threshold)
+            {
+                // 音が見つかった。この時点での末尾は windowStartFrame + WindowFrames となる。
+                break;
+            }
+
+            trimFrames++;
+            windowStartFrame--;
+
+            // ウィンドウから外れるフレームのエネルギーを引き、新しく入るフレームのエネルギーを足す
+            long outEnergy = GetFrameEnergy(data, startOffset + ((windowStartFrame + WindowFrames) * frameSize));
+            long inEnergy = GetFrameEnergy(data, startOffset + (windowStartFrame * frameSize));
+
+            currentEnergy = currentEnergy - outEnergy + inEnergy;
+        }
+
+        int newTotalFrames = totalFrames - trimFrames;
+        return newTotalFrames * frameSize;
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    private static long GetFrameEnergy(byte[] data, int offset)
+    {
+        short l = System.Buffers.Binary.BinaryPrimitives.ReadInt16LittleEndian(data.AsSpan(offset, 2));
+        short r = System.Buffers.Binary.BinaryPrimitives.ReadInt16LittleEndian(data.AsSpan(offset + 2, 2));
+        return ((long)l * l) + ((long)r * r);
     }
 
     /// <summary>
@@ -321,53 +390,64 @@ public class AudioSliceManager(string bmsonDir, bool throwOnMissingFile = true) 
 
                 timer.Lap($"{Path.GetFileName(path)}|Load_SetupProviders");
 
-                double totalSeconds = baseReader.TotalTime.TotalSeconds;
-                int estimatedSamples = (int)(totalSeconds * AppConstants.Audio.StandardSampleRate * 2) + 65536;
-                float[] floatBuffer;
-                int totalSamplesRead = 0;
+                // LOHフラグメンテーションや、壊れたTotalTimeによる数十GBの異常アロケーションを完全に防ぐため、
+                // 小さなチャンク（LOH閾値 85,000 bytes 未満）のリストとして読み込み、最後に一度だけ結合する
+                const int ChunkSizeBytes = 65536; // 64KB
+                const int ChunkSizeElements = ChunkSizeBytes / sizeof(float);
 
-                // もし元の形式が 44.1kHz 16bit stereo ならば、一括で読み込める
-                if (sampleProvider == baseReader.ToSampleProvider() || sampleProvider.GetType().Name == "SampleChannel")
+                var pcmChunks = new List<byte[]>();
+                int totalBytesWritten = 0;
+
+                float[] chunkBuffer = new float[ChunkSizeElements];
+
+                // NAudioのリサンプラーがストリーム終了後も無音のサンプルを無限に返し続けるバグを防ぐため、
+                // 元のオーディオファイルの実際の長さ（TotalTime）を基準にして最大デコード量を制限する。
+                // （リサンプリング時の余白として +2.0 秒を加算）
+                double maxSeconds = baseReader.TotalTime.TotalSeconds + 2.0;
+                const int bytesPerSec = AppConstants.Audio.StandardSampleRate * 2 * 2; // 44100Hz * 2ch * 16bit(2bytes)
+                long dynamicMaxBytes = (long)(maxSeconds * bytesPerSec);
+
+                // 万が一 TotalTime が壊れているファイルに備えて、絶対上限も250MBとする
+                const int AbsoluteMaxBytes = 250 * 1024 * 1024;
+                long maxAllowedBytes = Math.Min(dynamicMaxBytes, AbsoluteMaxBytes);
+
+                while (true)
                 {
-                    // For performance, read in large chunks instead of small ones
-                    floatBuffer = new float[estimatedSamples];
-                    int chunkSize = 1048576; // 1MB chunks
-                    while (true)
+                    int read = sampleProvider.Read(chunkBuffer, 0, chunkBuffer.Length);
+                    if (read <= 0) break;
+
+                    int neededBytes = read * 2;
+
+                    if (totalBytesWritten + neededBytes > maxAllowedBytes)
                     {
-                        if (totalSamplesRead + chunkSize > floatBuffer.Length)
-                        {
-                            Array.Resize(ref floatBuffer, floatBuffer.Length + chunkSize * 2);
-                        }
-                        int read = sampleProvider.Read(floatBuffer, totalSamplesRead, chunkSize);
-                        if (read <= 0) break;
-                        totalSamplesRead += read;
+                        PerformanceDebugLogger.WriteLine($"[AudioSliceManager] Reached length limit ({maxAllowedBytes} bytes) for {Path.GetFileName(path)}. Stopping decode.", LogLevel.Debug);
+                        break;
                     }
+
+                    byte[] pcmChunk = new byte[neededBytes]; // LOHに乗らないサイズ
+
+                    ConvertFloatTo16BitPcm(new ReadOnlySpan<float>(chunkBuffer, 0, read), pcmChunk);
+
+                    pcmChunks.Add(pcmChunk);
+                    totalBytesWritten += neededBytes;
                 }
-                else
+
+                timer.Lap($"{Path.GetFileName(path)}|Load_ReadFloat_And_ConvertPCM");
+
+                // 全て読み終わった後、必要な正確なサイズの配列を1回だけアロケートして結合する
+                byte[] finalPcmData = new byte[totalBytesWritten];
+                int offset = 0;
+                foreach (var chunk in pcmChunks)
                 {
-                    floatBuffer = new float[estimatedSamples];
-                    int chunkSize = 16384;
-                    while (true)
-                    {
-                        if (totalSamplesRead + chunkSize > floatBuffer.Length)
-                        {
-                            Array.Resize(ref floatBuffer, floatBuffer.Length * 2);
-                        }
-                        int read = sampleProvider.Read(floatBuffer, totalSamplesRead, chunkSize);
-                        if (read <= 0) break;
-                        totalSamplesRead += read;
-                    }
+                    Buffer.BlockCopy(chunk, 0, finalPcmData, offset, chunk.Length);
+                    offset += chunk.Length;
                 }
 
-                timer.Lap($"{Path.GetFileName(path)}|Load_ReadFloat");
+                timer.Lap($"{Path.GetFileName(path)}|Combine_Chunks");
 
-                byte[] pcmData = new byte[totalSamplesRead * 2];
-                ConvertFloatTo16BitPcm(new ReadOnlySpan<float>(floatBuffer, 0, totalSamplesRead), pcmData);
-                timer.Lap($"{Path.GetFileName(path)}|Load_ConvertPCM");
-
-                RawBytes = pcmData;
+                RawBytes = finalPcmData;
                 PcmOffset = 0;
-                PcmLength = pcmData.Length;
+                PcmLength = totalBytesWritten;
             }
 
             long elapsed = timer.Lap($"{Path.GetFileName(path)}|CachedAudioSource Load");

@@ -10,12 +10,12 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Behaviors;
 /// <para>【WPF原則】</para>
 /// MVVM パターンに準拠するため、イベントハンドラーをコードビハインドから
 /// Behavior に移動し、XAML でバインド可能にします。
-/// 
+///
 /// <para>【使用例】</para>
 /// <code>
 /// &lt;TextBox&gt;
 ///     &lt;i:Interaction.Behaviors&gt;
-///         &lt;behaviors:DragDropBehavior 
+///         &lt;behaviors:DragDropBehavior
 ///             SupportedExtensions=".bms,.bme,.bml,.pms"
 ///             DroppedFilePath="{Binding InputPath, Mode=TwoWay}"
 ///             DropSuccessCommand="{Binding FileDroppedCommand}"

@@ -1,4 +1,4 @@
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 using BmsAtelierKyokufu.BmsPartTuner.Models.Bmson;
 
@@ -204,7 +204,7 @@ public class BmsScoreGenerator(
             sb.AppendLine($"#ARTIST {_bmson.Info.Artist}");
 
         // SUBARTIST
-        if (_bmson.Info.Subartists != null && _bmson.Info.Subartists.Count > 0)
+        if (_bmson.Info.Subartists?.Count > 0)
         {
             sb.AppendLine($"#SUBARTIST {string.Join(" ", _bmson.Info.Subartists)}");
         }
@@ -231,10 +231,10 @@ public class BmsScoreGenerator(
             // bmsonの基準式（black train近似式）により、100%時のデフォルト値を計算
             double defaultTotal = Math.Max(
                 AppConstants.BmsTotal.MinimumFloor,
-                (AppConstants.BmsTotal.IidxMultiplier * playableNotes) / 
-                (AppConstants.BmsTotal.IidxNotesCoefficient * playableNotes + AppConstants.BmsTotal.IidxConstantTerm)
+                (AppConstants.BmsTotal.IidxMultiplier * playableNotes) /
+                ((AppConstants.BmsTotal.IidxNotesCoefficient * playableNotes) + AppConstants.BmsTotal.IidxConstantTerm)
             );
-            
+
             // %値を掛け合わせて絶対値を算出
             double realTotal = defaultTotal * (_bmson.Info.Total / AppConstants.BmsTotal.DefaultPercentage);
             sb.AppendLine($"#TOTAL {Math.Round(realTotal, 4)}");
@@ -294,13 +294,13 @@ public class BmsScoreGenerator(
             sb.AppendLine(); // 空行で小節を区切る
 
             // チャンネルごとにソートして出力
-            foreach (var ch in channels.Keys.OrderBy(k => k))
+            foreach (var ch in channels.Keys.Order())
             {
                 foreach (var layer in channels[ch])
                 {
                     string mStr = (m < 1000) ? MeasureStrings[m] : m.ToString("D3");
                     sb.Append('#').Append(mStr).Append(ch).Append(':');
-                    
+
                     int gcd = layer.CurrentGcd;
                     for (int i = 0; i < layer.Notes.Length; i += gcd)
                     {
@@ -341,7 +341,8 @@ public class BmsScoreGenerator(
     private void PreloadAudioSources()
     {
         if (_bmson.SoundChannels == null) return;
-        Parallel.ForEach(_bmson.SoundChannels, ch =>
+        var options = new ParallelOptions { MaxDegreeOfParallelism = Math.Max(1, Environment.ProcessorCount / 2) };
+        Parallel.ForEach(_bmson.SoundChannels, options, ch =>
         {
             if (ch.Notes == null || ch.Notes.Count == 0) return;
             _audioSliceManager.PreloadAudioSource(ch.Name);
@@ -358,10 +359,8 @@ public class BmsScoreGenerator(
         var pendingNotes = new PendingNote[totalNotes * 2]; // *2 for LNs
         int noteIndex = 0;
 
-        Parallel.ForEach(_bmson.SoundChannels, ch =>
-        {
-            ProcessChannel(ch, pendingNotes, ref noteIndex);
-        });
+        var options = new ParallelOptions { MaxDegreeOfParallelism = Math.Max(1, Environment.ProcessorCount / 2) };
+        Parallel.ForEach(_bmson.SoundChannels, options, ch => ProcessChannel(ch, pendingNotes, ref noteIndex));
 
         for (int i = 0; i < noteIndex; i++)
         {
@@ -420,7 +419,7 @@ public class BmsScoreGenerator(
             else
             {
                 string bmsChannel = MapLaneToChannel(n.X, false);
-                string targetChannel = (n.X > 0 && depth > 0) ? "01" : bmsChannel;
+                string targetChannel = bmsChannel;
                 int idx = Interlocked.Increment(ref noteIndex) - 1;
                 pendingNotes[idx] = new PendingNote(yData.Measure, targetChannel, yData.StepIndex, yData.MeasureLength, wavId);
             }
@@ -508,7 +507,7 @@ public class BmsScoreGenerator(
             {
                 string multStr = mult.ToString("0.000000").TrimEnd('0').TrimEnd('.');
                 if (!_measures.ContainsKey(m)) _measures[m] = [];
-                if (!_measures[m].ContainsKey("02")) 
+                if (!_measures[m].ContainsKey("02"))
                 {
                     var layer = new ChannelLayer(1);
                     layer.SetNote(0, multStr);
@@ -573,7 +572,15 @@ public class BmsScoreGenerator(
         {
             if (layers[0].Notes.Length == measureLength)
             {
-                layers[0].SetNote(step, id);
+                if (layers[0].Notes[step] != AppConstants.Definition.Rest)
+                {
+                    // 同一レーン・同一タイミングでの衝突(和音)はBGMレーンに退避させる
+                    AddNoteDirect(measure, "01", step, measureLength, id);
+                }
+                else
+                {
+                    layers[0].SetNote(step, id);
+                }
             }
         }
     }
@@ -583,7 +590,7 @@ public class BmsScoreGenerator(
         if (x == 0) return "01";
 
         int prefix = (x <= 8) ? (isLn ? 5 : 1) : (isLn ? 6 : 2);
-        int suffix = ((x - 1) % 8 + 1) switch
+        int suffix = (((x - 1) % 8) + 1) switch
         {
             6 => 8,
             7 => 9,

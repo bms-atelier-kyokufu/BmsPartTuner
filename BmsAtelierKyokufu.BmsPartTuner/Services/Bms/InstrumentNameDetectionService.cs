@@ -1,4 +1,4 @@
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Services.Bms;
 
@@ -8,7 +8,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Services.Bms;
 /// <remarks>
 /// <para>【目的】</para>
 /// 同じ楽器の音声ファイルをグループ化し、ユーザーが視覚的に管理しやすいフィルター機能を提供します。
-/// 
+///
 /// <para>【アルゴリズム】</para>
 /// <list type="number">
 /// <item>ファイル名を区切り文字で分割</item>
@@ -16,7 +16,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Services.Bms;
 /// <item>複数ファイルに共通して出現する単語を楽器候補として採用</item>
 /// <item>出現頻度の高い順に各ファイルへマッチング</item>
 /// </list>
-/// 
+///
 /// <para>【例】</para>
 /// <code>
 /// kick_01.wav, kick_02.wav, snare_01.wav
@@ -98,7 +98,7 @@ public partial class InstrumentNameDetectionService(
     /// <item>出現頻度が閾値以上の単語を楽器候補として採用</item>
     /// <item>各ファイルに最適な楽器名を割り当て</item>
     /// </list>
-    /// 
+    ///
     /// <para>【スレッドセーフ】</para>
     /// <see cref="IEnumerable{T}"/>をToList()で即座にコピーすることで、
     /// 元のコレクションが別スレッドで変更されても影響を受けません。
@@ -114,7 +114,7 @@ public partial class InstrumentNameDetectionService(
         {
             var fileList = files.ToList();
             var fileWordsMap = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
-            
+
             // 1. 各ファイルの単語を1回だけ抽出
             foreach (var file in fileList)
             {
@@ -126,7 +126,7 @@ public partial class InstrumentNameDetectionService(
             // 2. 楽器候補の抽出（事前抽出した単語リストを使用）
             var instrumentCandidates = ExtractInstrumentCandidates(fileWordsMap);
             var sortedCandidates = instrumentCandidates.OrderByDescending(kvp => kvp.Value).ToList();
-            
+
             var fileInstrumentMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
             // 3. マッチング処理
@@ -136,7 +136,7 @@ public partial class InstrumentNameDetectionService(
 
                 var fileName = Path.GetFileNameWithoutExtension(file.Name);
                 var words = fileWordsMap[file.Name];
-                
+
                 var instrumentName = string.Empty;
                 foreach (var candidate in sortedCandidates)
                 {
@@ -151,7 +151,7 @@ public partial class InstrumentNameDetectionService(
                         break;
                     }
                 }
-                
+
                 fileInstrumentMap[file.Name] = instrumentName;
             }
 
@@ -181,7 +181,7 @@ public partial class InstrumentNameDetectionService(
     /// <item>英字プレフィックスを抽出: "kick01" → "kick"</item>
     /// <item>有効な英数字単語を採用: "kick" → 採用</item>
     /// </list>
-    /// 
+    ///
     /// <para>【Why 区切り文字を使用】</para>
     /// BMSの命名規則では、'_'や'-'が楽器種別と番号を区切るため。
     /// 例: "bd_01.wav", "snare-soft.wav"
@@ -231,7 +231,7 @@ public partial class InstrumentNameDetectionService(
     /// <item>汎用ワード（"sample", "loop"）: 意味が広すぎて識別に寄与しない</item>
     /// <item>バージョン管理（"v01", "final"）: 楽器ではなく管理情報</item>
     /// </list>
-    /// 
+    ///
     /// <para>【Why HashSetを使用】</para>
     /// Contains()がO(1)で高速。大量のファイル処理で効果的。
     /// </remarks>
@@ -270,7 +270,7 @@ public partial class InstrumentNameDetectionService(
     /// <item>部分一致で補完（"kickdrum" contains "kick"）</item>
     /// <item>出現頻度の高い候補から順に検索（よくある楽器を優先）</item>
     /// </list>
-    /// 
+    ///
     /// <para>【Why 出現頻度順】</para>
     /// "kick"が100回、"tom"が3回の場合、"kick"から先に検索することで
     /// 誤検出（"tom"を"cymbal"内で誤検出）を減らします。
@@ -315,14 +315,14 @@ public partial class InstrumentNameDetectionService(
     /// <para>【Why 統計的手法】</para>
     /// 単一ファイルの命名規則は不安定（typo、略語の揺れ）ですが、
     /// 複数ファイルで共通して出現する単語は楽器種別である可能性が高くなります。
-    /// 
+    ///
     /// <para>【閾値の意味】</para>
     /// minimumOccurrences=3の場合:
     /// <list type="bullet">
     /// <item>1-2回: 偶然の一致、typo、特殊なファイル名</item>
     /// <item>3回以上: 意図的に使用されている楽器名の可能性</item>
     /// </list>
-    /// 
+    ///
     /// <para>【例】</para>
     /// <code>
     /// kick_01.wav, kick_02.wav, kick_03.wav, snare_01.wav, cymbal.wav

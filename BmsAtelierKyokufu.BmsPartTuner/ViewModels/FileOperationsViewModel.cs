@@ -13,7 +13,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.ViewModels;
 /// <item>ファイルダイアログの制御</item>
 /// <item>上書き確認の判定</item>
 /// </list>
-/// 
+///
 /// <para>【出力パスの自動生成ロジック】</para>
 /// 入力パスが変更された際、以下の条件で出力パスを自動設定:
 /// <list type="number">
@@ -21,11 +21,11 @@ namespace BmsAtelierKyokufu.BmsPartTuner.ViewModels;
 /// <item>出力パスが前回の自動生成パスと一致（ユーザーが手動変更していない）</item>
 /// <item>入力ファイルのディレクトリが変更された</item>
 /// </list>
-/// 
+///
 /// <para>【自動生成パターン】</para>
 /// 入力: "song.bms" → 出力: "song_optimized.bms"
 /// サフィックス（<see cref="AppConstants.OptimizedFileSuffix"/>）を付加します。
-/// 
+///
 /// <para>【Why 自動生成】</para>
 /// ユーザーが毎回出力パスを指定する手間を省き、
 /// 一般的なユースケース（同じディレクトリに保存）をサポートします。
@@ -145,7 +145,7 @@ public partial class FileOperationsViewModel : ObservableObject
     /// <item>出力パスが前回の自動生成パスと一致</item>
     /// <item>入力ファイルのディレクトリが変更された</item>
     /// </list>
-    /// 
+    ///
     /// <para>【Why この判定】</para>
     /// ユーザーが手動で出力パスを変更した場合は、
     /// それを尊重して上書きしないようにします。

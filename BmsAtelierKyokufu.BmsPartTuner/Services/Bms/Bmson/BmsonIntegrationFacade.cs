@@ -1,4 +1,4 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 using System.Text.Json.Serialization;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 using BmsAtelierKyokufu.BmsPartTuner.Models.Bmson;
@@ -7,14 +7,12 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Services.Bms.Bmson;
 
 [JsonSourceGenerationOptions(WriteIndented = false)]
 [JsonSerializable(typeof(BmsonFormat))]
-internal partial class BmsonJsonContext : JsonSerializerContext
-{
-}
+internal partial class BmsonJsonContext : JsonSerializerContext;
 
 /// <summary>
 /// bmsonファイルを入力として受け取り、解析・クリーンアップ・スライス・BMSスコア生成までを一貫して行うファサード。
 /// </summary>
-public class BmsonIntegrationFacade
+public static class BmsonIntegrationFacade
 {
     /// <summary>
     /// bmsonファイルをBMSフォーマットに変換し、結果のテキストを返します。
@@ -53,11 +51,15 @@ public class BmsonIntegrationFacade
         string bmsonDir = Path.GetDirectoryName(bmsonFilePath) ?? string.Empty;
         using var audioSlicer = new AudioSliceManager(bmsonDir);
 
+        PerformanceDebugLogger.LogMemoryUsage("Before BmsScoreGenerator (Engine ready)");
+
         // 5. スコアジェネレータの実行
         // ※内部でPre-Sliceを行い、スライス数を数えた上で最適な進数(36 or 62)を自動選択する
         var generator = new BmsScoreGenerator(bmson, timeCalc, realTimeCalc, audioSlicer, keyNotesOnly);
         string result = generator.GenerateBmsText();
         PerformanceDebugLogger.WriteLine($"[GenerateBmsText] BmsScoreGenerator run: {timer.Lap("BmsScoreGenerator run")} ms");
+
+        PerformanceDebugLogger.LogMemoryUsage("After BmsScoreGenerator (Downconvert finished)");
 
         PerformanceDebugLogger.WriteLine($"=== Downconvert finished. Total: {timerTotal.Lap("Total")} ms ===");
         return result;

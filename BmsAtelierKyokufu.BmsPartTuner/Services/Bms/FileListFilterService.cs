@@ -10,7 +10,7 @@
 /// <item>楽器種別フィルタリング（チェックボックス選択）</item>
 /// <item>Smart Filter Chips生成（統計ベースの候補提示）</item>
 /// </list>
-/// 
+///
 /// <para>【Why CollectionViewを使用】</para>
 /// WPFの<see cref="ICollectionView"/>は、元のコレクションを変更せずに
 /// 表示内容をフィルター・ソートできるため、UIとデータを分離できます。
@@ -113,7 +113,7 @@ public partial class FileListFilterService
     /// <para>【フィルターロジック】</para>
     /// テキストフィルター AND 楽器フィルター の両方を満たす項目のみ表示。
     /// フィルターなしの場合、全項目を表示（Filter=null）。
-    /// 
+    ///
     /// <para>【Why ローカル変数selectedSetにキャプチャ】</para>
     /// Predicateデリゲート内で_selectedInstrumentsを直接参照すると、
     /// フィルター実行中に別スレッドで_selectedInstrumentsが変更される可能性があります。
@@ -173,7 +173,7 @@ public partial class FileListFilterService
     /// <para>【Why OR条件】</para>
     /// ユーザーが複数のチップを選択した場合、いずれかに該当すれば表示する方が直感的です。
     /// 例: "kick" OR "snare" → キックかスネアのいずれかを表示。
-    /// 
+    ///
     /// <para>【マッチング戦略】</para>
     /// <list type="number">
     /// <item>InstrumentName（統計的推定）での一致を優先</item>
@@ -240,7 +240,7 @@ public partial class FileListFilterService
     /// <item>出現回数をカウント</item>
     /// <item>頻度降順でソートし、上位N件を採用</item>
     /// </list>
-    /// 
+    ///
     /// <para>【Why 先頭単語のみ】</para>
     /// BMSの命名規則では、楽器名がプレフィックスに来ることが多いです。
     /// 例: "kick_01.wav", "snare_loud.wav"
@@ -298,12 +298,12 @@ public partial class FileListFilterService
     /// <item>InstrumentName（統計的推定）を優先使用</item>
     /// <item>InstrumentNameが不足している場合、ファイル名統計で補完</item>
     /// </list>
-    /// 
+    ///
     /// <para>【Why 2段階アプローチ】</para>
     /// <see cref="InstrumentNameDetectionService"/>が高精度な楽器名を推定しているため、
     /// これを最優先で使用します。不足分のみファイル名統計で補うことで、
     /// ノイズを最小限に抑えながら十分な候補を提供します。
-    /// 
+    ///
     /// <para>【補完条件】</para>
     /// maxChips / 2 未満の場合のみ補完。
     /// 理由: 楽器名が十分に推定されている場合、ファイル名統計は不要です。
