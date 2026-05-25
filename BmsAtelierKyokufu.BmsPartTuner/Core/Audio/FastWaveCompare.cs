@@ -1,4 +1,4 @@
-﻿namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
+namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
 
 /// <summary>
 /// オンメモリキャッシュされた音声データの高速比較クラス。
@@ -110,11 +110,13 @@ internal static class FastWaveCompare
 
         if (data1.TotalSamples != data2.TotalSamples) return false;
 
-        // Try using normalized regions if available
-        if (data1.GetActiveRegions() != null && data2.GetActiveRegions() != null)
+        var activeRegions1 = data1.GetActiveRegions();
+        var activeRegions2 = data2.GetActiveRegions();
+
+        if (activeRegions1 != null && activeRegions2 != null && activeRegions1.Length > 0 && activeRegions2.Length > 0)
         {
-            var regions1 = data1.GetActiveRegions()[0];
-            var regions2 = data2.GetActiveRegions()[0];
+            var regions1 = activeRegions1[0];
+            var regions2 = activeRegions2[0];
 
             // If both are entirely silent
             if ((regions1 == null || regions1.Count == 0) && (regions2 == null || regions2.Count == 0))
@@ -127,16 +129,11 @@ internal static class FastWaveCompare
                 return false;
             }
 
-            // Early pruning check: if the total maximum overlap is very small, it can't match
-            // (Omitted for simplicity, rely on fast dot product calculation)
-
-            float correlation = WaveValidation.CalculatePearsonFromRegionsSIMD(regions1, regions2);
+            float correlation = WaveValidation.CalculatePearsonForCachedDataSIMD(data1, data2, 0);
             return correlation >= threshold;
         }
-        else
-        {
-            return false;
-        }
+
+        return false;
     }
 
     /// <summary>
@@ -175,11 +172,13 @@ internal static class FastWaveCompare
 
         if (data1.TotalSamples != data2.TotalSamples) return 0.0f;
 
-        // Try using normalized regions if available
-        if (data1.GetActiveRegions() != null && data2.GetActiveRegions() != null)
+        var activeRegions1 = data1.GetActiveRegions();
+        var activeRegions2 = data2.GetActiveRegions();
+
+        if (activeRegions1 != null && activeRegions2 != null && activeRegions1.Length > 0 && activeRegions2.Length > 0)
         {
-            var regions1 = data1.GetActiveRegions()[0];
-            var regions2 = data2.GetActiveRegions()[0];
+            var regions1 = activeRegions1[0];
+            var regions2 = activeRegions2[0];
 
             // If both are entirely silent
             if ((regions1 == null || regions1.Count == 0) && (regions2 == null || regions2.Count == 0))
@@ -192,11 +191,9 @@ internal static class FastWaveCompare
                 return 0.0f;
             }
 
-            return WaveValidation.CalculatePearsonFromRegionsSIMD(regions1, regions2);
+            return WaveValidation.CalculatePearsonForCachedDataSIMD(data1, data2, 0);
         }
-        else
-        {
-            return 0.0f;
-        }
+
+        return 0.0f;
     }
 }

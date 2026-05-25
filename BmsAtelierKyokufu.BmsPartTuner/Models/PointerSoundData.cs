@@ -41,11 +41,23 @@ public class PointerSoundData(
 
     private readonly float[][] _baseSamplesPerChannel = baseSamplesPerChannel;
     private readonly int _startSample = startSample;
-    private readonly IReadOnlyList<ActiveRegion>[] _activeRegions = ExtractPointerRegions(baseSamplesPerChannel, startSample, lengthSamples);
+    private readonly (IReadOnlyList<ActiveRegion>[] Regions, double[] SumX, double[] SumX2) _extractedData = ExtractPointerRegionsAndStats(baseSamplesPerChannel, startSample, lengthSamples);
 
     public IReadOnlyList<ActiveRegion>[] GetActiveRegions()
     {
-        return _activeRegions;
+        return _extractedData.Regions;
+    }
+
+    public double GetChannelSum(int channel)
+    {
+        if (channel < 0 || channel >= 2) throw new ArgumentOutOfRangeException(nameof(channel));
+        return _extractedData.SumX[channel];
+    }
+
+    public double GetChannelSumSq(int channel)
+    {
+        if (channel < 0 || channel >= 2) throw new ArgumentOutOfRangeException(nameof(channel));
+        return _extractedData.SumX2[channel];
     }
 
     public ReadOnlySpan<float> GetRawSpan(int channel, int offset, int length)
@@ -95,9 +107,11 @@ public class PointerSoundData(
         return lengthSamples;
     }
 
-    private static IReadOnlyList<ActiveRegion>[] ExtractPointerRegions(float[][] samplesPerChannel, int startSample, int lengthSamples)
+    private static (IReadOnlyList<ActiveRegion>[], double[], double[]) ExtractPointerRegionsAndStats(float[][] samplesPerChannel, int startSample, int lengthSamples)
     {
         var regionsPerChannel = new List<ActiveRegion>[2] { [], [] };
+        var sumX = new double[2];
+        var sumX2 = new double[2];
 
         const double dbThreshold = -45.0;
         const int windowFrames = 1024; // 約23ms (44.1kHz時)
@@ -113,9 +127,16 @@ public class PointerSoundData(
             int currentSilenceFrames = 0;
             double currentEnergy = 0;
 
+            double chSum = 0;
+            double chSumX2 = 0;
+
             for (int i = 0; i < lengthSamples; i++)
             {
                 double sample = samplesSpan[i];
+                
+                chSum += sample;
+                chSumX2 += sample * sample;
+
                 currentEnergy += sample * sample;
 
                 if (i >= windowFrames)
@@ -161,8 +182,11 @@ public class PointerSoundData(
                     regionsPerChannel[ch].Add(new ActiveRegion(startIdx, length, null!));
                 }
             }
+            
+            sumX[ch] = chSum;
+            sumX2[ch] = chSumX2;
         }
 
-        return regionsPerChannel;
+        return (regionsPerChannel, sumX, sumX2);
     }
 }

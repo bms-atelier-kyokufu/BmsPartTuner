@@ -1,4 +1,4 @@
-﻿using System.Numerics;
+using System.Numerics;
 using Vector = System.Numerics.Vector;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
@@ -336,15 +336,18 @@ static public class WaveValidation
     }
 
     /// <summary>
-    /// Phase 2: ActiveRegion（有音区間）の交差部分のみのドット積でピアソン相関係数を計算（SIMD最適化）。
+    /// Phase 2: キャッシュされた波形（事前正規化または生データ）の有音区間（ActiveRegion）の重なりを用いてピアソン相関係数を計算（SIMD最適化）。
     /// </summary>
     /// <remarks>
-    /// 無音区間（0）同士の積、または有音と無音（0）の積は常に0になるため、
-    /// 計算を完全にサボり、時間軸上で重なる有音区間のみのドット積を計算します。
-    /// これにより、BGMノートのように長い無音を含む波形でもメモリと計算時間を劇的に節約できます。
+    /// IsPreNormalized == true の場合は2パス目のドット積としてそのまま計算し、
+    /// IsPreNormalized == false の場合は生データのドット積を求めてから1パス用の補正計算を行います。
+    /// 無音区間の計算はサボるため、極めて高速かつ省メモリです。
     /// </remarks>
-    static public float CalculatePearsonFromRegionsSIMD(IReadOnlyList<BmsAtelierKyokufu.BmsPartTuner.Models.ActiveRegion> regions1, IReadOnlyList<BmsAtelierKyokufu.BmsPartTuner.Models.ActiveRegion> regions2)
+    static public float CalculatePearsonForCachedDataSIMD(BmsAtelierKyokufu.BmsPartTuner.Models.ICachedSoundData data1, BmsAtelierKyokufu.BmsPartTuner.Models.ICachedSoundData data2, int channel = 0)
     {
+        var regions1 = data1.GetActiveRegions()[channel];
+        var regions2 = data2.GetActiveRegions()[channel];
+
         if (regions1 == null || regions2 == null || regions1.Count == 0 || regions2.Count == 0)
             return 0.0F;
 
@@ -368,8 +371,13 @@ static public class WaveValidation
                 int offset1 = overlapStart - r1.Offset;
                 int offset2 = overlapStart - r2.Offset;
 
-                ReadOnlySpan<float> span1 = r1.Data.AsSpan(offset1, len);
-                ReadOnlySpan<float> span2 = r2.Data.AsSpan(offset2, len);
+                ReadOnlySpan<float> span1 = data1.IsPreNormalized 
+                    ? new ReadOnlySpan<float>(r1.Data, offset1, len) 
+                    : data1.GetRawSpan(channel, r1.Offset + offset1, len);
+                
+                ReadOnlySpan<float> span2 = data2.IsPreNormalized 
+                    ? new ReadOnlySpan<float>(r2.Data, offset2, len) 
+                    : data2.GetRawSpan(channel, r2.Offset + offset2, len);
 
                 int vectorizedLength = len - (len % vectorSize);
                 Vector<float> dotProduct_vec = Vector<float>.Zero;
@@ -402,7 +410,38 @@ static public class WaveValidation
             }
         }
 
-        return (float)Math.Max(-1.0, Math.Min(1.0, totalDotProduct));
+        if (data1.IsPreNormalized && data2.IsPreNormalized)
+        {
+            // 事前正規化方式：ドット積がそのまま相関係数となる
+            return (float)Math.Max(-1.0, Math.Min(1.0, totalDotProduct));
+        }
+        else if (!data1.IsPreNormalized && !data2.IsPreNormalized)
+        {
+            // ポインタ方式（生データ）：ドット積は生データの積和 (Σxy) なので、1パス用の補正計算を行う
+            double sumX = data1.GetChannelSum(channel);
+            double sumY = data2.GetChannelSum(channel);
+            double sumX2 = data1.GetChannelSumSq(channel);
+            double sumY2 = data2.GetChannelSumSq(channel);
+            
+            int N = data1.TotalSamples / data1.Channels; // Slice length
+            if (N == 0) return 0.0f;
+            
+            double meanX = sumX / N;
+            double meanY = sumY / N;
+            
+            double covXY = (totalDotProduct / N) - (meanX * meanY);
+            double varX = (sumX2 / N) - (meanX * meanX);
+            double varY = (sumY2 / N) - (meanY * meanY);
+            
+            if (varX < 1e-10 || varY < 1e-10) return 0.0f;
+            
+            double correlation = covXY / Math.Sqrt(varX * varY);
+            return (float)Math.Max(-1.0, Math.Min(1.0, correlation));
+        }
+        else
+        {
+            throw new NotSupportedException("事前正規化データと生データを直接比較することはサポートされていません。");
+        }
     }
 
     #endregion

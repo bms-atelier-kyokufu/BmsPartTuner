@@ -1,4 +1,6 @@
-﻿namespace BmsAtelierKyokufu.BmsPartTuner.Core.Helpers;
+using System.Collections.Concurrent;
+
+namespace BmsAtelierKyokufu.BmsPartTuner.Core.Helpers;
 
 public enum LogLevel
 {
@@ -125,7 +127,7 @@ public static class PerformanceDebugLogger
         }
     }
 
-    private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, long> _accumulatedTimes = new();
+    private static readonly ConcurrentDictionary<string, long> _accumulatedTimes = new();
 
     [Conditional("DEBUG")]
     public static void AddInterval(string key, long elapsedMilliseconds)
@@ -259,7 +261,7 @@ public static class PerformanceDebugLogger
                     sb.AppendLine($"Item Count   : {count}");
                 }
 
-                if (targetObject is System.Collections.Concurrent.ConcurrentDictionary<string, Models.CachedSoundData> cacheMap)
+                if (targetObject is ConcurrentDictionary<string, ICachedSoundData> cacheMap)
                 {
                     double totalEstMb = 0;
                     foreach (var kvp in cacheMap)

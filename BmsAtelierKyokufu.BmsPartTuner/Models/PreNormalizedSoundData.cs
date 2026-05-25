@@ -241,6 +241,16 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Models
             throw new NotSupportedException("PreNormalizedSoundData does not support raw span access.");
         }
 
+        public double GetChannelSum(int channel)
+        {
+            throw new NotSupportedException("PreNormalizedSoundData does not support raw sum access.");
+        }
+
+        public double GetChannelSumSq(int channel)
+        {
+            throw new NotSupportedException("PreNormalizedSoundData does not support raw sum access.");
+        }
+
         #endregion
 
         #region コンストラクタ
