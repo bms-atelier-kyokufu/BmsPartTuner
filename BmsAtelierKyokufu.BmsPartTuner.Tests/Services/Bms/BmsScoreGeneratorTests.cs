@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 using BmsAtelierKyokufu.BmsPartTuner.Models.Bmson;
 using BmsAtelierKyokufu.BmsPartTuner.Services.Bms.Bmson;

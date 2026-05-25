@@ -1,16 +1,16 @@
-﻿using BmsAtelierKyokufu.BmsPartTuner.Core.Helpers;
+using BmsAtelierKyokufu.BmsPartTuner.Core.Helpers;
 using BmsAtelierKyokufu.BmsPartTuner.Models;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Helpers;
 
 /// <summary>
 /// <see cref="AudioFileGroupingStrategy"/> のテストクラス。
-/// 
+///
 /// 【テスト対象】
 /// - ファイルサイズとRMSによるグループ化
 /// - キーワードフィルタによるパート分離
 /// - 巨大グループの自動分割
-/// 
+///
 /// 【テスト設計方針】
 /// - グループ化の正確性を検証
 /// - エッジケース（null、空リスト、巨大グループ）

@@ -1,11 +1,11 @@
-﻿using BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
+using BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
 using BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
 {
     /// <summary>
     /// <see cref="WaveValidation"/> のテストクラス。
-    /// 
+    ///
     /// 【テスト対象】
     /// - 決定係数（R2）の計算精度
     /// - ピアソン相関係数の計算精度

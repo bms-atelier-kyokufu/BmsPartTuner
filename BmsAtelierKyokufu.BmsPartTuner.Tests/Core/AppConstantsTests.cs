@@ -1,64 +1,84 @@
-﻿using BmsAtelierKyokufu.BmsPartTuner.Core;
+using BmsAtelierKyokufu.BmsPartTuner.Core;
 using BmsAtelierKyokufu.BmsPartTuner.Models;
+
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core;
 
 /// <summary>
 /// <see cref="AppConstants"/> のテストクラス。
-/// 
+///
 /// 【テスト対象】
 /// - 定数値の妥当性検証
 /// - ヘルパーメソッドの動作確認
 /// - 定数間の整合性チェック
-/// 
+///
 /// 【テスト設計方針】
 /// - 定数が期待される範囲内にあることを確認
 /// - ヘルパーメソッドのエッジケース対応
 /// </summary>
+
 public class AppConstantsTests
 {
     #region Constant Value Tests
 
+
     [Fact]
+
     public void Base36Limit_IsCorrectValue()
     {
         _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
+
         Assert.Equal(1295, AppConstants.Definition.MaxNumberBase36);
     }
 
+
     [Fact]
+
     public void Base62Limit_IsCorrectValue()
     {
         _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
+
         Assert.Equal(3843, AppConstants.Definition.MaxNumberBase62);
     }
 
+
     [Fact]
+
     public void MaxGroupSize_IsPositive()
     {
         _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
+
         Assert.True(AppConstants.Grouping.MaxGroupSize > 0);
         Assert.True(AppConstants.Grouping.MaxGroupSize <= 200); // 合理的な上限
     }
 
+
     [Fact]
+
     public void RmsQuantizationFactor_IsPositive()
     {
         _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
+
         Assert.True(AppConstants.Grouping.RmsQuantizationFactor > 0);
     }
 
+
     [Fact]
+
     public void MinBatchSize_IsPositive()
     {
         _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
+
         Assert.True(AppConstants.Cache.MinBatchSize > 0);
     }
 
+
     [Fact]
+
     public void BatchSizeDivisor_IsPositive()
     {
         _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
+
         Assert.True(AppConstants.Cache.BatchSizeDivisor > 0);
     }
 
@@ -66,17 +86,22 @@ public class AppConstantsTests
 
     #region Progress Constants Tests
 
+
     [Fact]
+
     public void ProgressValues_AreInAscendingOrder()
     {
         _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // 進捗値は昇順であるべき
+
         Assert.True(AppConstants.Progress.PreloadComplete < AppConstants.Progress.ComparisonComplete);
         Assert.True(AppConstants.Progress.ComparisonComplete < AppConstants.Progress.RewriteComplete);
         Assert.True(AppConstants.Progress.RewriteComplete < AppConstants.Progress.Complete);
     }
 
+
     [Fact]
+
     public void ProgressValues_AreInValidRange()
     {
         _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
@@ -91,10 +116,13 @@ public class AppConstantsTests
 
     #region R2 Threshold Constants Tests
 
+
     [Fact]
+
     public void R2ThresholdRange_IsValid()
     {
         _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
+
         Assert.True(AppConstants.Threshold.Min >= 0.0f);
         Assert.True(AppConstants.Threshold.Min <= AppConstants.Threshold.Max);
         Assert.Equal(1.0f, AppConstants.Threshold.Max);
@@ -273,3 +301,4 @@ public class AppConstantsTests
 
     #endregion
 }
+

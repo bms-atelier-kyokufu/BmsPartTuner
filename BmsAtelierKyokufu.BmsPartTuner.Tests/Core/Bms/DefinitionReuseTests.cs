@@ -7,7 +7,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
 {
     /// <summary>
     /// <see cref="DefinitionReuse"/> のテストクラス。
-    /// 
+    ///
     /// 【テスト対象】
     /// - 境界値: ZZ(1295), zz(3843) 付近での挙動
     /// - 大文字小文字の混在: #WAV01 と #wav01

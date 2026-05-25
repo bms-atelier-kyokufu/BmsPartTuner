@@ -1,4 +1,4 @@
-﻿using BmsAtelierKyokufu.BmsPartTuner.Models;
+using BmsAtelierKyokufu.BmsPartTuner.Models;
 using BmsAtelierKyokufu.BmsPartTuner.Services.Audio;
 using BmsAtelierKyokufu.BmsPartTuner.Services.Audio.AudioPlayer;
 using Moq;
@@ -38,8 +38,8 @@ public class AudioPreviewServiceTests
     {
         var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Arrange
-        var file1 = "file1.wav";
-        var file2 = "file2.wav";
+        const string file1 = "file1.wav";
+        const string file2 = "file2.wav";
 
         // Act 1: Play first file
         await _service.PreviewAudioAsync(file1);
@@ -73,7 +73,7 @@ public class AudioPreviewServiceTests
     {
         var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Arrange
-        var file = "corrupt.wav";
+        const string file = "corrupt.wav";
         _playerMock1.Setup(p => p.Play(It.IsAny<string>())).Throws(new Exception("Corrupt file"));
 
         // Act

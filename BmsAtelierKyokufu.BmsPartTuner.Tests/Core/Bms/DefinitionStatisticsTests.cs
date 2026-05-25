@@ -6,7 +6,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
 {
     /// <summary>
     /// <see cref="DefinitionStatistics"/> のテストクラス。
-    /// 
+    ///
     /// 【テスト対象】
     /// - ユニークファイル数の計算
     /// - 統計情報の正確性

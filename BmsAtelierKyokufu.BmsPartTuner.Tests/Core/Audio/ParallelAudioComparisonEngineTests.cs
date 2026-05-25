@@ -31,7 +31,8 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
                 new() { 1, 2, 3 }
             };
 
-            var engine = new ParallelAudioComparisonEngine(fileList, audioCache, replaceTable, 1, fileList.Count - 1);
+            var parameters = new AudioComparisonParameters(fileList, audioCache, replaceTable, 1, fileList.Count - 1);
+            var engine = new ParallelAudioComparisonEngine(parameters);
 
             // 並列処理エンジンの仕様確認
             // 置換が発生しない（ユニークな）ファイルは、処理済みマークとして
@@ -62,7 +63,8 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
             var replaceTable = new int[fileList.Count];
             var groups = new List<List<int>> { new() { 1, 2 } };
 
-            var engine = new ParallelAudioComparisonEngine(fileList, audioCache, replaceTable, 1, fileList.Count - 1);
+            var parameters = new AudioComparisonParameters(fileList, audioCache, replaceTable, 1, fileList.Count - 1);
+            var engine = new ParallelAudioComparisonEngine(parameters);
 
             // 類似度が高い場合、2は1に置換される
             engine.CompareGroups(groups, 0.90f, new Progress<int>());
@@ -88,7 +90,8 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
             var replaceTable = new int[fileList.Count];
             var groups = new List<List<int>> { new() { 1, 2 } };
 
-            var engine = new ParallelAudioComparisonEngine(fileList, audioCache, replaceTable, 1, fileList.Count - 1);
+            var engine = new ParallelAudioComparisonEngine(new AudioComparisonParameters(
+                fileList, audioCache, replaceTable, 1, fileList.Count - 1));
 
             // 類似度が低い場合、置換は発生せず各自のIDでマークされる
             engine.CompareGroups(groups, 0.99f, new Progress<int>());

@@ -7,7 +7,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
 {
     /// <summary>
     /// <see cref="DefinitionRangeManager"/> のテストクラス。
-    /// 
+    ///
     /// 【テスト対象】
     /// - 処理範囲の決定（自動検出、明示指定）
     /// - 範囲の妥当性検証

@@ -10,8 +10,8 @@ public class PulseToRealTimeCalculatorTests
     public void GetTimeSec_ConstantBpm_ReturnsCorrectTime()
     {
         _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
-        // 120 BPM = 2 beats per second. 
-        // 1 beat = 240 pulses. 
+        // 120 BPM = 2 beats per second.
+        // 1 beat = 240 pulses.
         // 240 pulses = 0.5 seconds.
         var calc = new PulseToRealTimeCalculator(240, 120, null, null);
 

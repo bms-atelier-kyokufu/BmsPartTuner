@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 using System.Windows.Data;
 using BmsAtelierKyokufu.BmsPartTuner.Converters;
 using BmsAtelierKyokufu.BmsPartTuner.Models;
@@ -64,7 +64,7 @@ public class BoolToOpacityConverterTests
         _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Arrange
         // 0.5との差が0.01未満ならtrueとする想定
-        var input = 0.5000001;
+        const double input = 0.5000001;
 
         // Act
         var result = _converter.ConvertBack(input, typeof(bool), null!, _culture);
@@ -89,7 +89,7 @@ public class BoolToOpacityConverterTests
     {
         _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Arrange
-        var input = 0.0; // 0.5以外はfalse (通常表示 = 1.0 = false)
+        const double input = 0.0; // 0.5以外はfalse (通常表示 = 1.0 = false)
 
         // Act
         var result = _converter.ConvertBack(input, typeof(bool), null!, _culture);
