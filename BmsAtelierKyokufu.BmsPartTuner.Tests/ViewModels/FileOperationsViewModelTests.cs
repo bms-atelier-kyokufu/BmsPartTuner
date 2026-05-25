@@ -23,7 +23,7 @@ public class FileOperationsViewModelTests
         viewModel.InputPath = bmsonPath;
 
         // Then OutputPath should have the .bms extension (forced from .bmson)
-        var expectedOutputName = "test_optimized.bms";
+        const string expectedOutputName = "test_optimized.bms";
         var actualOutputName = Path.GetFileName(generatedOutputPath);
 
         Assert.Equal(expectedOutputName, actualOutputName);

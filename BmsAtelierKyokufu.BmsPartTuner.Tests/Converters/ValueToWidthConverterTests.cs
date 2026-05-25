@@ -15,7 +15,7 @@ public class ValueToWidthConverterTests
         _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Arrange
         object[] values = [0.75, 200.0];
-        double expected = 150.0;
+        const double expected = 150.0;
 
         // Act
         object result = _converter.Convert(values, null!, null!, CultureInfo.InvariantCulture);

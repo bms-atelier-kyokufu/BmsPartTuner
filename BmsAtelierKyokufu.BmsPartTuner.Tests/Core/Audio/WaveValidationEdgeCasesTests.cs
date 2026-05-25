@@ -13,7 +13,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
             var result = new float[samples];
             for (int i = 0; i < samples; i++)
             {
-                result[i] = amplitude * (float)Math.Sin(2 * Math.PI * frequency * i / samples + phase);
+                result[i] = amplitude * (float)Math.Sin((2 * Math.PI * frequency * i / samples) + phase);
             }
             return result;
         }

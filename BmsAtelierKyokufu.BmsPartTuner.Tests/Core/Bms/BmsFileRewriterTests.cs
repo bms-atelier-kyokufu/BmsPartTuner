@@ -60,7 +60,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
 
             var rewriter = new BmsFileRewriter(fileList, replaces, 1, 3);
 
-            string bmsContent = "#HEADER\n#WAV01 kick.wav\n#WAV02 snare.wav\n#WAV03 hat.wav\n#MAIN\n#00111:010203";
+            const string bmsContent = "#HEADER\n#WAV01 kick.wav\n#WAV02 snare.wav\n#WAV03 hat.wav\n#MAIN\n#00111:010203";
             string bmsPath = Path.Combine(_tempDir, "test.bms");
             File.WriteAllText(bmsPath, bmsContent, Encoding.GetEncoding("shift_jis"));
 
@@ -100,7 +100,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
 
             var rewriter = new BmsFileRewriter(fileList, replaces, 1, 3);
 
-            string bmsContent = "#HEADER\n#WAV01 kick1.wav\n#WAV02 kick2.wav\n#WAV03 snare.wav\n#MAIN\n#00111:010203";
+            const string bmsContent = "#HEADER\n#WAV01 kick1.wav\n#WAV02 kick2.wav\n#WAV03 snare.wav\n#MAIN\n#00111:010203";
             string bmsPath = Path.Combine(_tempDir, "test.bms");
             File.WriteAllText(bmsPath, bmsContent, Encoding.GetEncoding("shift_jis"));
 
@@ -140,7 +140,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
             _ = new BmsFileRewriter(fileList, replaces, 0, 0);
 
             string outputPath = Path.Combine(_tempDir, "output.bms");
-            string content = "test content";
+            const string content = "test content";
 
             BmsFileRewriter.WriteBmsFile(outputPath, content);
 
@@ -160,7 +160,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
             var rewriter = new BmsFileRewriter(fileList, replaces, 1, 1);
 
             // BMSにはファイルリストにない02への参照が含まれる（範囲外または未定義）
-            string bmsContent = "#HEADER\n#WAV01 kick.wav\n#MAIN\n#00111:0102";
+            const string bmsContent = "#HEADER\n#WAV01 kick.wav\n#MAIN\n#00111:0102";
             string bmsPath = Path.Combine(_tempDir, "test.bms");
             File.WriteAllText(bmsPath, bmsContent, Encoding.GetEncoding("shift_jis"));
 

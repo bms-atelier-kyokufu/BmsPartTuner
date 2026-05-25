@@ -46,11 +46,11 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
                 // テスト用の有効なWAVファイルを生成（PCM 44.1kHz mono 16bit, 1秒の無音）
                 using FileStream fs = new(path, FileMode.Create);
                 using BinaryWriter bw = new(fs);
-                int sampleRate = 44100;
-                int channels = 1;
-                short bitsPerSample = 16;
-                int dataSize = sampleRate * channels * (bitsPerSample / 8); // 1 second
-                int fileSize = 36 + dataSize;
+                const int sampleRate = 44100;
+                const int channels = 1;
+                const short bitsPerSample = 16;
+                const int dataSize = sampleRate * channels * (bitsPerSample / 8); // 1 second
+                const int fileSize = 36 + dataSize;
 
                 // RIFFヘッダー
                 bw.Write(Encoding.ASCII.GetBytes("RIFF"));

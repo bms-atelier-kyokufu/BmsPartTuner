@@ -54,7 +54,7 @@ public class DefinitionRangeValidator : IValidator<DefinitionRange>
             // Why: BMSフォーマットは62進数（0-9, A-Z, a-z）をサポートするため、Base62で検証する
             var startValue = RadixConvert.ZZToInt(range.Start, AppConstants.Definition.RadixBase62);
             var endValue = RadixConvert.ZZToInt(range.End, AppConstants.Definition.RadixBase62);
-            var maxValue = AppConstants.Definition.MaxNumberBase62;
+            const int maxValue = AppConstants.Definition.MaxNumberBase62;
 
             if (startValue < AppConstants.Definition.MinNumber)
                 return ValidationResult.Failure("開始定義は01以上にしてください");

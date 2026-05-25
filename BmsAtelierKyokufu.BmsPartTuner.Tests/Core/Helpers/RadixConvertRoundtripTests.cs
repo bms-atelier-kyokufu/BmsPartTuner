@@ -79,7 +79,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Helpers
         public void IntToZZ_MaxDefinitionNumberBase36_ReturnsZZ()
         {
             // Arrange
-            int maxBase36 = AppConstants.Definition.MaxNumberBase36;  // 1295
+            const int maxBase36 = AppConstants.Definition.MaxNumberBase36;  // 1295
 
             // Act
             var result = RadixConvert.IntToZZ(maxBase36, AppConstants.Definition.RadixBase36);
@@ -92,7 +92,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Helpers
         public void IntToZZ_MaxDefinitionNumberBase62_Returnszz()
         {
             // Arrange
-            int maxBase62 = AppConstants.Definition.MaxNumberBase62;  // 3843
+            const int maxBase62 = AppConstants.Definition.MaxNumberBase62;  // 3843
 
             // Act
             var result = RadixConvert.IntToZZ(maxBase62, AppConstants.Definition.RadixBase62);
@@ -143,7 +143,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Helpers
         public void IntToZZ_MinDefinitionNumber_Returns01(int radix)
         {
             // Arrange
-            int minDef = AppConstants.Definition.MinNumber;  // 1
+            const int minDef = AppConstants.Definition.MinNumber;  // 1
 
             // Act
             var result = RadixConvert.IntToZZ(minDef, radix);

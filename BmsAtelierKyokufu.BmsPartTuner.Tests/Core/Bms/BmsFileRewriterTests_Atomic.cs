@@ -20,8 +20,8 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
             using var context = new BmsTestContext();
 
             string bmsPath = Path.Combine(context.TempDirectory, "atomic_test.bms");
-            string originalContent = "Original Content";
-            string newContent = "New Content";
+            const string originalContent = "Original Content";
+            const string newContent = "New Content";
 
             // 1. Create original file
             File.WriteAllText(bmsPath, originalContent, Encoding.GetEncoding("shift_jis"));
@@ -64,7 +64,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
             using var context = new BmsTestContext();
 
             string bmsPath = Path.Combine(context.TempDirectory, "atomic_success.bms");
-            string content = "Success Content";
+            const string content = "Success Content";
 
             var rewriter = new BmsFileRewriter([], new int[1], 0, 0);
 

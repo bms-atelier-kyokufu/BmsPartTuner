@@ -43,7 +43,7 @@ public class ObjectToBoolConverterTests
     {
         _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Arrange
-        var value = false;
+        const bool value = false;
 
         // Act
         var result = _converter.ConvertBack(value, typeof(object), null, CultureInfo.InvariantCulture);
@@ -57,7 +57,7 @@ public class ObjectToBoolConverterTests
     {
         _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Arrange
-        var value = true;
+        const bool value = true;
 
         // Act
         var result = _converter.ConvertBack(value, typeof(object), null, CultureInfo.InvariantCulture);
@@ -71,7 +71,7 @@ public class ObjectToBoolConverterTests
     {
         _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Arrange
-        var value = "invalid";
+        const string value = "invalid";
 
         // Act
         var result = _converter.ConvertBack(value, typeof(object), null, CultureInfo.InvariantCulture);

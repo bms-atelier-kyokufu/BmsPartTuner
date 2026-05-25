@@ -77,7 +77,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
 
         public static string CreateSilenceWavFile(string filePath, double durationSeconds = 0.1, int channels = 1, bool writeToDisk = true)
         {
-            int sampleRate = 44100;
+            const int sampleRate = 44100;
             int totalSamples = (int)(sampleRate * durationSeconds * channels);
 
             using (var ms = new MemoryStream())
@@ -106,8 +106,8 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
         public static string CreateValidWavFile(string filePath, bool isDifferent = false, bool writeToDisk = true)
         {
             double frequency = isDifferent ? 880.0 : 440.0;
-            int sampleRate = 44100;
-            int sampleCount = 4410; // 0.1 seconds
+            const int sampleRate = 44100;
+            const int sampleCount = 4410; // 0.1 seconds
 
             using (var ms = new MemoryStream())
             {

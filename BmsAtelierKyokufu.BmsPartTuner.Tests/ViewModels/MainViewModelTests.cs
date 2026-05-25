@@ -21,7 +21,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.ViewModels
                 // Arrange
                 using var context = new BmsTestContext();
                 var bmsonPath = Path.Combine(context.TempDirectory, "test.bmson");
-                var bmsonContent = @"{
+                const string bmsonContent = @"{
                     ""version"": ""1.0.0"",
                     ""info"": {
                         ""title"": ""Test Chart"",
@@ -92,7 +92,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.ViewModels
                 // Arrange
                 using var context = new BmsTestContext();
                 var bmsonPath = Path.Combine(context.TempDirectory, "test.bmson");
-                var bmsonContent = @"{
+                const string bmsonContent = @"{
                     ""version"": ""1.0.0"",
                     ""info"": {
                         ""title"": ""Test Chart"",
