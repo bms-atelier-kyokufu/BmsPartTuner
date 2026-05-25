@@ -13,7 +13,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 /// <item>BMSファイル内の#WAV定義と譜面データの置換</item>
 /// <item>Shift_JISエンコーディングでファイル保存</item>
 /// </list>
-/// 
+///
 /// <para>【処理フロー】</para>
 /// <list type="number">
 /// <item>削減後の定義ファイルを抽出</item>
@@ -21,7 +21,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 /// <item>新しいID（01, 02, ...）を割り当て</item>
 /// <item>BMSファイル内の定義とデータを置換</item>
 /// </list>
-/// 
+///
 /// <para>【Why ファイル名順】</para>
 /// 整列により、類似ファイルが連続して並ぶため、視認性が向上します。
 /// 例: kick_01, kick_02, kick_03, snare_01, snare_02...
@@ -79,7 +79,7 @@ internal partial class BmsFileRewriter(
     /// <item>新しいID（01, 02, ...）を割り当て</item>
     /// <item>BMSファイル内の定義とデータを置換</item>
     /// </list>
-    /// 
+    ///
     /// <para>【Why 3段階マップ】</para>
     /// <list type="bullet">
     /// <item>reductionMap: 元のID → 削減後のID（重複排除）</item>
@@ -208,7 +208,7 @@ internal partial class BmsFileRewriter(
     /// <item>削減後のIDが重複しないようにHashSetで管理</item>
     /// <item>保持すべきファイルをリストに追加</item>
     /// </list>
-    /// 
+    ///
     /// <para>【Why HashSet】</para>
     /// Contains()がO(1)で高速なため、重複チェックに最適です。
     /// </remarks>
@@ -268,11 +268,11 @@ internal partial class BmsFileRewriter(
     /// <item>相対パスを計算して新しい定義リストを作成</item>
     /// <item>元のIDから新しいIDへのマップを完成</item>
     /// </list>
-    /// 
+    ///
     /// <para>【Why 基数の自動判定】</para>
     /// 36進数（0-9,A-Z）は1295定義まで、62進数（0-9,A-Z,a-z）は3843定義まで対応。
     /// ファイル数に応じて自動的に最適な基数を選択します。
-    /// 
+    ///
     /// <para>【Why 相対パス】</para>
     /// BMSファイルから見た相対パスで記述することで、フォルダ構造の変更に強くなります。
     /// </remarks>
@@ -341,12 +341,12 @@ internal partial class BmsFileRewriter(
     /// <item>譜面データ行: IDを置換して出力</item>
     /// <item>その他の行: そのまま出力</item>
     /// </list>
-    /// 
+    ///
     /// <para>【Why 一括出力】</para>
     /// 元の#WAV定義がファイル中に散在している場合でも、
     /// 新しい定義リストを先頭にまとめて出力することで、
     /// 可読性と管理性が向上します。
-    /// 
+    ///
     /// <para>【未定義参照の扱い】</para>
     /// 譜面データ内で参照されているが定義リストに存在しないWAV IDは、
     /// データ非破壊の原則に従い、変更せずにそのまま維持します。

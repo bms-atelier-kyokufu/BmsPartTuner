@@ -11,7 +11,7 @@
 /// <item>ユニークファイル数の取得</item>
 /// <item>デバッグログへの統計情報出力</item>
 /// </list>
-/// 
+///
 /// <para>【用途】</para>
 /// 自動最適化（<see cref="Core.Optimization.CorrelationThresholdOptimizer"/>）において、
 /// エルボーポイント検出のための評価指標として使用されます。
@@ -67,11 +67,11 @@ internal class DefinitionStatistics(
     /// <remarks>
     /// <para>【計算方法】</para>
     /// 置換テーブルで自分自身を指している（置換されていない）ファイルの数を集計します。
-    /// 
+    ///
     /// <para>【用途】</para>
     /// 自動最適化のエルボーポイント検出において、
     /// 相関係数のしきい値を変化させた際のファイル数を評価します。
-    /// 
+    ///
     /// <para>【デバッグ情報】</para>
     /// 処理範囲内の総ファイル数、ユニークファイル数、未処理ファイル数を
     /// デバッグログに出力します。
@@ -103,7 +103,7 @@ internal class DefinitionStatistics(
     /// <item>ユニークファイル数: 自分自身を指している（残された）ファイル数</item>
     /// <item>削減率: 置換されたファイル数 / 総定義数 × 100</item>
     /// </list>
-    /// 
+    ///
     /// <para>【判定ロジック】</para>
     /// <list type="bullet">
     /// <item>_replaces[i] == i: 自分自身を指している（ユニーク）</item>

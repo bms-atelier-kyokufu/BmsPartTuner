@@ -10,12 +10,12 @@
 /// <item>自動範囲検出（defEnd=0の場合）</item>
 /// <item>範囲の妥当性検証</item>
 /// </list>
-/// 
+///
 /// <para>【Why 範囲指定】</para>
 /// BMSファイルには数百～数千の定義番号が存在しますが、
 /// 実際に使用されているのは一部のみです。処理範囲を限定することで、
 /// 不要な比較を避け、処理時間を短縮できます。
-/// 
+///
 /// <para>【自動範囲検出】</para>
 /// defEnd=0または負の値を指定すると、ファイルリストから
 /// 実際に使用されている最大定義番号を自動検出します。
@@ -53,18 +53,18 @@ internal class DefinitionRangeManager(IReadOnlyList<BmsAudioFile> fileList)
     /// <item>実際のファイルリストの開始位置を考慮</item>
     /// <item>デバッグログに範囲情報を出力</item>
     /// </list>
-    /// 
+    ///
     /// <para>【自動検出（defEnd≤0）】</para>
     /// ファイルリスト内の最大定義番号を自動的に検出します。
     /// これにより、不要な範囲を処理対象から除外できます。
-    /// 
+    ///
     /// <para>【範囲補正】</para>
     /// <list type="bullet">
     /// <item>defStart &lt; 1: 1に補正</item>
     /// <item>defEnd &gt; 3843: 3843に補正</item>
     /// <item>defEnd ≤ 0: ファイルリストから自動検出</item>
     /// </list>
-    /// 
+    ///
     /// <para>【例】</para>
     /// <code>
     /// ファイルリスト: [01, 02, 03, ..., 50]

@@ -1,4 +1,4 @@
-using BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
+﻿using BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 
@@ -12,7 +12,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 /// <item>サブシステムの協調（範囲管理、統計情報、ファイル書き換え）</item>
 /// <item>進捗管理と統計情報の集計</item>
 /// </list>
-/// 
+///
 /// <para>【処理フロー】</para>
 /// <list type="number">
 /// <item>処理範囲の決定（<see cref="DefinitionRangeManager"/>）</item>
@@ -21,7 +21,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 /// <item>BMSファイルの書き換え（<see cref="BmsFileRewriter"/>）</item>
 /// <item>ファイル保存</item>
 /// </list>
-/// 
+///
 /// <para>【設計パターン】</para>
 /// Orchestrator（Facade）パターン: 複雑なサブシステムを単純なインターフェースで提供。
 /// </remarks>
@@ -69,13 +69,9 @@ public class DefinitionReuse
     /// BMS定義の重複削減を実行します。
     /// </summary>
     /// <param name="bmsFileName">入力BMSファイルのパス。</param>
-    /// <param name="progress">進捗報告用のIProgress（0-100%）。</param>
-    /// <param name="r2Val">相関係数のしきい値（0.0～1.0、推奨: 0.95）。</param>
     /// <param name="saveFileName">出力先ファイルのパス。</param>
-    /// <param name="defStart">処理範囲の開始定義番号。</param>
-    /// <param name="defEnd">処理範囲の終了定義番号（0=自動検出）。</param>
+    /// <param name="options">削減実行オプション。</param>
     /// <param name="normalizationMode">正規化モード（デフォルト: None）。</param>
-    /// <param name="selectedKeywords">選択されたキーワード（nullまたは空の場合は全て処理）。</param>
     /// <remarks>
     /// <para>【処理フロー】</para>
     /// <list type="number">
@@ -85,18 +81,18 @@ public class DefinitionReuse
     /// <item>BMSファイルの書き換え（90-100%）</item>
     /// <item>ファイル保存（100%）</item>
     /// </list>
-    /// 
+    ///
     /// <para>【パラメータ調整ガイド】</para>
     /// <list type="bullet">
     /// <item>r2Val=0.98: 厳密（ほぼ同一のみ統合）</item>
     /// <item>r2Val=0.95: 標準（推奨、似た音源を統合）</item>
     /// <item>r2Val=0.90: 緩い（やや異なる音源も統合）</item>
     /// </list>
-    /// 
+    ///
     /// <para>【Why normalizationMode】</para>
     /// 音量差が大きいファイル群を比較する場合、波形を正規化することで
     /// 音量の影響を排除し、波形の形状のみを比較できます。
-    /// 
+    ///
     /// <para>【Why selectedKeywords】</para>
     /// 特定の楽器種別（例: "kick", "snare"）のみを処理対象にすることで、
     /// 処理時間を短縮できます。nullまたは空の場合は全ファイルを処理します。
@@ -272,7 +268,7 @@ public class DefinitionReuse
     /// <item>グループ単位で並列比較（<see cref="ParallelAudioComparisonEngine"/>）</item>
     /// <item>置換テーブルを更新（スレッドセーフなCAS操作）</item>
     /// </list>
-    /// 
+    ///
     /// <para>【Why グループ化】</para>
     /// 全ファイル総当たり比較（O(n²)）を避け、類似ファイルのみを比較（O(Σm²)）することで
     /// 計算量を大幅に削減します（約800倍高速化）。
@@ -284,7 +280,8 @@ public class DefinitionReuse
         var groups = AudioFileGroupingStrategy.GroupFiles(_audioCache, _fileList, _rangeManager.StartPoint, _rangeManager.EndPoint, selectedKeywords);
         PerformanceDebugLogger.WriteLine($"    [CreateReplaceTable] GroupFiles (groups={groups.Count}): {timer.Lap("GroupFiles")} ms");
 
-        var comparisonEngine = new ParallelAudioComparisonEngine(_fileList, _audioCache, _replaces, _rangeManager.StartPoint, _rangeManager.EndPoint);
+        var parameters = new AudioComparisonParameters(_fileList, _audioCache, _replaces, _rangeManager.StartPoint, _rangeManager.EndPoint);
+        var comparisonEngine = new ParallelAudioComparisonEngine(parameters);
         comparisonEngine.CompareGroups(groups, r2val, progress);
         PerformanceDebugLogger.WriteLine($"    [CreateReplaceTable] CompareGroups: {timer.Lap("CompareGroups")} ms");
     }

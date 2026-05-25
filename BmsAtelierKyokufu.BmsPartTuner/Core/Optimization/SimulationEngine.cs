@@ -13,19 +13,19 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Core.Optimization;
 /// <item>Union-Find方式による高速なユニークファイル数カウント</item>
 /// <item>グループ単位の並列処理で$O(N^2)$を最小化</item>
 /// </list>
-/// 
+///
 /// <para>【並列化戦略】</para>
 /// <list type="number">
 /// <item>しきい値レベル: 各しきい値を並列実行（Parallel.ForEach）</item>
 /// <item>グループレベル: 各グループを並列実行（Parallel.ForEach）</item>
 /// <item>最大並列度: CPUコア数 - 1（システムリソース確保のため）</item>
 /// </list>
-/// 
+///
 /// <para>【Union-Findアルゴリズム】</para>
 /// 推移的なマッチング関係を効率的に管理:
 /// A=B, B=C → A=C（自動的に統合）
 /// 計算量: $O(\alpha(n))$（逆アッカーマン関数、実質定数時間）
-/// 
+///
 /// <para>【スレッドセーフ設計】</para>
 /// <list type="bullet">
 /// <item>Interlocked.CompareExchange: CAS操作による排他制御</item>
@@ -36,9 +36,6 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Core.Optimization;
 /// <remarks>
 /// SimulationEngineを初期化。
 /// </remarks>
-/// <param name="fileList">ファイルリスト。</param>
-/// <param name="startPoint">開始位置。</param>
-/// <param name="endPoint">終了位置。</param>
 /// <exception cref="ArgumentNullException">fileListがnullの場合。</exception>
 internal class SimulationEngine(
     IReadOnlyList<BmsAudioFile> fileList,
@@ -71,7 +68,7 @@ internal class SimulationEngine(
         int completed = 0;
         int total = thresholds.Count;
 
-        PerformanceDebugLogger.WriteLine($"=== RunParallelSimulationDetailed Start ===");
+        PerformanceDebugLogger.WriteLine("=== RunParallelSimulationDetailed Start ===");
         PerformanceDebugLogger.WriteLine($"Parallel simulation: {total} thresholds, {_parallelDegree} threads");
         PerformanceDebugLogger.WriteLine($"Range: {rangeMin:F2} - {rangeMax:F2}, Step: {step:F2}");
 
@@ -103,7 +100,7 @@ internal class SimulationEngine(
             }
         });
 
-        PerformanceDebugLogger.WriteLine($"=== RunParallelSimulationDetailed Complete ===");
+        PerformanceDebugLogger.WriteLine("=== RunParallelSimulationDetailed Complete ===");
         PerformanceDebugLogger.WriteLine($"Completed {results.Count} simulations in {timer.Lap("RunParallelSimulationDetailed")} ms");
 
         return [.. results.OrderByDescending(r => r.Threshold)];
@@ -126,16 +123,16 @@ internal class SimulationEngine(
     /// <item>Base36/Base62の両方の条件を同時監視</item>
     /// <item>Base36条件を満たしたら早期終了</item>
     /// </list>
-    /// 
+    ///
     /// <para>【早期終了戦略】</para>
     /// Base36制限（1295件）とBase62制限（3844件）を同時に監視し、
     /// それぞれの条件を満たした最初のしきい値を記録します。
     /// Base36条件を満たしたら（より厳しい条件）、シミュレーションを終了します。
-    /// 
+    ///
     /// <para>【音声キャッシュの検証】</para>
     /// キャッシュが0件の場合、すべてのシミュレーションで削減率0%となるため、
     /// 開始時にキャッシュ状態をログ出力して問題を早期発見します。
-    /// 
+    ///
     /// <para>【進捗報告】</para>
     /// 10回ごとまたは完了時に進捗を報告（0-70%の範囲）。
     /// 残り30%はデータ平滑化とエルボーポイント検出に割り当てられます。
@@ -157,7 +154,7 @@ internal class SimulationEngine(
         float base36Threshold = 0f;
         float base62Threshold = 0f;
 
-        PerformanceDebugLogger.WriteLine($"=== RunParallelSimulation Start (with early termination) ===");
+        PerformanceDebugLogger.WriteLine("=== RunParallelSimulation Start (with early termination) ===");
         PerformanceDebugLogger.WriteLine($"Sequential simulation: {total} thresholds max");
         PerformanceDebugLogger.WriteLine($"Range: {rangeMin:F2} - {rangeMax:F2}, Step: {step:F2}");
         PerformanceDebugLogger.WriteLine($"File range: {_startPoint} - {_endPoint}");
@@ -223,7 +220,7 @@ internal class SimulationEngine(
             }
         }
 
-        PerformanceDebugLogger.WriteLine($"=== RunParallelSimulation Complete ===");
+        PerformanceDebugLogger.WriteLine("=== RunParallelSimulation Complete ===");
         PerformanceDebugLogger.WriteLine($"Completed {results.Count}/{total} simulations in {timer.Lap("RunParallelSimulation")} ms");
         PerformanceDebugLogger.WriteLine($"Saved {total - completed} simulations due to early termination");
 
@@ -278,7 +275,7 @@ internal class SimulationEngine(
     /// <item>Union-Findで置換テーブルを構築</item>
     /// <item>ルートが自分自身のファイルをカウント（ユニーク数）</item>
     /// </list>
-    /// 
+    ///
     /// <para>【Union-Findによるカウント】</para>
     /// 置換テーブルで代表値（ルート）を辿り、自分自身がルートのファイルのみをカウント。
     /// これにより、推移的な統合を考慮した正確なユニーク数を取得できます。

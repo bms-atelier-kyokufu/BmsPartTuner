@@ -87,7 +87,7 @@ public class PulseToBmsTimeCalculator(int resolution, List<BmsonLineEvent> lines
 
     /// <summary>
     /// オラクルの変換ロジックに基づき、指定した出力ステップ数に対するステップインデックスを取得します。
-    /// step = Floor( (y - y_start) * R / (y_end - y_start) ) 
+    /// step = Floor( (y - y_start) * R / (y_end - y_start) )
     /// ここで、R は出力ステップ数。
     /// </summary>
     public int GetStepIndex(long y, int outputSteps)

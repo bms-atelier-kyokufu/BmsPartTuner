@@ -9,7 +9,7 @@
 /// <item>10進数 ⇔ 62進数（ZZ形式）の相互変換</item>
 /// <item>BMS定義番号の文字列表現をサポート</item>
 /// </list>
-/// 
+///
 /// <para>【BMS定義番号の仕様】</para>
 /// BMSフォーマットでは、定義番号を以下の文字セットで表現します:
 /// <list type="bullet">
@@ -17,19 +17,19 @@
 /// <item>A-Z: 10～35（26種）</item>
 /// <item>a-z: 36～61（26種）</item>
 /// </list>
-/// 
+///
 /// 合計62種の文字を使用し、2桁で00～zz（0～3843）を表現可能。
-/// 
+///
 /// <para>【36進数 vs 62進数】</para>
 /// <list type="bullet">
 /// <item>36進数: 0-9, A-Z のみ（従来のBMS仕様）</item>
 /// <item>62進数: 0-9, A-Z, a-z すべて（拡張仕様、BMS++等）</item>
 /// </list>
-/// 
+///
 /// <para>【ルックアップテーブル最適化】</para>
 /// 文字 ⇔ 値の変換を配列ベースのルックアップテーブルで高速化。
 /// 計算量: O(1)（文字列パースやループ不要）
-/// 
+///
 /// <para>【例】</para>
 /// <code>
 /// IntToZZ(0) → "00"
@@ -37,7 +37,7 @@
 /// IntToZZ(35) → "0Z" (62進数)
 /// IntToZZ(61) → "0z" (62進数)
 /// IntToZZ(3843) → "zz" (62進数)
-/// 
+///
 /// ZZToInt("00") → 0
 /// ZZToInt("0z", Base36) → 35
 /// ZZToInt("zz", Base62) → 3843
@@ -102,11 +102,11 @@ public static class RadixConvert
     /// <remarks>
     /// <para>【変換式】</para>
     /// 2桁表記 = [dec / radix][dec % radix]
-    /// 
+    ///
     /// <para>【例】</para>
     /// IntToZZ(35, 36) → "0Z" （35 = 0 * 36 + 35）
     /// IntToZZ(100, 62) → "1K" （100 = 1 * 62 + 38）
-    /// 
+    ///
     /// <para>【有効範囲】</para>
     /// Base36: 0 ～ 1295 (ZZ)
     /// Base62: 0 ～ 3843 (zz)
@@ -164,15 +164,15 @@ public static class RadixConvert
     /// <remarks>
     /// <para>【変換式】</para>
     /// 数値 = (1桁目の値 × radix) + 2桁目の値
-    /// 
+    ///
     /// <para>【例】</para>
     /// ZZToInt("0Z", 36) → 35 （0 * 36 + 35）
     /// ZZToInt("1K", 62) → 100 （1 * 62 + 38）
-    /// 
+    ///
     /// <para>【有効文字】</para>
     /// Base36: 0-9, A-Z
     /// Base62: 0-9, A-Z, a-z
-    /// 
+    ///
     /// <para>【Why ルックアップテーブル】</para>
     /// 文字コードから値を直接取得することで、
     /// 文字列パース（IndexOf, Substring等）を不要にし、

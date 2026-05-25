@@ -1,4 +1,4 @@
-using BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
+﻿using BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
 using BmsAtelierKyokufu.BmsPartTuner.Services.Bms;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
@@ -14,7 +14,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 /// <item>ファイルメタデータ（サイズ、定義番号）の取得</item>
 /// <item>楽器名の統計的推定（<see cref="InstrumentNameDetectionService"/>連携）</item>
 /// </list>
-/// 
+///
 /// <para>【Why ObservableCollection】</para>
 /// WPFのListBoxやDataGridにバインドされるため、コレクション変更を自動的にUIに反映させる必要があります。
 /// </remarks>
@@ -63,12 +63,12 @@ public partial class BmsDefinitionManager(string bmsFilePath, string? bmsContent
     /// <item>楽器名を統計的に推定</item>
     /// <item>ObservableCollectionに追加（UI反映）</item>
     /// </list>
-    /// 
+    ///
     /// <para>【Why 一時リストを使用】</para>
     /// <see cref="ObservableCollection{T}"/>への頻繁なAddは、毎回CollectionChangedイベントを
     /// 発火させUIを更新するため、パフォーマンスが低下します。
     /// 一時リストで処理してから一括追加することで、UI更新回数を削減します。
-    /// 
+    ///
     /// <para>【Why 基数を自動判定】</para>
     /// BMSフォーマットは36進数（0-9,A-Z）が標準ですが、
     /// 拡張仕様で62進数（0-9,A-Z,a-z）も使用されます。
@@ -146,7 +146,7 @@ public partial class BmsDefinitionManager(string bmsFilePath, string? bmsContent
     /// <para>【Why try-catch】</para>
     /// 楽器名推定はオプショナルな機能であり、失敗してもファイルリスト作成は
     /// 継続すべきです。エラーが発生しても、InstrumentNameを空文字列のままにして処理を続行します。
-    /// 
+    ///
     /// <para>【処理タイミング】</para>
     /// ObservableCollectionに追加する前に実行することで、
     /// UIへの通知回数を削減（InstrumentName設定による追加通知を避ける）します。

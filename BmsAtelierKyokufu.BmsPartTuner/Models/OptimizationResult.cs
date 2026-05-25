@@ -10,7 +10,7 @@
 /// <item>シミュレーションデータ（グラフ描画用）を保持</item>
 /// <item>パフォーマンス指標（実行時間、メモリ使用量）を記録</item>
 /// </list>
-/// 
+///
 /// <para>【用途】</para>
 /// <see cref="Services.BmsOptimizationService.FindOptimalThresholdsAsync"/>の戻り値として使用します。
 /// UIレイヤーで最適化結果を表示し、ユーザーに最適値を提案するために利用されます。

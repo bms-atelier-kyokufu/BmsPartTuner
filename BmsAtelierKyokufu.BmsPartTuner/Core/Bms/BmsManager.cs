@@ -13,11 +13,11 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 /// <item>譜面データ内の定義番号置換</item>
 /// <item>WAVチャンネルの識別（BGM、キー音、不可視、ロングノート、地雷）</item>
 /// </list>
-/// 
+///
 /// <para>【Why Shift_JIS】</para>
 /// BMSフォーマットはShift_JISエンコーディングが標準です。
 /// 互換性維持のため、ファイル読み書きにはShift_JISを使用します。
-/// 
+///
 /// <para>【サポートするチャンネル】</para>
 /// <list type="bullet">
 /// <item>01: BGM</item>
@@ -76,13 +76,13 @@ internal partial class BmsManager(string bmsFilePath, string? bmsContent = null)
     /// <item>正規表現で#WAVxx行を抽出</item>
     /// <item>定義番号とファイルパスをタプルで返す</item>
     /// </list>
-    /// 
+    ///
     /// <para>【エラーハンドリング】</para>
     /// <list type="bullet">
     /// <item>エンコーディングエラー: 例外を再スロー（UI側でハンドリング）</item>
     /// <item>パースエラー: ログに記録し、部分的な成功を許容</item>
     /// </list>
-    /// 
+    ///
     /// <para>【例】</para>
     /// <code>
     /// #WAV01 kick.wav
@@ -173,10 +173,10 @@ internal partial class BmsManager(string bmsFilePath, string? bmsContent = null)
     /// <item>データ部分を2文字ずつ処理し、置換マップを適用</item>
     /// <item>"00"（休符）は置換しない</item>
     /// </list>
-    /// 
+    ///
     /// <para>【Why 2文字ずつ処理】</para>
     /// BMSの定義番号は2桁の36進数または62進数で表現されます（例: "01", "0Z", "zz"）。
-    /// 
+    ///
     /// <para>【例】</para>
     /// <code>
     /// 入力: "#00111:010203"
@@ -237,7 +237,7 @@ internal partial class BmsManager(string bmsFilePath, string? bmsContent = null)
     /// <item>01: BGM</item>
     /// <item>11-19, 21-29, 31-39, 41-49, 51-59, 61-69: キー音</item>
     /// </list>
-    /// 
+    ///
     /// <para>【非WAVチャンネル】</para>
     /// <list type="bullet">
     /// <item>02: 小節長変更</item>

@@ -18,11 +18,11 @@ public record DefinitionRange(string Start, string End);
 /// <item>順序チェック: 終了 &gt; 開始</item>
 /// <item>形式チェック: 62進数として有効な文字列であること</item>
 /// </list>
-/// 
+///
 /// <para>【Why 62進数】</para>
 /// BMSフォーマットでは、定義番号を62進数（0-9, a-z, A-Z）で表現します。
 /// 2桁の62進数で01～zzの範囲（1～3843）を表現できます。
-/// 
+///
 /// <para>【例】</para>
 /// <code>
 /// 01 → 1
@@ -84,12 +84,12 @@ public class DefinitionRangeValidator : IValidator<DefinitionRange>
 /// <item>数値チェック: float型に変換可能であること</item>
 /// <item>範囲チェック: 0.0～1.0の範囲内であること</item>
 /// </list>
-/// 
+///
 /// <para>【Why 0.0～1.0】</para>
 /// ピアソン相関係数は定義上-1.0～1.0の範囲ですが、
 /// 音声比較では負の相関（逆相）を統合することはないため、
 /// 0.0～1.0の範囲に限定しています。
-/// 
+///
 /// <para>【推奨値】</para>
 /// <list type="bullet">
 /// <item>0.95～0.98: 標準（推奨）</item>

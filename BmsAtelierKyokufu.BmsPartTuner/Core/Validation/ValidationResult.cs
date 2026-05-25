@@ -7,7 +7,7 @@
 /// <para>【Result Pattern】</para>
 /// 例外を投げる代わりに、検証結果を値として返すことで、
 /// エラーハンドリングを明示的かつ型安全に行えます。
-/// 
+///
 /// <para>【Why Result Pattern】</para>
 /// <list type="bullet">
 /// <item>例外よりもパフォーマンスが良い（スタック巻き戻し不要）</item>
@@ -15,7 +15,7 @@
 /// <item>複数のエラーを集約できる</item>
 /// </list>
 /// </remarks>
-public class ValidationResult
+public sealed class ValidationResult
 {
     /// <summary>検証が成功したかどうか。</summary>
     public bool IsValid { get; }
@@ -57,7 +57,7 @@ public class ValidationResult
     /// </summary>
     /// <returns>最初のエラーメッセージ、エラーがない場合は空文字列。</returns>
     public string GetFirstError()
-        => Errors.FirstOrDefault() ?? string.Empty;
+        => Errors.Count > 0 ? Errors[0] : string.Empty;
 
     /// <summary>
     /// すべてのエラーを連結。
@@ -76,7 +76,7 @@ public class ValidationResult
 /// <para>【用途】</para>
 /// 検証成功時に、パースされた値を一緒に返すことで、
 /// 呼び出し側でのパース処理を省略できます。
-/// 
+///
 /// <para>【例】</para>
 /// <code>
 /// var result = ValidateR2Threshold("0.95");
@@ -85,7 +85,7 @@ public class ValidationResult
 /// }
 /// </code>
 /// </remarks>
-public class ValidationResult<T>
+public sealed class ValidationResult<T>
 {
     /// <summary>検証が成功したかどうか。</summary>
     public bool IsValid { get; }
@@ -124,5 +124,5 @@ public class ValidationResult<T>
     /// </summary>
     /// <returns>最初のエラーメッセージ、エラーがない場合は空文字列。</returns>
     public string GetFirstError()
-        => Errors.FirstOrDefault() ?? string.Empty;
+        => Errors.Count > 0 ? Errors[0] : string.Empty;
 }
