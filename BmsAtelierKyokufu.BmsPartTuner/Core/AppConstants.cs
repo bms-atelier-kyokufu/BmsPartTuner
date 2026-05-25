@@ -1,4 +1,4 @@
-namespace BmsAtelierKyokufu.BmsPartTuner.Core;
+﻿namespace BmsAtelierKyokufu.BmsPartTuner.Core;
 
 /// <summary>
 /// アプリケーション全体で使用される定数を一元管理します。
@@ -152,7 +152,7 @@ public static class AppConstants
         /// <remarks>
         /// <para>【重要】</para>
         /// Phase 3フィルタで使用。全比較の約85%をここで除外します。
-        /// 
+        ///
         /// <para>【調整ガイド】</para>
         /// <list type="bullet">
         /// <item>厳密: 0.1f（±10%） - 音量がほぼ同じファイルのみ</item>
@@ -185,7 +185,7 @@ public static class AppConstants
         /// <para>【目的】</para>
         /// 全サンプル比較の前に、冒頭部分のみで高速判定。
         /// Phase 4フィルタで約6%をここで除外します。
-        /// 
+        ///
         /// <para>【調整ガイド】</para>
         /// <list type="bullet">
         /// <item>高速: 2205（0.05秒） - 処理速度優先</item>
@@ -257,13 +257,13 @@ public static class AppConstants
         /// <remarks>
         /// <para>【目的】</para>
         /// 並列化効率とメモリ使用量のバランスを取ります。
-        /// 
+        ///
         /// <para>【Why 100】</para>
         /// <list type="bullet">
         /// <item>100ファイルの全ペア比較: 4,950回（許容範囲）</item>
         /// <item>メモリ: 100ファイル × 200KB ≈ 20MB（許容範囲）</item>
         /// </list>
-        /// 
+        ///
         /// <para>【調整ガイド】</para>
         /// <list type="bullet">
         /// <item>大規模環境（メモリ豊富）: 50-75</item>
@@ -280,7 +280,7 @@ public static class AppConstants
         /// <para>【目的】</para>
         /// RMS値を整数化してグループキーを生成。
         /// 例: RMS=0.456 → int(0.456 × 100) = 45
-        /// 
+        ///
         /// <para>【調整ガイド】</para>
         /// <list type="bullet">
         /// <item>粗い分割: 50（0.02刻み） - グループ数減、比較回数増</item>
@@ -307,7 +307,7 @@ public static class AppConstants
         /// <remarks>
         /// <para>【計算例】</para>
         /// 8コア × 4 = 32バッチに分割
-        /// 
+        ///
         /// <para>【調整ガイド】</para>
         /// <list type="bullet">
         /// <item>メモリ豊富: 2（大きなバッチ、ロードオーバーヘッド削減）</item>
@@ -455,6 +455,6 @@ public static class AppConstants
     public static class Logging
     {
         /// <summary>デフォルトの最小出力ログレベル（DEBUGビルド時のみ機能）</summary>
-        public const LogLevel DefaultLogLevel = LogLevel.Debug;
+        public const LogLevel DefaultLogLevel = LogLevel.Trace;
     }
 }
