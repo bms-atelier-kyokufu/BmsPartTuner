@@ -1,4 +1,4 @@
-using BmsAtelierKyokufu.BmsPartTuner.Core;
+﻿using BmsAtelierKyokufu.BmsPartTuner.Core;
 using BmsAtelierKyokufu.BmsPartTuner.Models;
 
 
@@ -26,7 +26,6 @@ public class AppConstantsTests
 
     public void Base36Limit_IsCorrectValue()
     {
-        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
 
         Assert.Equal(1295, AppConstants.Definition.MaxNumberBase36);
     }
@@ -36,7 +35,6 @@ public class AppConstantsTests
 
     public void Base62Limit_IsCorrectValue()
     {
-        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
 
         Assert.Equal(3843, AppConstants.Definition.MaxNumberBase62);
     }
@@ -46,7 +44,6 @@ public class AppConstantsTests
 
     public void MaxGroupSize_IsPositive()
     {
-        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
 
         Assert.True(AppConstants.Grouping.MaxGroupSize > 0);
         Assert.True(AppConstants.Grouping.MaxGroupSize <= 200); // 合理的な上限
@@ -57,7 +54,6 @@ public class AppConstantsTests
 
     public void RmsQuantizationFactor_IsPositive()
     {
-        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
 
         Assert.True(AppConstants.Grouping.RmsQuantizationFactor > 0);
     }
@@ -67,7 +63,6 @@ public class AppConstantsTests
 
     public void MinBatchSize_IsPositive()
     {
-        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
 
         Assert.True(AppConstants.Cache.MinBatchSize > 0);
     }
@@ -77,7 +72,6 @@ public class AppConstantsTests
 
     public void BatchSizeDivisor_IsPositive()
     {
-        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
 
         Assert.True(AppConstants.Cache.BatchSizeDivisor > 0);
     }
@@ -91,7 +85,6 @@ public class AppConstantsTests
 
     public void ProgressValues_AreInAscendingOrder()
     {
-        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // 進捗値は昇順であるべき
 
         Assert.True(AppConstants.Progress.PreloadComplete < AppConstants.Progress.ComparisonComplete);
@@ -104,7 +97,6 @@ public class AppConstantsTests
 
     public void ProgressValues_AreInValidRange()
     {
-        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // 進捗値は0-100の範囲内
         Assert.InRange(AppConstants.Progress.PreloadComplete, 0, 100);
         Assert.InRange(AppConstants.Progress.ComparisonComplete, 0, 100);
@@ -121,7 +113,6 @@ public class AppConstantsTests
 
     public void R2ThresholdRange_IsValid()
     {
-        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
 
         Assert.True(AppConstants.Threshold.Min >= 0.0f);
         Assert.True(AppConstants.Threshold.Min <= AppConstants.Threshold.Max);
@@ -131,7 +122,6 @@ public class AppConstantsTests
     [Fact]
     public void R2ThresholdDisplay_IsValid()
     {
-        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         Assert.True(AppConstants.Threshold.MinDisplay >= 0);
         Assert.True(AppConstants.Threshold.MinDisplay < AppConstants.Threshold.MaxDisplay);
         Assert.InRange(AppConstants.Threshold.DefaultDisplay,
@@ -146,14 +136,13 @@ public class AppConstantsTests
     [Fact]
     public void SupportedBmsExtensions_IsNotEmpty()
     {
-        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         Assert.NotEmpty(AppConstants.Files.SupportedBmsExtensions);
     }
 
     [Fact]
     public void SupportedBmsExtensions_ContainsDotPrefix()
     {
-        var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
+        var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, BmsAtelierKyokufu.BmsPartTuner.Models.ICachedSoundData>();
         Assert.All(AppConstants.Files.SupportedBmsExtensions, ext =>
         {
             Assert.StartsWith(".", ext);
@@ -163,21 +152,19 @@ public class AppConstantsTests
     [Fact]
     public void SupportedBmsExtensions_ContainsBms()
     {
-        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         Assert.Contains(".bms", AppConstants.Files.SupportedBmsExtensions);
     }
 
     [Fact]
     public void SupportedOutputBmsExtensions_IsNotEmpty()
     {
-        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         Assert.NotEmpty(AppConstants.Files.SupportedOutputBmsExtensions);
     }
 
     [Fact]
     public void SupportedOutputBmsExtensions_ContainsDotPrefix()
     {
-        var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
+        var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, BmsAtelierKyokufu.BmsPartTuner.Models.ICachedSoundData>();
         Assert.All(AppConstants.Files.SupportedOutputBmsExtensions, ext =>
         {
             Assert.StartsWith(".", ext);
@@ -187,14 +174,12 @@ public class AppConstantsTests
     [Fact]
     public void SupportedOutputBmsExtensions_ContainsBms()
     {
-        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         Assert.Contains(".bms", AppConstants.Files.SupportedOutputBmsExtensions);
     }
 
     [Fact]
     public void SupportedOutputBmsExtensions_DoesNotContainBmson()
     {
-        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         Assert.DoesNotContain(".bmson", AppConstants.Files.SupportedOutputBmsExtensions);
     }
 
@@ -205,7 +190,6 @@ public class AppConstantsTests
     [Fact]
     public void DefaultDefinitionStart_IsValidFormat()
     {
-        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         Assert.Equal("01", AppConstants.Definition.Start);
         Assert.Equal(2, AppConstants.Definition.Start.Length);
     }
@@ -213,7 +197,6 @@ public class AppConstantsTests
     [Fact]
     public void DefaultDefinitionEnd_IsValidFormat()
     {
-        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         Assert.Equal("00", AppConstants.Definition.End);
         Assert.Equal(2, AppConstants.Definition.End.Length);
     }
@@ -221,14 +204,12 @@ public class AppConstantsTests
     [Fact]
     public void DefaultOutputFileName_HasValidExtension()
     {
-        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         Assert.EndsWith(".bms", AppConstants.Files.DefaultOutputFileName);
     }
 
     [Fact]
     public void OptimizedFileSuffix_IsNotEmpty()
     {
-        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         Assert.NotEmpty(AppConstants.Files.OptimizedFileSuffix);
         Assert.StartsWith("_", AppConstants.Files.OptimizedFileSuffix);
     }
@@ -246,7 +227,6 @@ public class AppConstantsTests
     public void GetFileTypeName_KnownExtensions_ReturnsCorrectName(
         string extension, string expectedName)
     {
-        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         var result = AppConstants.Files.GetFileTypeName(extension);
 
         Assert.Equal(expectedName, result);
@@ -259,7 +239,6 @@ public class AppConstantsTests
     public void GetFileTypeName_CaseInsensitive_ReturnsCorrectName(
         string extension, string expectedName)
     {
-        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         var result = AppConstants.Files.GetFileTypeName(extension);
 
         Assert.Equal(expectedName, result);
@@ -273,7 +252,6 @@ public class AppConstantsTests
     [InlineData(null)]
     public void GetFileTypeName_UnknownExtension_ReturnsGenericName(string? extension)
     {
-        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         var result = AppConstants.Files.GetFileTypeName(extension!);
 
         Assert.Equal("ファイル", result);
@@ -286,7 +264,6 @@ public class AppConstantsTests
     [Fact]
     public void Base62Limit_IsGreaterThanBase36Limit()
     {
-        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Base62はBase36より多くの定義をサポートすべき
         Assert.True(AppConstants.Definition.MaxNumberBase62 > AppConstants.Definition.MaxNumberBase36);
     }
@@ -294,7 +271,6 @@ public class AppConstantsTests
     [Fact]
     public void MinBatchSize_IsSmallerThanMaxGroupSize()
     {
-        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // バッチサイズはグループサイズより小さいべき
         Assert.True(AppConstants.Cache.MinBatchSize <= AppConstants.Grouping.MaxGroupSize);
     }

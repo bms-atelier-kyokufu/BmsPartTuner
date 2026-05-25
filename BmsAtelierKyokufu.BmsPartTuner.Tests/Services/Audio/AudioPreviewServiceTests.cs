@@ -36,7 +36,7 @@ public class AudioPreviewServiceTests
     [Fact]
     public async Task PreviewAudioAsync_StopsPreviousPlayback_BeforePlayingNew()
     {
-        var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
+        var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, BmsAtelierKyokufu.BmsPartTuner.Models.ICachedSoundData>();
         // Arrange
         const string file1 = "file1.wav";
         const string file2 = "file2.wav";
@@ -71,7 +71,7 @@ public class AudioPreviewServiceTests
     [Fact]
     public async Task PreviewAudioAsync_HandlesException_Gracefully()
     {
-        var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
+        var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, BmsAtelierKyokufu.BmsPartTuner.Models.ICachedSoundData>();
         // Arrange
         const string file = "corrupt.wav";
         _playerMock1.Setup(p => p.Play(It.IsAny<string>())).Throws(new Exception("Corrupt file"));

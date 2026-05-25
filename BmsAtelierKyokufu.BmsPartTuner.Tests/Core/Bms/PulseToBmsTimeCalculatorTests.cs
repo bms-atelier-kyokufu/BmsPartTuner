@@ -9,7 +9,6 @@ public class PulseToBmsTimeCalculatorTests
     [Fact]
     public void GetMeasureNumber_WithStandardLines_ReturnsCorrectMeasure()
     {
-        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         List<BmsonLineEvent> lines =
         [
             new() { Y = 0 },     // m=0
@@ -30,7 +29,6 @@ public class PulseToBmsTimeCalculatorTests
     [Fact]
     public void GetStepIndex_StandardMeasure_CalculatesCorrectStep()
     {
-        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         List<BmsonLineEvent> lines =
         [
             new() { Y = 0 },
@@ -53,7 +51,6 @@ public class PulseToBmsTimeCalculatorTests
     [Fact]
     public void GetMeterMultiplier_NonStandardMeasure_ReturnsCorrectRatio()
     {
-        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         List<BmsonLineEvent> lines =
         [
             new() { Y = 0 },

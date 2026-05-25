@@ -12,7 +12,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
         [Fact]
         public void ReductDefinition_WithExtremeThreshold_0_MergesAll()
         {
-            var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
+            var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, BmsAtelierKyokufu.BmsPartTuner.Models.ICachedSoundData>();
             // Arrange: しきい値0.0（全てを結合）
             var fileList = BmsTestDefinitionHelper.CreateBmsDefinitionManagerWithMemoryWav(
                 36,
@@ -55,7 +55,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
         [Fact]
         public void ReductDefinition_WithExtremeThreshold_1_MergesNothing()
         {
-            var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
+            var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, BmsAtelierKyokufu.BmsPartTuner.Models.ICachedSoundData>();
             // Arrange: しきい値1.0（完全一致のみ結合）
             var fileList = BmsTestDefinitionHelper.CreateBmsDefinitionManagerWithMemoryWav(
                 36,
@@ -96,7 +96,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
         [Fact]
         public void ReductDefinition_WithEmptyBmsDefinitionManager_ThrowsArgumentNullException()
         {
-            var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
+            var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, BmsAtelierKyokufu.BmsPartTuner.Models.ICachedSoundData>();
             // Arrange
             System.Collections.ObjectModel.ObservableCollection<BmsAudioFile>? nullList = null;
 
@@ -107,7 +107,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
         [Fact]
         public void ReductDefinition_WithSingleFile_CompletesSuccessfully()
         {
-            var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
+            var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, BmsAtelierKyokufu.BmsPartTuner.Models.ICachedSoundData>();
             // Arrange: ファイルが1つだけの場合
             var fileList = BmsTestDefinitionHelper.CreateBmsDefinitionManagerWithMemoryWav(36, (1, "single.wav"));
 
@@ -148,7 +148,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
         [Fact]
         public void ReductDefinition_WithSelectedKeywords_ProcessesOnlyMatchingFiles()
         {
-            var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
+            var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, BmsAtelierKyokufu.BmsPartTuner.Models.ICachedSoundData>();
             // Arrange
             var fileList = BmsTestDefinitionHelper.CreateBmsDefinitionManagerWithMemoryWav(
                 36,
@@ -194,7 +194,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
         [Fact]
         public void ReductDefinition_ReportsProgress_FromZeroToHundred()
         {
-            var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
+            var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, BmsAtelierKyokufu.BmsPartTuner.Models.ICachedSoundData>();
             // Arrange
             var fileList = BmsTestDefinitionHelper.CreateBmsDefinitionManagerWithMemoryWav(36, (1, "progress.wav"));
             var bmsFile = _context.CreateBuilder()

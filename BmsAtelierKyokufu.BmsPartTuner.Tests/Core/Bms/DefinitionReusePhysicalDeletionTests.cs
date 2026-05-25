@@ -13,7 +13,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
         [Fact]
         public void ReductDefinition_WithPhysicalDeletion_DeletesUnusedFiles()
         {
-            var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
+            var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, BmsAtelierKyokufu.BmsPartTuner.Models.ICachedSoundData>();
             // Arrange: 同一音声ファイルを2つ用意
             var identical1 = BmsTestWavHelper.CreateSineWavFile(Path.Combine(_context.TempDirectory, "identical1.wav"), 1000, 440.0);
             var identical2 = BmsTestWavHelper.CreateSineWavFile(Path.Combine(_context.TempDirectory, "identical2.wav"), 1000, 440.0);  // 同一波形
@@ -62,7 +62,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
         [Fact]
         public void ReductDefinition_WithPhysicalDeletionDisabled_KeepsAllFiles()
         {
-            var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
+            var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, BmsAtelierKyokufu.BmsPartTuner.Models.ICachedSoundData>();
             // Arrange
             var file1 = BmsTestWavHelper.CreateSineWavFile(Path.Combine(_context.TempDirectory, "keep1.wav"), 1000, 440.0);
             var file2 = BmsTestWavHelper.CreateSineWavFile(Path.Combine(_context.TempDirectory, "keep2.wav"), 1000, 440.0);  // 同一波形
@@ -104,7 +104,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
         [Fact]
         public void GetUnusedFilePaths_AfterReduction_ReturnsCorrectList()
         {
-            var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
+            var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, BmsAtelierKyokufu.BmsPartTuner.Models.ICachedSoundData>();
             // Arrange
             var file1 = BmsTestWavHelper.CreateSineWavFile(Path.Combine(_context.TempDirectory, "used.wav"), 1000, 440.0);
             var file2 = BmsTestWavHelper.CreateSineWavFile(Path.Combine(_context.TempDirectory, "unused.wav"), 1000, 440.0);  // 同一波形
@@ -147,7 +147,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
         [Fact]
         public void GetUnusedFilePaths_BeforeReduction_ReturnsEmptyList()
         {
-            var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
+            var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, BmsAtelierKyokufu.BmsPartTuner.Models.ICachedSoundData>();
             // Arrange
             var fileList = BmsTestDefinitionHelper.CreateBmsDefinitionManagerWithPhysicalWav(_context.TempDirectory, 36, (1, "test.wav"));
             var dr = new DefinitionReuse(fileList, audioCache);

@@ -12,15 +12,15 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
     {
         private static void RunIsMatchTest(float[] data1, float[] data2, float threshold, Action<bool> assertMatch, int channels = 1)
         {
-            using var sound1 = BmsTestAudioHelper.CreateCachedSoundData(data1, channels);
-            using var sound2 = BmsTestAudioHelper.CreateCachedSoundData(data2, channels);
+            using var sound1 = BmsTestAudioHelper.CreatePreNormalizedSoundData(data1, channels);
+            using var sound2 = BmsTestAudioHelper.CreatePreNormalizedSoundData(data2, channels);
             assertMatch(FastWaveCompare.IsMatch(sound1, sound2, threshold));
         }
 
         private static void RunCorrelationTest(float[] data1, float[] data2, Action<float> assertCorrelation, int channels = 1)
         {
-            using var sound1 = BmsTestAudioHelper.CreateCachedSoundData(data1, channels);
-            using var sound2 = BmsTestAudioHelper.CreateCachedSoundData(data2, channels);
+            using var sound1 = BmsTestAudioHelper.CreatePreNormalizedSoundData(data1, channels);
+            using var sound2 = BmsTestAudioHelper.CreatePreNormalizedSoundData(data2, channels);
             assertCorrelation(FastWaveCompare.GetCorrelation(sound1, sound2));
         }
 
@@ -55,10 +55,10 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
             float[] data = [0.1f, 0.2f, 0.3f, 0.4f];
 
             float[][] samples1 = [data];
-            var sound1 = new CachedSoundData(samples1, 44100, 16);
+            var sound1 = new PreNormalizedSoundData(samples1, 44100, 16);
 
             float[][] samples2 = [data];
-            var sound2 = new CachedSoundData(samples2, 48000, 16); // Different sample rate
+            var sound2 = new PreNormalizedSoundData(samples2, 48000, 16); // Different sample rate
 
             Assert.False(FastWaveCompare.IsMatch(sound1, sound2, 0.1f));
         }
@@ -70,8 +70,8 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
             float[] monoData = [0.1f, 0.2f, 0.3f, 0.4f];
             float[] stereoData = [0.1f, 0.1f, 0.2f, 0.2f, 0.3f, 0.3f, 0.4f, 0.4f];
 
-            using var monoSound = BmsTestAudioHelper.CreateCachedSoundData(monoData, channels: 1);
-            using var stereoSound = BmsTestAudioHelper.CreateCachedSoundData(stereoData, channels: 2);
+            using var monoSound = BmsTestAudioHelper.CreatePreNormalizedSoundData(monoData, channels: 1);
+            using var stereoSound = BmsTestAudioHelper.CreatePreNormalizedSoundData(stereoData, channels: 2);
 
             Assert.False(FastWaveCompare.IsMatch(monoSound, stereoSound, 0.1f));
         }
@@ -83,10 +83,10 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
             float[] data = [0.1f, 0.2f, 0.3f, 0.4f];
 
             float[][] samples1 = [data];
-            var sound1 = new CachedSoundData(samples1, 44100, 16);
+            var sound1 = new PreNormalizedSoundData(samples1, 44100, 16);
 
             float[][] samples2 = [data];
-            var sound2 = new CachedSoundData(samples2, 44100, 24); // Different bit depth
+            var sound2 = new PreNormalizedSoundData(samples2, 44100, 24); // Different bit depth
 
             Assert.False(FastWaveCompare.IsMatch(sound1, sound2, 0.1f));
         }
@@ -94,11 +94,11 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
         [Fact]
         public void IsMatch_EmptyFiles_ThrowsException()
         {
-            // 空ファイル（サンプル数0）は CachedSoundData のコンストラクタで例外をスローする
+            // 空ファイル（サンプル数0）は PreNormalizedSoundData のコンストラクタで例外をスローする
             float[] emptyData = [];
 
             // ArgumentExceptionがスローされることを確認
-            Assert.Throws<ArgumentException>(() => BmsTestAudioHelper.CreateCachedSoundData(emptyData));
+            Assert.Throws<ArgumentException>(() => BmsTestAudioHelper.CreatePreNormalizedSoundData(emptyData));
         }
 
         [Fact]
@@ -128,10 +128,10 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
             float[] data = [0.1f, 0.2f, 0.3f, 0.4f];
 
             float[][] samples1 = [data];
-            var sound1 = new CachedSoundData(samples1, 44100, 16);
+            var sound1 = new PreNormalizedSoundData(samples1, 44100, 16);
 
             float[][] samples2 = [data];
-            var sound2 = new CachedSoundData(samples2, 48000, 16); // Different format
+            var sound2 = new PreNormalizedSoundData(samples2, 48000, 16); // Different format
 
             float correlation = FastWaveCompare.GetCorrelation(sound1, sound2);
 
@@ -152,8 +152,8 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
             float[] data1 = [0.1f, 0.2f, 0.3f, 0.4f];
             float[] data2 = [0.1f, 0.2f, 0.3f, 0.35f]; // Slightly different
 
-            using var sound1 = BmsTestAudioHelper.CreateCachedSoundData(data1);
-            using var sound2 = BmsTestAudioHelper.CreateCachedSoundData(data2);
+            using var sound1 = BmsTestAudioHelper.CreatePreNormalizedSoundData(data1);
+            using var sound2 = BmsTestAudioHelper.CreatePreNormalizedSoundData(data2);
 
             // High threshold should reject slightly different data
             float correlation = FastWaveCompare.GetCorrelation(sound1, sound2);
@@ -183,8 +183,8 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
                 data[i] = (float)Math.Sin(i * 0.5) * 0.5f;
             }
 
-            using var sound1 = BmsTestAudioHelper.CreateCachedSoundData(data);
-            using var sound2 = BmsTestAudioHelper.CreateCachedSoundData(data);
+            using var sound1 = BmsTestAudioHelper.CreatePreNormalizedSoundData(data);
+            using var sound2 = BmsTestAudioHelper.CreatePreNormalizedSoundData(data);
 
             Assert.True(FastWaveCompare.IsMatch(sound1, sound2, 0.99f));
         }
@@ -198,8 +198,8 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
             // 最小限のデータ（1サンプル）
             float[] minimalData = [0.5f];
 
-            using var sound1 = BmsTestAudioHelper.CreateCachedSoundData(minimalData);
-            using var sound2 = BmsTestAudioHelper.CreateCachedSoundData(minimalData);
+            using var sound1 = BmsTestAudioHelper.CreatePreNormalizedSoundData(minimalData);
+            using var sound2 = BmsTestAudioHelper.CreatePreNormalizedSoundData(minimalData);
 
             // 1サンプルでも処理が完了すること
             bool result = FastWaveCompare.IsMatch(sound1, sound2, 0.99f);
@@ -216,8 +216,8 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
             // すべて同じ値（分散0）
             float[] constantData = [0.5f, 0.5f, 0.5f, 0.5f];
 
-            using var sound1 = BmsTestAudioHelper.CreateCachedSoundData(constantData);
-            using var sound2 = BmsTestAudioHelper.CreateCachedSoundData(constantData);
+            using var sound1 = BmsTestAudioHelper.CreatePreNormalizedSoundData(constantData);
+            using var sound2 = BmsTestAudioHelper.CreatePreNormalizedSoundData(constantData);
 
             // 例外をスローせずに完了すること
             // 定数値の場合、正規化後にゼロベクトルになる可能性がある
@@ -233,8 +233,8 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
         {
             float[] largeData = [1.0f, 1.0f, 1.0f, 1.0f];
 
-            using var sound1 = BmsTestAudioHelper.CreateCachedSoundData(largeData);
-            using var sound2 = BmsTestAudioHelper.CreateCachedSoundData(largeData);
+            using var sound1 = BmsTestAudioHelper.CreatePreNormalizedSoundData(largeData);
+            using var sound2 = BmsTestAudioHelper.CreatePreNormalizedSoundData(largeData);
 
             var exception = Record.Exception(() => FastWaveCompare.IsMatch(sound1, sound2, 0.99f));
             Assert.Null(exception);
@@ -248,8 +248,8 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
         {
             float[] tinyData = [1e-7f, 2e-7f, 3e-7f, 4e-7f];
 
-            using var sound1 = BmsTestAudioHelper.CreateCachedSoundData(tinyData);
-            using var sound2 = BmsTestAudioHelper.CreateCachedSoundData(tinyData);
+            using var sound1 = BmsTestAudioHelper.CreatePreNormalizedSoundData(tinyData);
+            using var sound2 = BmsTestAudioHelper.CreatePreNormalizedSoundData(tinyData);
 
             var exception = Record.Exception(() => FastWaveCompare.IsMatch(sound1, sound2, 0.99f));
             Assert.Null(exception);
@@ -265,8 +265,8 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
             float[] stereoData1 = [0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f, 0.7f, 0.8f];
             float[] stereoData2 = [0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f, 0.7f, 0.8f];
 
-            using var sound1 = BmsTestAudioHelper.CreateCachedSoundData(stereoData1, channels: 2);
-            using var sound2 = BmsTestAudioHelper.CreateCachedSoundData(stereoData2, channels: 2);
+            using var sound1 = BmsTestAudioHelper.CreatePreNormalizedSoundData(stereoData1, channels: 2);
+            using var sound2 = BmsTestAudioHelper.CreatePreNormalizedSoundData(stereoData2, channels: 2);
 
             Assert.True(FastWaveCompare.IsMatch(sound1, sound2, 0.99f));
         }
@@ -280,8 +280,8 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
             // NaNを含むデータ
             float[] dataWithNaN = [0.1f, float.NaN, 0.3f, 0.4f];
 
-            using var sound1 = BmsTestAudioHelper.CreateCachedSoundData(dataWithNaN);
-            using var sound2 = BmsTestAudioHelper.CreateCachedSoundData(dataWithNaN);
+            using var sound1 = BmsTestAudioHelper.CreatePreNormalizedSoundData(dataWithNaN);
+            using var sound2 = BmsTestAudioHelper.CreatePreNormalizedSoundData(dataWithNaN);
 
             // 例外をスローせずに完了すること
             var exception = Record.Exception(() => FastWaveCompare.IsMatch(sound1, sound2, 0.5f));
@@ -301,8 +301,8 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
         {
             float[] data = [0.1f, 0.2f, 0.3f, 0.4f];
 
-            using var sound1 = BmsTestAudioHelper.CreateCachedSoundData(data);
-            using var sound2 = BmsTestAudioHelper.CreateCachedSoundData(data);
+            using var sound1 = BmsTestAudioHelper.CreatePreNormalizedSoundData(data);
+            using var sound2 = BmsTestAudioHelper.CreatePreNormalizedSoundData(data);
 
             // 同一データなので、しきい値に関係なく一致するはず
             bool result = FastWaveCompare.IsMatch(sound1, sound2, threshold);
@@ -328,8 +328,8 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
             float[] data1 = [0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f, 0.7f, 0.8f];
             float[] data2 = [0.11f, 0.19f, 0.31f, 0.39f, 0.51f, 0.59f, 0.71f, 0.79f];
 
-            using var sound1 = BmsTestAudioHelper.CreateCachedSoundData(data1);
-            using var sound2 = BmsTestAudioHelper.CreateCachedSoundData(data2);
+            using var sound1 = BmsTestAudioHelper.CreatePreNormalizedSoundData(data1);
+            using var sound2 = BmsTestAudioHelper.CreatePreNormalizedSoundData(data2);
 
             float correlation = FastWaveCompare.GetCorrelation(sound1, sound2);
 
@@ -348,8 +348,8 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
             float[] data1 = [1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f];
             float[] data2 = [0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f];
 
-            using var sound1 = BmsTestAudioHelper.CreateCachedSoundData(data1);
-            using var sound2 = BmsTestAudioHelper.CreateCachedSoundData(data2);
+            using var sound1 = BmsTestAudioHelper.CreatePreNormalizedSoundData(data1);
+            using var sound2 = BmsTestAudioHelper.CreatePreNormalizedSoundData(data2);
 
             float correlation = FastWaveCompare.GetCorrelation(sound1, sound2);
 

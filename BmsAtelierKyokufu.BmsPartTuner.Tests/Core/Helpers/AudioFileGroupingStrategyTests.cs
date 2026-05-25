@@ -18,7 +18,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Helpers;
 /// </summary>
 public class AudioFileGroupingStrategyTests
 {
-    private readonly System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData> audioCache = new();
+    private readonly System.Collections.Concurrent.ConcurrentDictionary<string, BmsAtelierKyokufu.BmsPartTuner.Models.ICachedSoundData> audioCache = new();
 
     #region Helper Methods
 
@@ -45,7 +45,7 @@ public class AudioFileGroupingStrategyTests
                 samplesPerChannel[0][i] = rms;
             }
 
-            audioCache[file.Name] = new CachedSoundData(samplesPerChannel, 44100, 16, fileName);
+            audioCache[file.Name] = new PreNormalizedSoundData(samplesPerChannel, 44100, 16, fileName);
         }
 
         return file;

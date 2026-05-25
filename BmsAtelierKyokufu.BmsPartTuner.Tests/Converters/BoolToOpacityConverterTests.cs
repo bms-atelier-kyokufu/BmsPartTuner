@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using System.Windows.Data;
 using BmsAtelierKyokufu.BmsPartTuner.Converters;
 using BmsAtelierKyokufu.BmsPartTuner.Models;
@@ -16,7 +16,6 @@ public class BoolToOpacityConverterTests
     [Fact]
     public void Convert_True_Returns0_5()
     {
-        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Act
         var result = _converter.Convert(true, typeof(double), null!, _culture);
 
@@ -27,7 +26,6 @@ public class BoolToOpacityConverterTests
     [Fact]
     public void Convert_False_Returns1_0()
     {
-        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Act
         var result = _converter.Convert(false, typeof(double), null!, _culture);
 
@@ -38,7 +36,6 @@ public class BoolToOpacityConverterTests
     [Fact]
     public void Convert_NonBool_Returns1_0()
     {
-        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Act
         var result = _converter.Convert("invalid", typeof(double), null!, _culture);
 
@@ -49,7 +46,6 @@ public class BoolToOpacityConverterTests
     [Fact]
     public void ConvertBack_0_5_ReturnsTrue()
     {
-        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Act
         var result = _converter.ConvertBack(0.5, typeof(bool), null!, _culture);
 
@@ -61,7 +57,6 @@ public class BoolToOpacityConverterTests
     [Fact]
     public void ConvertBack_CloseTo0_5_ReturnsTrue()
     {
-        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Arrange
         // 0.5との差が0.01未満ならtrueとする想定
         const double input = 0.5000001;
@@ -76,7 +71,6 @@ public class BoolToOpacityConverterTests
     [Fact]
     public void ConvertBack_1_0_ReturnsFalse()
     {
-        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Act
         var result = _converter.ConvertBack(1.0, typeof(bool), null!, _culture);
 
@@ -87,7 +81,6 @@ public class BoolToOpacityConverterTests
     [Fact]
     public void ConvertBack_OtherValue_ReturnsFalse()
     {
-        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Arrange
         const double input = 0.0; // 0.5以外はfalse (通常表示 = 1.0 = false)
 
@@ -101,7 +94,6 @@ public class BoolToOpacityConverterTests
     [Fact]
     public void ConvertBack_NonDouble_ReturnsBindingDoNothing()
     {
-        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Act
         var result = _converter.ConvertBack("invalid", typeof(bool), null!, _culture);
 

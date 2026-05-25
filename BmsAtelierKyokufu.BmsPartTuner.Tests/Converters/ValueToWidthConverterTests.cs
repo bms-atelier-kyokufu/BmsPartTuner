@@ -12,7 +12,6 @@ public class ValueToWidthConverterTests
     [Fact]
     public void Convert_WithValidInputs_ReturnsCalculatedWidth()
     {
-        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Arrange
         object[] values = [0.75, 200.0];
         const double expected = 150.0;
@@ -28,7 +27,6 @@ public class ValueToWidthConverterTests
     [Fact]
     public void Convert_WithClampedValue_ReturnsClampedWidth()
     {
-        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Arrange
         object[] values = [1.5, 100.0]; // Value > 1.0, should be clamped to 1.0
         double expected = 100.0;
@@ -53,7 +51,6 @@ public class ValueToWidthConverterTests
     [Fact]
     public void Convert_WithInvalidInputs_ReturnsZero()
     {
-        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Arrange
         object[] values = ["invalid", 100.0];
 
@@ -67,7 +64,6 @@ public class ValueToWidthConverterTests
     [Fact]
     public void ConvertBack_ReturnsDoNothing()
     {
-        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Arrange
         Type[] targetTypes = [typeof(double), typeof(double)];
         object value = 100.0;

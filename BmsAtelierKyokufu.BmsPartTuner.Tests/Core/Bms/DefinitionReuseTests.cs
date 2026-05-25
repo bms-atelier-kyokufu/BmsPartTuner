@@ -33,7 +33,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
         [Fact]
         public void ReductDefinition_WithBase36MaxValue_ZZ_Success()
         {
-            var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
+            var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, BmsAtelierKyokufu.BmsPartTuner.Models.ICachedSoundData>();
             // Arrange: ZZ (1295) の境界値テスト
             var fileList = BmsTestDefinitionHelper.CreateBmsDefinitionManagerWithMemoryWav(
                 36,
@@ -76,7 +76,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
         [Fact]
         public void ReductDefinition_WithBase62MaxValue_zz_Success()
         {
-            var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
+            var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, BmsAtelierKyokufu.BmsPartTuner.Models.ICachedSoundData>();
             // Arrange: zz (3843) の境界値テスト
             var fileList = BmsTestDefinitionHelper.CreateBmsDefinitionManagerWithMemoryWav(
                 62,
@@ -123,7 +123,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
         [Fact]
         public void ReductDefinition_WithMixedCase_HandlesCorrectly()
         {
-            var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
+            var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, BmsAtelierKyokufu.BmsPartTuner.Models.ICachedSoundData>();
             // Arrange: #WAV01 と #wav01 が混在するケース
             var fileList = BmsTestDefinitionHelper.CreateBmsDefinitionManagerWithMemoryWav(
                 36,
@@ -173,7 +173,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
         [Fact]
         public void ReductDefinition_WithDuplicateDefinitions_UsesFirstOccurrence()
         {
-            var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
+            var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, BmsAtelierKyokufu.BmsPartTuner.Models.ICachedSoundData>();
             // Arrange: 同一定義番号が複数回定義されているケース
             var fileList = BmsTestDefinitionHelper.CreateBmsDefinitionManagerWithMemoryWav(
                 36,

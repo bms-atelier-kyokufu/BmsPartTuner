@@ -12,7 +12,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
         [Fact]
         public void RunParallelSimulation_NullCache_HandledGracefully()
         {
-            var audioCache = new ConcurrentDictionary<string, CachedSoundData>();
+            var audioCache = new ConcurrentDictionary<string, BmsAtelierKyokufu.BmsPartTuner.Models.ICachedSoundData>();
             // 準備
             var file1 = new BmsAudioFile { Name = "a.wav", NumInteger = 1 };
             var fileList = new List<BmsAudioFile> { file1 };
@@ -36,7 +36,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
         [Fact]
         public void SimulateThreshold_AllDifferentFiles_ReturnsOriginalCount()
         {
-            var audioCache = new ConcurrentDictionary<string, CachedSoundData>();
+            var audioCache = new ConcurrentDictionary<string, BmsAtelierKyokufu.BmsPartTuner.Models.ICachedSoundData>();
             // 異なる名前のファイルは、異なる波形データでマージされない
             var file1 = new BmsAudioFile
             {
@@ -68,7 +68,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
         [Fact]
         public void SimulateThreshold_AllIdenticalNames_MergesToOne()
         {
-            var audioCache = new ConcurrentDictionary<string, CachedSoundData>();
+            var audioCache = new ConcurrentDictionary<string, BmsAtelierKyokufu.BmsPartTuner.Models.ICachedSoundData>();
             // 同じ名前のファイルはすべてマージされる
             var file1 = new BmsAudioFile
             {
@@ -107,8 +107,8 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
         [Fact]
         public void RunParallelSimulation_VeryShortAudioData_HandlesGracefully()
         {
-            var audioCache = new ConcurrentDictionary<string, CachedSoundData>();
-            var shortCache = new CachedSoundData([[0.5f]], 44100, 16);
+            var audioCache = new ConcurrentDictionary<string, BmsAtelierKyokufu.BmsPartTuner.Models.ICachedSoundData>();
+            var shortCache = new PreNormalizedSoundData([[0.5f]], 44100, 16);
 
             var file1 = new BmsAudioFile
             {
@@ -140,9 +140,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
         [Fact]
         public void RunParallelSimulation_SilentAudioData_HandlesGracefully()
         {
-            var audioCache = new ConcurrentDictionary<string, CachedSoundData>();
+            var audioCache = new ConcurrentDictionary<string, BmsAtelierKyokufu.BmsPartTuner.Models.ICachedSoundData>();
             var silentData = new float[1][] { new float[100] }; // すべて0
-            var silentCache = new CachedSoundData(silentData, 44100, 16);
+            var silentCache = new PreNormalizedSoundData(silentData, 44100, 16);
 
             var file1 = new BmsAudioFile
             {
@@ -172,7 +172,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
         [Fact]
         public void RunParallelSimulation_LargeFileCount_EarlyTerminationWorks()
         {
-            var audioCache = new ConcurrentDictionary<string, CachedSoundData>();
+            var audioCache = new ConcurrentDictionary<string, BmsAtelierKyokufu.BmsPartTuner.Models.ICachedSoundData>();
             // 100個のファイルで早期終了が動作することを確認
             var fileList = new List<BmsAudioFile>();
             for (int i = 1; i <= 100; i++)
@@ -199,7 +199,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
         [Fact]
         public void RunParallelSimulation_FilesOutsideRange_IgnoresOutOfRangeFiles()
         {
-            var audioCache = new ConcurrentDictionary<string, CachedSoundData>();
+            var audioCache = new ConcurrentDictionary<string, BmsAtelierKyokufu.BmsPartTuner.Models.ICachedSoundData>();
             var file1 = new BmsAudioFile
             {
                 Name = "in_range.wav",
@@ -232,7 +232,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
         [Fact]
         public void RunParallelSimulation_WithProgress_ReportsCorrectly()
         {
-            var audioCache = new ConcurrentDictionary<string, CachedSoundData>();
+            var audioCache = new ConcurrentDictionary<string, BmsAtelierKyokufu.BmsPartTuner.Models.ICachedSoundData>();
             var progressValues = new List<int>();
             var progress = new SyncProgress<int>(progressValues.Add);
 
@@ -258,7 +258,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
         [Fact]
         public void RunParallelSimulation_ThresholdZero_MergesAll()
         {
-            var audioCache = new ConcurrentDictionary<string, CachedSoundData>();
+            var audioCache = new ConcurrentDictionary<string, BmsAtelierKyokufu.BmsPartTuner.Models.ICachedSoundData>();
             var file1 = new BmsAudioFile { Name = "a.wav", NumInteger = 1 };
             audioCache["a.wav"] = BmsTestAudioHelper.CreateDistinctCache(440.0);
             var file2 = new BmsAudioFile { Name = "b.wav", NumInteger = 2 };
@@ -282,7 +282,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
         [Fact]
         public void RunParallelSimulation_ThresholdOne_MergesOnlyIdentical()
         {
-            var audioCache = new ConcurrentDictionary<string, CachedSoundData>();
+            var audioCache = new ConcurrentDictionary<string, BmsAtelierKyokufu.BmsPartTuner.Models.ICachedSoundData>();
             var file1 = new BmsAudioFile { Name = "diff1.wav", NumInteger = 1 };
             audioCache["diff1.wav"] = BmsTestAudioHelper.CreateDistinctCache(440.0);
             var file2 = new BmsAudioFile { Name = "diff2.wav", NumInteger = 2 };
@@ -304,7 +304,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
         [Fact]
         public void RunParallelSimulation_SinglePointRange_HandlesSingleFile()
         {
-            var audioCache = new ConcurrentDictionary<string, CachedSoundData>();
+            var audioCache = new ConcurrentDictionary<string, BmsAtelierKyokufu.BmsPartTuner.Models.ICachedSoundData>();
             var file1 = new BmsAudioFile { Name = "single.wav", NumInteger = 5 };
             audioCache["single.wav"] = BmsTestAudioHelper.CreateDummyCache();
             var fileList = new List<BmsAudioFile> { file1 };
@@ -322,7 +322,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
         [Fact]
         public void RunParallelSimulation_ReversedRange_HandlesGracefully()
         {
-            var audioCache = new ConcurrentDictionary<string, CachedSoundData>();
+            var audioCache = new ConcurrentDictionary<string, BmsAtelierKyokufu.BmsPartTuner.Models.ICachedSoundData>();
             var file1 = new BmsAudioFile { Name = "a.wav", NumInteger = 5 };
             audioCache["a.wav"] = BmsTestAudioHelper.CreateDummyCache();
             var fileList = new List<BmsAudioFile> { file1 };
@@ -345,7 +345,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
         [Fact]
         public void RunParallelSimulation_DuplicateNamesWithDifferentNumbers_MergesCorrectly()
         {
-            var audioCache = new ConcurrentDictionary<string, CachedSoundData>();
+            var audioCache = new ConcurrentDictionary<string, BmsAtelierKyokufu.BmsPartTuner.Models.ICachedSoundData>();
             var file1 = new BmsAudioFile { Name = "dup.wav", NumInteger = 1 };
             audioCache["dup.wav"] = BmsTestAudioHelper.CreateDummyCache();
             var file2 = new BmsAudioFile { Name = "dup.wav", NumInteger = 2 };
@@ -369,7 +369,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
         [Fact]
         public void RunParallelSimulation_NegativeNumInteger_IgnoresInvalidFiles()
         {
-            var audioCache = new ConcurrentDictionary<string, CachedSoundData>();
+            var audioCache = new ConcurrentDictionary<string, BmsAtelierKyokufu.BmsPartTuner.Models.ICachedSoundData>();
             var file1 = new BmsAudioFile { Name = "valid.wav", NumInteger = 1 };
             audioCache["valid.wav"] = BmsTestAudioHelper.CreateDummyCache();
             var file2 = new BmsAudioFile { Name = "invalid.wav", NumInteger = -1 };
@@ -391,7 +391,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
         [Fact]
         public void RunParallelSimulation_EmptyFileName_HandlesGracefully()
         {
-            var audioCache = new ConcurrentDictionary<string, CachedSoundData>();
+            var audioCache = new ConcurrentDictionary<string, BmsAtelierKyokufu.BmsPartTuner.Models.ICachedSoundData>();
             var file1 = new BmsAudioFile { Name = "", NumInteger = 1 };
             var file2 = new BmsAudioFile { Name = "", NumInteger = 2 };
 
@@ -413,7 +413,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
         [Fact]
         public void RunParallelSimulation_MoreThanBase62Limit_HandlesCorrectly()
         {
-            var audioCache = new ConcurrentDictionary<string, CachedSoundData>();
+            var audioCache = new ConcurrentDictionary<string, BmsAtelierKyokufu.BmsPartTuner.Models.ICachedSoundData>();
             // Base62の上限（3843）付近のファイル数でテスト
             var fileList = new List<BmsAudioFile>();
             for (int i = 1; i <= 3843; i++)

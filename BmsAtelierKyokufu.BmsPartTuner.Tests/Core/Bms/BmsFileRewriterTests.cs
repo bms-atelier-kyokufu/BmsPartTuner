@@ -21,7 +21,6 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
 
         public void Dispose()
         {
-            _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
             if (Directory.Exists(_tempDir))
             {
                 try
@@ -47,7 +46,6 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
         [Fact]
         public void ReplaceAndAlignBmsFile_CorrectlyRenamesAndSortsDefinitions()
         {
-            _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
             var fileList = new List<BmsAudioFile>
             {
                 CreateWavFile(1, "kick.wav"),
@@ -87,7 +85,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
         [Fact]
         public void ReplaceAndAlignBmsFile_HandlesReplacementsCorrectly()
         {
-            var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
+            var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, BmsAtelierKyokufu.BmsPartTuner.Models.ICachedSoundData>();
             var fileList = new List<BmsAudioFile>
             {
                 CreateWavFile(1, "kick1.wav"),
@@ -131,7 +129,6 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
         [Fact]
         public void WriteBmsFile_AtomicWrite_CleansUpOnFailure()
         {
-            _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
             // 書き込み中の失敗時にクリーンアップが行われることを検証
             // StreamWriterの失敗をモックするのは難しいため、正常な書き込みが動作することを確認
 
@@ -151,7 +148,6 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
         [Fact]
         public void ReplaceAndAlignBmsFile_PreservesUndefinedDefinitions()
         {
-            _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
             var fileList = new List<BmsAudioFile>
             {
                 CreateWavFile(1, "kick.wav")

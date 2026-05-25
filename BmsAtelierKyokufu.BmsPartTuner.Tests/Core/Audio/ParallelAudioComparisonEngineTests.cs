@@ -14,7 +14,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
         [Fact]
         public void CompareGroups_IdenticalFiles_UpdatesReplaceTable()
         {
-            var audioCache = new ConcurrentDictionary<string, CachedSoundData>();
+            var audioCache = new ConcurrentDictionary<string, BmsAtelierKyokufu.BmsPartTuner.Models.ICachedSoundData>();
 
             var samples = new float[] { 0.1f, 0.2f, 0.3f };
             var fileList = new List<BmsAudioFile>
@@ -48,7 +48,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
         [Fact]
         public void CompareGroups_SimilarFiles_UpdatesReplaceTable()
         {
-            var audioCache = new ConcurrentDictionary<string, CachedSoundData>();
+            var audioCache = new ConcurrentDictionary<string, BmsAtelierKyokufu.BmsPartTuner.Models.ICachedSoundData>();
 
             var samples1 = new float[] { 0.1f, 0.2f, 0.3f };
             var samples2 = new float[] { 0.11f, 0.21f, 0.31f }; // 非常に近いデータ
@@ -75,7 +75,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
         [Fact]
         public void CompareGroups_DifferentFiles_NoReplacement()
         {
-            var audioCache = new ConcurrentDictionary<string, CachedSoundData>();
+            var audioCache = new ConcurrentDictionary<string, BmsAtelierKyokufu.BmsPartTuner.Models.ICachedSoundData>();
 
             var samples1 = new float[] { 0.1f, 0.2f, 0.3f };
             var samples2 = new float[] { -0.1f, -0.2f, -0.3f }; // 反転（相関係数 -1）

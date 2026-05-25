@@ -14,7 +14,6 @@ public class StringNullOrEmptyConverterTests
     [InlineData("test", false)]
     public void Convert_ReturnsExpectedResult(string? value, bool expected)
     {
-        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Arrange
         var converter = StringNullOrEmptyConverter.Instance;
 
@@ -28,7 +27,6 @@ public class StringNullOrEmptyConverterTests
     [Fact]
     public void ConvertBack_ReturnsUnsetValue()
     {
-        _ = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
         // Arrange
         var converter = StringNullOrEmptyConverter.Instance;
 

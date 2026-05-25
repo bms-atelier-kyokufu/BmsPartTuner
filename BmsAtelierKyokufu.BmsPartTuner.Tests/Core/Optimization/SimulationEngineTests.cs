@@ -16,7 +16,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
         [Fact]
         public void RunParallelSimulation_EmptyList_ReturnsEmptyResults()
         {
-            var audioCache = new ConcurrentDictionary<string, CachedSoundData>();
+            var audioCache = new ConcurrentDictionary<string, BmsAtelierKyokufu.BmsPartTuner.Models.ICachedSoundData>();
             // 準備
             var fileList = new List<BmsAudioFile>();
             var engine = new SimulationEngine(fileList, audioCache, 1, 10);
@@ -105,10 +105,10 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
 
         private class TestEngineBuilder
         {
-            public ConcurrentDictionary<string, CachedSoundData> Cache { get; } = new();
+            public ConcurrentDictionary<string, BmsAtelierKyokufu.BmsPartTuner.Models.ICachedSoundData> Cache { get; } = new();
             public List<BmsAudioFile> Files { get; } = [];
 
-            public TestEngineBuilder AddFile(string name, int num, CachedSoundData? data = null)
+            public TestEngineBuilder AddFile(string name, int num, PreNormalizedSoundData? data = null)
             {
                 Files.Add(new BmsAudioFile { Name = name, NumInteger = num });
                 if (data != null)

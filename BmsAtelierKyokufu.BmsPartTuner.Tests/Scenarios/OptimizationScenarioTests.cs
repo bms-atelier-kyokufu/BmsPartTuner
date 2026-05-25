@@ -30,10 +30,10 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Scenarios
         /// メモリ内音声データを生成するヘルパーメソッド。
         /// 実際の.wavファイルを読み込まずにテストを実行します。
         /// </summary>
-        private static CachedSoundData CreateMockAudioData(float[] samples)
+        private static PreNormalizedSoundData CreateMockAudioData(float[] samples)
         {
             float[][] channels = [samples];
-            return new CachedSoundData(channels, 44100, 16);
+            return new PreNormalizedSoundData(channels, 44100, 16);
         }
 
         #endregion
@@ -41,7 +41,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Scenarios
         [Fact]
         public void RunParallelSimulation_IdenticalAndDifferentFiles_GroupsCorrectly()
         {
-            var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
+            var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, BmsAtelierKyokufu.BmsPartTuner.Models.ICachedSoundData>();
             // Arrange: インメモリでサンプル音声データを生成
             const int sampleCount = 1000;
             const float targetRms = 0.5f;
