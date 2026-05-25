@@ -1,4 +1,4 @@
-﻿namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
+namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
 
 /// <summary>
 /// オンメモリキャッシュされた音声データの高速比較クラス。
@@ -7,11 +7,11 @@
 /// <para>【比較戦略】</para>
 /// ピアソン相関係数による波形の形状比較を採用。
 /// 音量差やDCオフセットに影響されず、波形の相似性のみを評価します。
-/// 
+///
 /// <para>【Phase 2最適化】</para>
 /// ロード時に正規化された波形（平均0、ノルム1）を事前計算。
 /// 比較時はドット積のみで相関係数を算出し、演算密度を80%削減。
-/// 
+///
 /// <para>【Why RMS比較を廃止したか】</para>
 /// <list type="number">
 /// <item>数学的妥当性: ピアソン相関は計算過程で標準偏差による除算（正規化）を含むため、
@@ -29,30 +29,30 @@
 /// ロード時に「平均0、ノルム1」に変換しておくことで、
 /// 比較処理を単純なドット積（FMA積算）に帰着させます。</item>
 /// </list>
-/// 
+///
 /// <para>【数式変形】</para>
 /// ピアソン相関係数 $r$ の定義式を変形すると、以下のようになります:
-/// 
+///
 /// $$
 /// \begin{aligned}
 /// r &amp;= \frac{\sum(x_i - \bar{x})(y_i - \bar{y})}{\sqrt{\sum(x_i - \bar{x})^2} \sqrt{\sum(y_i - \bar{y})^2}} \\
 /// &amp;= \frac{1}{n} \sum_{i=1}^{n} \left( \frac{x_i - \bar{x}}{s_x} \right) \left( \frac{y_i - \bar{y}}{s_y} \right)
 /// \end{aligned}
 /// $$
-/// 
+///
 /// ※ $s_x, s_y$ は標準偏差
-/// 
+///
 /// この $\left( \frac{x_i - \bar{x}}{s_x} \right)$ という項はデータを正規化（標準化）していることを示しています。
-/// 
+///
 /// <para>【Phase 2の変換】</para>
 /// 正規化波形 $\hat{x}_i$ を事前計算することで:
-/// 
+///
 /// $$
 /// r = \sum_{i=1}^{n} \hat{x}_i \cdot \hat{y}_i
 /// $$
-/// 
+///
 /// （単なるドット積）
-/// 
+///
 /// <para>【ラグ補正について】</para>
 /// ラグ（開始位置のズレ）は音ゲーの演奏感に直結するため、あえて補正せず、
 /// 長さの一致と位相の同期を厳密に求めることで品質を担保しています。
@@ -73,27 +73,27 @@ internal static class FastWaveCompare
     /// <item>長さチェック（サンプル数の完全一致を要求）</item>
     /// <item>正規化波形のドット積による相関計算（SIMD最適化）</item>
     /// </list>
-    /// 
+    ///
     /// <para>【Phase 2の数学的背景】</para>
     /// 事前処理で波形を正規化:
-    /// 
+    ///
     /// $$
     /// \hat{x}_i = \frac{x_i - \bar{x}}{\sqrt{\sum_{j=1}^{n}(x_j - \bar{x})^2}}
     /// $$
-    /// 
+    ///
     /// これにより、ピアソン相関係数はドット積に帰着:
-    /// 
+    ///
     /// $$
     /// r = \sum_{i=1}^{n} \hat{x}_i \cdot \hat{y}_i
     /// $$
-    /// 
+    ///
     /// <para>【演算効率の改善】</para>
     /// <list type="bullet">
     /// <item>従来版: 5変数の累積（$\sum x, \sum y, \sum x^2, \sum y^2, \sum xy$）+ 複雑な除算</item>
     /// <item>Phase 2版: 1変数の累積（$\sum(x \times y)$）のみ</item>
     /// <item>演算密度: 80%削減</item>
     /// </list>
-    /// 
+    ///
     /// <para>【特徴】</para>
     /// <list type="bullet">
     /// <item>音量差に影響されない（±3dB、±6dBでも波形が相似なら高相関）</item>
@@ -110,44 +110,32 @@ internal static class FastWaveCompare
 
         if (data1.TotalSamples != data2.TotalSamples) return false;
 
-        // Try using normalized waveform if available
-        if (data1.NormalizedWaveform != null && data2.NormalizedWaveform != null)
+        // Try using normalized regions if available
+        if (data1.NormalizedRegions != null && data2.NormalizedRegions != null)
         {
-            // Check if both normalized waveforms are all-zero (constant value data with zero variance)
-            bool allZero1 = IsAllZero(data1.NormalizedWaveform[0]);
-            bool allZero2 = IsAllZero(data2.NormalizedWaveform[0]);
+            var regions1 = data1.NormalizedRegions[0];
+            var regions2 = data2.NormalizedRegions[0];
 
-            // If both are all-zero (constant values), compare original data
-            if (allZero1 && allZero2)
+            // If both are entirely silent
+            if ((regions1 == null || regions1.Count == 0) && (regions2 == null || regions2.Count == 0))
             {
-                float correlation = WaveValidation.CalculatePearsonCorrelationSIMD(
-                    data1.SamplesPerChannel[0],
-                    data2.SamplesPerChannel[0]);
-
-                return correlation >= threshold;
+                return true;
             }
-            // If only one is all-zero, they're different
-            else if (allZero1 != allZero2)
+            // If only one is entirely silent
+            if ((regions1 == null || regions1.Count == 0) || (regions2 == null || regions2.Count == 0))
             {
                 return false;
             }
-            // Both have valid normalized waveforms
-            else
-            {
-                float correlation = WaveValidation.CalculatePearsonFromNormalizedSIMD(
-                    data1.NormalizedWaveform[0],
-                    data2.NormalizedWaveform[0]);
 
-                return correlation >= threshold;
-            }
+            // Early pruning check: if the total maximum overlap is very small, it can't match
+            // (Omitted for simplicity, rely on fast dot product calculation)
+
+            float correlation = WaveValidation.CalculatePearsonFromRegionsSIMD(regions1, regions2);
+            return correlation >= threshold;
         }
         else
         {
-            float correlation = WaveValidation.CalculatePearsonCorrelationSIMD(
-                data1.SamplesPerChannel[0],
-                data2.SamplesPerChannel[0]);
-
-            return correlation >= threshold;
+            return false;
         }
     }
 
@@ -187,38 +175,28 @@ internal static class FastWaveCompare
 
         if (data1.TotalSamples != data2.TotalSamples) return 0.0f;
 
-        // Try using normalized waveform if available
-        if (data1.NormalizedWaveform != null && data2.NormalizedWaveform != null)
+        // Try using normalized regions if available
+        if (data1.NormalizedRegions != null && data2.NormalizedRegions != null)
         {
-            // Check if both normalized waveforms are all-zero (constant value data with zero variance)
-            bool allZero1 = IsAllZero(data1.NormalizedWaveform[0]);
-            bool allZero2 = IsAllZero(data2.NormalizedWaveform[0]);
+            var regions1 = data1.NormalizedRegions[0];
+            var regions2 = data2.NormalizedRegions[0];
 
-            // If both are all-zero (constant values), compare original data
-            if (allZero1 && allZero2)
+            // If both are entirely silent
+            if ((regions1 == null || regions1.Count == 0) && (regions2 == null || regions2.Count == 0))
             {
-                return WaveValidation.CalculatePearsonCorrelationSIMD(
-                    data1.SamplesPerChannel[0],
-                    data2.SamplesPerChannel[0]);
+                return 1.0f;
             }
-            // If only one is all-zero, they're different
-            else if (allZero1 != allZero2)
+            // If only one is entirely silent
+            if ((regions1 == null || regions1.Count == 0) || (regions2 == null || regions2.Count == 0))
             {
                 return 0.0f;
             }
-            // Both have valid normalized waveforms
-            else
-            {
-                return WaveValidation.CalculatePearsonFromNormalizedSIMD(
-                    data1.NormalizedWaveform[0],
-                    data2.NormalizedWaveform[0]);
-            }
+
+            return WaveValidation.CalculatePearsonFromRegionsSIMD(regions1, regions2);
         }
         else
         {
-            return WaveValidation.CalculatePearsonCorrelationSIMD(
-                data1.SamplesPerChannel[0],
-                data2.SamplesPerChannel[0]);
+            return 0.0f;
         }
     }
 }

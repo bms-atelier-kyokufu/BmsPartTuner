@@ -1,4 +1,4 @@
-﻿using System.Numerics;
+using System.Numerics;
 using Vector = System.Numerics.Vector;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
@@ -13,41 +13,45 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
 /// <item>ピアソンの相関係数の計算</item>
 /// <item>SIMD（Vector&lt;T&gt;）による並列演算最適化</item>
 /// </list>
-/// 
+///
 /// <para>【数学的定義】</para>
-/// 
+/// <para>
 /// 決定係数（R²）:
 /// R² = 1 - RSS/DSS
 /// RSS (Residual Sum of Squares) = Σ(x - y)²
 /// DSS (Deviation Sum of Squares) = Σ(x - x̄)²
-/// 
+/// </para>
+/// <para>
 /// ピアソンの相関係数（ρ）:
 /// ρ = Cov(X,Y) / (σX × σY)
 /// Cov(X, Y) = (1/n) × Σ(x - x̄)(y - ȳ)
 /// σX = √((1/n) × Σ(x - x̄)²), σY = √((1/n) × Σ(y - ȳ)²)
-/// 
+/// </para>
+///
 /// <para>【比較】</para>
 /// <list type="bullet">
 /// <item>R²: 説明力（回帰の当てはまりの良さ）、y = x の形の関係を想定</item>
 /// <item>ρ: 相関の強さ（スケール不変）、音量差に強い</item>
 /// </list>
-/// 
+///
 /// <para>【解釈】</para>
-/// 
-/// 決定係数（R²）:
-/// R² = 1.0: 完全一致
-/// R² ≥ 0.98: ほぼ同一（厳密モード）
-/// R² ≥ 0.95: 非常に似ている（標準）
-/// R² ≥ 0.90: 似ている（緩いモード）
-/// R² &lt; 0.90: 異なる
-/// 
-/// ピアソン相関係数（ρ）:
-/// ρ = 1.0: 完全相関
-/// ρ ≥ 0.98: 非常に強い相関
-/// ρ ≥ 0.95: 強い相関（推奨）
-/// ρ ≥ 0.90: 中程度の相関
-/// ρ &lt; 0.90: 弱い相関
-/// 
+/// <para>決定係数（R²）：</para>
+/// <list type="bullet">
+/// <item><description>R² = 1.0: 完全一致</description></item>
+/// <item><description>R² ≥ 0.98: ほぼ同一（厳密モード）</description></item>
+/// <item><description>R² ≥ 0.95: 非常に似ている（標準）</description></item>
+/// <item><description>R² ≥ 0.90: 似ている（緩いモード）</description></item>
+/// <item><description>R² &lt; 0.90: 異なる</description></item>
+/// </list>
+/// <para>ピアソン相関係数（ρ）：</para>
+/// <list type="bullet">
+/// <item><description>ρ = 1.0: 完全相関</description></item>
+/// <item><description>ρ ≥ 0.98: 非常に強い相関</description></item>
+/// <item><description>ρ ≥ 0.95: 強い相関（推奨）</description></item>
+/// <item><description>ρ ≥ 0.90: 中程度の相関</description></item>
+/// <item><description>ρ &lt; 0.90: 弱い相関</description></item>
+/// </list>
+///
 /// <para>【SIMD最適化】</para>
 /// <list type="bullet">
 /// <item>Vector&lt;T&gt;による並列演算</item>
@@ -55,7 +59,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
 /// <item>AVX-512: 16個のfloatを同時処理</item>
 /// <item>従来比: 3〜8倍高速化</item>
 /// </list>
-/// 
+///
 /// <para>【Phase 2最適化】</para>
 /// <list type="bullet">
 /// <item>事前正規化波形によりドット積でピアソン相関を計算</item>
@@ -94,22 +98,22 @@ static public class WaveValidation
     /// <item>パス1: 平均値計算（Σx / n）</item>
     /// <item>パス2: 分散と誤差計算</item>
     /// </list>
-    /// 
+    ///
     /// <para>【最適化後】</para>
     /// 単一ループで Σx, Σx², Σ(x-y)² を同時計算。
     /// メモリアクセス回数: 半減
-    /// 
+    ///
     /// <para>【SIMD並列化】</para>
     /// <list type="bullet">
     /// <item>Vector&lt;T&gt;で複数要素を一度に処理</item>
     /// <item>ベクトル化可能な範囲: SIMD処理</item>
     /// <item>端数: スカラー処理</item>
     /// </list>
-    /// 
+    ///
     /// <para>【計算式】</para>
     /// DSS = Σ(x²) - (Σx)²/n （1パス公式）
     /// R² = 1 - RSS/DSS
-    /// 
+    ///
     /// <para>【Why double精度】</para>
     /// 次の2つの問題に対処するためdoubleで計算してからfloatにキャスト:
     /// <list type="bullet">
@@ -154,11 +158,11 @@ static public class WaveValidation
     /// <item>波形の「形状」の相似性を評価</item>
     /// <item>圧縮音声での位相ズレに対してロバスト</item>
     /// </list>
-    /// 
+    ///
     /// <para>【計算式】</para>
     /// ρ = Cov(X,Y) / (σX × σY)
     /// ρ = Σ((x - x̄) × (y - ȳ)) / √(Σ(x - x̄)² × Σ(y - ȳ)²)
-    /// 
+    ///
     /// <para>【1パス最適化】</para>
     /// Σx, Σy, Σx², Σy², Σ(x×y) を同時計算。
     /// </remarks>
@@ -185,7 +189,7 @@ static public class WaveValidation
     /// <item>分散・共分散計算（1パス公式）</item>
     /// <item>相関係数計算: ρ = Cov(X,Y) / (σX × σY)</item>
     /// </list>
-    /// 
+    ///
     /// <para>【1パス公式】</para>
     /// Cov(X,Y) = E[XY] - E[X]E[Y]
     /// Var(X) = E[X²] - E[X]²
@@ -263,7 +267,7 @@ static public class WaveValidation
     /// <para>【数学的背景】</para>
     /// 正規化波形（平均0、ノルム1）の場合、ピアソン相関係数は単純なドット積に帰着:
     /// r = Σ(x̂ × ŷ)
-    /// 
+    ///
     /// <para>【効果】</para>
     /// <list type="bullet">
     /// <item>5変数の累積計算を1変数に削減</item>
@@ -289,18 +293,17 @@ static public class WaveValidation
     /// <para>【処理内容】</para>
     /// 正規化済み波形（平均0、ノルム1）の場合、ドット積がピアソン相関係数に等しい:
     /// r = Σ(x̂ × ŷ)
-    /// 
+    ///
     /// <para>【SIMD最適化】</para>
     /// <list type="bullet">
     /// <item>単純な乗算・加算のみでベクトル化効率最大</item>
     /// <item>FMA（Fused Multiply-Add）命令との相性良好</item>
     /// <item>AVX2で8要素同時処理</item>
     /// </list>
-    /// 
+    ///
     /// <para>【標準版との比較】</para>
     /// <list type="bullet">
     /// <item>標準版: 5変数の累積（Σx, Σy, Σx², Σy², Σxy）+ 複雑な除算</item>
-
     /// </list>
     /// </remarks>
     static public float CalculatePearsonFromNormalizedSIMD(ReadOnlySpan<float> normalizedWav1, ReadOnlySpan<float> normalizedWav2)
@@ -330,6 +333,76 @@ static public class WaveValidation
         }
 
         return (float)Math.Max(-1.0, Math.Min(1.0, dotProduct));
+    }
+
+    /// <summary>
+    /// Phase 2: ActiveRegion（有音区間）の交差部分のみのドット積でピアソン相関係数を計算（SIMD最適化）。
+    /// </summary>
+    /// <remarks>
+    /// 無音区間（0）同士の積、または有音と無音（0）の積は常に0になるため、
+    /// 計算を完全にサボり、時間軸上で重なる有音区間のみのドット積を計算します。
+    /// これにより、BGMノートのように長い無音を含む波形でもメモリと計算時間を劇的に節約できます。
+    /// </remarks>
+    static public float CalculatePearsonFromRegionsSIMD(List<BmsAtelierKyokufu.BmsPartTuner.Models.ActiveRegion> regions1, List<BmsAtelierKyokufu.BmsPartTuner.Models.ActiveRegion> regions2)
+    {
+        if (regions1 == null || regions2 == null || regions1.Count == 0 || regions2.Count == 0)
+            return 0.0F;
+
+        int i = 0, j = 0;
+        double totalDotProduct = 0;
+
+        int vectorSize = Vector<float>.Count;
+        Vector<float> ones = new(1.0f);
+
+        while (i < regions1.Count && j < regions2.Count)
+        {
+            var r1 = regions1[i];
+            var r2 = regions2[j];
+
+            int overlapStart = Math.Max(r1.Offset, r2.Offset);
+            int overlapEnd = Math.Min(r1.Offset + r1.Length, r2.Offset + r2.Length);
+
+            if (overlapStart < overlapEnd)
+            {
+                int len = overlapEnd - overlapStart;
+                int offset1 = overlapStart - r1.Offset;
+                int offset2 = overlapStart - r2.Offset;
+
+                ReadOnlySpan<float> span1 = r1.Data.AsSpan(offset1, len);
+                ReadOnlySpan<float> span2 = r2.Data.AsSpan(offset2, len);
+
+                int vectorizedLength = len - (len % vectorSize);
+                Vector<float> dotProduct_vec = Vector<float>.Zero;
+
+                for (int k = 0; k < vectorizedLength; k += vectorSize)
+                {
+                    Vector<float> x = new(span1.Slice(k, vectorSize));
+                    Vector<float> y = new(span2.Slice(k, vectorSize));
+                    dotProduct_vec += x * y;
+                }
+
+                double dotProduct = Vector.Dot(dotProduct_vec, ones);
+
+                for (int k = vectorizedLength; k < len; k++)
+                {
+                    dotProduct += span1[k] * span2[k];
+                }
+
+                totalDotProduct += dotProduct;
+            }
+
+            // 終了が早い方のポインタを進める
+            if (r1.Offset + r1.Length < r2.Offset + r2.Length)
+            {
+                i++;
+            }
+            else
+            {
+                j++;
+            }
+        }
+
+        return (float)Math.Max(-1.0, Math.Min(1.0, totalDotProduct));
     }
 
     #endregion

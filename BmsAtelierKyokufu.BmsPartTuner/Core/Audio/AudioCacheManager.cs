@@ -1,4 +1,4 @@
-﻿namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
+namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
 
 /// <summary>
 /// オーディオファイルのキャッシュ管理。
@@ -10,24 +10,24 @@
 /// <item>バッチ処理による並列ロード</item>
 /// <item>メモリ使用量の監視と統計情報出力</item>
 /// </list>
-/// 
+///
 /// <para>【最適化の根拠】</para>
 /// <list type="bullet">
 /// <item>Before: 2,408,310回の比較 × 2ファイル = 約480万回のディスクI/O</item>
 /// <item>After: 2,196ファイルの一括読み込み = 2,196回のディスクI/O</item>
 /// <item>結果: 約2,200倍のI/O削減</item>
 /// </list>
-/// 
+///
 /// <para>【メモリ使用量】</para>
 /// 2,196ファイル × 200KB ? 440MB（現代のPCでは許容範囲）
-/// 
+///
 /// <para>【バッチ処理戦略】</para>
 /// <list type="bullet">
 /// <item>CPUコア数に合わせてバッチサイズを動的決定</item>
 /// <item>バッチごとに並列処理でスループット最大化</item>
 /// <item>進捗レポートはバッチ単位（オーバーヘッド削減）</item>
 /// </list>
-/// 
+///
 /// <para>【Why バッチ並列・内部順次】</para>
 /// バッチ間は並列処理でCPUコアを活用し、バッチ内は順次処理でディスク負荷を制御します。
 /// ディスクI/Oはランダムアクセスが遅いため、順次アクセスの方が効率的です。
@@ -51,14 +51,14 @@ internal static class AudioCacheManager
     /// <item>5バッチごとまたは完了時に進捗報告</item>
     /// <item>統計情報をデバッグログに出力</item>
     /// </list>
-    /// 
+    ///
     /// <para>【統計情報】</para>
     /// <list type="bullet">
     /// <item>ロード成功率</item>
     /// <item>総メモリ使用量</item>
     /// <item>スループット（files/sec）</item>
     /// </list>
-    /// 
+    ///
     /// <para>【失敗ファイルの扱い】</para>
     /// 破損ファイルや読み込みに失敗したファイルは無視して処理を続行しますが、
     /// そのファイルパスをリストで返却します。呼び出し元でユーザーに警告を表示できます。
@@ -68,7 +68,7 @@ internal static class AudioCacheManager
         IProgress<int>? progress,
         Models.NormalizationMode normalizationMode = Models.NormalizationMode.None)
     {
-        PerformanceDebugLogger.WriteLine($"=== PreloadAudioData Start ===");
+        PerformanceDebugLogger.WriteLine("=== PreloadAudioData Start ===");
         PerformanceDebugLogger.WriteLine($"Total files to preload: {fileList.Count}");
         PerformanceDebugLogger.WriteLine($"Normalization mode: {normalizationMode}");
 
@@ -91,13 +91,15 @@ internal static class AudioCacheManager
 
         PerformanceDebugLogger.WriteLine($"Preloading {totalFiles} files in {batches.Count} batches (batch size: ~{batchSize})");
 
+        PerformanceDebugLogger.StartMemoryDiagnosis(); // 5秒後の強制レポート機能をオン
+
         var timer = PerformanceDebugLogger.StartTimer();
 
         int completedBatches = 0;
 
         _ = Parallel.ForEach(batches, new ParallelOptions
         {
-            MaxDegreeOfParallelism = Environment.ProcessorCount
+            MaxDegreeOfParallelism = Math.Min(4, Environment.ProcessorCount)
         }, batch =>
         {
             var (batchSuccess, batchFail) = LoadBatch(batch, normalizationMode, failedFiles, audioCache);
@@ -114,6 +116,9 @@ internal static class AudioCacheManager
 
             int percentage = (int)((float)currentBatch / batches.Count * AppConstants.Progress.PreloadComplete);
             progress?.Report(percentage);
+
+            // ループのたびに5秒経過していないかチェックし、経過していれば停止・レポート
+            PerformanceDebugLogger.CheckAndHaltIfDiagnosisTriggered("AudioCacheManager Batch Loop", audioCache);
         });
 
         loaded = successCount + failCount;
@@ -129,7 +134,7 @@ internal static class AudioCacheManager
     /// <remarks>
     /// <para>【計算式】</para>
     /// バッチサイズ = max(10, 総ファイル数 / (CPUコア数 × 4))
-    /// 
+    ///
     /// <para>【例】</para>
     /// 8コアなら32バッチ、2196ファイルなら約69ファイル/バッチ
     /// </remarks>
@@ -236,7 +241,7 @@ internal static class AudioCacheManager
             }
         }
 
-        PerformanceDebugLogger.WriteLine($"=== PreloadAudioData Complete ===");
+        PerformanceDebugLogger.WriteLine("=== PreloadAudioData Complete ===");
         PerformanceDebugLogger.WriteLine($"Preload completed: {loaded}/{totalFiles} files processed");
         PerformanceDebugLogger.WriteLine($"Success: {successCount}, Failed: {failCount}");
         PerformanceDebugLogger.WriteLine($"Actual cached count: {cachedCount}");

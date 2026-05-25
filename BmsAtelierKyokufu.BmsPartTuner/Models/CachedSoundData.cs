@@ -4,8 +4,18 @@ using NAudio.Wave;
 namespace BmsAtelierKyokufu.BmsPartTuner.Models
 {
     /// <summary>
+    /// 有音区間のメタデータと波形データを保持する構造体
+    /// </summary>
+    public readonly struct ActiveRegion(int offset, int length, float[] data)
+    {
+        public readonly int Offset = offset;
+        public readonly int Length = length;
+        public readonly float[] Data = data;
+    }
+
+    /// <summary>
     /// 波形正規化モード
-    /// 
+    ///
     /// 【概要】
     /// ロード時に波形を正規化し、音量差に強い比較を実現
     /// </summary>
@@ -23,25 +33,25 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Models
 
     /// <summary>
     /// オンメモリでキャッシュされた音声データ（SIMD最適化版）
-    /// 
+    ///
     /// 【目的】
     /// - ディスクI/Oを最小化し、高速比較を実現
     /// - 音声データを事前にデインターリーブ（チャンネル分離）
     /// - SIMD演算に最適なデータ構造を提供
-    /// 
+    ///
     /// 【メモリ最適化戦略】
     /// 1. ロード時にインターリーブデータを取得
     /// 2. チャンネルごとにデインターリーブ
     /// 3. 元のインターリーブデータを破棄（メモリ削減）
     /// 4. RMSを事前計算（高速フィルタ用）
     /// 5. Phase 2: 正規化波形を事前計算（ドット積への帰着）
-    /// 
+    ///
     /// 【効果】
     /// - メモリ使用量: 30〜40%削減
     /// - 比較時のデインターリーブ処理: 完全削除
     /// - GC負荷: 大幅軽減
     /// - Phase 2: 比較時の演算を5倍削減
-    /// 
+    ///
     /// 【メモリリーク対策】
     /// - IDisposableを実装し、明示的なメモリ解放をサポート
     /// - 処理完了後にDisposeを呼び出すことで、大量のメモリを即座に解放
@@ -72,7 +82,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Models
 
         /// <summary>
         /// インターリーブされた元データ（デインターリーブ後はnull）
-        /// 
+        ///
         /// 【メモリ最適化】
         /// デインターリーブ完了後にnullを設定してメモリを解放
         /// これにより2196ファイル分のメモリ使用量を30〜40%削減
@@ -81,14 +91,14 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Models
 
         /// <summary>
         /// チャンネルごとに分離されたデータ（高速比較用）
-        /// 
+        ///
         /// 【データ構造】
         /// [チャンネル番号][サンプル番号]
-        /// 
+        ///
         /// 例: ステレオ音声（44.1kHz, 1秒）
         /// SamplesPerChannel[0] = 左チャンネル 44,100サンプル
         /// SamplesPerChannel[1] = 右チャンネル 44,100サンプル
-        /// 
+        ///
         /// 【利点】
         /// - 比較時のデインターリーブ不要
         /// - 連続メモリアクセス（キャッシュ効率向上）
@@ -97,55 +107,34 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Models
         public float[][] SamplesPerChannel { get; private set; }
 
         /// <summary>
-        /// Phase 2: 正規化された波形（ドット積でピアソン相関係数を計算可能）
-        /// 
-        /// 【数学的定義】
-        /// $\hat{x}_i = \frac{x_i - \bar{x}}{\sqrt{\sum_{j=1}^{n}(x_j - \bar{x})^2}}$
-        /// 
-        /// 【特性】
-        /// - 平均: 0
-        /// - ノルム: 1
-        /// 
-        /// 【用途】
-        /// ピアソン相関係数 $r$ を単なるドット積に帰着:
-        /// $r = \sum_{i=1}^{n} \hat{x}_i \cdot \hat{y}_i$
-        /// 
-        /// 【効果】
-        /// - 比較時の計算を5変数の累積から1変数のFMA積算へ簡略化
-        /// - 演算密度を80%削減
-        /// 
-        /// 【無音対応】
-        /// 分散がほぼ0の場合、全てのサンプルを0で初期化
+        /// Phase 2: 正規化された波形の有音区間リスト
+        ///
+        /// 【メモリ最適化】
+        /// 長大な無音区間をスキップし、有音区間のみのデータとオフセットを保持します。
+        /// これによりメモリを劇的に削減します。
         /// </summary>
-        public float[][]? NormalizedWaveform { get; private set; }
+        public List<ActiveRegion>[]? NormalizedRegions { get; private set; }
 
         /// <summary>
         /// 全サンプルの総数（全チャンネル合計）
         /// </summary>
-        public int TotalSamples
-        {
-            get
-            {
-                if (SamplesPerChannel == null || SamplesPerChannel.Length == 0) return 0;
-                return SamplesPerChannel[0].Length * Channels;
-            }
-        }
+        public int TotalSamples { get; }
 
         /// <summary>
         /// RMS（Root Mean Square: 二乗平均平方根）
-        /// 
+        ///
         /// 【計算式】
         /// RMS = sqrt(Σ(sample²) / N)
-        /// 
+        ///
         /// 【意味】
         /// 音声の全体的な音圧レベルを表す
-        /// 
+        ///
         /// 【用途】
         /// - 高速フィルタ（Phase 3）
         /// - Sort & Sweep のソートキー
         /// - 20%以上の差があれば即座に不一致判定
         /// </summary>
-        public float TotalRms { get; private set; }
+        public float TotalRms { get; }
 
         /// <summary>
         /// ファイルサイズ（バイト単位）
@@ -154,19 +143,19 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Models
 
         /// <summary>
         /// 先頭の無音サンプル数（チャンネルごと）
-        /// 
+        ///
         /// 【目的】
         /// 書き出しタイミングのズレを高速補正するため、ロード時に一度だけ検出。
         /// これにより、比較時の総当りループ（FindBestTimeAlignment）を不要化。
-        /// 
+        ///
         /// 【検出方法】
         /// 振幅が閾値（0.001f）を超える最初のサンプル位置を特定。
         /// </summary>
-        public int StartSilenceSamples { get; private set; }
+        public int StartSilenceSamples { get; }
 
         /// <summary>
         /// 有効な音声長（先頭無音を除いたサンプル数）
-        /// 
+        ///
         /// 【用途】
         /// - Phase 2の長さチェックで使用
         /// - 末尾の無音長が違うだけの同一ファイルを救済
@@ -177,11 +166,11 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Models
 
         /// <summary>
         /// メモリ使用量の推定値（MB単位）
-        /// 
+        ///
         /// 【計算方法】
         /// - Samples配列（null化済みなら0）
         /// - SamplesPerChannel配列の合計
-        /// - NormalizedWaveform配列の合計
+        /// - NormalizedRegions配列内のDataサイズの合計
         /// </summary>
         public double EstimatedMemoryMB
         {
@@ -203,13 +192,19 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Models
                     }
                 }
 
-                // 正規化波形のメモリを加算
-                if (NormalizedWaveform != null)
+                // 正規化波形（有音区間）のメモリを加算
+                if (NormalizedRegions != null)
                 {
-                    foreach (var channelData in NormalizedWaveform)
+                    foreach (var channelRegions in NormalizedRegions)
                     {
-                        if (channelData != null)
-                            totalBytes += channelData.Length * sizeof(float);
+                        if (channelRegions != null)
+                        {
+                            foreach (var region in channelRegions)
+                            {
+                                if (region.Data != null)
+                                    totalBytes += region.Data.Length * sizeof(float);
+                            }
+                        }
                     }
                 }
 
@@ -231,9 +226,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Models
         /// <remarks>
         /// <para>【目的】</para>
         /// テストコードでファイルI/Oなしでモックデータを注入可能にするため。
-        /// 
+        ///
         /// <para>【制約】</para>
-        /// - NormalizedWaveformは自動計算されます
+        /// - NormalizedRegionsは自動計算されます
         /// - TotalRmsとStartSilenceSamplesも自動計算されます
         /// </remarks>
         internal CachedSoundData(float[][] samplesPerChannel, int sampleRate, int bitsPerSample, string filePath = "test.wav")
@@ -253,15 +248,19 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Models
             FileSize = 0; // テストでは無視
 
             int samplesPerChannel_count = samplesPerChannel[0].Length;
+            TotalSamples = samplesPerChannel_count * Channels;
 
-            // 正規化波形を計算
-            NormalizedWaveform = ComputeNormalizedWaveform(samplesPerChannel, Channels);
+            // 有音区間と正規化波形を抽出・計算
+            NormalizedRegions = ExtractActiveRegions(samplesPerChannel, Channels);
 
             // RMSを計算
             TotalRms = CalculateTotalRms(samplesPerChannel, samplesPerChannel_count, Channels);
 
             // 先頭無音を検出
             StartSilenceSamples = DetectStartSilence(samplesPerChannel, samplesPerChannel_count, Channels);
+
+            // メモリ最適化：比較処理には不要なため解放
+            SamplesPerChannel = null!;
         }
 
         /// <summary>
@@ -361,6 +360,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Models
 
                     // チャンネル分離（デインターリーブ）を事前実行
                     int samplesPerChannel = Samples.Length / Channels;
+                    TotalSamples = samplesPerChannel * Channels;
                     SamplesPerChannel = DeinterleaveChannels(Samples, Channels, samplesPerChannel);
 
                     // メモリ最適化: デインターリーブ後はインターリーブ配列を解放
@@ -372,14 +372,17 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Models
                         ApplyNormalization(normalizationMode);
                     }
 
-                    // Phase 2: 正規化波形を事前計算（ドット積でピアソン相関係数を計算可能に）
-                    NormalizedWaveform = ComputeNormalizedWaveform(SamplesPerChannel, Channels);
+                    // Phase 2: 有音区間の抽出と正規化（無音区間のメモリを削減し、ドット積をサボる）
+                    NormalizedRegions = ExtractActiveRegions(SamplesPerChannel, Channels);
 
                     // 先頭無音を検出（高速比較用）
                     StartSilenceSamples = DetectStartSilence(SamplesPerChannel, samplesPerChannel, Channels);
 
                     // RMS（音圧）を計算（高速フィルタ用）
                     TotalRms = CalculateTotalRms(SamplesPerChannel, samplesPerChannel, Channels);
+
+                    // メモリ最適化：比較処理には不要なためチャンネル分離データを解放
+                    SamplesPerChannel = null!;
                 }
             }
             catch (Exception ex)
@@ -395,10 +398,10 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Models
 
         /// <summary>
         /// インターリーブされたデータをチャンネルごとに分離
-        /// 
+        ///
         /// 【入力】
         /// インターリーブ: [L0, R0, L1, R1, L2, R2, ...]
-        /// 
+        ///
         /// 【出力】
         /// SamplesPerChannel[0]: [L0, L1, L2, ...] (左チャンネル)
         /// SamplesPerChannel[1]: [R0, R1, R2, ...] (右チャンネル)
@@ -440,11 +443,11 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Models
 
         /// <summary>
         /// ピークノーマライズ: 最大値を1.0に統一
-        /// 
+        ///
         /// 【処理】
         /// 1. 全チャンネルの最大値（絶対値）を見つける
         /// 2. 全サンプルをその値で除算
-        /// 
+        ///
         /// 【効果】
         /// - 波形の形状を100%保持
         /// - 音量差のある音声を統一
@@ -480,16 +483,16 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Models
 
         /// <summary>
         /// RMSノーマライズ: エネルギー（音圧）を統一
-        /// 
+        ///
         /// 【処理】
         /// 1. 現在のRMSを計算
         /// 2. 目標RMS（デフォルト: 0.5）に正規化
-        /// 
+        ///
         /// 【効果】
         /// - 知覚的な音量を統一
         /// - 無音部分の影響を受けにくい
         /// - 音声圧縮への対応が優れている
-        /// 
+        ///
         /// 【計算式】
         /// normalized[i] = sample[i] * (targetRMS / currentRMS)
         /// </summary>
@@ -521,77 +524,177 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Models
 
         /// <summary>
         /// Phase 2: 正規化波形を計算
-        /// 
+        ///
         /// 【数学的背景】
         /// ピアソン相関係数の定義:
         /// $r = \frac{\sum(x_i - \bar{x})(y_i - \bar{y})}{\sqrt{\sum(x_i - \bar{x})^2} \sqrt{\sum(y_i - \bar{y})^2}}$
-        /// 
+        ///
         /// 正規化波形の定義:
         /// $\hat{x}_i = \frac{x_i - \bar{x}}{\sqrt{\sum_{j=1}^{n}(x_j - \bar{x})^2}}$
-        /// 
+        ///
         /// この変換により:
         /// $r = \sum_{i=1}^{n} \hat{x}_i \cdot \hat{y}_i$
-        /// 
+        ///
         /// 【処理】
         /// 1. 平均値を計算
         /// 2. 分散を計算
         /// 3. 標準偏差で正規化（ゼロ除算対策付き）
-        /// 
+        ///
+        /// <summary>
+        /// Phase 2: 有音区間の抽出と正規化
+        ///
+        /// 【数学的背景】
+        /// ピアソン相関係数の定義:
+        /// $r = \frac{\sum(x_i - \bar{x})(y_i - \bar{y})}{\sqrt{\sum(x_i - \bar{x})^2} \sqrt{\sum(y_i - \bar{y})^2}}$
+        ///
+        /// 正規化波形の定義:
+        /// $\hat{x}_i = \frac{x_i - \bar{x}}{\sqrt{\sum_{j=1}^{n}(x_j - \bar{x})^2}}$
+        ///
+        /// この変換により:
+        /// $r = \sum_{i=1}^{n} \hat{x}_i \cdot \hat{y}_i$
+        ///
+        /// 【処理】
+        /// 1. 平均値を計算
+        /// 2. 分散を計算
+        /// 3. O(1)スライディングウィンドウで有音区間（ActiveRegion）を抽出
+        /// 4. 抽出された区間のみ標準偏差で正規化（ゼロ除算対策付き）
+        ///
         /// 【効果】
-        /// - 比較時の5変数の累積計算を1変数のドット積に削減
-        /// - SIMD演算との相性向上
+        /// - 無音区間のメモリを削減
+        /// - 比較時のドット積計算を有音区間の交差のみに限定し、計算をサボる（高速化）
         /// </summary>
-        private static float[][] ComputeNormalizedWaveform(float[][] samplesPerChannel, int channels)
+        private static List<ActiveRegion>[] ExtractActiveRegions(float[][] samplesPerChannel, int channels)
         {
-            var normalized = new float[channels][];
+            var regionsPerChannel = new List<ActiveRegion>[channels];
+
+            const double dbThreshold = -45.0;
+            const int windowFrames = 1024; // 約23ms (44.1kHz時)
+
+            // E_threshold = N * A_ref^2 * 10^(T_threshold/10) (A_ref = 1.0)
+            double eThreshold = windowFrames * Math.Pow(10, dbThreshold / 10.0);
+            const int maxSilenceFrames = AppConstants.Audio.StandardSampleRate / 4; // 250ms
 
             for (int ch = 0; ch < channels; ch++)
             {
                 var samples = samplesPerChannel[ch];
-                normalized[ch] = new float[samples.Length];
+                regionsPerChannel[ch] = [];
+
+                int totalFrames = samples.Length;
 
                 // ステップ1: 平均を計算
                 double sum = 0;
-                for (int i = 0; i < samples.Length; i++)
-                {
-                    sum += samples[i];
-                }
-                double mean = sum / samples.Length;
+                for (int i = 0; i < totalFrames; i++) sum += samples[i];
+                double mean = sum / totalFrames;
 
                 // ステップ2: 分散（偏差平方和）を計算
                 double varianceSum = 0;
-                for (int i = 0; i < samples.Length; i++)
+                for (int i = 0; i < totalFrames; i++)
                 {
                     double centered = samples[i] - mean;
                     varianceSum += centered * centered;
                 }
-
-                // ステップ3: 標準偏差（ノルム）を計算してゼロ除算チェック
                 double norm = Math.Sqrt(varianceSum);
-                if (norm < 1e-10)
+
+                // 無音またはほぼ無音のチャンネル
+                if (norm < 1e-10) continue;
+
+                // 長さが短すぎる場合はスライディングウィンドウを適用せず全体を1つのRegionにする
+                if (totalFrames <= windowFrames)
                 {
-                    // 無音またはほぼ無音のチャンネル：ゼロで初期化
-                    // この場合、ドット積は0になり、相関は0と判定される
-                    Array.Clear(normalized[ch], 0, normalized[ch].Length);
+                    float[] data = new float[totalFrames];
+                    for (int i = 0; i < totalFrames; i++) data[i] = (float)((samples[i] - mean) / norm);
+                    regionsPerChannel[ch].Add(new ActiveRegion(0, totalFrames, data));
                     continue;
                 }
 
-                // ステップ4: 正規化（平均0、ノルム1）
-                for (int i = 0; i < samples.Length; i++)
+                // ステップ3: スライディングウィンドウで有音区間を抽出
+                double currentEnergy = 0;
+                for (int i = 0; i < windowFrames; i++)
                 {
-                    normalized[ch][i] = (float)((samples[i] - mean) / norm);
+                    currentEnergy += (double)samples[i] * samples[i];
+                }
+
+                bool inSound = false;
+                int regionStart = 0;
+                int continuousSilence = 0;
+
+                for (int i = 0; i < totalFrames - windowFrames; i++)
+                {
+                    bool windowHasSound = currentEnergy >= eThreshold;
+
+                    if (!inSound)
+                    {
+                        if (windowHasSound)
+                        {
+                            inSound = true;
+                            regionStart = i;
+                            continuousSilence = 0;
+                        }
+                    }
+                    else
+                    {
+                        if (!windowHasSound)
+                        {
+                            continuousSilence++;
+                            if (continuousSilence >= maxSilenceFrames)
+                            {
+                                int regionEnd = i - continuousSilence + windowFrames;
+                                regionEnd = Math.Max(regionStart, Math.Min(totalFrames, regionEnd));
+
+                                int regionLength = regionEnd - regionStart;
+                                if (regionLength > 0)
+                                {
+                                    float[] regionData = new float[regionLength];
+                                    for (int j = 0; j < regionLength; j++)
+                                    {
+                                        regionData[j] = (float)((samples[regionStart + j] - mean) / norm);
+                                    }
+                                    regionsPerChannel[ch].Add(new ActiveRegion(regionStart, regionLength, regionData));
+                                }
+
+                                inSound = false;
+                                continuousSilence = 0;
+                            }
+                        }
+                        else
+                        {
+                            continuousSilence = 0;
+                        }
+                    }
+
+                    // Slide window (O(1))
+                    double outSample = samples[i];
+                    double inSample = samples[i + windowFrames];
+                    currentEnergy = currentEnergy - (outSample * outSample) + (inSample * inSample);
+                    if (currentEnergy < 0) currentEnergy = 0; // 数値誤差対策
+                }
+
+                // ファイル終端時にまだSound状態なら閉じる
+                if (inSound)
+                {
+                    int regionEnd = totalFrames;
+                    int regionLength = regionEnd - regionStart;
+                    if (regionLength > 0)
+                    {
+                        float[] regionData = new float[regionLength];
+                        for (int j = 0; j < regionLength; j++)
+                        {
+                            regionData[j] = (float)((samples[regionStart + j] - mean) / norm);
+                        }
+                        regionsPerChannel[ch].Add(new ActiveRegion(regionStart, regionLength, regionData));
+                    }
                 }
             }
 
-            return normalized;
+            return regionsPerChannel;
         }
 
         /// <summary>
         /// 全体のRMS（二乗平均平方根）を計算
-        /// 
+        ///
         /// 【計算式】
         /// RMS = sqrt(Σ(sample²) / N)
-        /// 
+        ///
         /// ここでは全チャンネルの全サンプルを対象に計算
         /// </summary>
         private static float CalculateTotalRms(float[][] channelData, int samplesPerChannel, int channels)
@@ -612,12 +715,12 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Models
 
         /// <summary>
         /// 先頭の無音サンプル数を検出
-        /// 
+        ///
         /// 【アルゴリズム】
         /// 1. 全チャンネルの最初のサンプルから順に走査
         /// 2. いずれかのチャンネルで振幅が閾値を超えたら、その位置を返す
         /// 3. 全サンプルが閾値未満なら0を返す（完全無音ファイル）
-        /// 
+        ///
         /// 【閾値】
         /// 0.001f（RMS無音判定と同じ値）
         /// </summary>
@@ -660,10 +763,10 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Models
         /// <item>NormalizedWaveform: 正規化波形データ</item>
         /// <item>Samples: インターリーブデータ（通常は既にnull）</item>
         /// </list>
-        /// 
+        ///
         /// <para>【効果】</para>
         /// 数百MBのメモリを即座に解放し、GC待ちを回避します。
-        /// 
+        ///
         /// <para>【LOH対策】</para>
         /// 大きな配列を個別にnullに設定し、LOH内のメモリも確実に解放します。
         /// </remarks>
@@ -694,14 +797,18 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Models
                     SamplesPerChannel = null!;
                 }
 
-                // NormalizedWaveformの各チャンネルを個別に解放
-                if (NormalizedWaveform != null)
+                // NormalizedRegionsの各チャンネルを個別に解放
+                if (NormalizedRegions != null)
                 {
-                    for (int i = 0; i < NormalizedWaveform.Length; i++)
+                    for (int i = 0; i < NormalizedRegions.Length; i++)
                     {
-                        NormalizedWaveform[i] = null!;
+                        if (NormalizedRegions[i] != null)
+                        {
+                            NormalizedRegions[i].Clear();
+                            NormalizedRegions[i] = null!;
+                        }
                     }
-                    NormalizedWaveform = null;
+                    NormalizedRegions = null;
                 }
             }
 

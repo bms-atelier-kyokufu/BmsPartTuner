@@ -10,23 +10,26 @@
 /// <item>キーワードベースのパート分離（楽器種別ごとのグループ化）</item>
 /// <item>巨大グループの自動分割（<see cref="AppConstants.MaxGroupSize"/>単位）</item>
 /// </list>
-/// 
+///
 /// <para>【グループ化戦略】</para>
 /// <list type="number">
 /// <item>キーワードフィルタあり: 楽器種別（kick, snare等）ごとに独立グループ化</item>
 /// <item>キーワードフィルタなし: 全体を統合グループ化</item>
 /// </list>
-/// 
+///
 /// <para>【グループキーの生成】</para>
+/// <para>
 /// ファイルサイズ（バイト）+ RMS値（量子化）を組み合わせたキーで分類:
-/// 
-/// GroupKey = $"{fileSize}_{rmsQuantized}"
+/// </para>
+/// <para>
+/// GroupKey = $"{fileSize}_{rmsQuantized}"<br/>
 /// rmsQuantized = (int)(rms × <see cref="AppConstants.RmsQuantizationFactor"/>)
-/// 
+/// </para>
+///
 /// <para>【Why グループ化が必要か】</para>
 /// 全ファイル総当たり比較（$O(N^2)$）を避け、類似ファイルのみを比較（$O(\sum m^2)$）することで、
 /// 計算量を大幅に削減します（実測: 約800倍高速化）。
-/// 
+///
 /// <para>【キーワードベースの利点】</para>
 /// 楽器種別ごとに分離することで、異なる楽器同士の無駄な比較を回避し、
 /// さらなる高速化と精度向上を実現します。
@@ -56,18 +59,18 @@ public static class AudioFileGroupingStrategy
         IEnumerable<string>? selectedKeywords = null)
     {
         var keywordList = selectedKeywords?.ToList();
-        bool hasKeywordFilter = keywordList != null && keywordList.Count > 0;
+        bool hasKeywordFilter = keywordList?.Count > 0;
 
         if (hasKeywordFilter)
         {
-            PerformanceDebugLogger.WriteLine($"=== GroupFiles with Keyword Filter ===");
+            PerformanceDebugLogger.WriteLine("=== GroupFiles with Keyword Filter ===");
             PerformanceDebugLogger.WriteLine($"Selected Keywords: {string.Join(", ", keywordList!)}");
 
             return GroupFilesByKeywords(audioCache, fileList, startPoint, endPoint, keywordList!);
         }
         else
         {
-            PerformanceDebugLogger.WriteLine($"=== GroupFiles without Keyword Filter ===");
+            PerformanceDebugLogger.WriteLine("=== GroupFiles without Keyword Filter ===");
 
             return GroupFilesTraditional(audioCache, fileList, startPoint, endPoint);
         }
@@ -84,11 +87,11 @@ public static class AudioFileGroupingStrategy
     /// <item>該当するキーワードのグループに追加</item>
     /// <item>巨大グループを分割（<see cref="AppConstants.MaxGroupSize"/>単位）</item>
     /// </list>
-    /// 
+    ///
     /// <para>【キーワード判定】</para>
     /// ファイル名（拡張子なし）に対して、大文字小文字を区別せずに
     /// 部分一致（Contains）でキーワードをマッチングします。
-    /// 
+    ///
     /// <para>【除外条件】</para>
     /// <list type="bullet">
     /// <item>範囲外のファイル番号</item>
@@ -193,7 +196,7 @@ public static class AudioFileGroupingStrategy
             keywordStats[keyword] = filesInKeyword;
         }
 
-        PerformanceDebugLogger.WriteLine($"=== GroupFilesByKeywords Complete ===");
+        PerformanceDebugLogger.WriteLine("=== GroupFilesByKeywords Complete ===");
         PerformanceDebugLogger.WriteLine($"Total in range: {totalFiles}");
         PerformanceDebugLogger.WriteLine($"Out of range: {outOfRange}");
         PerformanceDebugLogger.WriteLine($"No cache: {noCache}");
@@ -220,10 +223,10 @@ public static class AudioFileGroupingStrategy
     /// <item>全ファイルをファイルサイズ+RMSでグループ化</item>
     /// <item>巨大グループを分割（<see cref="AppConstants.MaxGroupSize"/>単位）</item>
     /// </list>
-    /// 
+    ///
     /// <para>【グループキーの生成】</para>
     /// GroupKey = $"{fileSize}_{rmsQuantized}"
-    /// 
+    ///
     /// <para>【Why RMS量子化】</para>
     /// 浮動小数点の完全一致は困難なため、<see cref="AppConstants.RmsQuantizationFactor"/>倍して
     /// 整数化することで、近いRMS値を持つファイルを同じグループに分類します。
@@ -299,7 +302,7 @@ public static class AudioFileGroupingStrategy
             }
         }
 
-        PerformanceDebugLogger.WriteLine($"=== GroupFilesTraditional Complete ===");
+        PerformanceDebugLogger.WriteLine("=== GroupFilesTraditional Complete ===");
         PerformanceDebugLogger.WriteLine($"Total in range: {totalFiles}");
         PerformanceDebugLogger.WriteLine($"Out of range: {outOfRange}");
         PerformanceDebugLogger.WriteLine($"No cache: {noCache}");

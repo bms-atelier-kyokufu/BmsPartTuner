@@ -1,4 +1,4 @@
-using System.Buffers.Binary;
+﻿using System.Buffers.Binary;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
 
@@ -46,8 +46,8 @@ public class VirtualWavStream : Stream
 
     public override int Read(byte[] buffer, int offset, int count)
     {
-        if (buffer == null) throw new ArgumentNullException(nameof(buffer));
-        if (offset < 0 || count < 0) throw new ArgumentOutOfRangeException();
+        ArgumentNullException.ThrowIfNull(buffer);
+        if (offset < 0 || count < 0) throw new ArgumentOutOfRangeException($"{(offset < 0 ? nameof(offset) : "")} {(count < 0 ? " | " + nameof(count) : "")}");
         if (buffer.Length - offset < count) throw new ArgumentException("バッファの長さが不足しています。");
 
         if (_position >= Length) return 0;
