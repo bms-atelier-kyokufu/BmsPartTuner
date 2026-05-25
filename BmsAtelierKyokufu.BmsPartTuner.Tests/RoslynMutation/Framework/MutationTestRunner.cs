@@ -1,12 +1,12 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 using System.IO;
 using Microsoft.CodeAnalysis;
 
-namespace BmsAtelierKyokufu.BmsPartTuner.Tests.MutationFramework;
+namespace BmsAtelierKyokufu.BmsPartTuner.Tests.RoslynMutation.Framework;
 
 /// <summary>
 /// 変異テストを実行するクラス。
-/// 
+///
 /// <para><b>【主な機能】</b></para>
 /// <list type="bullet">
 /// <item><description>ソースファイルの自動検出</description></item>
@@ -14,7 +14,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.MutationFramework;
 /// <item><description>進捗表示とログ出力</description></item>
 /// <item><description>JSON形式での結果レポート生成</description></item>
 /// </list>
-/// 
+///
 /// <para><b>【Why: なぜランナークラスが必要か】</b></para>
 /// <para>
 /// 変異テストは複雑なプロセス（ファイル検出→変異生成→コンパイル→実行→結果集計）
@@ -30,7 +30,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.MutationFramework;
 ///     .WithTestCase(new MyTestCase())
 ///     .WithLogger(Console.WriteLine)
 ///     .RunAll();
-/// 
+///
 /// // 詳細なカスタマイズ
 /// var report = MutationTestRunner
 ///     .Create()
@@ -170,14 +170,14 @@ public class MutationTestRunner
 
     /// <summary>
     /// 対象ファイルを検出。
-    /// 
+    ///
     /// <para><b>【検出ロジック】</b></para>
     /// <list type="number">
     /// <item><description>SourceDirectory 配下のすべての .cs ファイルを列挙</description></item>
     /// <item><description>ExcludePatterns に一致するファイルを除外</description></item>
     /// <item><description>IncludePatterns が指定されている場合、一致するファイルのみを含める</description></item>
     /// </list>
-    /// 
+    ///
     /// <para><b>【Why: yield return を使用する理由】</b></para>
     /// <para>
     /// 大量のファイルを扱う場合でも、遅延評価によりメモリ効率が良くなります。
@@ -215,7 +215,7 @@ public class MutationTestRunner
 
     /// <summary>
     /// 全ファイルに対して変異テストを実行。
-    /// 
+    ///
     /// <para><b>【実行フロー】</b></para>
     /// <list type="number">
     /// <item><description>ソースファイルを検出</description></item>
@@ -224,14 +224,14 @@ public class MutationTestRunner
     /// <item><description>結果を集計してレポートを作成</description></item>
     /// <item><description>オプションでJSON形式で結果を保存</description></item>
     /// </list>
-    /// 
+    ///
     /// <para><b>【Why: 並列処理を使用する理由】</b></para>
     /// <para>
     /// 変異テストは非常に時間がかかる処理です（数百?数千の変異をテスト）。
     /// 並列処理により、マルチコアCPUを活用して実行時間を大幅に短縮できます。
     /// 例: 8コアCPUで7並列実行すると、理論上は7倍の高速化が可能です。
     /// </para>
-    /// 
+    ///
     /// <para><b>【進捗表示】</b></para>
     /// <para>
     /// <see cref="MutationTestConfiguration.ProgressReportInterval"/> で指定された
@@ -298,14 +298,14 @@ public class MutationTestRunner
 
     /// <summary>
     /// 単一ファイルに対して変異テストを実行。
-    /// 
+    ///
     /// <para><b>【用途】</b></para>
     /// <list type="bullet">
     /// <item><description>特定のファイルに絞って変異テストを実行</description></item>
     /// <item><description>デバッグやテストケースの開発時に有用</description></item>
     /// <item><description>CI/CDで変更されたファイルのみをテスト</description></item>
     /// </list>
-    /// 
+    ///
     /// <para><b>【Why: RunAll() とは別メソッドにする理由】</b></para>
     /// <para>
     /// - ファイル単位でのテストは頻繁に使用されるため、専用メソッドを提供
@@ -327,7 +327,7 @@ public class MutationTestRunner
     ///     .Configure(projectName: "MyProject")
     ///     .WithTestCase(new CalculatorTestCase())
     ///     .RunForFile("Core/Helpers/Calculator.cs");
-    /// 
+    ///
     /// Console.WriteLine($"変異スコア: {report.MutationScore:F1}%");
     /// </code>
     /// </example>

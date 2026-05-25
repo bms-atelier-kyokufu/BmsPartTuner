@@ -1,4 +1,4 @@
-﻿namespace BmsAtelierKyokufu.BmsPartTuner.Tests.MutationFramework;
+namespace BmsAtelierKyokufu.BmsPartTuner.Tests.RoslynMutation.Framework;
 
 /// <summary>
 /// 変異の種類を表す列挙型。

@@ -1,8 +1,8 @@
-﻿using System.IO;
+using System.IO;
 using System.Reflection;
 using Microsoft.CodeAnalysis;
 
-namespace BmsAtelierKyokufu.BmsPartTuner.Tests.MutationFramework;
+namespace BmsAtelierKyokufu.BmsPartTuner.Tests.RoslynMutation.Framework;
 
 /// <summary>
 /// 変異のビルドと実行検証を担当するクラス。

@@ -1,13 +1,13 @@
-﻿using System.IO;
+using System.IO;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace BmsAtelierKyokufu.BmsPartTuner.Tests.MutationFramework;
+namespace BmsAtelierKyokufu.BmsPartTuner.Tests.RoslynMutation.Framework;
 
 /// <summary>
 /// ソースコードから変異を生成するクラス。
-/// 
+///
 /// <para><b>【サポートする変異パターン】</b></para>
 /// <list type="bullet">
 /// <item><description>二項演算子: ==, !=, &lt;, &lt;=, &gt;, &gt;=, &amp;&amp;, ||, +, -, *, /</description></item>
@@ -22,7 +22,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.MutationFramework;
 /// <item><description>LINQ メソッド: First/Last, Any/All, Take/Skip, OrderBy/OrderByDescending, FirstOrDefault/First など</description></item>
 /// <item><description>Where 条件の反転</description></item>
 /// </list>
-/// 
+///
 /// <para><b>【AI生成コードの監査観点】</b></para>
 /// <para>
 /// 特にAI生成コードにおいて見落とされやすい以下のパターンを重点的に変異：

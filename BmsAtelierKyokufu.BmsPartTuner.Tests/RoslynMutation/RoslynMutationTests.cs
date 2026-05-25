@@ -1,8 +1,9 @@
-﻿using System.Reflection;
+using System.Reflection;
 using BmsAtelierKyokufu.BmsPartTuner.Models;
+using BmsAtelierKyokufu.BmsPartTuner.Tests.RoslynMutation.Framework;
 using Xunit.Abstractions;
 
-namespace BmsAtelierKyokufu.BmsPartTuner.Tests.MutationFramework
+namespace BmsAtelierKyokufu.BmsPartTuner.Tests.RoslynMutation
 {
     /// <summary>
     /// 変異テストを実行するxUnitテストクラス。
@@ -15,7 +16,6 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.MutationFramework
         [Fact]
         public void MutationTest_AllSourceFiles_AllPatterns()
         {
-            var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
             // Fluent API を使用してテストを実行
             var report = MutationTestRunner
                 .Create()
@@ -42,7 +42,6 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.MutationFramework
         [InlineData("Core/Optimization/SimulationEngine.cs")]
         public void MutationTest_SpecificFile(string relativePath)
         {
-            var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, CachedSoundData>();
             // Fluent API を使用してファイル単位のテストを実行
             var report = MutationTestRunner
                 .Create()

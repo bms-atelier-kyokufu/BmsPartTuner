@@ -1,23 +1,23 @@
-﻿using System.IO;
+using System.IO;
 using Microsoft.CodeAnalysis;
 
-namespace BmsAtelierKyokufu.BmsPartTuner.Tests.MutationFramework;
+namespace BmsAtelierKyokufu.BmsPartTuner.Tests.RoslynMutation.Framework;
 
 /// <summary>
 /// 変異テストの設定を保持するクラス。
-/// 
+///
 /// <para><b>【設計思想】</b></para>
 /// <para>
 /// - デフォルト値は一般的なC#プロジェクトに適用できるように設定
 /// - すべてのプロパティが外部から変更可能（柔軟性）
 /// - 並列処理やJSON出力の制御を提供
 /// </para>
-/// 
+///
 /// <para><b>【使用例】</b></para>
 /// <code>
 /// // 自動検出を使用
 /// var config = MutationTestConfiguration.AutoDetect("MyProject");
-/// 
+///
 /// // カスタマイズ
 /// config.MaxParallelism = 4;
 /// config.IncludePatterns.Add("Core/");
@@ -142,7 +142,7 @@ public class MutationTestConfiguration
 
     /// <summary>
     /// ソースディレクトリの候補パスから自動検出。
-    /// 
+    ///
     /// <para><b>【動作】</b></para>
     /// <para>
     /// 複数の候補パスを試行し、以下の条件を満たす最初のパスを SourceDirectory に設定します：
@@ -151,7 +151,7 @@ public class MutationTestConfiguration
     /// <item><description>ディレクトリが存在する</description></item>
     /// <item><description>markerDirectory で指定されたサブディレクトリが存在する（省略可能）</description></item>
     /// </list>
-    /// 
+    ///
     /// <para><b>【Why】</b></para>
     /// <para>
     /// テストの実行環境（Visual Studio テストエクスプローラー、dotnet test、CI/CD）によって
@@ -177,7 +177,7 @@ public class MutationTestConfiguration
     /// <code>
     /// // "Core" ディレクトリを持つ "MyProject" を検出
     /// var config = MutationTestConfiguration.AutoDetect("MyProject", "Core");
-    /// 
+    ///
     /// // マーカーなしで検出（ディレクトリの存在のみで判定）
     /// var config = MutationTestConfiguration.AutoDetect("MyProject");
     /// </code>

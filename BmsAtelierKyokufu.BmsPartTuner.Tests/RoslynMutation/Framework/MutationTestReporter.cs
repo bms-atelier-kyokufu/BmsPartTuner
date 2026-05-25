@@ -1,14 +1,20 @@
-﻿using System.IO;
+using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace BmsAtelierKyokufu.BmsPartTuner.Tests.MutationFramework;
+namespace BmsAtelierKyokufu.BmsPartTuner.Tests.RoslynMutation.Framework;
 
 /// <summary>
 /// 変異テスト実行結果のレポート生成と保存・出力を担当するクラス。
 /// </summary>
 internal static class MutationTestReporter
 {
+    private static readonly JsonSerializerOptions SerializerOptions = new()
+    {
+        WriteIndented = true,
+        Converters = { new JsonStringEnumConverter() }
+    };
+
     public static MutationTestReport CreateReport(
         List<MutationTestResult> results,
         TimeSpan duration,
@@ -110,13 +116,7 @@ internal static class MutationTestReporter
         var fileName = $"{testName}_{timestamp}.json";
         var filePath = Path.Combine(resultsDir, fileName);
 
-        var options = new JsonSerializerOptions
-        {
-            WriteIndented = true,
-            Converters = { new JsonStringEnumConverter() }
-        };
-
-        File.WriteAllText(filePath, JsonSerializer.Serialize(report, options));
+        File.WriteAllText(filePath, JsonSerializer.Serialize(report, SerializerOptions));
         logger?.Invoke($"[SAVED] Results saved to: {filePath}");
     }
 }

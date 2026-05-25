@@ -1,21 +1,21 @@
-﻿using System.IO;
+using System.IO;
 using System.Reflection;
 using System.Runtime.Loader;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
-namespace BmsAtelierKyokufu.BmsPartTuner.Tests.MutationFramework;
+namespace BmsAtelierKyokufu.BmsPartTuner.Tests.RoslynMutation.Framework;
 
 /// <summary>
 /// 変異したコードをメモリ上でコンパイルするクラス。
-/// 
+///
 /// <para><b>【Why: メモリ上でコンパイルする理由】</b></para>
 /// <list type="bullet">
 /// <item><description>ディスクI/Oを避けることで高速化</description></item>
 /// <item><description>一時ファイルの管理が不要</description></item>
 /// <item><description>並列処理で複数の変異を同時にコンパイル可能</description></item>
 /// </list>
-/// 
+///
 /// <para><b>【デフォルト参照アセンブリ】</b></para>
 /// <para>
 /// System.Runtime, System.Collections, System.Linq, Console などの
@@ -55,7 +55,7 @@ public static class MutationCompiler
 
     /// <summary>
     /// 構文木をメモリ上でコンパイル。
-    /// 
+    ///
     /// <para><b>【処理フロー】</b></para>
     /// <list type="number">
     /// <item><description>デフォルト参照と追加参照をマージ</description></item>
@@ -63,7 +63,7 @@ public static class MutationCompiler
     /// <item><description>MemoryStream にコンパイル結果を出力</description></item>
     /// <item><description>成功時は CollectibleAssemblyLoadContext でアセンブリをロード</description></item>
     /// </list>
-    /// 
+    ///
     /// <para><b>【Why: CollectibleAssemblyLoadContext を使用する理由】</b></para>
     /// <para>
     /// 変異テストでは大量のアセンブリをロードするため、メモリリークを防ぐために
@@ -91,7 +91,7 @@ public static class MutationCompiler
     /// <code>
     /// var syntaxTree = CSharpSyntaxTree.ParseText("public class Test { }");
     /// var (assembly, errors) = MutationCompiler.Compile(syntaxTree);
-    /// 
+    ///
     /// if (assembly != null)
     /// {
     ///     // コンパイル成功
@@ -140,7 +140,7 @@ public static class MutationCompiler
 
 /// <summary>
 /// アンロード可能なAssemblyLoadContext。
-/// 
+///
 /// <para><b>【Why: この実装が必要な理由】</b></para>
 /// <list type="bullet">
 /// <item><description>
@@ -154,7 +154,7 @@ public static class MutationCompiler
 /// 各変異ごとに新しいコンテキストを作成することで、アセンブリの衝突を回避します。
 /// </description></item>
 /// </list>
-/// 
+///
 /// <para><b>【注意事項】</b></para>
 /// <para>
 /// - このコンテキストでロードされたアセンブリは、コンテキストへの参照がなくなると GC の対象になります

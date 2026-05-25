@@ -1,24 +1,24 @@
-﻿using System.Reflection;
+using System.Reflection;
 using BmsAtelierKyokufu.BmsPartTuner.Models;
 
-namespace BmsAtelierKyokufu.BmsPartTuner.Tests.MutationFramework;
+namespace BmsAtelierKyokufu.BmsPartTuner.Tests.RoslynMutation.Framework;
 
 /// <summary>
 /// 特定の型に対するテストケースを定義するインターフェース。
-/// 
+///
 /// <para><b>【目的】</b></para>
 /// <para>
 /// 変異したコードが正しく動作しないことを検証するカスタムテストロジックを提供します。
 /// 汎用的なテストでは検出できない変異を、型固有のロジックで検出できます。
 /// </para>
-/// 
+///
 /// <para><b>【実装ガイド】</b></para>
 /// <list type="number">
 /// <item><description><see cref="TypeName"/> で対象の型名（名前空間なし）を返す</description></item>
 /// <item><description><see cref="TestMutant"/> でリフレクションを使って型をテストする</description></item>
 /// <item><description>変異が検出された場合は true、検出されなかった場合は false を返す</description></item>
 /// </list>
-/// 
+///
 /// <para><b>【Why: なぜカスタムテストケースが必要か】</b></para>
 /// <para>
 /// - 汎用テストは引数なしのメソッドしか実行できない
@@ -31,19 +31,19 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.MutationFramework;
 /// public class CalculatorTestCase : IMutantTestCase
 /// {
 ///     public string TypeName => "Calculator";
-///     
+///
 ///     public bool TestMutant(Assembly assembly)
 ///     {
 ///         var type = assembly.GetType("MyApp.Calculator");
 ///         if (type == null) return true;
-///         
+///
 ///         var addMethod = type.GetMethod("Add", new[] { typeof(int), typeof(int) });
 ///         if (addMethod != null)
 ///         {
 ///             try
 ///             {
 ///                 var result = (int)addMethod.Invoke(null, new object[] { 2, 3 });
-///                 
+///
 ///                 // 期待値 5 と異なる場合は変異が検出された (Killed)
 ///                 if (result != 5) return true;
 ///             }
@@ -53,7 +53,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.MutationFramework;
 ///                 return true;
 ///             }
 ///         }
-///         
+///
 ///         // すべてのテストをパスした場合は変異が生存 (Survived)
 ///         return false;
 ///     }
@@ -73,7 +73,7 @@ public interface IMutantTestCase
 
     /// <summary>
     /// 変異したアセンブリをテストし、変異が検出されたかどうかを返す。
-    /// 
+    ///
     /// <para><b>【重要な返り値の意味】</b></para>
     /// <list type="table">
     /// <item>
@@ -85,7 +85,7 @@ public interface IMutantTestCase
     /// <description>変異が生存 (Survived) - テストが不十分、または変異が等価</description>
     /// </item>
     /// </list>
-    /// 
+    ///
     /// <para><b>【Why: 返り値が反直感的な理由】</b></para>
     /// <para>
     /// 「変異が検出された = true」は、「テストが失敗した = true」ではなく、
@@ -106,7 +106,7 @@ public interface IMutantTestCase
 
 /// <summary>
 /// テストケースを登録・管理するレジストリ。
-/// 
+///
 /// <para><b>【Why: レジストリパターンを使用する理由】</b></para>
 /// <para>
 /// - 型名とテストケースの対応を一元管理
@@ -119,7 +119,7 @@ public interface IMutantTestCase
 /// var registry = new MutantTestCaseRegistry();
 /// registry.Register(new CalculatorTestCase());
 /// registry.Register(new StringUtilsTestCase());
-/// 
+///
 /// var testCase = registry.GetTestCase("Calculator");
 /// if (testCase != null)
 /// {
