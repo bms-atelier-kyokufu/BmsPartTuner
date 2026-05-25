@@ -106,7 +106,10 @@ internal static class FastWaveCompare
     {
         if (data1.SampleRate != data2.SampleRate ||
             data1.Channels != data2.Channels ||
-            data1.BitsPerSample != data2.BitsPerSample) return false;
+            data1.BitsPerSample != data2.BitsPerSample)
+        {
+            return false;
+        }
 
         if (data1.TotalSamples != data2.TotalSamples) return false;
 
@@ -168,7 +171,10 @@ internal static class FastWaveCompare
     {
         if (data1.SampleRate != data2.SampleRate ||
             data1.Channels != data2.Channels ||
-            data1.BitsPerSample != data2.BitsPerSample) return 0.0f;
+            data1.BitsPerSample != data2.BitsPerSample)
+        {
+            return 0.0f;
+        }
 
         if (data1.TotalSamples != data2.TotalSamples) return 0.0f;
 

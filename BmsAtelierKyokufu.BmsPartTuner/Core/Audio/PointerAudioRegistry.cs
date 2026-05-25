@@ -13,16 +13,29 @@ public static class PointerAudioRegistry
 
     public static void Register(string fileName, PointerSoundData data)
     {
-        _cache[fileName] = data;
+        _cache[Path.GetFileName(fileName)] = data;
     }
 
     public static bool TryGet(string fileName, out PointerSoundData data)
     {
-        return _cache.TryGetValue(fileName, out data!);
+        return _cache.TryGetValue(Path.GetFileName(fileName), out data!);
     }
 
     public static void Clear()
     {
         _cache.Clear();
+    }
+}
+
+/// <summary>
+/// 定義削減セッション中に静的キャッシュレジストリを自動管理するための IDisposable セッション。
+/// 例外発生時にも確実に Clear が呼び出されるようにします。
+/// </summary>
+public sealed class AudioRegistrySession : IDisposable
+{
+    public void Dispose()
+    {
+        PointerAudioRegistry.Clear();
+        VirtualAudioRegistry.Clear();
     }
 }

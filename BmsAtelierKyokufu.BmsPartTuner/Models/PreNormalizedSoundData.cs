@@ -233,7 +233,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Models
 
         public IReadOnlyList<ActiveRegion>[] GetActiveRegions()
         {
-            return NormalizedRegions;
+            return NormalizedRegions ?? [[], []];
         }
 
         public ReadOnlySpan<float> GetRawSpan(int channel, int offset, int length)
@@ -249,6 +249,56 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Models
         public double GetChannelSumSq(int channel)
         {
             throw new NotSupportedException("PreNormalizedSoundData does not support raw sum access.");
+        }
+
+        public double GetRangeSum(int channel, int offset, int length)
+        {
+            throw new NotSupportedException("PreNormalizedSoundData does not support raw range sum access.");
+        }
+
+        public double GetRangeSumSq(int channel, int offset, int length)
+        {
+            throw new NotSupportedException("PreNormalizedSoundData does not support raw range sum access.");
+        }
+
+        public ReadOnlySpan<ulong> GetLsh(int channel)
+        {
+            if (channel < 0 || channel >= Channels) throw new ArgumentOutOfRangeException(nameof(channel));
+            if (_signLsh == null) return ReadOnlySpan<ulong>.Empty;
+            return _signLsh[channel];
+        }
+
+        public ReadOnlySpan<ulong> GetLshMask(int channel)
+        {
+            if (channel < 0 || channel >= Channels) throw new ArgumentOutOfRangeException(nameof(channel));
+            if (_signLshMask == null) return ReadOnlySpan<ulong>.Empty;
+            return _signLshMask[channel];
+        }
+
+        private ulong[][]? _signLsh;
+        private ulong[][]? _signLshMask;
+
+        private void GenerateLsh(float[][] samplesPerChannel, int lengthSamples)
+        {
+            int lshLength = (lengthSamples + 63) / 64;
+            _signLsh = [new ulong[lshLength], new ulong[lshLength]];
+            _signLshMask = [new ulong[lshLength], new ulong[lshLength]];
+
+            const float silenceThreshold = 0.0056234f; // 10^(-45/20)
+
+            for (int ch = 0; ch < Channels; ch++)
+            {
+                var span = new ReadOnlySpan<float>(samplesPerChannel[ch], 0, lengthSamples);
+                for (int i = 0; i < lengthSamples; i++)
+                {
+                    float val = span[i];
+                    int lshIdx = i / 64;
+                    int bitShift = i % 64;
+
+                    if (val >= 0) _signLsh[ch][lshIdx] |= (1UL << bitShift);
+                    if (Math.Abs(val) >= silenceThreshold) _signLshMask[ch][lshIdx] |= (1UL << bitShift);
+                }
+            }
         }
 
         #endregion
@@ -297,6 +347,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Models
 
             // 先頭無音を検出
             StartSilenceSamples = DetectStartSilence(samplesPerChannel, samplesPerChannel_count, Channels);
+
+            // LSH（Locality-Sensitive Hashing）の符号ビット配列を生成（高速比較用）
+            GenerateLsh(samplesPerChannel, samplesPerChannel_count);
 
             // メモリ最適化：比較処理には不要なため解放
             SamplesPerChannel = null!;
@@ -419,6 +472,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Models
 
                     // RMS（音圧）を計算（高速フィルタ用）
                     TotalRms = CalculateTotalRms(SamplesPerChannel, samplesPerChannel, Channels);
+
+                    // LSH（Locality-Sensitive Hashing）の符号ビット配列を生成（高速比較用）
+                    GenerateLsh(SamplesPerChannel, samplesPerChannel);
 
                     // メモリ最適化：比較処理には不要なためチャンネル分離データを解放
                     SamplesPerChannel = null!;
@@ -863,6 +919,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Models
                     }
                     NormalizedRegions = null;
                 }
+
+                _signLsh = null;
+                _signLshMask = null;
             }
 
             _disposed = true;

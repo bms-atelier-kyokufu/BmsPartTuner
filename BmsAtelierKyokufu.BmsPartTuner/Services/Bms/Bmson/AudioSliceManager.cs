@@ -1,4 +1,4 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
@@ -114,6 +114,15 @@ public class AudioSliceManager(string bmsonDir, bool throwOnMissingFile = true) 
                     // 実バイト配列を作成せず、仮想ファイルを登録（遅延生成）
                     var virtualFile = new SlicedVirtualFile(source.RawBytes, source.PcmOffset + startByte, trimmedLengthBytes, WavHeaderTemplate);
                     VirtualAudioRegistry.AddFile(outputFileName, virtualFile);
+
+                    // ポインタを生成し、レジストリに登録 (16bit stereo = 4 bytes per frame)
+                    var pointerData = new PointerSoundData(
+                        outputFileName,
+                        source.DecodedData,
+                        startByte / 4,
+                        trimmedLengthBytes / 4
+                    );
+                    PointerAudioRegistry.Register(outputFileName, pointerData);
 
                     return outputFileName;
                 }
@@ -288,34 +297,74 @@ public class AudioSliceManager(string bmsonDir, bool throwOnMissingFile = true) 
         public byte[] RawBytes { get; }
         public int PcmOffset { get; }
         public int PcmLength { get; }
-        private float[][]? _samplesPerChannel;
-        public float[][] SamplesPerChannel
+
+        private BmsAtelierKyokufu.BmsPartTuner.Models.BaseAudioOptimizationData? _decodedData;
+
+        public BmsAtelierKyokufu.BmsPartTuner.Models.BaseAudioOptimizationData DecodedData
         {
             get
             {
-                if (_samplesPerChannel != null) return _samplesPerChannel;
+                if (_decodedData != null) return _decodedData;
                 lock (this)
                 {
-                    if (_samplesPerChannel != null) return _samplesPerChannel;
-                    _samplesPerChannel = DecodeToFloatArray();
-                    return _samplesPerChannel;
+                    if (_decodedData != null) return _decodedData;
+                    _decodedData = DecodeAllData();
+                    return _decodedData;
                 }
             }
         }
 
-        private float[][] DecodeToFloatArray()
+        private BmsAtelierKyokufu.BmsPartTuner.Models.BaseAudioOptimizationData DecodeAllData()
         {
             int frames = PcmLength / 4; // 16bit stereo = 4 bytes per frame
-            float[][] result = [new float[frames], new float[frames]];
-            ReadOnlySpan<byte> data = new ReadOnlySpan<byte>(RawBytes, PcmOffset, PcmLength);
+            float[][] samples = [new float[frames], new float[frames]];
+
+            // Prefix sums need L + 1 length
+            double[][] prefixSum = [new double[frames + 1], new double[frames + 1]];
+            double[][] prefixSumSq = [new double[frames + 1], new double[frames + 1]];
+
+            // LSH arrays (1 ulong per 64 frames)
+            int lshLength = (frames + 63) / 64;
+            ulong[][] signLsh = [new ulong[lshLength], new ulong[lshLength]];
+            ulong[][] signLshMask = [new ulong[lshLength], new ulong[lshLength]];
+
+            ReadOnlySpan<byte> data = new(RawBytes, PcmOffset, PcmLength);
+
+            // RMS threshold for LSH mask (dbThreshold = -45.0)
+            const float silenceThreshold = 0.0056234f; // 10^(-45/20)
+
             for (int i = 0; i < frames; i++)
             {
                 short l = System.Buffers.Binary.BinaryPrimitives.ReadInt16LittleEndian(data.Slice(i * 4, 2));
                 short r = System.Buffers.Binary.BinaryPrimitives.ReadInt16LittleEndian(data.Slice(i * 4 + 2, 2));
-                result[0][i] = l / 32768f;
-                result[1][i] = r / 32768f;
+
+                float fl = l / 32768f;
+                float fr = r / 32768f;
+
+                samples[0][i] = fl;
+                samples[1][i] = fr;
+
+                // 1. Prefix Sums (offset by 1)
+                prefixSum[0][i + 1] = prefixSum[0][i] + fl;
+                prefixSum[1][i + 1] = prefixSum[1][i] + fr;
+
+                prefixSumSq[0][i + 1] = prefixSumSq[0][i] + (fl * fl);
+                prefixSumSq[1][i + 1] = prefixSumSq[1][i] + (fr * fr);
+
+                // 2. LSH (every 64 frames = 1 ulong)
+                int lshIdx = i / 64;
+                int bitShift = i % 64;
+
+                // Left channel
+                if (fl >= 0) signLsh[0][lshIdx] |= (1UL << bitShift);
+                if (Math.Abs(fl) >= silenceThreshold) signLshMask[0][lshIdx] |= (1UL << bitShift);
+
+                // Right channel
+                if (fr >= 0) signLsh[1][lshIdx] |= (1UL << bitShift);
+                if (Math.Abs(fr) >= silenceThreshold) signLshMask[1][lshIdx] |= (1UL << bitShift);
             }
-            return result;
+
+            return new BmsAtelierKyokufu.BmsPartTuner.Models.BaseAudioOptimizationData(samples, prefixSum, prefixSumSq, signLsh, signLshMask);
         }
         public WaveFormat WaveFormat { get; } = new WaveFormat(AppConstants.Audio.StandardSampleRate, 16, 2);
 

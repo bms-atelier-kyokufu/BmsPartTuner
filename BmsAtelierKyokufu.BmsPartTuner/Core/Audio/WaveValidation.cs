@@ -345,6 +345,36 @@ static public class WaveValidation
     /// </remarks>
     static public float CalculatePearsonForCachedDataSIMD(BmsAtelierKyokufu.BmsPartTuner.Models.ICachedSoundData data1, BmsAtelierKyokufu.BmsPartTuner.Models.ICachedSoundData data2, int channel = 0)
     {
+        // 1. 符号ビットLSHによる O(1) 事前棄却（Early Pruning）
+        var lsh1 = data1.GetLsh(channel);
+        var lsh2 = data2.GetLsh(channel);
+        var mask1 = data1.GetLshMask(channel);
+        var mask2 = data2.GetLshMask(channel);
+
+        if (!lsh1.IsEmpty && !lsh2.IsEmpty)
+        {
+            int checkLen = Math.Min(lsh1.Length, lsh2.Length);
+            int diffCount = 0;
+            int validCount = 0;
+
+            for (int k = 0; k < checkLen; k++)
+            {
+                ulong validMask = mask1[k] & mask2[k]; // 両方とも有効な波形であるビットのみ
+                if (validMask != 0)
+                {
+                    ulong xor = (lsh1[k] ^ lsh2[k]) & validMask;
+                    diffCount += System.Numerics.BitOperations.PopCount(xor);
+                    validCount += System.Numerics.BitOperations.PopCount(validMask);
+                }
+            }
+
+            // 有効なビット数が十分にあり、かつ30%以上符号が異なっていれば明らかに別物として棄却
+            if (validCount > 64 && diffCount > validCount * 0.3)
+            {
+                return 0.0f;
+            }
+        }
+
         var regions1 = data1.GetActiveRegions()[channel];
         var regions2 = data2.GetActiveRegions()[channel];
 
@@ -353,6 +383,11 @@ static public class WaveValidation
 
         int i = 0, j = 0;
         double totalDotProduct = 0;
+
+        // 累積和用の変数
+        double totalSumX = 0, totalSumY = 0;
+        double totalSumX2 = 0, totalSumY2 = 0;
+        int totalN = 0;
 
         int vectorSize = Vector<float>.Count;
         Vector<float> ones = new(1.0f);
@@ -371,12 +406,25 @@ static public class WaveValidation
                 int offset1 = overlapStart - r1.Offset;
                 int offset2 = overlapStart - r2.Offset;
 
-                ReadOnlySpan<float> span1 = data1.IsPreNormalized 
-                    ? new ReadOnlySpan<float>(r1.Data, offset1, len) 
+                // 累積和の加算 (O(1)で交差範囲のみ取得)
+                if (!data1.IsPreNormalized)
+                {
+                    totalSumX += data1.GetRangeSum(channel, r1.Offset + offset1, len);
+                    totalSumX2 += data1.GetRangeSumSq(channel, r1.Offset + offset1, len);
+                }
+                if (!data2.IsPreNormalized)
+                {
+                    totalSumY += data2.GetRangeSum(channel, r2.Offset + offset2, len);
+                    totalSumY2 += data2.GetRangeSumSq(channel, r2.Offset + offset2, len);
+                }
+                totalN += len;
+
+                ReadOnlySpan<float> span1 = data1.IsPreNormalized
+                    ? new ReadOnlySpan<float>(r1.Data, offset1, len)
                     : data1.GetRawSpan(channel, r1.Offset + offset1, len);
-                
-                ReadOnlySpan<float> span2 = data2.IsPreNormalized 
-                    ? new ReadOnlySpan<float>(r2.Data, offset2, len) 
+
+                ReadOnlySpan<float> span2 = data2.IsPreNormalized
+                    ? new ReadOnlySpan<float>(r2.Data, offset2, len)
                     : data2.GetRawSpan(channel, r2.Offset + offset2, len);
 
                 int vectorizedLength = len - (len % vectorSize);
@@ -410,37 +458,40 @@ static public class WaveValidation
             }
         }
 
+        if (totalN == 0) return 0.0f;
+
         if (data1.IsPreNormalized && data2.IsPreNormalized)
         {
             // 事前正規化方式：ドット積がそのまま相関係数となる
             return (float)Math.Max(-1.0, Math.Min(1.0, totalDotProduct));
         }
-        else if (!data1.IsPreNormalized && !data2.IsPreNormalized)
+        else if (data1.IsPreNormalized != data2.IsPreNormalized)
         {
-            // ポインタ方式（生データ）：ドット積は生データの積和 (Σxy) なので、1パス用の補正計算を行う
-            double sumX = data1.GetChannelSum(channel);
-            double sumY = data2.GetChannelSum(channel);
-            double sumX2 = data1.GetChannelSumSq(channel);
-            double sumY2 = data2.GetChannelSumSq(channel);
-            
-            int N = data1.TotalSamples / data1.Channels; // Slice length
-            if (N == 0) return 0.0f;
-            
-            double meanX = sumX / N;
-            double meanY = sumY / N;
-            
-            double covXY = (totalDotProduct / N) - (meanX * meanY);
-            double varX = (sumX2 / N) - (meanX * meanX);
-            double varY = (sumY2 / N) - (meanY * meanY);
-            
-            if (varX < 1e-10 || varY < 1e-10) return 0.0f;
-            
-            double correlation = covXY / Math.Sqrt(varX * varY);
+            // 混合方式（Mixed-SIMD）: 正規化(X) と 生データ(Y) の直接比較
+            // r = D / sqrt(ΣY² - (ΣY)²/N)
+            double sumY = data1.IsPreNormalized ? totalSumY : totalSumX;
+            double sumY2 = data1.IsPreNormalized ? totalSumY2 : totalSumX2;
+
+            double varSumY = sumY2 - (sumY * sumY) / totalN;
+            if (varSumY <= 1e-10) return 0.0f;
+
+            double correlation = totalDotProduct / Math.Sqrt(varSumY);
             return (float)Math.Max(-1.0, Math.Min(1.0, correlation));
         }
         else
         {
-            throw new NotSupportedException("事前正規化データと生データを直接比較することはサポートされていません。");
+            // ポインタ方式（生データ同士）：生データの積和 (Σxy) から1パス用の補正計算を行う
+            double meanX = totalSumX / totalN;
+            double meanY = totalSumY / totalN;
+
+            double covXY = (totalDotProduct / totalN) - (meanX * meanY);
+            double varX = (totalSumX2 / totalN) - (meanX * meanX);
+            double varY = (totalSumY2 / totalN) - (meanY * meanY);
+
+            if (varX < 1e-10 || varY < 1e-10) return 0.0f;
+
+            double correlation = covXY / Math.Sqrt(varX * varY);
+            return (float)Math.Max(-1.0, Math.Min(1.0, correlation));
         }
     }
 

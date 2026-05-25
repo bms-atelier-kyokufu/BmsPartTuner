@@ -13,7 +13,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Models;
 /// </remarks>
 public class PointerSoundData(
     string filePath,
-    float[][] baseSamplesPerChannel,
+    BaseAudioOptimizationData baseData,
     int startSample,
     int lengthSamples) : ICachedSoundData
 {
@@ -24,51 +24,83 @@ public class PointerSoundData(
     public int TotalSamples { get; } = lengthSamples * 2;
     public long FileSize => TotalSamples * 2;
 
-    // RMSは先頭から最後までを対象に都度計算するか、初期化時に計算してキャッシュ
+    public float TotalRms { get; } = CalculateTotalRms(baseData.SamplesPerChannel, startSample, lengthSamples);
 
-    public float TotalRms { get; } = CalculateTotalRms(baseSamplesPerChannel, startSample, lengthSamples);
-
-    public int StartSilenceSamples { get; } = DetectStartSilence(baseSamplesPerChannel, startSample, lengthSamples);
-
+    public int StartSilenceSamples { get; } = DetectStartSilence(baseData.SamplesPerChannel, startSample, lengthSamples);
 
     public int EffectiveLength => TotalSamples > StartSilenceSamples * Channels
         ? TotalSamples - (StartSilenceSamples * Channels)
         : 0;
 
-    public double EstimatedMemoryMB => 0.0; // ポインタなのでメモリ消費はゼロ
+    public double EstimatedMemoryMB => 0.0;
 
-    public bool IsPreNormalized => false; // 1-pass SIMDアルゴリズムを使用するフラグ
+    public bool IsPreNormalized => false;
 
-    private readonly float[][] _baseSamplesPerChannel = baseSamplesPerChannel;
+    private BaseAudioOptimizationData? _baseData = baseData;
     private readonly int _startSample = startSample;
-    private readonly (IReadOnlyList<ActiveRegion>[] Regions, double[] SumX, double[] SumX2) _extractedData = ExtractPointerRegionsAndStats(baseSamplesPerChannel, startSample, lengthSamples);
+    private readonly int _lengthSamples = lengthSamples;
+
+    private BaseAudioOptimizationData BaseData => _baseData ?? throw new ObjectDisposedException(nameof(PointerSoundData));
+
+    // Lazy initialized ActiveRegions
+    private IReadOnlyList<ActiveRegion>[]? _regions;
 
     public IReadOnlyList<ActiveRegion>[] GetActiveRegions()
     {
-        return _extractedData.Regions;
+        _regions ??= ExtractPointerRegions(BaseData.SamplesPerChannel, _startSample, _lengthSamples);
+        return _regions;
     }
 
     public double GetChannelSum(int channel)
     {
-        if (channel < 0 || channel >= 2) throw new ArgumentOutOfRangeException(nameof(channel));
-        return _extractedData.SumX[channel];
+        return GetRangeSum(channel, 0, _lengthSamples);
     }
 
     public double GetChannelSumSq(int channel)
     {
-        if (channel < 0 || channel >= 2) throw new ArgumentOutOfRangeException(nameof(channel));
-        return _extractedData.SumX2[channel];
+        return GetRangeSumSq(channel, 0, _lengthSamples);
     }
 
     public ReadOnlySpan<float> GetRawSpan(int channel, int offset, int length)
     {
         if (channel < 0 || channel >= 2) throw new ArgumentOutOfRangeException(nameof(channel));
-        return new ReadOnlySpan<float>(_baseSamplesPerChannel[channel], _startSample + offset, length);
+        return new ReadOnlySpan<float>(BaseData.SamplesPerChannel[channel], _startSample + offset, length);
+    }
+
+    public double GetRangeSum(int channel, int offset, int length)
+    {
+        if (channel < 0 || channel >= 2) throw new ArgumentOutOfRangeException(nameof(channel));
+        int globalStart = _startSample + offset;
+        return BaseData.PrefixSum[channel][globalStart + length] - BaseData.PrefixSum[channel][globalStart];
+    }
+
+    public double GetRangeSumSq(int channel, int offset, int length)
+    {
+        if (channel < 0 || channel >= 2) throw new ArgumentOutOfRangeException(nameof(channel));
+        int globalStart = _startSample + offset;
+        return BaseData.PrefixSumSq[channel][globalStart + length] - BaseData.PrefixSumSq[channel][globalStart];
+    }
+
+    public ReadOnlySpan<ulong> GetLsh(int channel)
+    {
+        if (channel < 0 || channel >= 2) throw new ArgumentOutOfRangeException(nameof(channel));
+        int globalStartLshIdx = _startSample / 64;
+        int lshCount = (_lengthSamples + 63) / 64;
+        return new ReadOnlySpan<ulong>(BaseData.SignLsh[channel], globalStartLshIdx, lshCount);
+    }
+
+    public ReadOnlySpan<ulong> GetLshMask(int channel)
+    {
+        if (channel < 0 || channel >= 2) throw new ArgumentOutOfRangeException(nameof(channel));
+        int globalStartLshIdx = _startSample / 64;
+        int lshCount = (_lengthSamples + 63) / 64;
+        return new ReadOnlySpan<ulong>(BaseData.SignLshMask[channel], globalStartLshIdx, lshCount);
     }
 
     public void Dispose()
     {
-        // 参照を保持するのみで解放すべきリソースはない
+        _baseData = null;
+        _regions = null;
     }
 
     private static float CalculateTotalRms(float[][] samplesPerChannel, int startSample, int lengthSamples)
@@ -107,11 +139,9 @@ public class PointerSoundData(
         return lengthSamples;
     }
 
-    private static (IReadOnlyList<ActiveRegion>[], double[], double[]) ExtractPointerRegionsAndStats(float[][] samplesPerChannel, int startSample, int lengthSamples)
+    private static IReadOnlyList<ActiveRegion>[] ExtractPointerRegions(float[][] samplesPerChannel, int startSample, int lengthSamples)
     {
         var regionsPerChannel = new List<ActiveRegion>[2] { [], [] };
-        var sumX = new double[2];
-        var sumX2 = new double[2];
 
         const double dbThreshold = -45.0;
         const int windowFrames = 1024; // 約23ms (44.1kHz時)
@@ -122,21 +152,13 @@ public class PointerSoundData(
         {
             var samplesSpan = new ReadOnlySpan<float>(samplesPerChannel[ch], startSample, lengthSamples);
 
-
             int startIdx = -1;
             int currentSilenceFrames = 0;
             double currentEnergy = 0;
 
-            double chSum = 0;
-            double chSumX2 = 0;
-
             for (int i = 0; i < lengthSamples; i++)
             {
                 double sample = samplesSpan[i];
-                
-                chSum += sample;
-                chSumX2 += sample * sample;
-
                 currentEnergy += sample * sample;
 
                 if (i >= windowFrames)
@@ -182,11 +204,8 @@ public class PointerSoundData(
                     regionsPerChannel[ch].Add(new ActiveRegion(startIdx, length, null!));
                 }
             }
-            
-            sumX[ch] = chSum;
-            sumX2[ch] = chSumX2;
         }
 
-        return (regionsPerChannel, sumX, sumX2);
+        return regionsPerChannel;
     }
 }
