@@ -86,40 +86,77 @@ internal static class AudioCacheManager
             return (new List<string>(), audioCache);
         }
 
-        int batchSize = CalculateOptimalBatchSize(totalFiles);
-        var batches = CreateBatches(fileList, batchSize);
+        bool isSsd = false;
+        if (fileList.Count > 0)
+        {
+            isSsd = Helpers.StorageTypeDetector.IsSolidStateDrive(fileList[0].Name);
+        }
 
-        PerformanceDebugLogger.WriteLine($"Preloading {totalFiles} files in {batches.Count} batches (batch size: ~{batchSize})");
-
+        PerformanceDebugLogger.WriteLine($"Storage type detected as: {(isSsd ? "SSD (Full Parallel Mode)" : "HDD (Batch Mode)")}");
         PerformanceDebugLogger.StartMemoryDiagnosis(); // 5秒後の強制レポート機能をオン
 
         var timer = PerformanceDebugLogger.StartTimer();
 
-        int completedBatches = 0;
-
-        _ = Parallel.ForEach(batches, new ParallelOptions
+        if (isSsd)
         {
-            MaxDegreeOfParallelism = Math.Min(4, Environment.ProcessorCount)
-        }, batch =>
-        {
-            var (batchSuccess, batchFail) = LoadBatch(batch, normalizationMode, failedFiles, audioCache);
-
-            Interlocked.Add(ref successCount, batchSuccess);
-            Interlocked.Add(ref failCount, batchFail);
-
-            int currentBatch = Interlocked.Increment(ref completedBatches);
-
-            if (currentBatch % 5 == 0 || currentBatch == batches.Count)
+            int processedCount = 0;
+            _ = Parallel.ForEach(fileList, new ParallelOptions
             {
-                PerformanceDebugLogger.WriteLine($"Batch progress: {currentBatch}/{batches.Count} (Success: {successCount}, Fail: {failCount})");
-            }
+                MaxDegreeOfParallelism = Environment.ProcessorCount
+            }, file =>
+            {
+                var singleBatch = new[] { file };
+                var (batchSuccess, batchFail) = LoadBatch(singleBatch, normalizationMode, failedFiles, audioCache);
 
-            int percentage = (int)((float)currentBatch / batches.Count * AppConstants.Progress.PreloadComplete);
-            progress?.Report(percentage);
+                Interlocked.Add(ref successCount, batchSuccess);
+                Interlocked.Add(ref failCount, batchFail);
 
-            // ループのたびに5秒経過していないかチェックし、経過していれば停止・レポート
-            PerformanceDebugLogger.CheckAndHaltIfDiagnosisTriggered("AudioCacheManager Batch Loop", audioCache);
-        });
+                int currentCount = Interlocked.Increment(ref processedCount);
+
+                if (currentCount % 100 == 0 || currentCount == totalFiles)
+                {
+                    PerformanceDebugLogger.WriteLine($"Load progress: {currentCount}/{totalFiles} (Success: {successCount}, Fail: {failCount})");
+                }
+
+                int percentage = (int)((float)currentCount / totalFiles * AppConstants.Progress.PreloadComplete);
+                progress?.Report(percentage);
+
+                PerformanceDebugLogger.CheckAndHaltIfDiagnosisTriggered("AudioCacheManager Parallel Loop", audioCache);
+            });
+        }
+        else
+        {
+            int batchSize = CalculateOptimalBatchSize(totalFiles);
+            var batches = CreateBatches(fileList, batchSize);
+
+            PerformanceDebugLogger.WriteLine($"Preloading {totalFiles} files in {batches.Count} batches (batch size: ~{batchSize})");
+
+            int completedBatches = 0;
+
+            _ = Parallel.ForEach(batches, new ParallelOptions
+            {
+                MaxDegreeOfParallelism = Math.Min(4, Environment.ProcessorCount)
+            }, batch =>
+            {
+                var (batchSuccess, batchFail) = LoadBatch(batch, normalizationMode, failedFiles, audioCache);
+
+                Interlocked.Add(ref successCount, batchSuccess);
+                Interlocked.Add(ref failCount, batchFail);
+
+                int currentBatch = Interlocked.Increment(ref completedBatches);
+
+                if (currentBatch % 5 == 0 || currentBatch == batches.Count)
+                {
+                    PerformanceDebugLogger.WriteLine($"Batch progress: {currentBatch}/{batches.Count} (Success: {successCount}, Fail: {failCount})");
+                }
+
+                int percentage = (int)((float)currentBatch / batches.Count * AppConstants.Progress.PreloadComplete);
+                progress?.Report(percentage);
+
+                // ループのたびに5秒経過していないかチェックし、経過していれば停止・レポート
+                PerformanceDebugLogger.CheckAndHaltIfDiagnosisTriggered("AudioCacheManager Batch Loop", audioCache);
+            });
+        }
 
         loaded = successCount + failCount;
         LogCacheStatistics(fileList, audioCache, loaded, totalFiles, successCount, failCount, timer.Lap("AudioCacheManager.PreloadAudioData"));
