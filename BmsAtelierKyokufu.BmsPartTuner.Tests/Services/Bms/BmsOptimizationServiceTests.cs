@@ -128,7 +128,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Services.Bms
             var progressValues = new List<int>();
             return RunOptimalThresholdsTestAsync(
                 dir => { _context.CreateBuilder().WithWav(1, "test1.wav"); return [Path.Combine(dir, "test1.wav")]; },
-                res => { Assert.NotEmpty(progressValues); },
+                res => Assert.NotEmpty(progressValues),
                 progress: new Progress<int>(p => progressValues.Add(p))
             );
         }

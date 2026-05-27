@@ -244,7 +244,7 @@ public class BmsOptimizationServiceExceptionTests : IDisposable
         {
             BuildBms = b => { },
             CreateFiles = dir => [new() { Name = "nonexistent.wav", Num = "01", NumInteger = 1 }],
-            AssertResult = res => { Assert.False(res.IsSuccess); },
+            AssertResult = res => Assert.False(res.IsSuccess),
             BeforeExecute = _ => File.Delete(Path.Combine(_context.TempDirectory, "test.bms")),
             Threshold = 0.5f,
             StartDef = 1,

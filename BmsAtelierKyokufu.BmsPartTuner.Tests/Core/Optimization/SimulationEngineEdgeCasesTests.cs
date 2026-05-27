@@ -330,10 +330,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
             // 逆順の範囲を指定
             var engine = new SimulationEngine(fileList, audioCache, 10, 1);
 
-            var exception = Record.Exception(() =>
-            {
-                engine.RunParallelSimulation(0.5f, 0.5f, 0.1f, null);
-            });
+            var exception = Record.Exception(() => engine.RunParallelSimulation(0.5f, 0.5f, 0.1f, null));
 
             // 例外がスローされるか、空の結果が返されるか確認
             Assert.NotNull(exception ?? new Exception("No exception"));
@@ -398,10 +395,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
             var fileList = new List<BmsAudioFile> { file1, file2 };
             var engine = new SimulationEngine(fileList, audioCache, 1, 2);
 
-            var exception = Record.Exception(() =>
-            {
-                engine.RunParallelSimulation(0.5f, 0.5f, 0.1f, null);
-            });
+            var exception = Record.Exception(() => engine.RunParallelSimulation(0.5f, 0.5f, 0.1f, null));
 
             // 例外なく処理されること
             Assert.Null(exception);

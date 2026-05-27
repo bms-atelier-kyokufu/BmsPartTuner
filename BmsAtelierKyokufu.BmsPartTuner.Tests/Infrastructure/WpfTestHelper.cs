@@ -53,10 +53,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Infrastructure
 
                     // Dispatcherループを実行（テスト完了まで）
                     var frame = new DispatcherFrame();
-                    tcs.Task.ContinueWith(_ =>
-                    {
-                        Dispatcher.CurrentDispatcher.BeginInvoke(() => frame.Continue = false);
-                    });
+                    tcs.Task.ContinueWith(_ => Dispatcher.CurrentDispatcher.BeginInvoke(() => frame.Continue = false));
                     Dispatcher.PushFrame(frame);
                 }
                 catch (Exception ex)

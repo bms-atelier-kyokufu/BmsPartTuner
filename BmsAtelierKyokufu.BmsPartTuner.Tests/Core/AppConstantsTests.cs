@@ -142,10 +142,7 @@ public class AppConstantsTests
     public void SupportedBmsExtensions_ContainsDotPrefix()
     {
         var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, BmsAtelierKyokufu.BmsPartTuner.Models.ICachedSoundData>();
-        Assert.All(AppConstants.Files.SupportedBmsExtensions, ext =>
-        {
-            Assert.StartsWith(".", ext);
-        });
+        Assert.All(AppConstants.Files.SupportedBmsExtensions, ext => Assert.StartsWith(".", ext));
     }
 
     [Fact]
@@ -164,10 +161,7 @@ public class AppConstantsTests
     public void SupportedOutputBmsExtensions_ContainsDotPrefix()
     {
         var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, BmsAtelierKyokufu.BmsPartTuner.Models.ICachedSoundData>();
-        Assert.All(AppConstants.Files.SupportedOutputBmsExtensions, ext =>
-        {
-            Assert.StartsWith(".", ext);
-        });
+        Assert.All(AppConstants.Files.SupportedOutputBmsExtensions, ext => Assert.StartsWith(".", ext));
     }
 
     [Fact]
