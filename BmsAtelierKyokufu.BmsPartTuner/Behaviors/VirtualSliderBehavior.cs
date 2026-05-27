@@ -174,7 +174,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Behaviors
         /// </summary>
         /// <param name="modifiers">現在の修飾キー状態</param>
         /// <returns>対応するドラッグ速度</returns>
-        private DragSpeed GetDetermineSpeed(ModifierKeys modifiers) => modifiers switch
+        private static DragSpeed GetDetermineSpeed(ModifierKeys modifiers) => modifiers switch
         {
             _ when modifiers.HasFlag(ModifierKeys.Shift) => DragSpeed.Fast,
             _ when modifiers.HasFlag(ModifierKeys.Control) => DragSpeed.Fine,

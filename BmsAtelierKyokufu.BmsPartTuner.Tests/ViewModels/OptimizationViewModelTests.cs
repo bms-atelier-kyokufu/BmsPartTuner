@@ -69,7 +69,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.ViewModels
     /// </summary>
     public class OptimizationViewModelTests
     {
-        private Task RunViewModelTestAsync(
+        private static Task RunViewModelTestAsync(
             IBmsOptimizationService service,
             Action<OptimizationViewModel>? setup,
             Func<OptimizationViewModel, Task> act,

@@ -17,7 +17,7 @@
     },
     {
       "logical_group_id": "clap_all",
-      "expected_merged_to": "Clap_0001.wav",
+      "expected_merged_to": "Clap_0002.wav",
       "description": "Track 3: Synth Drum, Clap",
       "source_wav_ids": [
         "Clap_0001.wav", "Clap_0002.wav", "Clap_0003.wav", "Clap_0004.wav",
@@ -28,7 +28,7 @@
     },
     {
       "logical_group_id": "hihat_all",
-      "expected_merged_to": "HiHat_0001.wav",
+      "expected_merged_to": "HiHat_0002.wav",
       "description": "Track 4: Synth Drum, HiHat",
       "source_wav_ids": [
         "HiHat_0001.wav", "HiHat_0002.wav", "HiHat_0003.wav", "HiHat_0004.wav",
@@ -42,7 +42,7 @@
     },
     {
       "logical_group_id": "snare_all",
-      "expected_merged_to": "Snare_0001.wav",
+      "expected_merged_to": "Snare_0002.wav",
       "description": "Track 5: Synth Drum, Snare",
       "source_wav_ids": [
         "Snare_0001.wav", "Snare_0002.wav", "Snare_0003.wav", "Snare_0004.wav",

@@ -1,5 +1,3 @@
-using System;
-
 namespace BmsAtelierKyokufu.BmsPartTuner.Models;
 
 /// <summary>
@@ -43,7 +41,7 @@ public interface ICachedSoundData : IDisposable
     /// 有音区間（ActiveRegion）のリストを取得します。
     /// 事前正規化方式の場合、Data (float[]) が設定されています。
     /// </summary>
-    System.Collections.Generic.IReadOnlyList<ActiveRegion>[] GetActiveRegions();
+    IReadOnlyList<ActiveRegion>[] GetActiveRegions();
 
     /// <summary>
     /// 指定されたチャンネルの、生の波形データ（Span）を取得します。
@@ -53,7 +51,7 @@ public interface ICachedSoundData : IDisposable
     /// <param name="offset">オフセット（サンプル単位）</param>
     /// <param name="length">長さ（サンプル単位）</param>
     /// <returns>波形データ</returns>
-    System.ReadOnlySpan<float> GetRawSpan(int channel, int offset, int length);
+    ReadOnlySpan<float> GetRawSpan(int channel, int offset, int length);
 
     /// <summary>
     /// 指定されたチャンネルの生データの総和（ΣY）を取得します。
@@ -88,11 +86,11 @@ public interface ICachedSoundData : IDisposable
     /// 64サンプルごとに1つのulong値にハッシュ化されています。
     /// </summary>
     /// <param name="channel">チャンネル番号（0 or 1）</param>
-    System.ReadOnlySpan<ulong> GetLsh(int channel);
+    ReadOnlySpan<ulong> GetLsh(int channel);
 
     /// <summary>
     /// LSH計算において、対象のブロックが無音（または微小ノイズ）ではなく、有効な波形データであるかを示すマスク配列を取得します。
     /// </summary>
     /// <param name="channel">チャンネル番号（0 or 1）</param>
-    System.ReadOnlySpan<ulong> GetLshMask(int channel);
+    ReadOnlySpan<ulong> GetLshMask(int channel);
 }

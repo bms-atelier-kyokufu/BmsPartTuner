@@ -44,22 +44,22 @@ public partial class FileListViewModel : ObservableObject, IDisposable
     private bool disposedValue;
 
     [ObservableProperty]
-    private ObservableCollection<BmsAudioFile> _fileListItems = [];
+    public partial ObservableCollection<BmsAudioFile> FileListItems { get; set; } = [];
 
     [ObservableProperty]
-    private BmsAudioFile? _selectedFile;
+    public partial BmsAudioFile? SelectedFile { get; set; }
 
     [ObservableProperty]
-    private string _filterText = string.Empty;
+    public partial string FilterText { get; set; } = string.Empty;
 
     [ObservableProperty]
-    private Visibility _clearFilterButtonVisibility = Visibility.Collapsed;
+    public partial Visibility ClearFilterButtonVisibility { get; set; } = Visibility.Collapsed;
 
     [ObservableProperty]
-    private ObservableCollection<InstrumentNameDetectionService.InstrumentGroup> _instrumentGroups = [];
+    public partial ObservableCollection<InstrumentNameDetectionService.InstrumentGroup> InstrumentGroups { get; set; } = [];
 
     [ObservableProperty]
-    private ObservableCollection<FileListFilterService.SelectableFilterChip> _filterChips = [];
+    public partial ObservableCollection<FileListFilterService.SelectableFilterChip> FilterChips { get; set; } = [];
 
     /// <summary>BMSファイルリスト。</summary>
     public BmsDefinitionManager? BmsFileList => _bmsFileList;

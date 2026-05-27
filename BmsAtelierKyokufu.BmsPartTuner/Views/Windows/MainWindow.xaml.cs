@@ -143,7 +143,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Views.Windows
                     // Filter Chipsの生成（選択可能版）
                     if (_viewModel.FileListItems?.Count > 0)
                     {
-                        var chips = _filterService?.GenerateSelectableFilterChips(_viewModel.FileListItems);
+                        var chips = FileListFilterService.GenerateSelectableFilterChips(_viewModel.FileListItems);
                         if (chips != null)
                         {
                             // FilterChipsをViewModelに設定

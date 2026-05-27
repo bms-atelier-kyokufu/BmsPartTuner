@@ -58,8 +58,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Services.UI
 
         void IUiElementService<MainViewModel>.Show(MainViewModel vm)
         {
-            if (vm == null)
-                throw new ArgumentNullException(nameof(vm));
+            ArgumentNullException.ThrowIfNull(vm);
             vm.ShowSlideConfirmation();
         }
     }

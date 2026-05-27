@@ -21,7 +21,7 @@ public partial class SettingsViewModel : ObservableObject
     /// 0: 全般, 1: 情報
     /// </summary>
     [ObservableProperty]
-    private int _selectedTabIndex;
+    public partial int SelectedTabIndex { get; set; }
 
     /// <summary>
     /// mBMplayの実行ファイルパス。
@@ -99,7 +99,7 @@ public partial class SettingsViewModel : ObservableObject
     /// <summary>
     /// アプリケーションのバージョン。
     /// </summary>
-    public string AppVersion
+    public static string AppVersion
     {
         get
         {
@@ -112,7 +112,7 @@ public partial class SettingsViewModel : ObservableObject
     /// <summary>
     /// アプリケーション名。
     /// </summary>
-    public string AppName
+    public static string AppName
     {
         get
         {
@@ -125,7 +125,7 @@ public partial class SettingsViewModel : ObservableObject
     /// <summary>
     /// 作者情報。
     /// </summary>
-    public string AuthorInfo
+    public static string AuthorInfo
     {
         get
         {
@@ -138,7 +138,7 @@ public partial class SettingsViewModel : ObservableObject
     /// <summary>
     /// GitHubリポジトリURL。
     /// </summary>
-    public string GitHubUrl
+    public static string GitHubUrl
     {
         get
         {
@@ -157,13 +157,13 @@ public partial class SettingsViewModel : ObservableObject
     /// 選択されたライセンス。
     /// </summary>
     [ObservableProperty]
-    private LicenseInfo? _selectedLicense;
+    public partial LicenseInfo? SelectedLicense { get; set; }
 
     /// <summary>
     /// ライセンス詳細表示状態。
     /// </summary>
     [ObservableProperty]
-    private bool _isLicenseDetailVisible;
+    public partial bool IsLicenseDetailVisible { get; set; }
 
     public SettingsViewModel(SettingsService settingsService, ThemeService themeService, LicenseLoaderService licenseLoaderService)
     {
@@ -187,7 +187,7 @@ public partial class SettingsViewModel : ObservableObject
 
     private void LoadLicenses()
     {
-        IEnumerable<LicenseInfo> licenses = _licenseLoaderService.LoadLicenses();
+        IEnumerable<LicenseInfo> licenses = LicenseLoaderService.LoadLicenses();
         Licenses.Clear();
         foreach (LicenseInfo license in licenses)
         {
@@ -243,7 +243,7 @@ public partial class SettingsViewModel : ObservableObject
     /// GitHub Issues を開くコマンド。
     /// </summary>
     [RelayCommand]
-    private void OpenGitHubIssues()
+    private static void OpenGitHubIssues()
     {
         OpenUrl($"{AppConstants.Files.GitHubRepositoryUrl}/issues");
     }
@@ -252,7 +252,7 @@ public partial class SettingsViewModel : ObservableObject
     /// Twitter (X) を開くコマンド。
     /// </summary>
     [RelayCommand]
-    private void OpenTwitter()
+    private static void OpenTwitter()
     {
         OpenUrl("https://x.com/rian_eimu");
     }

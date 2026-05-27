@@ -13,7 +13,7 @@ public class LicenseLoaderService
     /// 全てのライセンス情報を読み込みます。
     /// </summary>
     /// <returns>ライセンス情報のリスト。自身のライセンスが先頭になります。</returns>
-    public IEnumerable<LicenseInfo> LoadLicenses()
+    public static IEnumerable<LicenseInfo> LoadLicenses()
     {
         Assembly assembly = Assembly.GetExecutingAssembly();
         string[] resourceNames = assembly.GetManifestResourceNames();

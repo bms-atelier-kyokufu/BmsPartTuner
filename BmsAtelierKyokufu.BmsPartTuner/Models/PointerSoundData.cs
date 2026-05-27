@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-
 namespace BmsAtelierKyokufu.BmsPartTuner.Models;
 
 /// <summary>

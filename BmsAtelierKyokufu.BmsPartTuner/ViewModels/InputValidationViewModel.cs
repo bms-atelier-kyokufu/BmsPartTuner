@@ -8,19 +8,19 @@ public partial class InputValidationViewModel : ObservableObject
 {
     /// <summary>入力パスが有効かどうか。</summary>
     [ObservableProperty]
-    private bool isInputPathValid;
+    public partial bool IsInputPathValid { get; set; }
 
     /// <summary>出力パスが有効かどうか。</summary>
     [ObservableProperty]
-    private bool isOutputPathValid;
+    public partial bool IsOutputPathValid { get; set; }
 
     /// <summary>入力パスのエラーメッセージ。</summary>
     [ObservableProperty]
-    private string inputPathErrorMessage = string.Empty;
+    public partial string InputPathErrorMessage { get; set; } = string.Empty;
 
     /// <summary>出力パスのエラーメッセージ。</summary>
     [ObservableProperty]
-    private string outputPathErrorMessage = string.Empty;
+    public partial string OutputPathErrorMessage { get; set; } = string.Empty;
 
     /// <summary>
     /// 検証エラーが発生したイベント。
@@ -132,18 +132,18 @@ public partial class InputValidationViewModel : ObservableObject
     /// <summary>
     /// 入力と出力の両方が設定されているかを確認。
     /// </summary>
-    public bool ArePathsSpecified(string inputPath, string outputPath)
+    public static bool ArePathsSpecified(string inputPath, string outputPath)
     {
         return !string.IsNullOrWhiteSpace(inputPath?.Trim('"')) &&
                !string.IsNullOrWhiteSpace(outputPath?.Trim('"'));
     }
 
-    private string GetSupportedExtensionsPattern()
+    private static string GetSupportedExtensionsPattern()
     {
         return string.Join(", ", AppConstants.Files.SupportedBmsExtensions);
     }
 
-    private string GetSupportedOutputExtensionsPattern()
+    private static string GetSupportedOutputExtensionsPattern()
     {
         return string.Join(", ", AppConstants.Files.SupportedOutputBmsExtensions);
     }

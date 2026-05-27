@@ -71,7 +71,7 @@ public class DragDropService(string[] supportedExtensions) : IDragDropService
     /// </remarks>
     public void SetupDragAndDrop(UIElement element)
     {
-        if (element == null) throw new ArgumentNullException(nameof(element));
+        ArgumentNullException.ThrowIfNull(element);
 
         element.AllowDrop = true;
         element.PreviewDragOver += OnPreviewDragOver;

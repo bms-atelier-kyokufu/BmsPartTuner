@@ -44,7 +44,7 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
     /// 設定パネルが開いているかどうか。
     /// </summary>
     [ObservableProperty]
-    private bool _isSettingsOpen;
+    public partial bool IsSettingsOpen { get; set; }
 
     #region フォワードプロパティ
 
@@ -493,7 +493,7 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
         {
             if (e.IsSuccess)
             {
-                var fileTypeName = FileOperations.GetFileTypeName(e.FilePath);
+                var fileTypeName = FileOperationsViewModel.GetFileTypeName(e.FilePath);
                 StatusMessage = $"読み込み完了: {Path.GetFileName(e.FilePath)} ({fileTypeName})";
                 ShowMessage($"読み込み完了: {Path.GetFileName(e.FilePath)}");
             }

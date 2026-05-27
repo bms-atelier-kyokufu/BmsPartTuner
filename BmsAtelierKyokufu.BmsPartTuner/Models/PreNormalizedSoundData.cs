@@ -1,4 +1,6 @@
 using BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
+using MathNet.Numerics;
+using MathNet.Numerics.IntegralTransforms;
 using NAudio.Wave;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Models
@@ -238,7 +240,34 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Models
 
         public ReadOnlySpan<float> GetRawSpan(int channel, int offset, int length)
         {
-            throw new NotSupportedException("PreNormalizedSoundData does not support raw span access.");
+            if (channel < 0 || channel >= Channels) throw new ArgumentOutOfRangeException(nameof(channel));
+
+            float[] buffer = new float[length];
+            var regions = NormalizedRegions?[channel];
+            if (regions == null) return buffer;
+
+            int endOffset = offset + length;
+            foreach (var region in regions)
+            {
+                int rStart = region.Offset;
+                int rEnd = region.Offset + region.Length;
+
+                if (rEnd <= offset || rStart >= endOffset) continue;
+
+                int overlapStart = Math.Max(rStart, offset);
+                int overlapEnd = Math.Min(rEnd, endOffset);
+
+                int srcOffset = overlapStart - rStart;
+                int destOffset = overlapStart - offset;
+                int copyLength = overlapEnd - overlapStart;
+
+                if (copyLength > 0 && region.Data != null)
+                {
+                    Array.Copy(region.Data, srcOffset, buffer, destOffset, copyLength);
+                }
+            }
+
+            return buffer;
         }
 
         public double GetChannelSum(int channel)
@@ -264,14 +293,14 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Models
         public ReadOnlySpan<ulong> GetLsh(int channel)
         {
             if (channel < 0 || channel >= Channels) throw new ArgumentOutOfRangeException(nameof(channel));
-            if (_signLsh == null) return ReadOnlySpan<ulong>.Empty;
+            if (_signLsh == null) return [];
             return _signLsh[channel];
         }
 
         public ReadOnlySpan<ulong> GetLshMask(int channel)
         {
             if (channel < 0 || channel >= Channels) throw new ArgumentOutOfRangeException(nameof(channel));
-            if (_signLshMask == null) return ReadOnlySpan<ulong>.Empty;
+            if (_signLshMask == null) return [];
             return _signLshMask[channel];
         }
 
@@ -280,23 +309,54 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Models
 
         private void GenerateLsh(float[][] samplesPerChannel, int lengthSamples)
         {
-            int lshLength = (lengthSamples + 63) / 64;
+            // FFT Parameter Constants (Phase 2 Measure B)
+            int extractLen = Math.Min(lengthSamples, 2048);
+            int fftLen = 4096;
+            
+            // Frequency domain magnitude produces fftLen/2 positive frequencies = 2048 bins
+            int lshLength = 2048 / 64; // exactly 32 ulongs per channel
             _signLsh = [new ulong[lshLength], new ulong[lshLength]];
             _signLshMask = [new ulong[lshLength], new ulong[lshLength]];
 
-            const float silenceThreshold = 0.0056234f; // 10^(-45/20)
+            if (extractLen <= 0) return;
+
+            double[] hannWindow = MathNet.Numerics.Window.Hann(extractLen);
 
             for (int ch = 0; ch < Channels; ch++)
             {
-                var span = new ReadOnlySpan<float>(samplesPerChannel[ch], 0, lengthSamples);
-                for (int i = 0; i < lengthSamples; i++)
+                var complexData = new Complex32[fftLen];
+                var span = new ReadOnlySpan<float>(samplesPerChannel[ch], 0, extractLen);
+                
+                // 1. Extract, apply Hann Window, and zero-pad
+                for (int i = 0; i < extractLen; i++)
                 {
-                    float val = span[i];
+                    complexData[i] = new Complex32((float)(span[i] * hannWindow[i]), 0);
+                }
+
+                // 2. Perform FFT
+                Fourier.Forward(complexData, FourierOptions.Default);
+
+                // 3. Generate LSH from Magnitude Spectrum (Shift-invariant)
+                float[] magnitudes = new float[2048];
+                for (int i = 0; i < 2048; i++)
+                {
+                    magnitudes[i] = complexData[i].Magnitude;
+                }
+
+                // Create LSH bit array: bit is 1 if magnitude[i] >= magnitude[i+1] (spectral shape)
+                for (int i = 0; i < 2048 - 1; i++)
+                {
                     int lshIdx = i / 64;
                     int bitShift = i % 64;
 
-                    if (val >= 0) _signLsh[ch][lshIdx] |= (1UL << bitShift);
-                    if (Math.Abs(val) >= silenceThreshold) _signLshMask[ch][lshIdx] |= (1UL << bitShift);
+                    if (magnitudes[i] >= magnitudes[i + 1])
+                    {
+                        _signLsh[ch][lshIdx] |= (1UL << bitShift);
+                    }
+                    if (magnitudes[i] > 1e-4f) // Simple threshold for mask
+                    {
+                        _signLshMask[ch][lshIdx] |= (1UL << bitShift);
+                    }
                 }
             }
         }
@@ -674,8 +734,8 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Models
         {
             var regionsPerChannel = new List<ActiveRegion>[channels];
 
-            const double dbThreshold = -45.0;
-            const int windowFrames = 1024; // 約23ms (44.1kHz時)
+            const double dbThreshold = -90.0;
+            const int windowFrames = 256; // 約5.8ms (44.1kHz時)
 
             // E_threshold = N * A_ref^2 * 10^(T_threshold/10) (A_ref = 1.0)
             double eThreshold = windowFrames * Math.Pow(10, dbThreshold / 10.0);

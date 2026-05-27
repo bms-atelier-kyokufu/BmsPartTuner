@@ -46,8 +46,7 @@ public partial class FileListFilterService
     public partial class SelectableFilterChip : ObservableObject
     {
         [ObservableProperty]
-        private bool _isSelected;
-
+        public partial bool IsSelected { get; set; }
         public string Keyword { get; set; } = string.Empty;
         public int Count { get; set; }
     }
@@ -247,7 +246,7 @@ public partial class FileListFilterService
     /// 先頭のみに絞ることで、ノイズ（"01", "loud"等）を削減します。
     /// </para>
     /// </remarks>
-    public ObservableCollection<SelectableFilterChip> GenerateSelectableFilterChips(
+    public static ObservableCollection<SelectableFilterChip> GenerateSelectableFilterChips(
         ObservableCollection<BmsAudioFile> files,
         int minOccurrences = 2,
         int maxChips = 8,
@@ -266,8 +265,8 @@ public partial class FileListFilterService
 
                 if (prefix.Length >= minKeywordLength)
                 {
-                    if (keywordCounts.ContainsKey(prefix))
-                        keywordCounts[prefix]++;
+                    if (keywordCounts.TryGetValue(prefix, out int value))
+                        keywordCounts[prefix] = ++value;
                     else
                         keywordCounts[prefix] = 1;
                 }

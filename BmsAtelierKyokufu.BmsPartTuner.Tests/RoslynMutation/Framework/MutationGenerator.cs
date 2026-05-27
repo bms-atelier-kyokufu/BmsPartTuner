@@ -66,8 +66,6 @@ public static class MutationGenerator
     {
         ["First"] = [("Last", MutationType.FirstToLast)],
         ["Last"] = [("First", MutationType.LastToFirst)],
-        ["FirstOrDefault"] = [("LastOrDefault", MutationType.FirstOrDefaultToLastOrDefault)],
-        ["LastOrDefault"] = [("FirstOrDefault", MutationType.LastOrDefaultToFirstOrDefault)],
         ["Any"] = [("All", MutationType.AnyToAll)],
         ["All"] = [("Any", MutationType.AllToAny)],
         ["Take"] = [("Skip", MutationType.TakeToSkip)],
@@ -78,8 +76,6 @@ public static class MutationGenerator
         ["ThenByDescending"] = [("ThenBy", MutationType.OrderByDescendingToOrderBy)],
         ["Min"] = [("Max", MutationType.MinToMax)],
         ["Max"] = [("Min", MutationType.MaxToMin)],
-        ["Single"] = [("First", MutationType.SingleToFirst)],
-        ["SingleOrDefault"] = [("FirstOrDefault", MutationType.SingleToFirst)],
         ["Sum"] = [("Count", MutationType.SumToCount)],
         ["Count"] = [("Sum", MutationType.CountToSum)],
         ["FirstOrDefault"] = [("First", MutationType.FirstOrDefaultToFirst)],

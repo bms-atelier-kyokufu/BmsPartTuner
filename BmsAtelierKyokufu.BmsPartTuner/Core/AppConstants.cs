@@ -1,4 +1,4 @@
-﻿namespace BmsAtelierKyokufu.BmsPartTuner.Core;
+namespace BmsAtelierKyokufu.BmsPartTuner.Core;
 
 /// <summary>
 /// アプリケーション全体で使用される定数を一元管理します。
@@ -198,7 +198,7 @@ public static class AppConstants
         /// <summary>
         /// 無音判定のRMS閾値（この値以下のRMSを持つ音声は無音として扱われます）。
         /// </summary>
-        public const float SilenceRmsThreshold = 0.001f;
+        public const float SilenceRmsThreshold = 0.000001f;
 
         /// <summary>
         /// 無音ファイルのRMS上限閾値。

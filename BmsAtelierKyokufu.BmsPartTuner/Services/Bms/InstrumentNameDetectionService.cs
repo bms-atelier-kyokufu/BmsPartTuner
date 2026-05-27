@@ -66,7 +66,7 @@ public partial class InstrumentNameDetectionService(
     public partial class InstrumentGroup : ObservableObject
     {
         [ObservableProperty]
-        private bool _isSelected;
+        public partial bool IsSelected { get; set; }
 
         /// <summary>楽器名（例: "kick", "snare"）。</summary>
         public string Name { get; set; } = string.Empty;

@@ -8,11 +8,11 @@ public partial class MediaPlaybackViewModel : ObservableObject
 {
     /// <summary>プレイヤーパスが設定されているかどうか。</summary>
     [ObservableProperty]
-    private bool isPlayerConfigured;
+    public partial bool IsPlayerConfigured { get; set; }
 
     /// <summary>テスト再生可能かどうか。</summary>
     [ObservableProperty]
-    private bool canPlayback;
+    public partial bool CanPlayback { get; set; }
 
     /// <summary>
     /// テスト再生をリクエストするイベント。

@@ -108,18 +108,24 @@ internal static class FastWaveCompare
             data1.Channels != data2.Channels ||
             data1.BitsPerSample != data2.BitsPerSample)
         {
+            PerformanceDebugLogger.WriteDebug($"[DEBUG-FormatMismatch] {System.IO.Path.GetFileName(data1.FilePath)} vs {System.IO.Path.GetFileName(data2.FilePath)}");
             return false;
         }
 
         // Length difference check has been removed to allow merging of files with different tail lengths.
         // The Pearson correlation over the zero-padded shorter file is robust enough to reject false positives.
-        int diff = Math.Abs(data1.TotalSamples - data2.TotalSamples);
+        _ = Math.Abs(data1.TotalSamples - data2.TotalSamples);
 
         var activeRegions1 = data1.GetActiveRegions();
         var activeRegions2 = data2.GetActiveRegions();
 
-        if (activeRegions1 != null && activeRegions2 != null && activeRegions1.Length > 0 && activeRegions2.Length > 0)
+        if (activeRegions1 == null || activeRegions2 == null || activeRegions1.Length == 0 || activeRegions2.Length == 0)
         {
+            PerformanceDebugLogger.WriteDebug($"[DEBUG-NoActiveRegions] {System.IO.Path.GetFileName(data1.FilePath)} vs {System.IO.Path.GetFileName(data2.FilePath)}");
+            return false;
+        }
+
+
             // Check both channels for total silence
             bool isData1Silent = true;
             bool isData2Silent = true;
@@ -140,6 +146,7 @@ internal static class FastWaveCompare
             // If only one is entirely silent
             if (isData1Silent || isData2Silent)
             {
+                PerformanceDebugLogger.WriteDebug($"[DEBUG-SilenceReject] {System.IO.Path.GetFileName(data1.FilePath)}({isData1Silent}) vs {System.IO.Path.GetFileName(data2.FilePath)}({isData2Silent})");
                 return false;
             }
 
@@ -150,15 +157,6 @@ internal static class FastWaveCompare
                 targetChannel = 1;
             }
 
-            if (diff == 0)
-            {
-                // Exact length match -> Use Phase 2 precomputed NormalizedData (Ultra fast)
-                float correlation = WaveValidation.CalculatePearsonForCachedDataSIMD(data1, data2, targetChannel);
-                return correlation >= threshold;
-            }
-            else
-            {
-                // Length mismatch within 50ms -> Use Phase 1 Pearson on zero-padded DecodedData
                 var shorter = data1.TotalSamples < data2.TotalSamples ? data1 : data2;
                 var longer = data1.TotalSamples < data2.TotalSamples ? data2 : data1;
 
@@ -166,19 +164,42 @@ internal static class FastWaveCompare
                 int longerFrames = longer.TotalSamples / longer.Channels;
 
                 var shorterSpan = shorter.GetRawSpan(targetChannel, 0, shorterFrames);
-                var longerSpan = longer.GetRawSpan(targetChannel, 0, longerFrames);
+                var longerFullSpan = longer.GetRawSpan(targetChannel, 0, longerFrames);
 
-                // Create a temporary array padded to the longer length
-                float[] paddedShorter = new float[longerFrames];
-                shorterSpan.CopyTo(paddedShorter.AsSpan(0, shorterFrames));
+                // Phase 2 Measure A: Calculate sub-millisecond phase shift offset
+                int offset = WaveValidation.CalculateAlignmentOffset(shorterSpan, longerFullSpan);
+
+        ReadOnlySpan<float> alignedShorter;
+        ReadOnlySpan<float> alignedLonger;
+
+        if (offset >= 0)
+                {
+                    // longer starts before shorter. shorter[0] matches longer[offset]
+                    if (offset + shorterFrames > longerFrames) offset = 0;
+                    alignedShorter = shorterSpan;
+                    alignedLonger = longer.GetRawSpan(targetChannel, offset, shorterFrames);
+                }
+                else
+                {
+                    // shorter starts before longer. longer[0] matches shorter[-offset]
+                    int absOffset = -offset;
+                    if (absOffset >= shorterFrames) absOffset = 0;
+                    int compareLen = shorterFrames - absOffset;
+                    alignedShorter = shorter.GetRawSpan(targetChannel, absOffset, compareLen);
+                    alignedLonger = longer.GetRawSpan(targetChannel, 0, compareLen);
+                }
+
+                // アライメント済みプレフィックス同士でピアソン相関を計算する
+                float correlation = WaveValidation.CalculatePearsonCorrelationSIMD(alignedShorter, alignedLonger);
+                if (Math.Abs(correlation) < threshold)
+                {
+                    string n1 = System.IO.Path.GetFileName(data1.FilePath);
+                    string n2 = System.IO.Path.GetFileName(data2.FilePath);
+                    PerformanceDebugLogger.WriteDebug($"[DEBUG-IsMatch] {n1} vs {n2} corr={correlation:F4}, offset={offset}, thr={threshold}");
+                }
                 
-                // Compare only the target channel using the raw padded floats
-                float correlation = WaveValidation.CalculatePearsonCorrelationSIMD(paddedShorter, longerSpan);
-                return correlation >= threshold;
-            }
-        }
+                return Math.Abs(correlation) >= threshold;
 
-        return false;
     }
 
     /// <summary>

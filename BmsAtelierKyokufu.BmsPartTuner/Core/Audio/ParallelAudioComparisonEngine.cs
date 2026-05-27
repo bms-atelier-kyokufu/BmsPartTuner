@@ -1,3 +1,10 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using BmsAtelierKyokufu.BmsPartTuner.Models;
+
 namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
 
 /// <summary>
@@ -35,6 +42,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
 /// <remarks>
 /// ParallelAudioComparisonEngineのインスタンスを作成。
 /// </remarks>
+
 /// <summary>
 /// 並列オーディオ比較エンジンの実行パラメーター。
 /// </summary>
@@ -62,6 +70,22 @@ internal class ParallelAudioComparisonEngine(AudioComparisonParameters parameter
     private readonly int _startPoint = parameters.StartPoint;
     private readonly int _endPoint = parameters.EndPoint;
     private readonly IReadOnlyDictionary<string, ICachedSoundData> _audioCache = parameters.AudioCache ?? throw new ArgumentNullException(nameof(parameters.AudioCache));
+    private readonly long[] _fileSizes = BuildFileSizeArray(parameters.FileList);
+
+    private static long[] BuildFileSizeArray(IReadOnlyList<BmsAudioFile> fileList)
+    {
+        long[] sizes = new long[3844]; // Max Base62 "ZZ" is 3843
+        if (fileList == null) return sizes;
+
+        foreach (var file in fileList)
+        {
+            if (file.NumInteger >= 0 && file.NumInteger < sizes.Length)
+            {
+                sizes[file.NumInteger] = file.FileSize;
+            }
+        }
+        return sizes;
+    }
 
     #endregion
 
@@ -294,18 +318,13 @@ internal class ParallelAudioComparisonEngine(AudioComparisonParameters parameter
     /// 近傍エントリとの比較。
     /// </summary>
     /// <remarks>
-    /// <para>【早期終了条件】</para>
-    /// RMS差がしきい値を超えた時点で比較を打ち切ります。
-    /// ソート済みなので、それ以降のファイルも条件を満たしません。
-    /// </remarks>
     private void CompareWithNearbyEntries(AudioEntry[] entries, int currentIndex, ICachedSoundData cachedData1, float r2Threshold, ref int comparisons, ref int matches, ref int skipped)
     {
-        float rms1 = entries[currentIndex].Rms;
-        var (_, max) = CalculateRmsThresholds(rms1);
-
+        // Measure C (Prefix Matching) により、長さの異なる波形（打ち切り波形と元波形）を比較するため、
+        // 全体のRMS値は大きく異なる可能性があります（短い波形の方がRMSが高くなりやすい）。
+        // そのため、RMSによる早期棄却（break）を廃止し、同一キーワードグループ内は全て総当たり（最大100^2）で比較します。
         for (int j = currentIndex + 1; j < entries.Length; j++)
         {
-            if (entries[j].Rms > max) break;
             CompareFilePair(entries[currentIndex].OriginalIndex, entries[j].OriginalIndex, cachedData1, r2Threshold, ref comparisons, ref matches, ref skipped);
         }
     }
@@ -321,7 +340,7 @@ internal class ParallelAudioComparisonEngine(AudioComparisonParameters parameter
     /// <item>無音ファイル: 0～0.002（特別扱い）</item>
     /// </list>
     /// </remarks>
-    private (float min, float max) CalculateRmsThresholds(float rms)
+    private static (float min, float max) CalculateRmsThresholds(float rms)
     {
         if (rms < AppConstants.AudioComparison.SilenceRmsThreshold) return (0f, AppConstants.AudioComparison.SilenceRmsUpperBound);
         return (rms * AppConstants.AudioComparison.RmsLowerBoundRatio, rms * AppConstants.AudioComparison.RmsUpperBoundRatio);
@@ -359,12 +378,7 @@ internal class ParallelAudioComparisonEngine(AudioComparisonParameters parameter
 
         Interlocked.Increment(ref comparisons);
         bool isMatch = FastWaveCompare.IsMatch(cachedData1, cachedData2, r2Threshold);
-        if (_fileList[iIdx].Name.Contains("Clap") && _fileList[jIdx].Name.Contains("Clap"))
-        {
-            float correlation = WaveValidation.CalculatePearsonForCachedDataSIMD(cachedData1, cachedData2, 0);
-            float correlationCh2 = WaveValidation.CalculatePearsonForCachedDataSIMD(cachedData1, cachedData2, 1);
-            Console.WriteLine($"[DEBUG] Comparing {_fileList[iIdx].Name} and {_fileList[jIdx].Name}: L={correlation:F4} R={correlationCh2:F4} Match={isMatch}");
-        }
+
 
         if (isMatch)
         {
@@ -393,11 +407,28 @@ internal class ParallelAudioComparisonEngine(AudioComparisonParameters parameter
 
         if (rootI == rootJ) return;
 
-        int minRoot = Math.Min(rootI, rootJ);
-        int maxRoot = Math.Max(rootI, rootJ);
+        long sizeI = rootI >= 0 && rootI < _fileSizes.Length ? _fileSizes[rootI] : 0;
+        long sizeJ = rootJ >= 0 && rootJ < _fileSizes.Length ? _fileSizes[rootJ] : 0;
 
-        Interlocked.CompareExchange(ref _replaceTable[maxRoot], minRoot, 0);
-        Interlocked.CompareExchange(ref _replaceTable[maxRoot], minRoot, maxRoot);
+        int newRoot, newChild;
+        if (sizeI > sizeJ)
+        {
+            newRoot = rootI;
+            newChild = rootJ;
+        }
+        else if (sizeJ > sizeI)
+        {
+            newRoot = rootJ;
+            newChild = rootI;
+        }
+        else
+        {
+            newRoot = Math.Min(rootI, rootJ);
+            newChild = Math.Max(rootI, rootJ);
+        }
+
+        Interlocked.CompareExchange(ref _replaceTable[newChild], newRoot, 0);
+        Interlocked.CompareExchange(ref _replaceTable[newChild], newRoot, newChild);
     }
 
     /// <summary>

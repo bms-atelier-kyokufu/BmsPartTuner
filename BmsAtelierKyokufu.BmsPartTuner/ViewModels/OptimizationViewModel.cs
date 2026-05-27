@@ -26,30 +26,30 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsInputValid))]
-    private string _definitionStart = AppConstants.Definition.Start;
+    public partial string DefinitionStart { get; set; } = AppConstants.Definition.Start;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsInputValid))]
-    private string _definitionEnd = AppConstants.Definition.End;
+    public partial string DefinitionEnd { get; set; } = AppConstants.Definition.End;
 
     [ObservableProperty]
-    private string _statusMessage = "準備完了";
+    public partial string StatusMessage { get; set; } = "準備完了";
 
     [ObservableProperty]
-    private int _progressValue;
+    public partial int ProgressValue { get; set; }
 
     [ObservableProperty]
-    private bool _isProgressIndeterminate;
+    public partial bool IsProgressIndeterminate { get; set; }
 
     [ObservableProperty]
-    private bool _isBusy;
+    public partial bool IsBusy { get; set; }
 
     /// <summary>
     /// ローダー表示フラグ。
     /// <see cref="LoaderDelayMs"/>後に表示されるため、高速処理時のチラつきを防止。
     /// </summary>
     [ObservableProperty]
-    private bool _showLoader;
+    public partial bool ShowLoader { get; set; }
 
     /// <summary>
     /// 音源ファイルの物理削除を有効にするかどうか。
@@ -71,25 +71,25 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
     /// スライド確認UIの指示テキスト。
     /// </summary>
     [ObservableProperty]
-    private string _slideInstructionText = "スライドして上書き保存";
+    public partial string SlideInstructionText { get; set; } = "スライドして上書き保存";
 
     /// <summary>
     /// スライド方向。
     /// </summary>
     [ObservableProperty]
-    private SlideDirection _swipeDirection = SlideDirection.LeftToRight;
+    public partial SlideDirection SwipeDirection { get; set; } = SlideDirection.LeftToRight;
 
     /// <summary>
     /// 現在の処理状況を示すローディングメッセージ。
     /// </summary>
     [ObservableProperty]
-    private string _loadingMessage = string.Empty;
+    public partial string LoadingMessage { get; set; } = string.Empty;
 
     /// <summary>
     /// 最後の最適化結果（パフォーマンス指標表示用）。
     /// </summary>
     [ObservableProperty]
-    private Models.OptimizationResult? _lastOptimizationResult;
+    public partial Models.OptimizationResult? LastOptimizationResult { get; set; }
 
     public SlideDirection SlideDirection =>
         IsPhysicalDeletionEnabled ? SlideDirection.RightToLeft : SlideDirection.LeftToRight;

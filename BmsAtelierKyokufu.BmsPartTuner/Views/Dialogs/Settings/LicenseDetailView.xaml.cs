@@ -13,7 +13,7 @@
         /// <summary>
         /// マウスホイールスクロール時の処理
         /// </summary>
-        private void HandleMouseWheel(ScrollViewer target, MouseWheelEventArgs e)
+        private static void HandleMouseWheel(ScrollViewer target, MouseWheelEventArgs e)
         {
             if (target == null)
             {
