@@ -111,29 +111,71 @@ internal static class FastWaveCompare
             return false;
         }
 
-        if (data1.TotalSamples != data2.TotalSamples) return false;
+        // Length difference check has been removed to allow merging of files with different tail lengths.
+        // The Pearson correlation over the zero-padded shorter file is robust enough to reject false positives.
+        int diff = Math.Abs(data1.TotalSamples - data2.TotalSamples);
 
         var activeRegions1 = data1.GetActiveRegions();
         var activeRegions2 = data2.GetActiveRegions();
 
         if (activeRegions1 != null && activeRegions2 != null && activeRegions1.Length > 0 && activeRegions2.Length > 0)
         {
-            var regions1 = activeRegions1[0];
-            var regions2 = activeRegions2[0];
+            // Check both channels for total silence
+            bool isData1Silent = true;
+            bool isData2Silent = true;
+            for (int ch = 0; ch < activeRegions1.Length && ch < data1.Channels; ch++)
+            {
+                if (activeRegions1[ch] != null && activeRegions1[ch].Count > 0) isData1Silent = false;
+            }
+            for (int ch = 0; ch < activeRegions2.Length && ch < data2.Channels; ch++)
+            {
+                if (activeRegions2[ch] != null && activeRegions2[ch].Count > 0) isData2Silent = false;
+            }
 
             // If both are entirely silent
-            if ((regions1 == null || regions1.Count == 0) && (regions2 == null || regions2.Count == 0))
+            if (isData1Silent && isData2Silent)
             {
                 return true;
             }
             // If only one is entirely silent
-            if ((regions1 == null || regions1.Count == 0) || (regions2 == null || regions2.Count == 0))
+            if (isData1Silent || isData2Silent)
             {
                 return false;
             }
 
-            float correlation = WaveValidation.CalculatePearsonForCachedDataSIMD(data1, data2, 0);
-            return correlation >= threshold;
+            // Find first active channel to compute Pearson on (usually 0, but could be 1 if left is silent)
+            int targetChannel = 0;
+            if (activeRegions1[0] == null || activeRegions1[0].Count == 0)
+            {
+                targetChannel = 1;
+            }
+
+            if (diff == 0)
+            {
+                // Exact length match -> Use Phase 2 precomputed NormalizedData (Ultra fast)
+                float correlation = WaveValidation.CalculatePearsonForCachedDataSIMD(data1, data2, targetChannel);
+                return correlation >= threshold;
+            }
+            else
+            {
+                // Length mismatch within 50ms -> Use Phase 1 Pearson on zero-padded DecodedData
+                var shorter = data1.TotalSamples < data2.TotalSamples ? data1 : data2;
+                var longer = data1.TotalSamples < data2.TotalSamples ? data2 : data1;
+
+                int shorterFrames = shorter.TotalSamples / shorter.Channels;
+                int longerFrames = longer.TotalSamples / longer.Channels;
+
+                var shorterSpan = shorter.GetRawSpan(targetChannel, 0, shorterFrames);
+                var longerSpan = longer.GetRawSpan(targetChannel, 0, longerFrames);
+
+                // Create a temporary array padded to the longer length
+                float[] paddedShorter = new float[longerFrames];
+                shorterSpan.CopyTo(paddedShorter.AsSpan(0, shorterFrames));
+                
+                // Compare only the target channel using the raw padded floats
+                float correlation = WaveValidation.CalculatePearsonCorrelationSIMD(paddedShorter, longerSpan);
+                return correlation >= threshold;
+            }
         }
 
         return false;

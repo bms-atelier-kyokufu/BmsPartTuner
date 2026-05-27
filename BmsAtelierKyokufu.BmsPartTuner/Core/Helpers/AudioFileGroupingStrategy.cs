@@ -1,4 +1,4 @@
-﻿namespace BmsAtelierKyokufu.BmsPartTuner.Core.Helpers;
+namespace BmsAtelierKyokufu.BmsPartTuner.Core.Helpers;
 
 /// <summary>
 /// 音声ファイルのグループ化戦略。
@@ -156,8 +156,10 @@ public static class AudioFileGroupingStrategy
 
             long fileSize = cachedData.FileSize;
             float rms = cachedData.TotalRms;
-            int rmsQuantized = (int)(rms * AppConstants.Grouping.RmsQuantizationFactor);
-            string groupKey = $"{fileSize}_{rmsQuantized}";
+            
+            // 比較エンジン(ParallelAudioComparisonEngine)がSort & Sweepアルゴリズムを使用して
+            // RMS近傍検索を効率的に行うため、ここではRMSによるバケツ分けを行わず同一キーワードで1つのグループにします。
+            string groupKey = "ALL";
 
             if (!keywordGroups[matchedKeyword].TryGetValue(groupKey, out List<int>? value))
             {
@@ -271,10 +273,12 @@ public static class AudioFileGroupingStrategy
 
             long fileSize = cachedData.FileSize;
             float rms = cachedData.TotalRms;
-
+            
             int rmsQuantized = (int)(rms * AppConstants.Grouping.RmsQuantizationFactor);
+            // 50ms (44100Hz 16bit Stereo = 8820 bytes) のブレを許容するため、サイズを量子化してグループ分けします。
+            long sizeQuantized = fileSize / 8820;
 
-            string groupKey = $"{fileSize}_{rmsQuantized}";
+            string groupKey = $"{sizeQuantized}_{rmsQuantized}";
 
             if (!groups.TryGetValue(groupKey, out var groupList))
             {

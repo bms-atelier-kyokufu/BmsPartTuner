@@ -469,10 +469,13 @@ static public class WaveValidation
         {
             // 混合方式（Mixed-SIMD）: 正規化(X) と 生データ(Y) の直接比較
             // r = D / sqrt(ΣY² - (ΣY)²/N)
-            double sumY = data1.IsPreNormalized ? totalSumY : totalSumX;
-            double sumY2 = data1.IsPreNormalized ? totalSumY2 : totalSumX2;
+            int fileN = data1.IsPreNormalized ? (data2.TotalSamples / data2.Channels) : (data1.TotalSamples / data1.Channels);
+            if (fileN == 0) return 0.0f;
 
-            double varSumY = sumY2 - (sumY * sumY) / totalN;
+            double sumY = data1.IsPreNormalized ? data2.GetChannelSum(channel) : data1.GetChannelSum(channel);
+            double sumY2 = data1.IsPreNormalized ? data2.GetChannelSumSq(channel) : data1.GetChannelSumSq(channel);
+
+            double varSumY = sumY2 - (sumY * sumY) / fileN;
             if (varSumY <= 1e-10) return 0.0f;
 
             double correlation = totalDotProduct / Math.Sqrt(varSumY);
@@ -481,12 +484,20 @@ static public class WaveValidation
         else
         {
             // ポインタ方式（生データ同士）：生データの積和 (Σxy) から1パス用の補正計算を行う
-            double meanX = totalSumX / totalN;
-            double meanY = totalSumY / totalN;
+            int fileN = data1.TotalSamples / data1.Channels;
+            if (fileN == 0) return 0.0f;
 
-            double covXY = (totalDotProduct / totalN) - (meanX * meanY);
-            double varX = (totalSumX2 / totalN) - (meanX * meanX);
-            double varY = (totalSumY2 / totalN) - (meanY * meanY);
+            double fullSumX = data1.GetChannelSum(channel);
+            double fullSumY = data2.GetChannelSum(channel);
+            double fullSumX2 = data1.GetChannelSumSq(channel);
+            double fullSumY2 = data2.GetChannelSumSq(channel);
+
+            double meanX = fullSumX / fileN;
+            double meanY = fullSumY / fileN;
+
+            double covXY = (totalDotProduct / fileN) - (meanX * meanY);
+            double varX = (fullSumX2 / fileN) - (meanX * meanX);
+            double varY = (fullSumY2 / fileN) - (meanY * meanY);
 
             if (varX < 1e-10 || varY < 1e-10) return 0.0f;
 

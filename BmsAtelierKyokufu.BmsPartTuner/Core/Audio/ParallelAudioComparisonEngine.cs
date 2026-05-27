@@ -1,4 +1,4 @@
-﻿namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
+namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
 
 /// <summary>
 /// 並列オーディオ比較エンジン。
@@ -358,7 +358,15 @@ internal class ParallelAudioComparisonEngine(AudioComparisonParameters parameter
         if (cachedData2 == null) { Interlocked.Increment(ref skipped); return; }
 
         Interlocked.Increment(ref comparisons);
-        if (FastWaveCompare.IsMatch(cachedData1, cachedData2, r2Threshold))
+        bool isMatch = FastWaveCompare.IsMatch(cachedData1, cachedData2, r2Threshold);
+        if (_fileList[iIdx].Name.Contains("Clap") && _fileList[jIdx].Name.Contains("Clap"))
+        {
+            float correlation = WaveValidation.CalculatePearsonForCachedDataSIMD(cachedData1, cachedData2, 0);
+            float correlationCh2 = WaveValidation.CalculatePearsonForCachedDataSIMD(cachedData1, cachedData2, 1);
+            Console.WriteLine($"[DEBUG] Comparing {_fileList[iIdx].Name} and {_fileList[jIdx].Name}: L={correlation:F4} R={correlationCh2:F4} Match={isMatch}");
+        }
+
+        if (isMatch)
         {
             UpdateReplaceTable(iIdx, jIdx);
             Interlocked.Increment(ref matches);
