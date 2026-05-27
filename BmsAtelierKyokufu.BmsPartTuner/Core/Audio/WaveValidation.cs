@@ -150,10 +150,11 @@ static public class WaveValidation
 
     /// <summary>
     /// FFT畳み込み定理を用いたサブミリ秒アライメントのズレ量推定（Phase 2 Measure A）
+    /// 事前計算されたFFTスペクトルを利用して高速化します。
     /// </summary>
-    public static int CalculateAlignmentOffset(ReadOnlySpan<float> shorter, ReadOnlySpan<float> longer)
+    public static int CalculateAlignmentOffset(Complex32[] fftShorter, Complex32[] fftLonger)
     {
-        return FftAlignmentEngine.CalculateAlignmentOffset(shorter, longer);
+        return FftAlignmentEngine.CalculateAlignmentOffsetFromCache(fftShorter, fftLonger);
     }
 
     /// <summary>

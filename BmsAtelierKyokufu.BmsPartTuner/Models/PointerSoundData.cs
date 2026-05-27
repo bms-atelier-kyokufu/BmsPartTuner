@@ -1,5 +1,7 @@
 namespace BmsAtelierKyokufu.BmsPartTuner.Models;
 
+using MathNet.Numerics;
+
 /// <summary>
 /// 元の大きなWAVファイル（ベース）の特定の範囲を指し示すポインタ。
 /// 音声のfloat配列を自身のメモリに抱えず、ベースWAVの配列をSpanとして返すため、
@@ -32,6 +34,10 @@ public class PointerSoundData(
     public double EstimatedMemoryMB => 0.0;
 
     public bool IsPreNormalized => false;
+
+    public Complex32[][]? FftSpectrum => null;
+
+    public ulong ShiftInvariantLsh => 0; // ポインタ方式ではPhase 2のグループ化には関与しない（または別途実装）
 
     private BaseAudioOptimizationData? _baseData = baseData;
     private readonly int _startSample = startSample;
@@ -98,6 +104,7 @@ public class PointerSoundData(
     {
         _baseData = null;
         _regions = null;
+        GC.SuppressFinalize(this);
     }
 
     private static float CalculateTotalRms(float[][] samplesPerChannel, int startSample, int lengthSamples)

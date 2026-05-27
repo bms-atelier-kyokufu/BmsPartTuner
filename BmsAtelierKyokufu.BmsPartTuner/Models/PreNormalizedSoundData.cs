@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
+using MathNet.Numerics;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Models
 {
@@ -56,6 +57,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Models
         private readonly ulong[][]? _signLsh;
         private readonly ulong[][]? _signLshMask;
 
+        public Complex32[][]? FftSpectrum { get; }
+        public ulong ShiftInvariantLsh { get; }
+
         public double EstimatedMemoryMB
         {
             get
@@ -95,7 +99,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Models
             float totalRms,
             int startSilenceSamples,
             ulong[][]? signLsh,
-            ulong[][]? signLshMask)
+            ulong[][]? signLshMask,
+            Complex32[][]? fftSpectrum,
+            ulong shiftInvariantLsh)
         {
             FilePath = filePath;
             SampleRate = sampleRate;
@@ -108,6 +114,8 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Models
             StartSilenceSamples = startSilenceSamples;
             _signLsh = signLsh;
             _signLshMask = signLshMask;
+            FftSpectrum = fftSpectrum;
+            ShiftInvariantLsh = shiftInvariantLsh;
         }
 
         public IReadOnlyList<ActiveRegion>[] GetActiveRegions()

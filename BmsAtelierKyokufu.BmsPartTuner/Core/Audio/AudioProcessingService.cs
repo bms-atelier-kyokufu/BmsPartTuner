@@ -106,6 +106,8 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio
                 int startSilenceSamples = DetectStartSilence(samplesPerChannel, samplesPerChannelLen, channels);
                 float totalRms = CalculateTotalRms(samplesPerChannel, samplesPerChannelLen, channels);
                 var (signLsh, signLshMask) = GenerateLsh(samplesPerChannel, samplesPerChannelLen, channels);
+                var fftSpectrum = GenerateFftSpectrum(samplesPerChannel, normalizedRegions, channels);
+                ulong shiftInvariantLsh = GenerateShiftInvariantLsh(fftSpectrum);
 
                 return new PreNormalizedSoundData(
                     path,
@@ -118,7 +120,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio
                     totalRms,
                     startSilenceSamples,
                     signLsh,
-                    signLshMask
+                    signLshMask,
+                    fftSpectrum,
+                    shiftInvariantLsh
                 );
             }
         }
@@ -350,7 +354,8 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio
             int extractLen = Math.Min(lengthSamples, 2048);
             const int fftLen = 4096;
             const int lshLength = 2048 / 64;
-            
+
+
             var signLsh = new ulong[channels][];
             var signLshMask = new ulong[channels][];
 
@@ -397,8 +402,87 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio
                     }
                 }
             }
-            
+
+
             return (signLsh, signLshMask);
+        }
+
+        private static Complex32[][]? GenerateFftSpectrum(float[][] samplesPerChannel, List<ActiveRegion>[] regionsPerChannel, int channels)
+        {
+            // FFT用の配列長（Radix-2要件）
+            const int fftLen = 4096;
+            // 抽出する波形の長さ
+            const int extractLen = 2048;
+
+            var fftSpectrum = new Complex32[channels][];
+            double[] hannWindow = MathNet.Numerics.Window.Hann(extractLen);
+
+            for (int ch = 0; ch < channels; ch++)
+            {
+                var complexData = new Complex32[fftLen];
+                var regions = regionsPerChannel[ch];
+
+                // 有音区間がない場合はゼロ配列のまま
+
+                if (regions != null && regions.Count > 0)
+                {
+                    int startOffset = regions[0].Offset;
+                    var channelSamples = samplesPerChannel[ch];
+                    int availableLength = channelSamples.Length - startOffset;
+                    int copyLength = Math.Min(extractLen, availableLength);
+
+                    if (copyLength > 0)
+                    {
+                        var span = new ReadOnlySpan<float>(channelSamples, startOffset, copyLength);
+                        for (int i = 0; i < copyLength; i++)
+                        {
+                            complexData[i] = new Complex32((float)(span[i] * hannWindow[i]), 0);
+                        }
+                    }
+                }
+
+                Fourier.Forward(complexData, FourierOptions.Default);
+                fftSpectrum[ch] = complexData;
+            }
+
+            return fftSpectrum;
+        }
+
+        /// <summary>
+        /// FFTスペクトルの振幅（低〜中域）を用いたシフト不変なLSH（SimHash）を生成します。
+        /// </summary>
+        private static ulong GenerateShiftInvariantLsh(Complex32[][]? fftSpectrum)
+        {
+            if (fftSpectrum == null || fftSpectrum.Length == 0 || fftSpectrum[0] == null) return 0;
+
+            var spectrum = fftSpectrum[0];
+            ulong hash = 0;
+
+            // 擬似乱数で64個のランダムベクトルを生成し、内積を取る
+            // シードを固定することで、起動ごとに一意な射影空間を保証する
+
+            var random = new Random(42);
+            // 人間の聴覚や特徴が集中しやすい低〜中域（256ビン）を対象とする
+
+            const int features = 256;
+
+
+            for (int bit = 0; bit < 64; bit++)
+            {
+                double dotProduct = 0;
+                for (int i = 0; i < features; i++)
+                {
+                    double val = spectrum[i].Magnitude;
+                    double weight = (random.NextDouble() * 2.0) - 1.0;
+
+                    dotProduct += val * weight;
+                }
+                if (dotProduct > 0)
+                {
+                    hash |= (1UL << bit);
+                }
+            }
+            return hash;
         }
     }
 }

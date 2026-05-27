@@ -166,41 +166,8 @@ internal static class FastWaveCompare
         var shorterSpan = shorter.GetRawSpan(targetChannel, 0, shorterFrames);
         var longerFullSpan = longer.GetRawSpan(targetChannel, 0, longerFrames);
 
-        // Phase 2 Measure A: Calculate sub-millisecond phase shift offset
-        int offset = FftAlignmentEngine.CalculateAlignmentOffset(shorterSpan, longerFullSpan);
-
-        float correlation;
-        if (shorterFrames == longerFrames && offset == 0)
-        {
-            correlation = WaveValidation.CalculatePearsonCorrelationSIMD(shorterSpan, longerFullSpan);
-        }
-        else
-        {
-            float[] paddedShorter = System.Buffers.ArrayPool<float>.Shared.Rent(longerFrames);
-            try
-            {
-                Array.Clear(paddedShorter, 0, longerFrames);
-                if (offset >= 0)
-                {
-                    // longer starts before shorter. shorter[0] matches longer[offset]
-                    if (offset + shorterFrames > longerFrames) offset = 0;
-                    shorterSpan.CopyTo(paddedShorter.AsSpan(offset, shorterFrames));
-                }
-                else
-                {
-                    // shorter starts before longer. longer[0] matches shorter[-offset]
-                    int absOffset = -offset;
-                    if (absOffset >= shorterFrames) absOffset = 0;
-                    int compareLen = shorterFrames - absOffset;
-                    shorterSpan.Slice(absOffset, compareLen).CopyTo(paddedShorter.AsSpan(0, compareLen));
-                }
-                correlation = WaveValidation.CalculatePearsonCorrelationSIMD(paddedShorter.AsSpan(0, longerFrames), longerFullSpan);
-            }
-            finally
-            {
-                System.Buffers.ArrayPool<float>.Shared.Return(paddedShorter);
-            }
-        }
+        int offset = 0;
+        float correlation = CalculateMaxCorrelation(shorter, longer, targetChannel, shorterFrames, longerFrames, shorterSpan, longerFullSpan, out offset);
 
         if (correlation >= threshold && shorterFrames < longerFrames)
         {
@@ -243,6 +210,60 @@ internal static class FastWaveCompare
 
         return correlation >= threshold;
 
+    }
+
+    /// <summary>
+    /// 最適なアライメント（位相ズレ補正）を加味した上での最大ピアソン相関係数を計算します。
+    /// </summary>
+    public static float CalculateMaxCorrelation(
+        ICachedSoundData shorter, ICachedSoundData longer, 
+        int targetChannel, 
+        int shorterFrames, int longerFrames, 
+        ReadOnlySpan<float> shorterSpan, ReadOnlySpan<float> longerFullSpan,
+        out int offset)
+    {
+        offset = 0;
+        if (shorter.FftSpectrum != null && longer.FftSpectrum != null &&
+            shorter.FftSpectrum[targetChannel] != null && longer.FftSpectrum[targetChannel] != null)
+        {
+            offset = WaveValidation.CalculateAlignmentOffset(shorter.FftSpectrum[targetChannel], longer.FftSpectrum[targetChannel]);
+        }
+        else
+        {
+            offset = FftAlignmentEngine.CalculateAlignmentOffset(shorterSpan, longerFullSpan);
+        }
+
+        float correlation;
+        if (shorterFrames == longerFrames && offset == 0)
+        {
+            correlation = WaveValidation.CalculatePearsonCorrelationSIMD(shorterSpan, longerFullSpan);
+        }
+        else
+        {
+            float[] paddedShorter = System.Buffers.ArrayPool<float>.Shared.Rent(longerFrames);
+            try
+            {
+                Array.Clear(paddedShorter, 0, longerFrames);
+                if (offset >= 0)
+                {
+                    if (offset + shorterFrames > longerFrames) offset = 0;
+                    shorterSpan.CopyTo(paddedShorter.AsSpan(offset, shorterFrames));
+                }
+                else
+                {
+                    int absOffset = -offset;
+                    if (absOffset >= shorterFrames) absOffset = 0;
+                    int compareLen = shorterFrames - absOffset;
+                    shorterSpan.Slice(absOffset, compareLen).CopyTo(paddedShorter.AsSpan(0, compareLen));
+                }
+                correlation = WaveValidation.CalculatePearsonCorrelationSIMD(paddedShorter.AsSpan(0, longerFrames), longerFullSpan);
+            }
+            finally
+            {
+                System.Buffers.ArrayPool<float>.Shared.Return(paddedShorter);
+            }
+        }
+        return correlation;
     }
 
     /// <summary>

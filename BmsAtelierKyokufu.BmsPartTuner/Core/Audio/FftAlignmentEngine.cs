@@ -105,4 +105,53 @@ public static class FftAlignmentEngine
 
         return maxIndex;
     }
+
+
+
+    /// <summary>
+    /// 事前計算されたFFTスペクトルを使用して、最も相関が高くなるズレ量（サンプル数）を算出します
+    /// </summary>
+    public static int CalculateAlignmentOffsetFromCache(Complex32[] fftX, Complex32[] fftY)
+    {
+        if (fftX.Length != FftLength || fftY.Length != FftLength)
+            return 0;
+
+        var complexResult = ThreadLocalComplexResult.Value!;
+
+        // クロススペクトルの計算
+        for (int i = 0; i < FftLength; i++)
+        {
+            complexResult[i] = fftX[i] * fftY[i].Conjugate();
+        }
+
+        // 逆フーリエ変換を実行
+        Fourier.Inverse(complexResult, FourierOptions.Default);
+
+        float maxVal = float.MinValue;
+        int maxIndex = 0;
+
+        int searchRange = Math.Min(1000, FftLength / 2); // Limit search to ~22ms to avoid false positives
+
+        // 正方向のズレを探索
+        for (int i = 0; i < searchRange; i++)
+        {
+            if (complexResult[i].Real > maxVal)
+            {
+                maxVal = complexResult[i].Real;
+                maxIndex = i;
+            }
+        }
+
+        // 負方向のズレを探索
+        for (int i = FftLength - searchRange; i < FftLength; i++)
+        {
+            if (complexResult[i].Real > maxVal)
+            {
+                maxVal = complexResult[i].Real;
+                maxIndex = i - FftLength;
+            }
+        }
+
+        return maxIndex;
+    }
 }

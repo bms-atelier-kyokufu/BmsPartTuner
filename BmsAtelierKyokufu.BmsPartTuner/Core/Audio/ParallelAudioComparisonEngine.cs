@@ -97,11 +97,12 @@ internal class ParallelAudioComparisonEngine(AudioComparisonParameters parameter
     /// <item>第2キー: ファイル番号（決定性の保証）</item>
     /// </list>
     /// </remarks>
-    private readonly struct AudioEntry(int index, float rms, int fileNum) : IComparable<AudioEntry>
+    private readonly struct AudioEntry(int index, float rms, int fileNum, float[]? pivotDistances = null) : IComparable<AudioEntry>
     {
         public readonly int OriginalIndex = index;
         public readonly float Rms = rms;
         public readonly int FileNum = fileNum;
+        public readonly float[]? PivotDistances = pivotDistances;
 
         /// <summary>
         /// RMS値で昇順比較、同じRMSの場合はファイル番号で比較（決定性の保証）。
@@ -248,12 +249,66 @@ internal class ParallelAudioComparisonEngine(AudioComparisonParameters parameter
     private AudioEntry[] CreateSortedEntries(IReadOnlyList<int> group)
     {
         var entries = new AudioEntry[group.Count];
+        
+        bool usePruning = group.Count >= 10;
+        int numPivots = Math.Min(3, group.Count);
+        
+        int[] pivotIndices = new int[numPivots];
+        ICachedSoundData[] pivotData = new ICachedSoundData[numPivots];
+
+        if (usePruning)
+        {
+            // グループ内から3つのピボットを選定（先頭、中間、末尾）
+            pivotIndices[0] = group[0];
+            pivotIndices[1] = group[group.Count / 2];
+            pivotIndices[2] = group[group.Count - 1];
+
+            for (int k = 0; k < numPivots; k++)
+            {
+                _audioCache.TryGetValue(_fileList[pivotIndices[k]].Name, out var pd);
+                pivotData[k] = pd!;
+            }
+        }
+
         for (int i = 0; i < group.Count; i++)
         {
             int idx = group[i];
             _audioCache.TryGetValue(_fileList[idx].Name, out var cachedData);
             float rms = (cachedData == null) ? float.MaxValue : cachedData.TotalRms;
-            entries[i] = new AudioEntry(idx, rms, _fileList[idx].NumInteger);
+            
+            float[]? distances = null;
+            if (usePruning && cachedData != null)
+            {
+                distances = new float[numPivots];
+                for (int k = 0; k < numPivots; k++)
+                {
+                    var pd = pivotData[k];
+                    if (pd == null) continue;
+                    
+                    if (ReferenceEquals(cachedData, pd))
+                    {
+                        distances[k] = 0f;
+                        continue;
+                    }
+
+                    // ピボットとの相関係数（アライメント補正込み）を算出
+                    int ch = (cachedData.GetActiveRegions()[0] == null || cachedData.GetActiveRegions()[0].Count == 0) ? 1 : 0;
+                    var shorter = cachedData.TotalSamples < pd.TotalSamples ? cachedData : pd;
+                    var longer = cachedData.TotalSamples < pd.TotalSamples ? pd : cachedData;
+                    
+                    int shorterFrames = shorter.TotalSamples / shorter.Channels;
+                    int longerFrames = longer.TotalSamples / longer.Channels;
+                    var shorterSpan = shorter.GetRawSpan(ch, 0, shorterFrames);
+                    var longerFullSpan = longer.GetRawSpan(ch, 0, longerFrames);
+
+                    float r = FastWaveCompare.CalculateMaxCorrelation(shorter, longer, ch, shorterFrames, longerFrames, shorterSpan, longerFullSpan, out _);
+                    
+                    // 相関 r を距離 d に変換: d = sqrt(2 * max(0, 1 - r))
+                    distances[k] = (float)Math.Sqrt(2.0 * Math.Max(0.0, 1.0 - r));
+                }
+            }
+            
+            entries[i] = new AudioEntry(idx, rms, _fileList[idx].NumInteger, distances);
         }
         Array.Sort(entries);
         return entries;
@@ -313,11 +368,35 @@ internal class ParallelAudioComparisonEngine(AudioComparisonParameters parameter
     /// <remarks>
     private void CompareWithNearbyEntries(AudioEntry[] entries, int currentIndex, ICachedSoundData cachedData1, float r2Threshold, ref int comparisons, ref int matches, ref int skipped)
     {
-        // Measure C (Prefix Matching) により、長さの異なる波形（打ち切り波形と元波形）を比較するため、
-        // 全体のRMS値は大きく異なる可能性があります（短い波形の方がRMSが高くなりやすい）。
-        // そのため、RMSによる早期棄却（break）を廃止し、同一キーワードグループ内は全て総当たり（最大100^2）で比較します。
+        float dThreshold = (float)Math.Sqrt(2.0 * Math.Max(0.0, 1.0 - r2Threshold));
+        const float epsilon = 1e-4f;
+        var pivotDistances1 = entries[currentIndex].PivotDistances;
+
         for (int j = currentIndex + 1; j < entries.Length; j++)
         {
+            // 三角不等式による枝刈り
+            if (pivotDistances1 != null)
+            {
+                var pivotDistances2 = entries[j].PivotDistances;
+                if (pivotDistances2 != null)
+                {
+                    bool skip = false;
+                    for (int k = 0; k < pivotDistances1.Length; k++)
+                    {
+                        if (Math.Abs(pivotDistances1[k] - pivotDistances2[k]) > dThreshold + epsilon)
+                        {
+                            skip = true;
+                            break;
+                        }
+                    }
+                    if (skip)
+                    {
+                        Interlocked.Increment(ref skipped);
+                        continue;
+                    }
+                }
+            }
+
             CompareFilePair(entries[currentIndex].OriginalIndex, entries[j].OriginalIndex, cachedData1, r2Threshold, ref comparisons, ref matches, ref skipped);
         }
     }

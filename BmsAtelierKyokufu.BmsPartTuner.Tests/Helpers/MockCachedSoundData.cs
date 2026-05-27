@@ -18,7 +18,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
         public int Channels { get; }
         public int BitsPerSample { get; }
 
-        public float[]? Samples => null;
+        public static float[]? Samples => null;
         public float[][]? SamplesPerChannel { get; private set; }
 
         public List<ActiveRegion>[]? NormalizedRegions { get; }
@@ -35,8 +35,12 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
         public double EstimatedMemoryMB => 0;
         public bool IsPreNormalized => true;
 
-        private ulong[][] _signLsh;
-        private ulong[][] _signLshMask;
+
+        public MathNet.Numerics.Complex32[][]? FftSpectrum { get; }
+        public ulong ShiftInvariantLsh { get; }
+
+        private readonly ulong[][] _signLsh;
+        private readonly ulong[][] _signLshMask;
 
         public MockCachedSoundData(float[][] samplesPerChannel, int sampleRate, int bitsPerSample, string filePath = "test.wav")
         {
@@ -61,6 +65,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
             var lshResult = GenerateLsh(samplesPerChannel, samplesPerChannelLen, Channels);
             _signLsh = lshResult.signLsh;
             _signLshMask = lshResult.signLshMask;
+
+            FftSpectrum = GenerateFftSpectrum(samplesPerChannel, Channels);
+            ShiftInvariantLsh = GenerateShiftInvariantLsh(FftSpectrum);
         }
 
         public IReadOnlyList<ActiveRegion>[] GetActiveRegions()
@@ -108,7 +115,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
         public ReadOnlySpan<ulong> GetLsh(int channel) => _signLsh[channel];
         public ReadOnlySpan<ulong> GetLshMask(int channel) => _signLshMask[channel];
 
-        public void Dispose() 
+        public void Dispose()
         {
             for (int i = 0; i < Channels; i++)
             {
@@ -116,6 +123,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
                 _signLshMask[i] = [];
             }
             SamplesPerChannel = null;
+            GC.SuppressFinalize(this);
         }
 
         // --- 以下はテスト用にプロダクションコード(AudioProcessingService)のロジックを簡略移植したもの ---
@@ -137,7 +145,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
                     double varSum = 0;
                     for (int i = 0; i < samples.Length; i++) varSum += Math.Pow(samples[i] - mean, 2);
                     double stdDev = Math.Sqrt(varSum);
-                    
+
                     if (stdDev < 1e-10)
                     {
                         for (int i = 0; i < samples.Length; i++) normData[i] = 0;
@@ -146,7 +154,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
                     {
                         for (int i = 0; i < samples.Length; i++) normData[i] = (float)((samples[i] - mean) / stdDev);
                     }
-                    
+
                     regionsPerChannel[ch].Add(new ActiveRegion(0, samples.Length, normData));
                 }
             }
@@ -180,7 +188,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
             int extractLen = Math.Min(lengthSamples, 2048);
             const int fftLen = 4096;
             const int lshLength = 2048 / 64;
-            
+
             var signLsh = new ulong[channels][];
             var signLshMask = new ulong[channels][];
 
@@ -227,8 +235,66 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
                     }
                 }
             }
-            
+
             return (signLsh, signLshMask);
+        }
+
+        private static Complex32[][]? GenerateFftSpectrum(float[][] samplesPerChannel, int channels)
+        {
+            const int fftLen = 4096;
+            const int extractLen = 2048;
+
+            var fftSpectrum = new Complex32[channels][];
+            double[] hannWindow = MathNet.Numerics.Window.Hann(extractLen);
+
+            for (int ch = 0; ch < channels; ch++)
+            {
+                var complexData = new Complex32[fftLen];
+                var channelSamples = samplesPerChannel[ch];
+                int copyLength = Math.Min(extractLen, channelSamples.Length);
+
+                if (copyLength > 0)
+                {
+                    var span = new ReadOnlySpan<float>(channelSamples, 0, copyLength);
+                    for (int i = 0; i < copyLength; i++)
+                    {
+                        complexData[i] = new Complex32((float)(span[i] * hannWindow[i]), 0);
+                    }
+                }
+
+                Fourier.Forward(complexData, FourierOptions.Default);
+                fftSpectrum[ch] = complexData;
+            }
+
+            return fftSpectrum;
+        }
+
+        private static ulong GenerateShiftInvariantLsh(Complex32[][]? fftSpectrum)
+        {
+            if (fftSpectrum == null || fftSpectrum.Length == 0 || fftSpectrum[0] == null) return 0;
+
+            var spectrum = fftSpectrum[0];
+            ulong hash = 0;
+
+            // 擬似乱数で64個のランダムベクトルを生成し、内積を取る
+            var random = new Random(42);
+            const int features = 256;
+
+            for (int bit = 0; bit < 64; bit++)
+            {
+                double dotProduct = 0;
+                for (int i = 0; i < features; i++)
+                {
+                    double val = spectrum[i].Magnitude;
+                    double weight = (random.NextDouble() * 2.0) - 1.0;
+                    dotProduct += val * weight;
+                }
+                if (dotProduct > 0)
+                {
+                    hash |= (1UL << bit);
+                }
+            }
+            return hash;
         }
     }
 }

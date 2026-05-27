@@ -1,3 +1,5 @@
+using MathNet.Numerics;
+
 namespace BmsAtelierKyokufu.BmsPartTuner.Models;
 
 /// <summary>
@@ -36,6 +38,18 @@ public interface ICachedSoundData : IDisposable
 
     /// <summary>事前正規化済みのデータを持っているか（true=BMS用, false=bmson用）。</summary>
     bool IsPreNormalized { get; }
+
+    /// <summary>
+    /// 事前計算された周波数領域データ（FFTスペクトル）。
+    /// [チャンネル][FFT長(4096)] のジャグ配列。Phase 4での相互相関計算の高速化に使用します。
+    /// </summary>
+    Complex32[][]? FftSpectrum { get; }
+
+    /// <summary>
+    /// シフト不変なLSH（SimHash）の64bitハッシュ値。
+    /// 位相ズレやトリミングの差異にロバストなグループ化に使用します。
+    /// </summary>
+    ulong ShiftInvariantLsh { get; }
 
     /// <summary>
     /// 有音区間（ActiveRegion）のリストを取得します。
