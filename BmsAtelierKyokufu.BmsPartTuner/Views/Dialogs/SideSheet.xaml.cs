@@ -120,10 +120,7 @@ public partial class SideSheet : UserControl
             var scrimAnimation = new DoubleAnimation(1, 0, AnimationDuration) { EasingFunction = _easeIn };
             var sheetAnimation = new DoubleAnimation(0, SheetWidth, AnimationDuration) { EasingFunction = _easeIn };
 
-            scrimAnimation.Completed += (s, e) =>
-            {
-                Scrim.Visibility = Visibility.Collapsed;
-            };
+            scrimAnimation.Completed += (s, e) => Scrim.Visibility = Visibility.Collapsed;
 
             Scrim.BeginAnimation(OpacityProperty, scrimAnimation);
             SheetTranslate.BeginAnimation(System.Windows.Media.TranslateTransform.XProperty, sheetAnimation);

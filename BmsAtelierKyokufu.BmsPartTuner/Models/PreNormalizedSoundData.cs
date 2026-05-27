@@ -312,7 +312,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Models
             // FFT Parameter Constants (Phase 2 Measure B)
             int extractLen = Math.Min(lengthSamples, 2048);
             int fftLen = 4096;
-            
+
             // Frequency domain magnitude produces fftLen/2 positive frequencies = 2048 bins
             int lshLength = 2048 / 64; // exactly 32 ulongs per channel
             _signLsh = [new ulong[lshLength], new ulong[lshLength]];
@@ -326,7 +326,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Models
             {
                 var complexData = new Complex32[fftLen];
                 var span = new ReadOnlySpan<float>(samplesPerChannel[ch], 0, extractLen);
-                
+
                 // 1. Extract, apply Hann Window, and zero-pad
                 for (int i = 0; i < extractLen; i++)
                 {

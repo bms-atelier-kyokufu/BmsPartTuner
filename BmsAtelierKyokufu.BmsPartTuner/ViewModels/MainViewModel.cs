@@ -156,16 +156,10 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
         Optimization.ErrorOccurred += OnOptimizationError;
 
         // 検証エラーハンドラー
-        InputValidation.ValidationErrorOccurred += (s, e) =>
-        {
-            ShowMessage($"{e.PropertyName}: {e.ErrorMessage}", isError: true);
-        };
+        InputValidation.ValidationErrorOccurred += (s, e) => ShowMessage($"{e.PropertyName}: {e.ErrorMessage}", isError: true);
 
         // メディア再生エラーハンドラー
-        MediaPlayback.PlaybackError += (s, message) =>
-        {
-            ShowMessage(message, isError: true);
-        };
+        MediaPlayback.PlaybackError += (s, message) => ShowMessage(message, isError: true);
 
         FileOperations.PropertyChanged += (s, e) =>
         {
@@ -557,10 +551,7 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
     {
         StatusMessage = message;
 
-        Application.Current?.Dispatcher.BeginInvoke(new Action(() =>
-        {
-            Notification.ShowToast(message, isError ? "⚠" : "✓", isError);
-        }), System.Windows.Threading.DispatcherPriority.Normal);
+        Application.Current?.Dispatcher.BeginInvoke(new Action(() => Notification.ShowToast(message, isError ? "⚠" : "✓", isError)), System.Windows.Threading.DispatcherPriority.Normal);
     }
 
     private void ForwardPropertyChanged(string? propertyName)

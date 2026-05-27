@@ -182,10 +182,7 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
 
             if (!cancellationToken.IsCancellationRequested)
             {
-                await Application.Current.Dispatcher.InvokeAsync(() =>
-                {
-                    ShowLoader = true;
-                });
+                await Application.Current.Dispatcher.InvokeAsync(() => ShowLoader = true);
             }
         }
         catch (TaskCanceledException)

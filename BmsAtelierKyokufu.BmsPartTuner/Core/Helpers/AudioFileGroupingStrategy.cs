@@ -156,7 +156,7 @@ public static class AudioFileGroupingStrategy
 
             long fileSize = cachedData.FileSize;
             float rms = cachedData.TotalRms;
-            
+
             // 比較エンジン(ParallelAudioComparisonEngine)がSort & Sweepアルゴリズムを使用して
             // RMS近傍検索を効率的に行うため、ここではRMSによるバケツ分けを行わず同一キーワードで1つのグループにします。
             string groupKey = "ALL";
@@ -273,7 +273,7 @@ public static class AudioFileGroupingStrategy
 
             long fileSize = cachedData.FileSize;
             float rms = cachedData.TotalRms;
-            
+
             int rmsQuantized = (int)(rms * AppConstants.Grouping.RmsQuantizationFactor);
             // 50ms (44100Hz 16bit Stereo = 8820 bytes) のブレを許容するため、サイズを量子化してグループ分けします。
             long sizeQuantized = fileSize / 8820;

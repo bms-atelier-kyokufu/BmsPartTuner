@@ -1,4 +1,4 @@
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 using BmsAtelierKyokufu.BmsPartTuner.Models.Bmson;
 
@@ -399,8 +399,8 @@ public class BmsScoreGenerator(
 
             double currentSec = _yDataMap[n.Y].TimeSec;
             double oSec = currentSec - blockStartSec;
-            double nextSec = (depth + 1 < block.Count) 
-                ? _yDataMap[block[depth + 1].Y].TimeSec 
+            double nextSec = (depth + 1 < block.Count)
+                ? _yDataMap[block[depth + 1].Y].TimeSec
                 : nextBlockStartSec;
             double dSec = nextSec - currentSec;
 

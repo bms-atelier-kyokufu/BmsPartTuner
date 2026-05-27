@@ -43,10 +43,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Views.Windows
             DataContext = _viewModel;
 
             // ウィンドウハンドルが生成された後にタイトルバーテーマを適用
-            SourceInitialized += (s, e) =>
-            {
-                WindowThemeHelper.ApplyTitleBarTheme(this, _viewModel.Settings.IsDarkTheme);
-            };
+            SourceInitialized += (s, e) => WindowThemeHelper.ApplyTitleBarTheme(this, _viewModel.Settings.IsDarkTheme);
 
             // イベント登録
             InitializeEventHandlers();
@@ -166,10 +163,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Views.Windows
             };
 
             // FileListViewModelの選択キーワード変更イベント購読
-            _viewModel.BmsDefinitionManager.SelectedKeywordsChanged += (s, e) =>
-            {
-                UpdateChipFilter();
-            };
+            _viewModel.BmsDefinitionManager.SelectedKeywordsChanged += (s, e) => UpdateChipFilter();
         }
 
         private void UpdateChipFilter()
@@ -233,10 +227,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Views.Windows
                     if (!_viewModel.IsSlideConfirmationVisible)
                     {
                         // UIスレッドで実行
-                        Dispatcher.BeginInvoke(new Action(() =>
-                        {
-                            SlideConfirmation?.Reset();
-                        }), System.Windows.Threading.DispatcherPriority.Background);
+                        Dispatcher.BeginInvoke(new Action(() => SlideConfirmation?.Reset()), System.Windows.Threading.DispatcherPriority.Background);
                     }
                     break;
             }

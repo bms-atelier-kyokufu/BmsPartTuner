@@ -59,10 +59,7 @@ public class ToastNotificationService : IUiElementService<ToastViewModel>
         if (Application.Current.MainWindow?.Resources["ToastSequence"] is Storyboard toastSequence)
         {
             _showStoryboard = toastSequence;
-            _showStoryboard.Completed += (s, e) =>
-            {
-                _container?.Visibility = Visibility.Collapsed;
-            };
+            _showStoryboard.Completed += (s, e) => _container?.Visibility = Visibility.Collapsed;
         }
     }
 
@@ -95,7 +92,7 @@ public class ToastNotificationService : IUiElementService<ToastViewModel>
 
         if (_showStoryboard != null && _container != null)
         {
-            _showStoryboard.Completed += (s, e) => { _container.Visibility = Visibility.Collapsed; };
+            _showStoryboard.Completed += (s, e) => _container.Visibility = Visibility.Collapsed;
         }
     }
 

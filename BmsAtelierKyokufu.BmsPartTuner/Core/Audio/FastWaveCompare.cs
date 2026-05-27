@@ -44,13 +44,13 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
 /// <para>この $\left( \frac{x_i - \bar{x}}{s_x} \right)$ という項はデータを正規化（標準化）していることを示しています。</para>
 ///
 /// <para>【Phase 2の変換】</para>
-/// 正規化波形 $\hat{x}_i$ を事前計算することで:
-///
+/// <para>正規化波形 $\hat{x}_i$ を事前計算することで:</para>
+/// <para>
 /// $$
 /// r = \sum_{i=1}^{n} \hat{x}_i \cdot \hat{y}_i
 /// $$
-///
-/// （単なるドット積）
+/// </para>
+/// <para>（単なるドット積）</para>
 ///
 /// <para>【ラグ補正について】</para>
 /// ラグ（開始位置のズレ）は音ゲーの演奏感に直結するため、あえて補正せず、
@@ -126,94 +126,79 @@ internal static class FastWaveCompare
         }
 
 
-            // Check both channels for total silence
-            bool isData1Silent = true;
-            bool isData2Silent = true;
-            for (int ch = 0; ch < activeRegions1.Length && ch < data1.Channels; ch++)
-            {
-                if (activeRegions1[ch] != null && activeRegions1[ch].Count > 0) isData1Silent = false;
-            }
-            for (int ch = 0; ch < activeRegions2.Length && ch < data2.Channels; ch++)
-            {
-                if (activeRegions2[ch] != null && activeRegions2[ch].Count > 0) isData2Silent = false;
-            }
+        // Check both channels for total silence
+        bool isData1Silent = true;
+        bool isData2Silent = true;
+        for (int ch = 0; ch < activeRegions1.Length && ch < data1.Channels; ch++)
+        {
+            if (activeRegions1[ch]?.Count > 0) isData1Silent = false;
+        }
+        for (int ch = 0; ch < activeRegions2.Length && ch < data2.Channels; ch++)
+        {
+            if (activeRegions2[ch]?.Count > 0) isData2Silent = false;
+        }
 
-            // If both are entirely silent
-            if (isData1Silent && isData2Silent)
-            {
-                return true;
-            }
-            // If only one is entirely silent
-            if (isData1Silent || isData2Silent)
-            {
-                PerformanceDebugLogger.WriteDebug($"[DEBUG-SilenceReject] {System.IO.Path.GetFileName(data1.FilePath)}({isData1Silent}) vs {System.IO.Path.GetFileName(data2.FilePath)}({isData2Silent})");
-                return false;
-            }
+        // If both are entirely silent
+        if (isData1Silent && isData2Silent)
+        {
+            return true;
+        }
+        // If only one is entirely silent
+        if (isData1Silent || isData2Silent)
+        {
+            PerformanceDebugLogger.WriteDebug($"[DEBUG-SilenceReject] {System.IO.Path.GetFileName(data1.FilePath)}({isData1Silent}) vs {System.IO.Path.GetFileName(data2.FilePath)}({isData2Silent})");
+            return false;
+        }
 
-            // Find first active channel to compute Pearson on (usually 0, but could be 1 if left is silent)
-            int targetChannel = 0;
-            if (activeRegions1[0] == null || activeRegions1[0].Count == 0)
-            {
-                targetChannel = 1;
-            }
+        // Find first active channel to compute Pearson on (usually 0, but could be 1 if left is silent)
+        int targetChannel = 0;
+        if (activeRegions1[0] == null || activeRegions1[0].Count == 0)
+        {
+            targetChannel = 1;
+        }
 
-                var shorter = data1.TotalSamples < data2.TotalSamples ? data1 : data2;
-                var longer = data1.TotalSamples < data2.TotalSamples ? data2 : data1;
+        var shorter = data1.TotalSamples < data2.TotalSamples ? data1 : data2;
+        var longer = data1.TotalSamples < data2.TotalSamples ? data2 : data1;
 
-                int shorterFrames = shorter.TotalSamples / shorter.Channels;
-                int longerFrames = longer.TotalSamples / longer.Channels;
+        int shorterFrames = shorter.TotalSamples / shorter.Channels;
+        int longerFrames = longer.TotalSamples / longer.Channels;
 
-                var shorterSpan = shorter.GetRawSpan(targetChannel, 0, shorterFrames);
-                var longerFullSpan = longer.GetRawSpan(targetChannel, 0, longerFrames);
+        var shorterSpan = shorter.GetRawSpan(targetChannel, 0, shorterFrames);
+        var longerFullSpan = longer.GetRawSpan(targetChannel, 0, longerFrames);
 
-                // Phase 2 Measure A: Calculate sub-millisecond phase shift offset
-                int offset = WaveValidation.CalculateAlignmentOffset(shorterSpan, longerFullSpan);
+        // Phase 2 Measure A: Calculate sub-millisecond phase shift offset
+        int offset = WaveValidation.CalculateAlignmentOffset(shorterSpan, longerFullSpan);
 
         ReadOnlySpan<float> alignedShorter;
         ReadOnlySpan<float> alignedLonger;
 
         if (offset >= 0)
-                {
-                    // longer starts before shorter. shorter[0] matches longer[offset]
-                    if (offset + shorterFrames > longerFrames) offset = 0;
-                    alignedShorter = shorterSpan;
-                    alignedLonger = longer.GetRawSpan(targetChannel, offset, shorterFrames);
-                }
-                else
-                {
-                    // shorter starts before longer. longer[0] matches shorter[-offset]
-                    int absOffset = -offset;
-                    if (absOffset >= shorterFrames) absOffset = 0;
-                    int compareLen = shorterFrames - absOffset;
-                    alignedShorter = shorter.GetRawSpan(targetChannel, absOffset, compareLen);
-                    alignedLonger = longer.GetRawSpan(targetChannel, 0, compareLen);
-                }
-
-                // アライメント済みプレフィックス同士でピアソン相関を計算する
-                float correlation = WaveValidation.CalculatePearsonCorrelationSIMD(alignedShorter, alignedLonger);
-                if (Math.Abs(correlation) < threshold)
-                {
-                    string n1 = System.IO.Path.GetFileName(data1.FilePath);
-                    string n2 = System.IO.Path.GetFileName(data2.FilePath);
-                    PerformanceDebugLogger.WriteDebug($"[DEBUG-IsMatch] {n1} vs {n2} corr={correlation:F4}, offset={offset}, thr={threshold}");
-                }
-                
-                return Math.Abs(correlation) >= threshold;
-
-    }
-
-    /// <summary>
-    /// Check if an array is all zeros (within floating point tolerance).
-    /// </summary>
-    private static bool IsAllZero(float[] data)
-    {
-        const float epsilon = 1e-9f;
-        for (int i = 0; i < data.Length; i++)
         {
-            if (Math.Abs(data[i]) > epsilon)
-                return false;
+            // longer starts before shorter. shorter[0] matches longer[offset]
+            if (offset + shorterFrames > longerFrames) offset = 0;
+            alignedShorter = shorterSpan;
+            alignedLonger = longer.GetRawSpan(targetChannel, offset, shorterFrames);
         }
-        return true;
+        else
+        {
+            // shorter starts before longer. longer[0] matches shorter[-offset]
+            int absOffset = -offset;
+            if (absOffset >= shorterFrames) absOffset = 0;
+            int compareLen = shorterFrames - absOffset;
+            alignedShorter = shorter.GetRawSpan(targetChannel, absOffset, compareLen);
+            alignedLonger = longer.GetRawSpan(targetChannel, 0, compareLen);
+        }
+
+        // アライメント済みプレフィックス同士でピアソン相関を計算する
+        float correlation = WaveValidation.CalculatePearsonCorrelationSIMD(alignedShorter, alignedLonger);
+        if (Math.Abs(correlation) < threshold)
+        {
+            string n1 = System.IO.Path.GetFileName(data1.FilePath);
+            string n2 = System.IO.Path.GetFileName(data2.FilePath);
+            PerformanceDebugLogger.WriteDebug($"[DEBUG-IsMatch] {n1} vs {n2} corr={correlation:F4}, offset={offset}, thr={threshold}");
+        }
+
+        return Math.Abs(correlation) >= threshold;
     }
 
     /// <summary>
@@ -255,7 +240,7 @@ internal static class FastWaveCompare
                 return 1.0f;
             }
             // If only one is entirely silent
-            if ((regions1 == null || regions1.Count == 0) || (regions2 == null || regions2.Count == 0))
+            if (regions1 == null || regions1.Count == 0 || regions2 == null || regions2.Count == 0)
             {
                 return 0.0f;
             }

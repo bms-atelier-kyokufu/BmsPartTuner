@@ -179,10 +179,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Services.UI
                         EasingFunction = new BounceEase { Bounces = 1, EasingMode = EasingMode.EaseOut }
                     };
 
-                    bounceAnimation.Completed += (bs, bargs) =>
-                    {
-                        SlideCompleted?.Invoke(this, EventArgs.Empty);
-                    };
+                    bounceAnimation.Completed += (bs, bargs) => SlideCompleted?.Invoke(this, EventArgs.Empty);
 
                     _progressiveFill?.BeginAnimation(UIElement.OpacityProperty, bounceAnimation);
                 };
