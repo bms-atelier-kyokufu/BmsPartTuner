@@ -602,10 +602,14 @@ public class BmsOptimizationService : IBmsOptimizationService
                     deletedCount++;
                     PerformanceDebugLogger.WriteLine($"Deleted unused file: {file}");
                 }
+                else
+                {
+                    PerformanceDebugLogger.WriteLine($"File to delete not found: {file}");
+                }
             }
             catch (Exception ex)
             {
-                PerformanceDebugLogger.WriteLine($"Failed to delete file {file}: {ex.Message}");
+                PerformanceDebugLogger.WriteLine($"Failed to delete unused file: {file}. Error: {ex.Message}");
             }
         }
         return deletedCount;

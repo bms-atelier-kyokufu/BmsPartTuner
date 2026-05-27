@@ -191,7 +191,7 @@ public class BmsOptimizationServiceExceptionTests : IDisposable
     public Task ExecuteDefinitionReductionAsync_ReadOnlyFile_ContinuesWithoutCrash() =>
         RunDefinitionReductionTestAsync(new()
         {
-            BuildBms = b => b.WithHeader("GENRE", "Test").WithWav(1, "used.wav").AddMainData(11, "01"),
+            BuildBms = b => b.WithHeader("GENRE", "Test").WithWav(1, "used.wav", false).AddMainData(11, "01"),
             CreateFiles = dir =>
             {
                 var f1 = Path.Combine(dir, "used.wav"); BmsTestWavHelper.CreateValidWavFile(f1);
@@ -211,7 +211,7 @@ public class BmsOptimizationServiceExceptionTests : IDisposable
     public Task ExecuteDefinitionReductionAsync_MixedExistingAndMissing_HandlesGracefully() =>
         RunDefinitionReductionTestAsync(new()
         {
-            BuildBms = b => b.WithHeader("GENRE", "Test").WithWav(1, "existing.wav").AddMainData(11, "01"),
+            BuildBms = b => b.WithHeader("GENRE", "Test").WithWav(1, "existing.wav", false).AddMainData(11, "01"),
             CreateFiles = dir =>
             {
                 var f = Path.Combine(dir, "existing.wav"); BmsTestWavHelper.CreateValidWavFile(f);
