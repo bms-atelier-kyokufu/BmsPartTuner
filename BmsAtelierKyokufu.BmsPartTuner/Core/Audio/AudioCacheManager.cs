@@ -1,4 +1,4 @@
-﻿namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
+namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
 
 /// <summary>
 /// オーディオファイルのキャッシュ管理。
@@ -198,7 +198,7 @@ internal static class AudioCacheManager
                 }
                 else
                 {
-                    var cachedData = new PreNormalizedSoundData(file.Name, normalizationMode);
+                    var cachedData = AudioProcessingService.LoadAndProcess(file.Name, normalizationMode);
                     audioCache[file.Name] = cachedData;
                     success++;
                 }

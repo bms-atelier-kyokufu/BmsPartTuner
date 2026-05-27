@@ -1,4 +1,4 @@
-﻿using BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
+using BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
 using BmsAtelierKyokufu.BmsPartTuner.Models;
 using BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers;
 
@@ -55,10 +55,10 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
             float[] data = [0.1f, 0.2f, 0.3f, 0.4f];
 
             float[][] samples1 = [data];
-            var sound1 = new PreNormalizedSoundData(samples1, 44100, 16);
+            var sound1 = new MockCachedSoundData(samples1, 44100, 16);
 
             float[][] samples2 = [data];
-            var sound2 = new PreNormalizedSoundData(samples2, 48000, 16); // Different sample rate
+            var sound2 = new MockCachedSoundData(samples2, 48000, 16); // Different sample rate
 
             Assert.False(FastWaveCompare.IsMatch(sound1, sound2, 0.1f));
         }
@@ -83,10 +83,10 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
             float[] data = [0.1f, 0.2f, 0.3f, 0.4f];
 
             float[][] samples1 = [data];
-            var sound1 = new PreNormalizedSoundData(samples1, 44100, 16);
+            var sound1 = new MockCachedSoundData(samples1, 44100, 16);
 
             float[][] samples2 = [data];
-            var sound2 = new PreNormalizedSoundData(samples2, 44100, 24); // Different bit depth
+            var sound2 = new MockCachedSoundData(samples2, 44100, 24); // Different bit depth
 
             Assert.False(FastWaveCompare.IsMatch(sound1, sound2, 0.1f));
         }
@@ -128,10 +128,10 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
             float[] data = [0.1f, 0.2f, 0.3f, 0.4f];
 
             float[][] samples1 = [data];
-            var sound1 = new PreNormalizedSoundData(samples1, 44100, 16);
+            var sound1 = new MockCachedSoundData(samples1, 44100, 16);
 
             float[][] samples2 = [data];
-            var sound2 = new PreNormalizedSoundData(samples2, 48000, 16); // Different format
+            var sound2 = new MockCachedSoundData(samples2, 48000, 16); // Different format
 
             float correlation = FastWaveCompare.GetCorrelation(sound1, sound2);
 

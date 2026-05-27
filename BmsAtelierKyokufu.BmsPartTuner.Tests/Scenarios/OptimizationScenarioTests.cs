@@ -1,4 +1,5 @@
 using BmsAtelierKyokufu.BmsPartTuner.Core.Optimization;
+using BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers;
 using BmsAtelierKyokufu.BmsPartTuner.Models;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Scenarios
@@ -30,10 +31,10 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Scenarios
         /// メモリ内音声データを生成するヘルパーメソッド。
         /// 実際の.wavファイルを読み込まずにテストを実行します。
         /// </summary>
-        private static PreNormalizedSoundData CreateMockAudioData(float[] samples)
+        private static MockCachedSoundData CreateMockAudioData(float[] samples)
         {
             float[][] channels = [samples];
-            return new PreNormalizedSoundData(channels, 44100, 16);
+            return new MockCachedSoundData(channels, 44100, 16);
         }
 
         #endregion

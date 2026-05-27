@@ -1,4 +1,4 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Optimization;
 using BmsAtelierKyokufu.BmsPartTuner.Models;
 using BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers;
@@ -108,7 +108,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
         public void RunParallelSimulation_VeryShortAudioData_HandlesGracefully()
         {
             var audioCache = new ConcurrentDictionary<string, BmsAtelierKyokufu.BmsPartTuner.Models.ICachedSoundData>();
-            var shortCache = new PreNormalizedSoundData([[0.5f]], 44100, 16);
+            var shortCache = new MockCachedSoundData([[0.5f]], 44100, 16);
 
             var file1 = new BmsAudioFile
             {
@@ -142,7 +142,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
         {
             var audioCache = new ConcurrentDictionary<string, BmsAtelierKyokufu.BmsPartTuner.Models.ICachedSoundData>();
             var silentData = new float[1][] { new float[100] }; // すべて0
-            var silentCache = new PreNormalizedSoundData(silentData, 44100, 16);
+            var silentCache = new MockCachedSoundData(silentData, 44100, 16);
 
             var file1 = new BmsAudioFile
             {

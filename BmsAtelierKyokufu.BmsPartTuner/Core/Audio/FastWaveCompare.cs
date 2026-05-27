@@ -167,7 +167,7 @@ internal static class FastWaveCompare
         var longerFullSpan = longer.GetRawSpan(targetChannel, 0, longerFrames);
 
         // Phase 2 Measure A: Calculate sub-millisecond phase shift offset
-        int offset = WaveValidation.CalculateAlignmentOffset(shorterSpan, longerFullSpan);
+        int offset = FftAlignmentEngine.CalculateAlignmentOffset(shorterSpan, longerFullSpan);
 
         float correlation;
         if (shorterFrames == longerFrames && offset == 0)

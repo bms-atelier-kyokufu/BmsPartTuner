@@ -1,4 +1,5 @@
 using BmsAtelierKyokufu.BmsPartTuner.Core.Helpers;
+using BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers;
 using BmsAtelierKyokufu.BmsPartTuner.Models;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Helpers;
@@ -45,7 +46,7 @@ public class AudioFileGroupingStrategyTests
                 samplesPerChannel[0][i] = rms;
             }
 
-            audioCache[file.Name] = new PreNormalizedSoundData(samplesPerChannel, 44100, 16, fileName);
+            audioCache[file.Name] = new MockCachedSoundData(samplesPerChannel, 44100, 16, fileName);
         }
 
         return file;

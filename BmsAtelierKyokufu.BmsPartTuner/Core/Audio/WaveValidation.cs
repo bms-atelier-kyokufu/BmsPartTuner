@@ -153,56 +153,7 @@ static public class WaveValidation
     /// </summary>
     public static int CalculateAlignmentOffset(ReadOnlySpan<float> shorter, ReadOnlySpan<float> longer)
     {
-        int extractLen = Math.Min(Math.Min(shorter.Length, longer.Length), 2048);
-        if (extractLen <= 0) return 0;
-
-        const int fftLen = 4096; // 2048 + 2048 - 1 <= 4096 (Radix-2)
-
-        var complexX = new Complex32[fftLen];
-        var complexY = new Complex32[fftLen];
-
-        double[] hannWindow = MathNet.Numerics.Window.Hann(extractLen);
-
-        for (int i = 0; i < extractLen; i++)
-        {
-            complexX[i] = new Complex32((float)(shorter[i] * hannWindow[i]), 0);
-            complexY[i] = new Complex32((float)(longer[i] * hannWindow[i]), 0);
-        }
-
-        MathNet.Numerics.IntegralTransforms.Fourier.Forward(complexX, MathNet.Numerics.IntegralTransforms.FourierOptions.Default);
-        MathNet.Numerics.IntegralTransforms.Fourier.Forward(complexY, MathNet.Numerics.IntegralTransforms.FourierOptions.Default);
-
-        var complexResult = new Complex32[fftLen];
-        for (int i = 0; i < fftLen; i++)
-        {
-            complexResult[i] = complexX[i] * complexY[i].Conjugate();
-        }
-
-        MathNet.Numerics.IntegralTransforms.Fourier.Inverse(complexResult, MathNet.Numerics.IntegralTransforms.FourierOptions.Default);
-
-        float maxVal = float.MinValue;
-        int maxIndex = 0;
-
-        int searchRange = Math.Min(1000, fftLen / 2); // Limit search to ~22ms to avoid false positives from matching distant peaks
-
-        for (int i = 0; i < searchRange; i++)
-        {
-            if (complexResult[i].Real > maxVal)
-            {
-                maxVal = complexResult[i].Real;
-                maxIndex = i;
-            }
-        }
-        for (int i = fftLen - searchRange; i < fftLen; i++)
-        {
-            if (complexResult[i].Real > maxVal)
-            {
-                maxVal = complexResult[i].Real;
-                maxIndex = i - fftLen;
-            }
-        }
-
-        return maxIndex;
+        return FftAlignmentEngine.CalculateAlignmentOffset(shorter, longer);
     }
 
     /// <summary>

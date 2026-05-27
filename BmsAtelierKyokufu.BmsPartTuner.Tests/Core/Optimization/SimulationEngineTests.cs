@@ -1,4 +1,4 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Optimization;
 using BmsAtelierKyokufu.BmsPartTuner.Models;
 using BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers;
@@ -108,7 +108,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
             public ConcurrentDictionary<string, BmsAtelierKyokufu.BmsPartTuner.Models.ICachedSoundData> Cache { get; } = new();
             public List<BmsAudioFile> Files { get; } = [];
 
-            public TestEngineBuilder AddFile(string name, int num, PreNormalizedSoundData? data = null)
+            public TestEngineBuilder AddFile(string name, int num, ICachedSoundData? data = null)
             {
                 Files.Add(new BmsAudioFile { Name = name, NumInteger = num });
                 if (data != null)

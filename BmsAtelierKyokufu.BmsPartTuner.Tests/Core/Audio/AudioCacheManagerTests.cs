@@ -1,6 +1,7 @@
 using System.IO;
 using System.Text;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
+using BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers;
 using BmsAtelierKyokufu.BmsPartTuner.Models;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
@@ -192,7 +193,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
         public void PreNormalizedSoundData_Dispose_NullsOutLshAndSamples()
         {
             var samples = new float[][] { [0.5f, -0.5f] };
-            var soundData = new PreNormalizedSoundData(samples, 44100, 16);
+            var soundData = new MockCachedSoundData(samples, 44100, 16);
 
             // Access before dispose
             Assert.True(soundData.GetLsh(0).Length > 0);

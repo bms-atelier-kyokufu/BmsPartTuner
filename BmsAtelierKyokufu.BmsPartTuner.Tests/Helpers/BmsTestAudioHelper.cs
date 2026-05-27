@@ -6,7 +6,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
 {
     public static class BmsTestAudioHelper
     {
-        public static PreNormalizedSoundData CreatePreNormalizedSoundData(float[] samples, int channels = 1)
+        public static MockCachedSoundData CreatePreNormalizedSoundData(float[] samples, int channels = 1)
         {
             float[][] samplesPerChannel = new float[channels][];
             int samplesPerCh = samples.Length / channels;
@@ -20,7 +20,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
                 }
             }
 
-            return new PreNormalizedSoundData(samplesPerChannel, 44100, 16);
+            return new MockCachedSoundData(samplesPerChannel, 44100, 16);
         }
 
         public static BmsAudioFile CreateAudioFileWithMockCache(
@@ -48,20 +48,20 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
             return file;
         }
 
-        public static PreNormalizedSoundData CreateDummyCache()
+        public static MockCachedSoundData CreateDummyCache()
         {
             float[][] samples = [[0.0f, 0.1f, 0.2f]];
-            return new PreNormalizedSoundData(samples, 44100, 16);
+            return new MockCachedSoundData(samples, 44100, 16);
         }
 
-        public static PreNormalizedSoundData CreateDistinctCache(double frequency = 440.0)
+        public static MockCachedSoundData CreateDistinctCache(double frequency = 440.0)
         {
             float[][] samples = [new float[100]];
             for (int i = 0; i < 100; i++)
             {
                 samples[0][i] = (float)Math.Sin(2.0 * Math.PI * frequency * i / 100.0);
             }
-            return new PreNormalizedSoundData(samples, 44100, 16);
+            return new MockCachedSoundData(samples, 44100, 16);
         }
     }
 }
