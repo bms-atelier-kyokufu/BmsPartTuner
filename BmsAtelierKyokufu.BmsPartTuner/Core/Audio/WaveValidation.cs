@@ -156,7 +156,7 @@ static public class WaveValidation
         int extractLen = Math.Min(Math.Min(shorter.Length, longer.Length), 2048);
         if (extractLen <= 0) return 0;
 
-        int fftLen = 4096; // 2048 + 2048 - 1 <= 4096 (Radix-2)
+        const int fftLen = 4096; // 2048 + 2048 - 1 <= 4096 (Radix-2)
 
         var complexX = new Complex32[fftLen];
         var complexY = new Complex32[fftLen];
@@ -535,7 +535,7 @@ static public class WaveValidation
             double sumY = data1.IsPreNormalized ? data2.GetChannelSum(channel) : data1.GetChannelSum(channel);
             double sumY2 = data1.IsPreNormalized ? data2.GetChannelSumSq(channel) : data1.GetChannelSumSq(channel);
 
-            double varSumY = sumY2 - (sumY * sumY) / fileN;
+            double varSumY = sumY2 - (sumY * sumY / fileN);
             if (varSumY <= 1e-10) return 0.0f;
 
             double correlation = totalDotProduct / Math.Sqrt(varSumY);

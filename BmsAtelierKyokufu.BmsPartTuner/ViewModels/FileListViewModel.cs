@@ -189,7 +189,7 @@ public partial class FileListViewModel : ObservableObject, IDisposable
         var chips = _filterService?.GenerateFilterChips(fileList) ?? [];
 
         var instrumentGroups = chips
-            .Select(c => new InstrumentNameDetectionService.InstrumentGroup
+            .Select(static c => new InstrumentNameDetectionService.InstrumentGroup
             {
                 Name = c.Keyword,
                 Count = c.Count,
@@ -229,8 +229,8 @@ public partial class FileListViewModel : ObservableObject, IDisposable
     public string[] GetSelectedKeywords()
     {
         return [.. FilterChips
-            .Where(chip => chip.IsSelected)
-            .Select(chip => chip.Keyword)];
+            .Where(static chip => chip.IsSelected)
+            .Select(static chip => chip.Keyword)];
     }
 
     private void NotifySelectedKeywordsChanged()
@@ -279,7 +279,7 @@ public partial class FileListViewModel : ObservableObject, IDisposable
         if (_filterService == null) return;
 
         var selectedInstruments = new HashSet<string>(
-            InstrumentGroups.Where(g => g.IsSelected).Select(g => g.Name),
+            InstrumentGroups.Where(static g => g.IsSelected).Select(static g => g.Name),
             StringComparer.OrdinalIgnoreCase);
 
         _filterService.ApplyInstrumentFilter(selectedInstruments);

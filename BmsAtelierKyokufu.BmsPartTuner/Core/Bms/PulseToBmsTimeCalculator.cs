@@ -99,7 +99,7 @@ public class PulseToBmsTimeCalculator(int resolution, List<BmsonLineEvent> lines
         if (length == 0) return 0;
 
         // 小数点以下の誤差を避けるため、doubleではなく分数で計算して切り捨てる
-        long step = ((y - mStart) * outputSteps) / length;
+        long step = (y - mStart) * outputSteps / length;
 
         // y == y_end の場合の安全策
         if (step >= outputSteps)

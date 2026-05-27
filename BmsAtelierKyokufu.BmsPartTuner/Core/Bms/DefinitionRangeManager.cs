@@ -75,7 +75,7 @@ internal class DefinitionRangeManager(IReadOnlyList<BmsAudioFile> fileList)
     public void DetermineProcessingRange(int defStart, int defEnd)
     {
         int maxDefined = AppConstants.Definition.MinNumber;
-        if (_fileList != null && _fileList.Count > 0)
+        if (_fileList?.Count > 0)
         {
             for (int i = 0; i < _fileList.Count; i++)
             {

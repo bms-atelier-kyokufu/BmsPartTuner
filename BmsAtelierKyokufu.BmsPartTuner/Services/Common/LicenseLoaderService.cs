@@ -39,8 +39,8 @@ public class LicenseLoaderService
         }
 
         return licenses
-            .OrderByDescending(x => x.IsAppLicense)
-            .ThenBy(x => x.Name);
+            .OrderByDescending(static x => x.IsAppLicense)
+            .ThenBy(static x => x.Name);
     }
 
     private static string ReadResource(Assembly assembly, string resourceName)

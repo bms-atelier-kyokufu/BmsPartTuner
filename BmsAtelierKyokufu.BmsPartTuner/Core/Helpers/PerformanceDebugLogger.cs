@@ -140,7 +140,7 @@ public static class PerformanceDebugLogger
     {
         if (level < ActiveLogLevel) return;
         if (_accumulatedTimes.IsEmpty) return;
-        var parts = _accumulatedTimes.Select(kv => $"{kv.Key}: {kv.Value} ms").ToArray();
+        var parts = _accumulatedTimes.Select(static kv => $"{kv.Key}: {kv.Value} ms").ToArray();
         WriteLine($"{prefixMessage} [{string.Join(", ", parts)}]", level);
     }
 
@@ -151,7 +151,7 @@ public static class PerformanceDebugLogger
         if (_accumulatedTimes.IsEmpty) return;
 
         var grouped = _accumulatedTimes
-            .Select(kv =>
+            .Select(static kv =>
             {
                 var parts = kv.Key.Split('|');
                 return new
@@ -161,14 +161,14 @@ public static class PerformanceDebugLogger
                     kv.Value
                 };
             })
-            .GroupBy(x => x.Group)
-            .OrderByDescending(g => g.Sum(x => x.Value));
+            .GroupBy(static x => x.Group)
+            .OrderByDescending(static g => g.Sum(static x => x.Value));
 
         var sb = new StringBuilder();
         sb.AppendLine($"=== {title} ===");
         foreach (var g in grouped)
         {
-            var metricsStr = string.Join(", ", g.Select(x => $"{x.Metric}: {x.Value} ms"));
+            var metricsStr = string.Join(", ", g.Select(static x => $"{x.Metric}: {x.Value} ms"));
             sb.AppendLine($"  [{g.Key}] {metricsStr}");
         }
         WriteLine(sb.ToString(), level);

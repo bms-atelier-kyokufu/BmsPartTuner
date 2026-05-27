@@ -173,7 +173,7 @@ public partial class SettingsViewModel : ObservableObject
         _settings = _settingsService.Load();
 
         // テーマサービスからの変更通知を購読
-        _themeService.ThemeChanged += (s, isDark) =>
+        _themeService.ThemeChanged += (_, isDark) =>
         {
             if (_settings.IsDarkTheme != isDark)
             {
@@ -215,7 +215,7 @@ public partial class SettingsViewModel : ObservableObject
             dialog.InitialDirectory = Path.GetDirectoryName(MbmPlayPath);
         }
 
-        if (dialog.ShowDialog() == true)
+        if (dialog.ShowDialog() is true)
         {
             MbmPlayPath = dialog.FileName;
         }
@@ -234,7 +234,7 @@ public partial class SettingsViewModel : ObservableObject
     /// GitHubリンクを開くコマンド。
     /// </summary>
     [RelayCommand]
-    private void OpenGitHub()
+    private static void OpenGitHub()
     {
         OpenUrl(GitHubUrl);
     }

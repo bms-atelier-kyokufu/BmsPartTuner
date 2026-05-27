@@ -47,7 +47,7 @@ public class ValueToWidthConverter : MarkupExtension, IMultiValueConverter
     {
         try
         {
-            if (Application.Current != null && Application.Current.Resources.Contains("ValueToWidthConverter"))
+            if (Application.Current?.Resources.Contains("ValueToWidthConverter") is true)
             {
                 var res = Application.Current.Resources["ValueToWidthConverter"];
                 if (res is ValueToWidthConverter)

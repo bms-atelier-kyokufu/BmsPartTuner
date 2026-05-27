@@ -246,8 +246,8 @@ internal class SimulationEngine(
         // 結果の統計
         if (results.Count > 0)
         {
-            var minFiles = results.Min(r => r.FileCount);
-            var maxFiles = results.Max(r => r.FileCount);
+            var minFiles = results.Min(static r => r.FileCount);
+            var maxFiles = results.Max(static r => r.FileCount);
             PerformanceDebugLogger.WriteLine($"File count range: {minFiles} - {maxFiles}");
 
             if (minFiles == maxFiles)
@@ -506,7 +506,7 @@ internal class SimulationEngine(
             }
         }
 
-        entries.Sort((a, b) => a.Rms.CompareTo(b.Rms));
+        entries.Sort(static (a, b) => a.Rms.CompareTo(b.Rms));
         return entries;
     }
 

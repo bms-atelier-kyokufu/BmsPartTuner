@@ -159,7 +159,7 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
         InputValidation.ValidationErrorOccurred += (s, e) => ShowMessage($"{e.PropertyName}: {e.ErrorMessage}", isError: true);
 
         // メディア再生エラーハンドラー
-        MediaPlayback.PlaybackError += (s, message) => ShowMessage(message, isError: true);
+        MediaPlayback.PlaybackError += (_, message) => ShowMessage(message, isError: true);
 
         FileOperations.PropertyChanged += (s, e) =>
         {

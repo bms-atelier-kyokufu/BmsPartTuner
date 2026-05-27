@@ -1,4 +1,4 @@
-﻿using BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
+using BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 
@@ -235,7 +235,7 @@ public class DefinitionReuse
             return [];
         }
 
-        var keptFilePaths = new HashSet<string>(_rewriter.KeptFiles.Select(f => f.Name), StringComparer.OrdinalIgnoreCase);
+        var keptFilePaths = new HashSet<string>(_rewriter.KeptFiles.Select(static f => f.Name), StringComparer.OrdinalIgnoreCase);
         var unusedFiles = new List<string>();
 
         foreach (var file in _fileList)

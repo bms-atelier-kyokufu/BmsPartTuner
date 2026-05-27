@@ -18,7 +18,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Services.UI
         /// <summary>
         /// スライド確認UIの表示状態
         /// </summary>
-        public bool IsVisible => _viewModel != null && _viewModel.IsSlideConfirmationVisible;
+        public bool IsVisible => _viewModel?.IsSlideConfirmationVisible is true;
 
         public void Initialize(MainViewModel viewModel)
         {

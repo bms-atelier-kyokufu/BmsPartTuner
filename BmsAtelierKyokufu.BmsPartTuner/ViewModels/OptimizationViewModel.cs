@@ -438,7 +438,7 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
                     {
                         // %記号を削除して数値をパース、非ASCIIはブロック
                         var raw = R2Threshold;
-                        if (raw.Any(c => c > 0x7F))
+                        if (raw.Any(static c => c > 0x7F))
                         {
                             error = "半角数字のみを入力してください";
                             SetFormError(error);
@@ -465,7 +465,7 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
                     else
                     {
                         // 非ASCIIを排除
-                        if (DefinitionStart.Any(c => c > 0x7F))
+                        if (DefinitionStart.Any(static c => c > 0x7F))
                         {
                             error = "英数字のみを入力してください";
                             SetFormError(error);
@@ -502,7 +502,7 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
                     }
                     else
                     {
-                        if (DefinitionEnd.Any(c => c > 0x7F))
+                        if (DefinitionEnd.Any(static c => c > 0x7F))
                         {
                             error = "英数字のみを入力してください";
                             SetFormError(error);

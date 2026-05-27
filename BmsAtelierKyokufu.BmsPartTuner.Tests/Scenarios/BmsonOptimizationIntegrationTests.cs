@@ -88,7 +88,7 @@ public class BmsonOptimizationIntegrationTests
 
         var timeCalc = new PulseToBmsTimeCalculator(bmsonData.Info?.Resolution ?? 240, bmsonData.Lines ?? []);
         var realTimeCalc = new PulseToRealTimeCalculator(bmsonData.Info?.Resolution ?? 240, bmsonData.Info?.InitBpm ?? 120, bmsonData.BpmEvents, bmsonData.StopEvents);
-        
+
         // This will create slice wav files in bmsonDir
         using var sliceManager = new AudioSliceManager(bmsonDir, throwOnMissingFile: false);
         var scoreGen = new BmsScoreGenerator(bmsonData, timeCalc, realTimeCalc, sliceManager, keyNotesOnly: false);
@@ -117,7 +117,7 @@ public class BmsonOptimizationIntegrationTests
         // Assert
         Assert.True(File.Exists(optimizedBmsFilePath));
         string finalBms = File.ReadAllText(optimizedBmsFilePath);
-        
+
         // Count #WAV definitions
         int wavCount = 0;
         using (var reader = new StringReader(finalBms))
@@ -168,7 +168,7 @@ public class BmsonOptimizationIntegrationTests
 
         var timeCalc = new PulseToBmsTimeCalculator(bmsonData.Info?.Resolution ?? 240, bmsonData.Lines ?? []);
         var realTimeCalc = new PulseToRealTimeCalculator(bmsonData.Info?.Resolution ?? 240, bmsonData.Info?.InitBpm ?? 120, bmsonData.BpmEvents, bmsonData.StopEvents);
-        
+
         using var sliceManager = new AudioSliceManager(bmsonDir, throwOnMissingFile: false);
         var scoreGen = new BmsScoreGenerator(bmsonData, timeCalc, realTimeCalc, sliceManager, keyNotesOnly: false);
         string generatedBmsText = scoreGen.GenerateBmsText();
@@ -192,7 +192,7 @@ public class BmsonOptimizationIntegrationTests
 
         Assert.True(File.Exists(optimizedBmsFilePath));
         string finalBms = File.ReadAllText(optimizedBmsFilePath);
-        
+
         // Extract surviving WAVs
         var keptWavs = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         using (var reader = new StringReader(finalBms))
@@ -203,7 +203,8 @@ public class BmsonOptimizationIntegrationTests
                 if (line.StartsWith("#WAV", StringComparison.OrdinalIgnoreCase))
                 {
                     var parts = line.Split(' ', 2, StringSplitOptions.RemoveEmptyEntries);
-                    if (parts.Length == 2) {
+                    if (parts.Length == 2)
+                    {
                         keptWavs.Add(parts[1].Trim());
                     }
                 }

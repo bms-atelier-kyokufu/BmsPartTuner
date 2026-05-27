@@ -204,6 +204,6 @@ public class DragDropService(string[] supportedExtensions) : IDragDropService
     /// <returns>セミコロン区切りのワイルドカードパターン（例: "*.bms;*.bme;*.bml"）。</returns>
     public string GetDialogExtensionPattern()
     {
-        return string.Join(";", _supportedExtensions.Select(e => "*" + e));
+        return string.Join(";", _supportedExtensions.Select(static e => "*" + e));
     }
 }

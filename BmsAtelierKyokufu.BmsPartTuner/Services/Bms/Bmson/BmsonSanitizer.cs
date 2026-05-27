@@ -26,7 +26,7 @@ public static class BmsonSanitizer
         }
 
         // yが負の小節線や、順序が逆転しているものを整理（昇順ソート）
-        bmson.Lines = [.. bmson.Lines.OrderBy(l => l.Y)];
+        bmson.Lines = [.. bmson.Lines.OrderBy(static l => l.Y)];
 
         // 不要な重複小節線（同じy座標）を排除
         List<BmsonLineEvent> uniqueLines = [];
@@ -48,7 +48,7 @@ public static class BmsonSanitizer
             {
                 if (channel.Notes != null)
                 {
-                    channel.Notes = [.. channel.Notes.OrderBy(n => n.Y)];
+                    channel.Notes = [.. channel.Notes.OrderBy(static n => n.Y)];
                 }
             }
         }

@@ -85,7 +85,7 @@ public partial class BmsDefinitionManager(string bmsFilePath, string? bmsContent
         var definitions = manager.ParseWavDefinitions();
         PerformanceDebugLogger.WriteLine($"  [CreateFileList] ParseWavDefinitions (count={definitions.Count}): {timer.Lap("ParseWavDefinitions")} ms");
 
-        bool isBase62 = definitions.Any(d => LowerCaseRegex().IsMatch(d.def));
+        bool isBase62 = definitions.Any(static d => LowerCaseRegex().IsMatch(d.def));
         int inputRadix = isBase62 ? AppConstants.Definition.RadixBase62 : AppConstants.Definition.RadixBase36;
 
         var tempList = new List<BmsAudioFile>();

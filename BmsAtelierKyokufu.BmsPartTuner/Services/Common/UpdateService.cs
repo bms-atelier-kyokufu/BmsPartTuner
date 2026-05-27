@@ -132,9 +132,9 @@ public class UpdateService : IDisposable
     {
         // .msi または .exe アセットを探す
         GitHubAsset? installerAsset = release.Assets?
-            .FirstOrDefault(a =>
-                a.Name?.EndsWith(".msi", StringComparison.OrdinalIgnoreCase) == true ||
-                a.Name?.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) == true);
+            .FirstOrDefault(static a =>
+                a.Name?.EndsWith(".msi", StringComparison.OrdinalIgnoreCase) is true ||
+                a.Name?.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) is true);
 
         if (installerAsset?.Name == null || string.IsNullOrEmpty(installerAsset.BrowserDownloadUrl))
         {

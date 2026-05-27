@@ -29,9 +29,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Extensions
             services.AddSingleton<IInputValidationService, InputValidationService>();
             services.AddSingleton<IBmsOptimizationService, BmsOptimizationService>();
             services.AddSingleton<IAudioPlayerFactory, NAudioPlayerFactory>();
-            services.AddSingleton<IUIThreadDispatcher>(provider =>
+            services.AddSingleton<IUIThreadDispatcher>(static _ =>
                 new WpfUIThreadDispatcher(Application.Current.Dispatcher));
-            services.AddSingleton(provider =>
+            services.AddSingleton(static provider =>
                 new AudioPreviewService(
                     provider.GetRequiredService<IUIThreadDispatcher>(),
                     provider.GetRequiredService<IAudioPlayerFactory>()));
@@ -40,7 +40,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Extensions
             // UI Services (Initializeパターン)
             services.AddSingleton<IUiElementService<ToastViewModel>, ToastNotificationService>();
             services.AddSingleton<IUiElementService<ResultCardData>, ResultCardService>();
-            services.AddSingleton<IDragDropService>(provider =>
+            services.AddSingleton<IDragDropService>(static _ =>
                 new DragDropService(AppConstants.Files.SupportedBmsExtensions));
             services.AddSingleton<FileListFilterService>();
 

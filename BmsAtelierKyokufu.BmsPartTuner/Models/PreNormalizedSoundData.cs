@@ -311,10 +311,10 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Models
         {
             // FFT Parameter Constants (Phase 2 Measure B)
             int extractLen = Math.Min(lengthSamples, 2048);
-            int fftLen = 4096;
+            const int fftLen = 4096;
 
             // Frequency domain magnitude produces fftLen/2 positive frequencies = 2048 bins
-            int lshLength = 2048 / 64; // exactly 32 ulongs per channel
+            const int lshLength = 2048 / 64; // exactly 32 ulongs per channel
             _signLsh = [new ulong[lshLength], new ulong[lshLength]];
             _signLshMask = [new ulong[lshLength], new ulong[lshLength]];
 
@@ -351,11 +351,11 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Models
 
                     if (magnitudes[i] >= magnitudes[i + 1])
                     {
-                        _signLsh[ch][lshIdx] |= (1UL << bitShift);
+                        _signLsh[ch][lshIdx] |= 1UL << bitShift;
                     }
                     if (magnitudes[i] > 1e-4f) // Simple threshold for mask
                     {
-                        _signLshMask[ch][lshIdx] |= (1UL << bitShift);
+                        _signLshMask[ch][lshIdx] |= 1UL << bitShift;
                     }
                 }
             }

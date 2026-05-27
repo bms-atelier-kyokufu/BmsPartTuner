@@ -148,7 +148,7 @@ public class AudioSliceManager(string bmsonDir, bool throwOnMissingFile = true) 
     /// <summary>
     /// 生成されたスライスの総数を取得します。
     /// </summary>
-    public int GetGeneratedSliceCount() => _sliceCache.Values.Count(v => !string.IsNullOrEmpty(v.Value));
+    public int GetGeneratedSliceCount() => _sliceCache.Values.Count(static v => !string.IsNullOrEmpty(v.Value));
 
     public void Dispose()
     {
@@ -189,7 +189,7 @@ public class AudioSliceManager(string bmsonDir, bool throwOnMissingFile = true) 
             ? "Slice"
             : char.ToUpper(nameWithoutExt[0]) + nameWithoutExt[1..];
 
-        int currentCount = _instrumentCounters.AddOrUpdate(prefix, 1, (_, count) => count + 1);
+        int currentCount = _instrumentCounters.AddOrUpdate(prefix, 1, static (_, count) => count + 1);
         return $"{prefix}_{currentCount:D4}.wav";
     }
 
@@ -359,12 +359,12 @@ public class AudioSliceManager(string bmsonDir, bool throwOnMissingFile = true) 
                 int bitShift = i % 64;
 
                 // Left channel
-                if (fl >= 0) signLsh[0][lshIdx] |= (1UL << bitShift);
-                if (Math.Abs(fl) >= silenceThreshold) signLshMask[0][lshIdx] |= (1UL << bitShift);
+                if (fl >= 0) signLsh[0][lshIdx] |= 1UL << bitShift;
+                if (Math.Abs(fl) >= silenceThreshold) signLshMask[0][lshIdx] |= 1UL << bitShift;
 
                 // Right channel
-                if (fr >= 0) signLsh[1][lshIdx] |= (1UL << bitShift);
-                if (Math.Abs(fr) >= silenceThreshold) signLshMask[1][lshIdx] |= (1UL << bitShift);
+                if (fr >= 0) signLsh[1][lshIdx] |= 1UL << bitShift;
+                if (Math.Abs(fr) >= silenceThreshold) signLshMask[1][lshIdx] |= 1UL << bitShift;
             }
 
             return new BmsAtelierKyokufu.BmsPartTuner.Models.BaseAudioOptimizationData(samples, prefixSum, prefixSumSq, signLsh, signLshMask);

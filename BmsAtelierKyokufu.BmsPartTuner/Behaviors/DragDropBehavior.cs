@@ -152,7 +152,7 @@ public class DragDropBehavior : Behavior<UIElement>
             DroppedFilePath = filePath;
 
             // 成功コマンドを実行
-            if (DropSuccessCommand?.CanExecute(filePath) == true)
+            if (DropSuccessCommand?.CanExecute(filePath) is true)
             {
                 DropSuccessCommand.Execute(filePath);
             }
@@ -160,7 +160,7 @@ public class DragDropBehavior : Behavior<UIElement>
         else
         {
             // 失敗コマンドを実行
-            if (DropFailureCommand?.CanExecute(filePath) == true)
+            if (DropFailureCommand?.CanExecute(filePath) is true)
             {
                 DropFailureCommand.Execute(filePath);
             }

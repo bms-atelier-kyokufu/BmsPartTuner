@@ -27,10 +27,10 @@ public class PulseToRealTimeCalculator
 
     private void BuildSegments(double initBpm, List<BmsonBpmEvent> bpmEvents, List<BmsonStopEvent> stopEvents)
     {
-        var events = bpmEvents.Select(b => (b.Y, Type: 0, Value: (double)b.Bpm))
-            .Concat(stopEvents.Select(s => (s.Y, Type: 1, Value: (double)s.Duration)))
-            .OrderBy(e => e.Y)
-            .ThenBy(e => e.Type)
+        var events = bpmEvents.Select(static b => (b.Y, Type: 0, Value: (double)b.Bpm))
+            .Concat(stopEvents.Select(static s => (s.Y, Type: 1, Value: (double)s.Duration)))
+            .OrderBy(static e => e.Y)
+            .ThenBy(static e => e.Type)
             .ToList();
 
         long currentY = 0;

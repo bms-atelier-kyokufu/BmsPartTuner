@@ -159,7 +159,7 @@ public static class AudioFileGroupingStrategy
 
             // 比較エンジン(ParallelAudioComparisonEngine)がSort & Sweepアルゴリズムを使用して
             // RMS近傍検索を効率的に行うため、ここではRMSによるバケツ分けを行わず同一キーワードで1つのグループにします。
-            string groupKey = "ALL";
+            const string groupKey = "ALL";
 
             if (!keywordGroups[matchedKeyword].TryGetValue(groupKey, out List<int>? value))
             {

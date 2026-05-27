@@ -30,7 +30,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner
             InitializeComponent();
 
             _host = Host.CreateDefaultBuilder()
-                .ConfigureServices((_, services) => services.ConfigureAppServices())
+                .ConfigureServices(static (_, services) => services.ConfigureAppServices())
                 .Build();
         }
 

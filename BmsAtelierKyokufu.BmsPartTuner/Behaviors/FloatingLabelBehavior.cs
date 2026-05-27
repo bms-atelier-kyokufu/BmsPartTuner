@@ -148,7 +148,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Behaviors
                 var border = AssociatedObject.Template?.FindName("PART_Border", AssociatedObject) as Border
                           ?? AssociatedObject.Template?.FindName("PART_MainBorder", AssociatedObject) as Border;
 
-                if (border != null && border.ActualHeight > 0)
+                if (border?.ActualHeight > 0)
                 {
                     targetY = border.ActualHeight / 2.0;
                 }

@@ -116,7 +116,7 @@ public class ThemeService
     /// </remarks>
     private static void ForceUiRefresh()
     {
-        Application.Current?.Dispatcher.BeginInvoke(new Action(() =>
+        Application.Current?.Dispatcher.BeginInvoke(new Action(static () =>
         {
             // 全てのWindowを列挙して無効化（再描画トリガー）
             foreach (Window window in Application.Current.Windows)

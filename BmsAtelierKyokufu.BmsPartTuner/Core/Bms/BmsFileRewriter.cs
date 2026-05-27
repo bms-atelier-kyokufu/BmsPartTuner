@@ -92,7 +92,7 @@ internal partial class BmsFileRewriter(
     {
         var (reductionMap, filesToKeep) = BuildReductionMap();
 
-        filesToKeep.Sort((a, b) => string.Compare(a.Name, b.Name, StringComparison.OrdinalIgnoreCase));
+        filesToKeep.Sort(static (a, b) => string.Compare(a.Name, b.Name, StringComparison.OrdinalIgnoreCase));
 
         // 保持ファイルをプロパティに保存（物理削除で使用）
         KeptFiles = filesToKeep;

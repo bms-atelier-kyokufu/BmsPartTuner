@@ -104,7 +104,7 @@ public partial class FileOperationsViewModel : ObservableObject
             Title = "BMS/BMSONファイルを選択"
         };
 
-        if (dialog.ShowDialog() == true)
+        if (dialog.ShowDialog() is true)
         {
             InputPath = dialog.FileName;
         }
@@ -128,7 +128,7 @@ public partial class FileOperationsViewModel : ObservableObject
             DefaultExt = ".bms"
         };
 
-        if (dialog.ShowDialog() == true)
+        if (dialog.ShowDialog() is true)
         {
             OutputPath = dialog.FileName;
         }
@@ -201,7 +201,7 @@ public partial class FileOperationsViewModel : ObservableObject
     /// <returns>ワイルドカードパターン（例: "*.bms;*.bme;*.bml"）。</returns>
     private static string GetDialogExtensionPattern()
     {
-        return string.Join(";", Array.ConvertAll(AppConstants.Files.SupportedBmsExtensions, ext => $"*{ext}"));
+        return string.Join(";", Array.ConvertAll(AppConstants.Files.SupportedBmsExtensions, static ext => $"*{ext}"));
     }
 
     /// <summary>
@@ -210,7 +210,7 @@ public partial class FileOperationsViewModel : ObservableObject
     /// <returns>ワイルドカードパターン（例: "*.bms;*.bme;*.bml"）。</returns>
     private static string GetOutputDialogExtensionPattern()
     {
-        return string.Join(";", Array.ConvertAll(AppConstants.Files.SupportedOutputBmsExtensions, ext => $"*{ext}"));
+        return string.Join(";", Array.ConvertAll(AppConstants.Files.SupportedOutputBmsExtensions, static ext => $"*{ext}"));
     }
 
     /// <summary>
