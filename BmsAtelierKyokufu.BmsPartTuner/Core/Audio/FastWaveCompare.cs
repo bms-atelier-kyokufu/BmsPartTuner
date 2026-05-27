@@ -44,13 +44,13 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
 /// <para>この $\left( \frac{x_i - \bar{x}}{s_x} \right)$ という項はデータを正規化（標準化）していることを示しています。</para>
 ///
 /// <para>【Phase 2の変換】</para>
-/// <para>正規化波形 $\hat{x}_i$ を事前計算することで:</para>
-/// <para>
+/// 正規化波形 $\hat{x}_i$ を事前計算することで:
+///
 /// $$
 /// r = \sum_{i=1}^{n} \hat{x}_i \cdot \hat{y}_i
 /// $$
-/// </para>
-/// <para>（単なるドット積）</para>
+///
+/// （単なるドット積）
 ///
 /// <para>【ラグ補正について】</para>
 /// ラグ（開始位置のズレ）は音ゲーの演奏感に直結するため、あえて補正せず、
@@ -169,36 +169,80 @@ internal static class FastWaveCompare
         // Phase 2 Measure A: Calculate sub-millisecond phase shift offset
         int offset = WaveValidation.CalculateAlignmentOffset(shorterSpan, longerFullSpan);
 
-        ReadOnlySpan<float> alignedShorter;
-        ReadOnlySpan<float> alignedLonger;
-
-        if (offset >= 0)
+        float correlation;
+        if (shorterFrames == longerFrames && offset == 0)
         {
-            // longer starts before shorter. shorter[0] matches longer[offset]
-            if (offset + shorterFrames > longerFrames) offset = 0;
-            alignedShorter = shorterSpan;
-            alignedLonger = longer.GetRawSpan(targetChannel, offset, shorterFrames);
+            correlation = WaveValidation.CalculatePearsonCorrelationSIMD(shorterSpan, longerFullSpan);
         }
         else
         {
-            // shorter starts before longer. longer[0] matches shorter[-offset]
-            int absOffset = -offset;
-            if (absOffset >= shorterFrames) absOffset = 0;
-            int compareLen = shorterFrames - absOffset;
-            alignedShorter = shorter.GetRawSpan(targetChannel, absOffset, compareLen);
-            alignedLonger = longer.GetRawSpan(targetChannel, 0, compareLen);
+            float[] paddedShorter = System.Buffers.ArrayPool<float>.Shared.Rent(longerFrames);
+            try
+            {
+                Array.Clear(paddedShorter, 0, longerFrames);
+                if (offset >= 0)
+                {
+                    // longer starts before shorter. shorter[0] matches longer[offset]
+                    if (offset + shorterFrames > longerFrames) offset = 0;
+                    shorterSpan.CopyTo(paddedShorter.AsSpan(offset, shorterFrames));
+                }
+                else
+                {
+                    // shorter starts before longer. longer[0] matches shorter[-offset]
+                    int absOffset = -offset;
+                    if (absOffset >= shorterFrames) absOffset = 0;
+                    int compareLen = shorterFrames - absOffset;
+                    shorterSpan.Slice(absOffset, compareLen).CopyTo(paddedShorter.AsSpan(0, compareLen));
+                }
+                correlation = WaveValidation.CalculatePearsonCorrelationSIMD(paddedShorter.AsSpan(0, longerFrames), longerFullSpan);
+            }
+            finally
+            {
+                System.Buffers.ArrayPool<float>.Shared.Return(paddedShorter);
+            }
         }
 
-        // アライメント済みプレフィックス同士でピアソン相関を計算する
-        float correlation = WaveValidation.CalculatePearsonCorrelationSIMD(alignedShorter, alignedLonger);
-        if (Math.Abs(correlation) < threshold)
+        if (correlation >= threshold && shorterFrames < longerFrames)
+        {
+            int overlapStart = offset >= 0 ? offset : 0;
+            int overlapEnd = offset >= 0 ? (offset + shorterFrames) : (shorterFrames + offset);
+            if (overlapEnd > longerFrames) overlapEnd = longerFrames;
+
+            double nonOverlapSumSq = 0;
+            int nonOverlapCount = 0;
+            for (int i = 0; i < overlapStart; i++)
+            {
+                float val = longerFullSpan[i];
+                nonOverlapSumSq += val * val;
+                nonOverlapCount++;
+            }
+            for (int i = overlapEnd; i < longerFrames; i++)
+            {
+                float val = longerFullSpan[i];
+                nonOverlapSumSq += val * val;
+                nonOverlapCount++;
+            }
+
+            if (nonOverlapCount > 0)
+            {
+                double nonOverlapRms = Math.Sqrt(nonOverlapSumSq / nonOverlapCount);
+                if (nonOverlapRms > AppConstants.AudioComparison.SilenceRmsThreshold)
+                {
+                    PerformanceDebugLogger.WriteDebug($"[DEBUG-IsMatch] Rejected due to non-silent tail (RMS={nonOverlapRms:F6})");
+                    return false;
+                }
+            }
+        }
+
+        if (correlation < threshold)
         {
             string n1 = System.IO.Path.GetFileName(data1.FilePath);
             string n2 = System.IO.Path.GetFileName(data2.FilePath);
             PerformanceDebugLogger.WriteDebug($"[DEBUG-IsMatch] {n1} vs {n2} corr={correlation:F4}, offset={offset}, thr={threshold}");
         }
 
-        return Math.Abs(correlation) >= threshold;
+        return correlation >= threshold;
+
     }
 
     /// <summary>

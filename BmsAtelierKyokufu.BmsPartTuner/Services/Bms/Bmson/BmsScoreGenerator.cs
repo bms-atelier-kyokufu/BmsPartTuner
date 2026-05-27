@@ -1,4 +1,4 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 using BmsAtelierKyokufu.BmsPartTuner.Models.Bmson;
 
@@ -108,7 +108,7 @@ public class BmsScoreGenerator(
         PerformanceDebugLogger.WriteLine($"  [BmsScoreGenerator] PreloadAudioSources (Parallel): {timer.Lap("PreloadAudioSources")} ms");
 
         // 1. Choose optimal radix based on total upper bound notes
-        int totalNotesUpperBound = _bmson.SoundChannels?.Sum(c => c.Notes?.Count ?? 0) ?? 0;
+        int totalNotesUpperBound = _bmson.SoundChannels?.Sum(static c => c.Notes?.Count ?? 0) ?? 0;
         _radix = totalNotesUpperBound <= AppConstants.Definition.MaxNumberBase36 ? AppConstants.Definition.RadixBase36 : AppConstants.Definition.RadixBase62;
 
         ProcessSoundChannels();
@@ -224,14 +224,14 @@ public class BmsScoreGenerator(
 
         // TOTAL (Approach B: bmsonの%トータル値が100%の場合は省略し、それ以外はプレイアブルノーツ数から算出した絶対値を実数で出力)
         int playableNotes = _bmson.SoundChannels?
-            .Sum(ch => ch.Notes?.Count(n => n.X > 0) ?? 0) ?? 0;
+            .Sum(static ch => ch.Notes?.Count(static n => n.X > 0) ?? 0) ?? 0;
 
         if (Math.Abs(_bmson.Info.Total - AppConstants.BmsTotal.DefaultPercentage) > 0.0001 && playableNotes > 0)
         {
             // bmsonの基準式（black train近似式）により、100%時のデフォルト値を計算
             double defaultTotal = Math.Max(
                 AppConstants.BmsTotal.MinimumFloor,
-                (AppConstants.BmsTotal.IidxMultiplier * playableNotes) /
+                AppConstants.BmsTotal.IidxMultiplier * playableNotes /
                 ((AppConstants.BmsTotal.IidxNotesCoefficient * playableNotes) + AppConstants.BmsTotal.IidxConstantTerm)
             );
 
@@ -399,9 +399,15 @@ public class BmsScoreGenerator(
 
             double currentSec = _yDataMap[n.Y].TimeSec;
             double oSec = currentSec - blockStartSec;
-            double nextSec = (depth + 1 < block.Count)
-                ? _yDataMap[block[depth + 1].Y].TimeSec
-                : nextBlockStartSec;
+            double nextSec = nextBlockStartSec;
+            for (int k = depth + 1; k < block.Count; k++)
+            {
+                if (block[k].Y > n.Y)
+                {
+                    nextSec = _yDataMap[block[k].Y].TimeSec;
+                    break;
+                }
+            }
             double dSec = nextSec - currentSec;
 
             string sliceFile = _audioSliceManager.SliceAudio(channelName, oSec, dSec);
@@ -451,7 +457,7 @@ public class BmsScoreGenerator(
         if (_bmson.StopEvents == null) return;
         foreach (var s in _bmson.StopEvents)
         {
-            long bmsStopVal = (s.Duration * 48) / _bmson.Info.Resolution;
+            long bmsStopVal = s.Duration * 48 / _bmson.Info.Resolution;
 
             if (!_stopDefinitions.TryGetValue(bmsStopVal, out string? stopId))
             {

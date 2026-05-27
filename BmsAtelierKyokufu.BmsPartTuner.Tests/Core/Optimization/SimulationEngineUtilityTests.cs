@@ -1,4 +1,4 @@
-﻿using BmsAtelierKyokufu.BmsPartTuner.Core.Optimization;
+using BmsAtelierKyokufu.BmsPartTuner.Core.Optimization;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
 {
@@ -12,7 +12,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
         [Fact]
         public void CalculateRmsRange_SilentAudio_ReturnsZeroToThreshold()
         {
-            var (min, max) = SimulationEngine.CalculateRmsRange(0.0005f);
+            var (min, max) = SimulationEngine.CalculateRmsRange(0.0000005f);
 
             Assert.Equal(0.0f, min);
             Assert.True(max > 0.0f);

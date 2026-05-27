@@ -1,4 +1,4 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
 using BmsAtelierKyokufu.BmsPartTuner.Models;
 using BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers;
@@ -22,7 +22,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
                 BmsTestAudioHelper.CreateAudioFileWithMockCache(0, [0], audioCache), // ダミー
                 BmsTestAudioHelper.CreateAudioFileWithMockCache(1, samples, audioCache),
                 BmsTestAudioHelper.CreateAudioFileWithMockCache(2, samples, audioCache),
-                BmsTestAudioHelper.CreateAudioFileWithMockCache(3, [0.5f, 0.6f, 0.7f], audioCache) // 異なるデータ
+                BmsTestAudioHelper.CreateAudioFileWithMockCache(3, [0.3f, 0.1f, 0.2f], audioCache) // 異なるデータ
             };
 
             var replaceTable = new int[fileList.Count];
