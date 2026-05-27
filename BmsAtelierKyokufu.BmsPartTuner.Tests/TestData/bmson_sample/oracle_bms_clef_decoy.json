@@ -1,0 +1,108 @@
+{
+  "test_scenario": "bms_part_tuner_clef_decoy_test",
+  "total_wav_count": 100,
+  "expected_clusters": [
+    {
+      "logical_group_id": "kick_all",
+      "expected_merged_to": "Kick_0001.wav",
+      "description": "Track 2: Synth Drum, Kick",
+      "source_wav_ids": [
+        "Kick_0001.wav", "Kick_0002.wav", "Kick_0003.wav", "Kick_0004.wav",
+        "Kick_0005.wav", "Kick_0006.wav", "Kick_0007.wav", "Kick_0008.wav",
+        "Kick_0009.wav", "Kick_0010.wav", "Kick_0011.wav", "Kick_0012.wav",
+        "Kick_0013.wav", "Kick_0014.wav", "Kick_0015.wav", "Kick_0016.wav",
+        "Kick_0017.wav", "Kick_0018.wav", "Kick_0019.wav", "Kick_0020.wav",
+        "Kick_0021.wav", "Kick_0022.wav", "Kick_0023.wav", "Kick_0024.wav"
+      ]
+    },
+    {
+      "logical_group_id": "clap_all",
+      "expected_merged_to": "Clap_0001.wav",
+      "description": "Track 3: Synth Drum, Clap",
+      "source_wav_ids": [
+        "Clap_0001.wav", "Clap_0002.wav", "Clap_0003.wav", "Clap_0004.wav",
+        "Clap_0005.wav", "Clap_0006.wav", "Clap_0007.wav", "Clap_0008.wav",
+        "Clap_0009.wav", "Clap_0010.wav", "Clap_0011.wav", "Clap_0012.wav",
+        "Clap_0013.wav"
+      ]
+    },
+    {
+      "logical_group_id": "hihat_all",
+      "expected_merged_to": "HiHat_0001.wav",
+      "description": "Track 4: Synth Drum, HiHat",
+      "source_wav_ids": [
+        "HiHat_0001.wav", "HiHat_0002.wav", "HiHat_0003.wav", "HiHat_0004.wav",
+        "HiHat_0005.wav", "HiHat_0006.wav", "HiHat_0007.wav", "HiHat_0008.wav",
+        "HiHat_0009.wav", "HiHat_0010.wav", "HiHat_0011.wav", "HiHat_0012.wav",
+        "HiHat_0013.wav", "HiHat_0014.wav", "HiHat_0015.wav", "HiHat_0016.wav",
+        "HiHat_0017.wav", "HiHat_0018.wav", "HiHat_0019.wav", "HiHat_0020.wav",
+        "HiHat_0021.wav", "HiHat_0022.wav", "HiHat_0023.wav", "HiHat_0024.wav",
+        "HiHat_0025.wav"
+      ]
+    },
+    {
+      "logical_group_id": "snare_all",
+      "expected_merged_to": "Snare_0001.wav",
+      "description": "Track 5: Synth Drum, Snare",
+      "source_wav_ids": [
+        "Snare_0001.wav", "Snare_0002.wav", "Snare_0003.wav", "Snare_0004.wav",
+        "Snare_0005.wav", "Snare_0006.wav", "Snare_0007.wav", "Snare_0008.wav",
+        "Snare_0009.wav", "Snare_0010.wav", "Snare_0011.wav", "Snare_0012.wav",
+        "Snare_0013.wav"
+      ]
+    },
+    {
+      "logical_group_id": "piano_c4",
+      "expected_merged_to": "Piano_0001.wav",
+      "description": "Track 1: Piano (C4). 1小節目のド、3小節目のド、5小節目以降の連打がすべてここに統合される。",
+      "source_wav_ids": [
+        "Piano_0001.wav", "Piano_0009.wav", "Piano_0017.wav", "Piano_0018.wav", 
+        "Piano_0019.wav", "Piano_0020.wav", "Piano_0021.wav", "Piano_0022.wav", 
+        "Piano_0023.wav", "Piano_0024.wav", "Piano_0025.wav"
+      ]
+    },
+    {
+      "logical_group_id": "piano_d4",
+      "expected_merged_to": "Piano_0002.wav",
+      "description": "Track 1: Piano (D4). 1回目と2回目のレ。",
+      "source_wav_ids": ["Piano_0002.wav", "Piano_0010.wav"]
+    },
+    {
+      "logical_group_id": "piano_e4",
+      "expected_merged_to": "Piano_0003.wav",
+      "description": "Track 1: Piano (E4). 1回目と2回目のミ。",
+      "source_wav_ids": ["Piano_0003.wav", "Piano_0011.wav"]
+    },
+    {
+      "logical_group_id": "piano_f4",
+      "expected_merged_to": "Piano_0004.wav",
+      "description": "Track 1: Piano (F4). 1回目と2回目のファ。",
+      "source_wav_ids": ["Piano_0004.wav", "Piano_0012.wav"]
+    },
+    {
+      "logical_group_id": "piano_g4",
+      "expected_merged_to": "Piano_0005.wav",
+      "description": "Track 1: Piano (G4). 1回目と2回目のソ。",
+      "source_wav_ids": ["Piano_0005.wav", "Piano_0013.wav"]
+    },
+    {
+      "logical_group_id": "piano_a4",
+      "expected_merged_to": "Piano_0006.wav",
+      "description": "Track 1: Piano (A4). 1回目と2回目のラ。",
+      "source_wav_ids": ["Piano_0006.wav", "Piano_0014.wav"]
+    },
+    {
+      "logical_group_id": "piano_b4",
+      "expected_merged_to": "Piano_0007.wav",
+      "description": "Track 1: Piano (B4). 1回目と2回目のシ。",
+      "source_wav_ids": ["Piano_0007.wav", "Piano_0015.wav"]
+    },
+    {
+      "logical_group_id": "piano_c5",
+      "expected_merged_to": "Piano_0008.wav",
+      "description": "Track 1: Piano (C5). 1回目と2回目の高いド。",
+      "source_wav_ids": ["Piano_0008.wav", "Piano_0016.wav"]
+    }
+  ],
+  "expected_isolated": []
+}

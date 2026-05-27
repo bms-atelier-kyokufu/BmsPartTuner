@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "BMSIntegrationTestSchema",
+  "description": "BMS用WAV統合テストの期待値定義用スキーマ",
+  "type": "object",
+  "properties": {
+    "test_scenario": { "type": "string" },
+    "total_wav_count": { "type": "integer" },
+    "expected_clusters": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "logical_group_id": { "type": "string" },
+          "expected_merged_to": { "type": "string" },
+          "description": { "type": "string" },
+          "source_wav_ids": {
+            "type": "array",
+            "items": { "type": "string" },
+            "minItems": 2
+          }
+        },
+        "required": ["logical_group_id", "expected_merged_to", "source_wav_ids"]
+      }
+    },
+    "expected_isolated": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "logical_group_id": { "type": "string" },
+          "description": { "type": "string" },
+          "source_wav_ids": { "type": "array", "items": { "type": "string" } }
+        },
+        "required": ["logical_group_id", "source_wav_ids"]
+      }
+    }
+  },
+  "required": ["test_scenario", "expected_clusters", "expected_isolated"]
+}
