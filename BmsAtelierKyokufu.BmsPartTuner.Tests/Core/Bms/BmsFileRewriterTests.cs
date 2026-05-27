@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Text;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 using BmsAtelierKyokufu.BmsPartTuner.Models;
@@ -139,7 +139,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
             string outputPath = Path.Combine(_tempDir, "output.bms");
             const string content = "test content";
 
-            BmsFileRewriter.WriteBmsFile(outputPath, content);
+            BmsFileWriter.WriteBmsFile(outputPath, content);
 
             Assert.True(File.Exists(outputPath));
             Assert.Equal(content, File.ReadAllText(outputPath, Encoding.GetEncoding("shift_jis")));

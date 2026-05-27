@@ -18,7 +18,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 /// <item>処理範囲の決定（<see cref="DefinitionRangeManager"/>）</item>
 /// <item>音声データのプリロード（<see cref="AudioCacheManager"/>）</item>
 /// <item>置換テーブルの作成（<see cref="ParallelAudioComparisonEngine"/>）</item>
-/// <item>BMSファイルの書き換え（<see cref="BmsFileRewriter"/>）</item>
+/// <item>BMSファイルの書き換え（<see cref="BmsFileRewriter"/>）および書き込み（<see cref="BmsFileWriter"/>）</item>
 /// <item>ファイル保存</item>
 /// </list>
 ///
@@ -132,7 +132,7 @@ public class DefinitionReuse
         PerformanceDebugLogger.WriteLine($"  [ReductDefinition] ReplaceAndAlignBmsFile: {timer.Lap("ReplaceAndAlignBmsFile")} ms");
         progress.Report(AppConstants.Progress.RewriteComplete);
 
-        BmsFileRewriter.WriteBmsFile(saveFileName, writeData);
+        BmsFileWriter.WriteBmsFile(saveFileName, writeData);
         PerformanceDebugLogger.WriteLine($"  [ReductDefinition] WriteBmsFile to disk: {timer.Lap("WriteBmsFile to disk")} ms");
 
         // メモリ上のスライスを物理ディスクに書き出す

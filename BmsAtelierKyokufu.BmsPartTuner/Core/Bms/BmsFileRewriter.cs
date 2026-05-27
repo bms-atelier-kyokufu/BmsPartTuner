@@ -1,4 +1,4 @@
-﻿using System.Text.RegularExpressions;
+using System.Text.RegularExpressions;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 
@@ -11,7 +11,6 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 /// <item>削減後の定義リストを抽出・整列</item>
 /// <item>新しいID（01, 02, ...）の割り当て</item>
 /// <item>BMSファイル内の#WAV定義と譜面データの置換</item>
-/// <item>Shift_JISエンコーディングでファイル保存</item>
 /// </list>
 ///
 /// <para>【処理フロー】</para>
@@ -102,100 +101,7 @@ internal partial class BmsFileRewriter(
         return RewriteBmsContent(bmsFileName, finalMap, newDefinitions);
     }
 
-    /// <summary>
-    /// BMSファイルを書き込みます。
-    /// </summary>
-    /// <param name="saveFileName">保存先ファイルパス。</param>
-    /// <param name="writeData">書き込む内容。</param>
-    /// <remarks>
-    /// <para>【Why Shift_JIS】</para>
-    /// BMSフォーマットはShift_JISエンコーディングが標準です。
-    /// 互換性維持のため、ファイル書き込みにはShift_JISを使用します。
-    /// </remarks>
-    public static void WriteBmsFile(string saveFileName, string writeData)
-    {
-        // アトミック書き込み: 一時ファイルに書き込んでからリネーム
-        var tempFileName = saveFileName + ".tmp";
 
-        try
-        {
-            // パス長チェック（WindowsのMAX_PATH制限への対策）
-            // .NET Modernでは自動的に\\?\が付与される場合が多いが、念のため
-            var directory = Path.GetDirectoryName(saveFileName);
-            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
-            {
-                throw new DirectoryNotFoundException($"出力先ディレクトリが存在しません: {directory}");
-            }
-
-            // 1. 一時ファイルに書き込み
-            using (var sw = new StreamWriter(tempFileName, false, Encoding.GetEncoding("shift_jis")))
-            {
-                sw.Write(writeData);
-            }
-
-            // 2. 書き込み成功後、元のファイルを置き換え
-            // Move(overwrite: true) は .NET Core 3.0+ / .NET 5+ でサポート
-            // Windows 7互換ターゲットでもランタイムが新しければ動作するが、
-            // 安全のため Delete -> Move の手順を踏む（Moveのoverwriteはアトミック性が高いが、ここではDelete+Moveで実装）
-            // .NET Standard等では File.Move(src, dst, overwrite) が使える。
-
-            if (File.Exists(saveFileName))
-            {
-                File.Delete(saveFileName);
-            }
-            File.Move(tempFileName, saveFileName);
-
-            PerformanceDebugLogger.WriteLine($"BMS file written atomically: {saveFileName}");
-        }
-        catch (IOException)
-        {
-            // エラー発生時のクリーンアップ処理
-            // 注意: 元のファイルが既に削除されている場合は、データ消失を防ぐために
-            // 一時ファイルを削除せずに残す（ユーザーによる手動復旧を可能にするため）
-            try
-            {
-                bool originalExists = File.Exists(saveFileName);
-                if (File.Exists(tempFileName))
-                {
-                    // 元のファイルが存在する場合のみ、一時ファイルを削除（クリーンアップ）
-                    // 元のファイルが消失している場合は、一時ファイルを残す
-                    if (originalExists)
-                    {
-                        File.Delete(tempFileName);
-                        PerformanceDebugLogger.WriteLine($"Cleanup: Incomplete temp file deleted: {tempFileName}");
-                    }
-                    else
-                    {
-                        PerformanceDebugLogger.WriteLine($"CRITICAL WARNING: Original file lost, keeping temp file for recovery: {tempFileName}");
-                    }
-                }
-            }
-            catch
-            {
-                // クリーンアップ中の例外は無視（元の例外を優先）
-            }
-            throw;
-        }
-        catch (UnauthorizedAccessException)
-        {
-            // アクセス拒否エラー（読み取り専用ディレクトリなど）
-            try
-            {
-                if (File.Exists(tempFileName))
-                {
-                    File.Delete(tempFileName);
-                    PerformanceDebugLogger.WriteLine($"Cleanup: Temp file deleted due to access denied: {tempFileName}");
-                }
-            }
-            catch
-            {
-                // クリーンアップ中の例外は無視
-            }
-            throw;
-        }
-    }
-
-    #region プライベートメソッド
 
     /// <summary>
     /// 削減マップと保持ファイルリストを構築します。
@@ -479,5 +385,4 @@ internal partial class BmsFileRewriter(
     [GeneratedRegex(@"^#WAV[0-9A-Za-z]{2}", RegexOptions.IgnoreCase, "ja-JP")]
     private static partial Regex WavDefinitionRegex();
 
-    #endregion
 }
