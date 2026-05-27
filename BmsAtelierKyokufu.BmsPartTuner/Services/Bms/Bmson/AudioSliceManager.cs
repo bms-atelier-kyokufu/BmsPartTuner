@@ -45,8 +45,11 @@ public class AudioSliceManager(string bmsonDir, bool throwOnMissingFile = true) 
 
     // key: "fileName|offsetSec|durationSec", value: "outputFileName.wav"
     private readonly ConcurrentDictionary<string, Lazy<string>> _sliceCache = new();
+    
+    // 楽器種別ごとの連番を管理する辞書
+    private readonly ConcurrentDictionary<string, int> _instrumentCounters = new();
+    
     private readonly ConcurrentDictionary<string, Lazy<CachedAudioSource?>> _sourceCache = new(StringComparer.OrdinalIgnoreCase);
-    private int _sliceCounter = 1;
     private int _cacheHitCount = 0;
     private int _cacheMissCount = 0;
 
@@ -186,7 +189,7 @@ public class AudioSliceManager(string bmsonDir, bool throwOnMissingFile = true) 
             ? "Slice"
             : char.ToUpper(nameWithoutExt[0]) + nameWithoutExt[1..];
 
-        int currentCount = Interlocked.Increment(ref _sliceCounter) - 1;
+        int currentCount = _instrumentCounters.AddOrUpdate(prefix, 1, (_, count) => count + 1);
         return $"{prefix}_{currentCount:D4}.wav";
     }
 
