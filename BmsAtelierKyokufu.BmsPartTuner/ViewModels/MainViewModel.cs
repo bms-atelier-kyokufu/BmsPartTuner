@@ -156,44 +156,15 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
         Optimization.ErrorOccurred += OnOptimizationError;
 
         // 検証エラーハンドラー
-        InputValidation.ValidationErrorOccurred += (s, e) => ShowMessage($"{e.PropertyName}: {e.ErrorMessage}", isError: true);
+        InputValidation.ValidationErrorOccurred += OnInputValidationError;
 
         // メディア再生エラーハンドラー
-        MediaPlayback.PlaybackError += (_, message) => ShowMessage(message, isError: true);
+        MediaPlayback.PlaybackError += OnMediaPlaybackError;
 
-        FileOperations.PropertyChanged += (s, e) =>
-        {
-            ForwardPropertyChanged(e.PropertyName);
-
-            if (e.PropertyName == nameof(FileOperations.InputPath))
-            {
-                Notification.HideResultCard();
-                ProgressValue = 0;
-                StatusMessage = "準備完了";
-            }
-
-            if (e.PropertyName == nameof(FileOperations.InputPath) ||
-                e.PropertyName == nameof(FileOperations.OutputPath))
-            {
-                if (IsSlideConfirmationVisible)
-                {
-                    HideSlideConfirmation();
-                }
-            }
-        };
-
-        BmsDefinitionManager.PropertyChanged += (s, e) => ForwardPropertyChanged(e.PropertyName);
-        Optimization.PropertyChanged += (s, e) =>
-        {
-            ForwardPropertyChanged(e.PropertyName);
-            if (e.PropertyName == nameof(Optimization.IsPhysicalDeletionEnabled))
-            {
-                OnPropertyChanged(nameof(IsPhysicalDeletionEnabled));
-                OnPropertyChanged(nameof(SlideDirection));
-                OnPropertyChanged(nameof(SlideInstruction));
-            }
-        };
-        Notification.PropertyChanged += (s, e) => ForwardPropertyChanged(e.PropertyName);
+        FileOperations.PropertyChanged += OnFileOperationsPropertyChanged;
+        BmsDefinitionManager.PropertyChanged += OnBmsDefinitionManagerPropertyChanged;
+        Optimization.PropertyChanged += OnOptimizationPropertyChanged;
+        Notification.PropertyChanged += OnNotificationPropertyChanged;
 
         // 起動時にテーマを適用
         Settings.ApplyInitialTheme();
@@ -536,6 +507,58 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
         ShowMessage(errorMessage, isError: true);
     }
 
+    private void OnInputValidationError(object? sender, InputValidationViewModel.ValidationErrorEventArgs e)
+    {
+        ShowMessage($"{e.PropertyName}: {e.ErrorMessage}", isError: true);
+    }
+
+    private void OnMediaPlaybackError(object? sender, string message)
+    {
+        ShowMessage(message, isError: true);
+    }
+
+    private void OnFileOperationsPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        ForwardPropertyChanged(e.PropertyName);
+
+        if (e.PropertyName == nameof(FileOperations.InputPath))
+        {
+            Notification.HideResultCard();
+            ProgressValue = 0;
+            StatusMessage = "準備完了";
+        }
+
+        if (e.PropertyName == nameof(FileOperations.InputPath) ||
+            e.PropertyName == nameof(FileOperations.OutputPath))
+        {
+            if (IsSlideConfirmationVisible)
+            {
+                HideSlideConfirmation();
+            }
+        }
+    }
+
+    private void OnBmsDefinitionManagerPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        ForwardPropertyChanged(e.PropertyName);
+    }
+
+    private void OnOptimizationPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        ForwardPropertyChanged(e.PropertyName);
+        if (e.PropertyName == nameof(Optimization.IsPhysicalDeletionEnabled))
+        {
+            OnPropertyChanged(nameof(IsPhysicalDeletionEnabled));
+            OnPropertyChanged(nameof(SlideDirection));
+            OnPropertyChanged(nameof(SlideInstruction));
+        }
+    }
+
+    private void OnNotificationPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        ForwardPropertyChanged(e.PropertyName);
+    }
+
     private bool ValidateInputs()
     {
         var inputToUse = _workingBmsPath ?? InputPath;
@@ -703,6 +726,22 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
 
         if (disposing)
         {
+            // イベントの購読解除
+            FileOperations.InputPathChanged -= OnInputPathChanged;
+            FileOperations.AutoOutputPathRequested -= OnAutoOutputPathRequested;
+            BmsDefinitionManager.FileListLoaded -= OnFileListLoaded;
+            BmsDefinitionManager.AudioPlaybackStateChanged -= OnAudioPlaybackStateChanged;
+            Optimization.DefinitionReductionCompleted -= OnDefinitionReductionCompleted;
+            Optimization.ErrorOccurred -= OnOptimizationError;
+
+            InputValidation.ValidationErrorOccurred -= OnInputValidationError;
+            MediaPlayback.PlaybackError -= OnMediaPlaybackError;
+
+            FileOperations.PropertyChanged -= OnFileOperationsPropertyChanged;
+            BmsDefinitionManager.PropertyChanged -= OnBmsDefinitionManagerPropertyChanged;
+            Optimization.PropertyChanged -= OnOptimizationPropertyChanged;
+            Notification.PropertyChanged -= OnNotificationPropertyChanged;
+
             (BmsDefinitionManager as IDisposable)?.Dispose();
             (Notification as IDisposable)?.Dispose();
             _audioPreviewService?.Dispose();
