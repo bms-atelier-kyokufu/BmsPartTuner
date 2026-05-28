@@ -7,7 +7,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Core.Helpers;
 /// <summary>
 /// ドライブがSSD等のシークペナルティの無いストレージかどうかを判定するユーティリティ。
 /// </summary>
-internal static class StorageTypeDetector
+internal static partial class StorageTypeDetector
 {
     private static readonly ConcurrentDictionary<string, bool> _ssdCache = new(StringComparer.OrdinalIgnoreCase);
 
@@ -56,7 +56,7 @@ internal static class StorageTypeDetector
         {
             PropertyId = StorageDeviceSeekPenaltyProperty,
             QueryType = PropertyStandardQuery,
-            AdditionalParameters = [0]
+            AdditionalParameters = 0
         };
 
         var result = new DEVICE_SEEK_PENALTY_DESCRIPTOR();
@@ -74,7 +74,7 @@ internal static class StorageTypeDetector
         if (success)
         {
             // IncursSeekPenaltyがfalseであれば、物理的なシーク遅延が発生しないSSDとみなせる
-            return !result.IncursSeekPenalty;
+            return result.IncursSeekPenalty == 0;
         }
 
         return false;
@@ -93,8 +93,7 @@ internal static class StorageTypeDetector
     {
         public int PropertyId;
         public int QueryType;
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 1)]
-        public byte[] AdditionalParameters;
+        public byte AdditionalParameters;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -102,13 +101,12 @@ internal static class StorageTypeDetector
     {
         public int Version;
         public int Size;
-        [MarshalAs(UnmanagedType.U1)]
-        public bool IncursSeekPenalty;
+        public byte IncursSeekPenalty;
     }
 
-    [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Auto)]
-    private static extern SafeFileHandle CreateFile(
-        string lpFileName,
+    [LibraryImport("kernel32.dll", EntryPoint = "CreateFileW", StringMarshalling = StringMarshalling.Utf16, SetLastError = true)]
+    private static partial SafeFileHandle CreateFile(
+        [MarshalAs(UnmanagedType.LPWStr)] string lpFileName,
         uint dwDesiredAccess,
         uint dwShareMode,
         IntPtr lpSecurityAttributes,
@@ -116,9 +114,9 @@ internal static class StorageTypeDetector
         uint dwFlagsAndAttributes,
         IntPtr hTemplateFile);
 
-    [DllImport("kernel32.dll", SetLastError = true)]
+    [LibraryImport("kernel32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
-    private static extern bool DeviceIoControl(
+    private static partial bool DeviceIoControl(
         SafeFileHandle hDevice,
         uint dwIoControlCode,
         ref STORAGE_PROPERTY_QUERY lpInBuffer,
