@@ -362,4 +362,87 @@ public class BmsonOptimizationIntegrationTests
         float suggestedThreshold = maxEuclideanForR2Match * 1.5f; // 50% safety margin
         _output.WriteLine($"Suggested Safe Distance Threshold (with 50% margin): {suggestedThreshold:F4}");
     }
+
+    [Fact]
+    public void DiscoverHeuristicThreshold_SimHash256_R2_Relationship()
+    {
+        // Arrange
+        string testDataDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TestData", "bmson_sample", "bms");
+        string bmsFilePath = Path.Combine(testDataDir, "bmson_base62.bms");
+        Assert.True(File.Exists(bmsFilePath), $"Test input file not found: {bmsFilePath}");
+
+        var manager = new BmsDefinitionManager(bmsFilePath);
+        var fileList = manager.CreateFileList();
+        
+        // Cache all files
+        var audioCache = new Dictionary<string, ICachedSoundData>();
+        string bmsDir = Path.GetDirectoryName(bmsFilePath) ?? "";
+        foreach (var file in fileList)
+        {
+            if (file.NumInteger < 1 || file.NumInteger > 3843) continue;
+            string fullPath = Path.Combine(bmsDir, file.Name);
+            if (!File.Exists(fullPath)) continue;
+            
+            if (!audioCache.ContainsKey(file.Name))
+            {
+                var data = BmsAtelierKyokufu.BmsPartTuner.Core.Audio.AudioProcessingService.LoadAndProcess(fullPath, NormalizationMode.None);
+                audioCache[file.Name] = data;
+            }
+        }
+
+        var cachedList = audioCache.Values.ToList();
+        _output.WriteLine($"Loaded {cachedList.Count} unique audio files.");
+
+        int maxHammingForR2Match = 0;
+        int matchCount = 0;
+
+        _output.WriteLine("R2_Score\tHamming\tFile1\tFile2");
+
+        for (int i = 0; i < cachedList.Count; i++)
+        {
+            for (int j = i + 1; j < cachedList.Count; j++)
+            {
+                var data1 = cachedList[i];
+                var data2 = cachedList[j];
+
+                if (data1.Channels != data2.Channels || data1.SampleRate != data2.SampleRate) continue;
+                if (data1.SimHash256 == null || data2.SimHash256 == null) continue;
+
+                int targetChannel = 0;
+                if (data1.GetActiveRegions()[0] == null || data1.GetActiveRegions()[0].Count == 0) targetChannel = 1;
+                
+                var shorter = data1.TotalSamples < data2.TotalSamples ? data1 : data2;
+                var longer = data1.TotalSamples < data2.TotalSamples ? data2 : data1;
+                int shorterFrames = shorter.TotalSamples / shorter.Channels;
+                int longerFrames = longer.TotalSamples / longer.Channels;
+                var shorterSpan = shorter.GetRawSpan(targetChannel, 0, shorterFrames);
+                var longerFullSpan = longer.GetRawSpan(targetChannel, 0, longerFrames);
+
+                float r = BmsAtelierKyokufu.BmsPartTuner.Core.Audio.FastWaveCompare.CalculateMaxCorrelation(
+                    shorter, longer, targetChannel, shorterFrames, longerFrames, shorterSpan, longerFullSpan, out _);
+
+                var s1 = data1.SimHash256;
+                var s2 = data2.SimHash256;
+                
+                int hammingDistance = 
+                    System.Numerics.BitOperations.PopCount(s1[0] ^ s2[0]) +
+                    System.Numerics.BitOperations.PopCount(s1[1] ^ s2[1]) +
+                    System.Numerics.BitOperations.PopCount(s1[2] ^ s2[2]) +
+                    System.Numerics.BitOperations.PopCount(s1[3] ^ s2[3]);
+
+                if (r >= 0.40f)
+                {
+                    matchCount++;
+                    if (hammingDistance > maxHammingForR2Match) maxHammingForR2Match = hammingDistance;
+                    _output.WriteLine($"{r:F4}\t{hammingDistance}\t{Path.GetFileName(data1.FilePath)}\t{Path.GetFileName(data2.FilePath)}");
+                }
+            }
+        }
+
+        _output.WriteLine($"---");
+        _output.WriteLine($"Matches with R2 >= 0.40 : {matchCount}");
+        _output.WriteLine($"Max Hamming Distance for these matches: {maxHammingForR2Match}");
+        
+        Assert.True(maxHammingForR2Match <= 64, $"Threshold 64 is too strict! Max observed was {maxHammingForR2Match}");
+    }
 }

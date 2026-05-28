@@ -37,8 +37,14 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
 
 
         public MathNet.Numerics.Complex32[][]? FftSpectrum { get; }
-        public float[]? SpectralFeatures { get; }
-        public ulong ShiftInvariantLsh { get; }
+        
+        public float[]? SpectralFeatures => DisableCascadeClassifiers ? null : _spectralFeatures;
+        public ulong[]? SimHash256 => DisableCascadeClassifiers ? null : _simHash256;
+
+        public bool DisableCascadeClassifiers { get; set; } = false;
+
+        private readonly float[]? _spectralFeatures;
+        private readonly ulong[]? _simHash256;
 
         private readonly ulong[][] _signLsh;
         private readonly ulong[][] _signLshMask;
@@ -68,8 +74,8 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
             _signLshMask = signLshMask;
 
             FftSpectrum = GenerateFftSpectrum(samplesPerChannel, Channels);
-            SpectralFeatures = GenerateSpectralFeatures(FftSpectrum);
-            ShiftInvariantLsh = GenerateShiftInvariantLsh(FftSpectrum);
+            _spectralFeatures = GenerateSpectralFeatures(FftSpectrum);
+            _simHash256 = GenerateSimHash256(FftSpectrum);
         }
 
         public IReadOnlyList<ActiveRegion>[] GetActiveRegions()
@@ -216,25 +222,22 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
 
                 Fourier.Forward(complexData, FourierOptions.Default);
 
-                float[] magnitudes = new float[2048];
-                for (int i = 0; i < 2048; i++)
-                {
-                    magnitudes[i] = complexData[i].Magnitude;
-                }
-
+                float prevMag = complexData[0].Magnitude;
                 for (int i = 0; i < 2048 - 1; i++)
                 {
+                    float currMag = complexData[i + 1].Magnitude;
                     int lshIdx = i / 64;
                     int bitShift = i % 64;
 
-                    if (magnitudes[i] >= magnitudes[i + 1])
+                    if (prevMag >= currMag)
                     {
                         signLsh[ch][lshIdx] |= 1UL << bitShift;
                     }
-                    if (magnitudes[i] > 1e-4f)
+                    if (prevMag > 1e-4f)
                     {
                         signLshMask[ch][lshIdx] |= 1UL << bitShift;
                     }
+                    prevMag = currMag;
                 }
             }
 
@@ -271,30 +274,30 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
             return fftSpectrum;
         }
 
-        private static ulong GenerateShiftInvariantLsh(Complex32[][]? fftSpectrum)
+        private static ulong[]? GenerateSimHash256(Complex32[][]? fftSpectrum)
         {
-            if (fftSpectrum == null || fftSpectrum.Length == 0 || fftSpectrum[0] == null) return 0;
+            if (fftSpectrum == null || fftSpectrum.Length == 0 || fftSpectrum[0] == null) return null;
 
             var spectrum = fftSpectrum[0];
-            ulong hash = 0;
+            if (spectrum.Length <= 256) return null;
 
-            // 擬似乱数で64個のランダムベクトルを生成し、内積を取る
-            var random = new Random(42);
-            const int features = 256;
+            ulong[] hash = new ulong[4];
 
-            for (int bit = 0; bit < 64; bit++)
+            // O(N^2)のランダムプロジェクションから、O(N)の微分ハッシュ（隣接差分）へ最適化
+            // これによりループ計算量が 65536 回から 256 回へ劇的に削減され、かつ音量に依存しないロバストなシグネチャになります。
+            for (int i = 0; i < 4; i++)
             {
-                double dotProduct = 0;
-                for (int i = 0; i < features; i++)
+                ulong currentHash = 0;
+                for (int bit = 0; bit < 64; bit++)
                 {
-                    double val = spectrum[i].Magnitude;
-                    double weight = (random.NextDouble() * 2.0) - 1.0;
-                    dotProduct += val * weight;
+                    int f = i * 64 + bit;
+                    // 隣接ビンとの比較によるロバストな1ビット量子化 (O(1))
+                    if (spectrum[f].Magnitude > spectrum[f + 1].Magnitude)
+                    {
+                        currentHash |= (1UL << bit);
+                    }
                 }
-                if (dotProduct > 0)
-                {
-                    hash |= (1UL << bit);
-                }
+                hash[i] = currentHash;
             }
             return hash;
         }

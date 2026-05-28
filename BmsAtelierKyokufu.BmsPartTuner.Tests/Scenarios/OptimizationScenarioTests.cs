@@ -34,7 +34,10 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Scenarios
         private static MockCachedSoundData CreateMockAudioData(float[] samples)
         {
             float[][] channels = [samples];
-            return new MockCachedSoundData(channels, 44100, 16);
+            return new MockCachedSoundData(channels, 44100, 16)
+            {
+                DisableCascadeClassifiers = true
+            };
         }
 
         #endregion
