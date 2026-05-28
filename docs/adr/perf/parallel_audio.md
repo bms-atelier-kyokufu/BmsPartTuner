@@ -7,9 +7,8 @@ status: open
 # $O(N^2)$回避のための並列比較アルゴリズムと枝刈り
 
 ## 並列オーディオ比較エンジン
-* 対象クラス: ParallelAudioComparisonEngine
 
-
+- 対象クラス: ParallelAudioComparisonEngine
 
 **数学的証明 (Mathematical Proof)**
 
@@ -24,13 +23,10 @@ status: open
 波形AとBが一致し、BとCが一致した場合、AとCも一致するとみなす（推移律）。
 この関係を素集合データ構造（Union-Find）を用いて管理し、経路圧縮（Path Compression）により検索を $O(\alpha(n))$ に最適化している。
 
-
 **設計判断 (Why this algorithm?)**
 N個の音声ファイル群に対して総当り比較を行うと $O(N^2)$ の計算量となり、大量のファイルでパフォーマンスが破綻します。これを回避するため、ソートによる探索空間の削減（Sort & Sweep）、ピボットを用いた三角不等式による枝刈り（Triangle Inequality Pruning）、および推移的な一致関係の統合（Union-Find）を組み合わせた高度な並列比較エンジンを採用しています。
 
 **非採用としたアプローチ (Rejected Alternatives / Anti-patterns)**
+
 - **単純な二重ループ（$O(N^2)$）**: 計算量が爆発するため廃止しました。
 - **ロック（`lock` ステートメント）による同期**: 並列処理時のコンテキストスイッチがボトルネックとなるため廃止しました。代わりに `Interlocked.CompareExchange` を用いたCAS（Compare-And-Swap）によるロックフリー（Lock-Free）アルゴリズムを採用し、複数のスレッドから同時にUnion-Findツリーを更新できるようにしています。
-
-
-

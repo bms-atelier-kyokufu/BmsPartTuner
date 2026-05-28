@@ -7,9 +7,8 @@ status: open
 # Bmsonスコア計算における数理モデル・設計判断
 
 ## Bmsonファイルのスコアジェネレータ
-* 対象クラス: BmsScoreGenerator
 
-
+- 対象クラス: BmsScoreGenerator
 
 **数学的証明 (Mathematical Proof)**
 
@@ -25,9 +24,5 @@ $$
 T_{actual} = T_{default} \cdot \left( \frac{T_{\%}}{100.0} \right)
 $$
 
-
 **設計判断 (Why this algorithm?)**
 bmsonの仕様では `total` 値は「IIDXのデフォルトゲージ回復量（100%）」に対するパーセンテージで指定されます。BMS（#TOTAL）には絶対値の回復量を実数で出力する必要があるため、ノーツ数からデフォルト回復量を逆算して適用しています。
-
-
-
