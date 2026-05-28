@@ -1,4 +1,4 @@
-﻿using BmsAtelierKyokufu.BmsPartTuner.Extensions;
+using BmsAtelierKyokufu.BmsPartTuner.Extensions;
 using BmsAtelierKyokufu.BmsPartTuner.Services.Common;
 using BmsAtelierKyokufu.BmsPartTuner.Services.UI;
 using BmsAtelierKyokufu.BmsPartTuner.Views.Windows;
@@ -86,7 +86,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner
             }
             catch (Exception ex)
             {
-                PerformanceDebugLogger.WriteLine($"ホストの停止中にエラーが発生しました: {ex}");
+                PerformanceDebugLogger.WriteDebug(nameof(App), $"ホストの停止中にエラーが発生しました: {ex}");
             }
             finally
             {

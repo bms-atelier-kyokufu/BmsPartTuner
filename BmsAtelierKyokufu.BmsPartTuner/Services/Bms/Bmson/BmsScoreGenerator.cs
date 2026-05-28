@@ -14,12 +14,96 @@ public class BmsScoreGenerator(
     AudioSliceManager audioSliceManager,
     bool keyNotesOnly = false)
 {
+    // 内部定数の隠匿
+    private const int RadixBase36 = 36;
+    private const int RadixBase62 = 62;
+    private const int MaxNumberBase36 = 1295;
+    private const string RestValue = "00";
+
+    private const double DefaultPercentage = 100.0;
+    private const double MinimumFloor = 260.0;
+    private const double IidxMultiplier = 7.605;
+    private const double IidxNotesCoefficient = 0.01;
+    private const double IidxConstantTerm = 6.5;
+
+    /// <summary>
+    /// BMSヘッダーに関するコマンド名とフォーマットロジックをカプセル化する構造体。
+    /// </summary>
+    private readonly struct BmsHeader
+    {
+        /// <summary>プレイヤー数定義コマンド (#PLAYER)。</summary>
+        public const string Player = "#PLAYER";
+        /// <summary>ジャンル定義コマンド (#GENRE)。</summary>
+        public const string Genre = "#GENRE";
+        /// <summary>タイトル定義コマンド (#TITLE)。</summary>
+        public const string Title = "#TITLE";
+        /// <summary>アーティスト定義コマンド (#ARTIST)。</summary>
+        public const string Artist = "#ARTIST";
+        /// <summary>サブアーティスト定義コマンド (#SUBARTIST)。</summary>
+        public const string Subartist = "#SUBARTIST";
+        /// <summary>難易度レベル定義コマンド (#PLAYLEVEL)。</summary>
+        public const string PlayLevel = "#PLAYLEVEL";
+        /// <summary>判定ランク定義コマンド (#RANK)。</summary>
+        public const string Rank = "#RANK";
+        /// <summary>ゲージ回復量定義コマンド (#TOTAL)。</summary>
+        public const string Total = "#TOTAL";
+        /// <summary>ロングノート種別定義コマンド (#LNTYPE)。</summary>
+        public const string LnType = "#LNTYPE";
+
+        /// <summary>BPM定義コマンドのプレフィックス (#BPM)。</summary>
+        public const string BpmPrefix = "#BPM";
+        /// <summary>WAV定義コマンドのプレフィックス (#WAV)。</summary>
+        public const string WavPrefix = "#WAV";
+        /// <summary>BMP定義コマンドのプレフィックス (#BMP)。</summary>
+        public const string BmpPrefix = "#BMP";
+        /// <summary>STOP定義コマンドのプレフィックス (#STOP)。</summary>
+        public const string StopPrefix = "#STOP";
+
+        /// <summary>
+        /// 指定されたヘッダーコマンド名と値から、標準的なBMSヘッダー行文字列を生成します。
+        /// </summary>
+        /// <param name="name">ヘッダーコマンド名。</param>
+        /// <param name="value">ヘッダーに設定する値。</param>
+        /// <returns>"コマンド名 値" 形式のフォーマット文字列。</returns>
+        public static string Format(string name, object? value) => $"{name} {value}";
+
+        /// <summary>
+        /// 指定された定義コマンドプレフィックス、インデックス、および値から、インデックス付きBMS定義行文字列を生成します。
+        /// </summary>
+        /// <param name="prefix">定義コマンドプレフィックス。</param>
+        /// <param name="index">インデックス定義文字列（36進数や62進数など）。</param>
+        /// <param name="value">定義対象のリソース値（ファイル名や値など）。</param>
+        /// <returns>"プレフィックスインデックス 値" 形式のフォーマット文字列。</returns>
+        public static string FormatIndexed(string prefix, string index, object? value) => $"{prefix}{index} {value}";
+    }
+
+    /// <summary>
+    /// BMSチャンネル番号（レーンおよび制御イベント用）の定義を管理する構造体。
+    /// </summary>
+    private readonly struct BmsChannel
+    {
+        /// <summary>BGM音源用チャンネル (01)。</summary>
+        public const string Bgm = "01";
+        /// <summary>小節長変更用チャンネル (02)。</summary>
+        public const string Meter = "02";
+        /// <summary>BGAベース映像用チャンネル (04)。</summary>
+        public const string Bga = "04";
+        /// <summary>ミス画像/映像（Poor）用チャンネル (06)。</summary>
+        public const string Poor = "06";
+        /// <summary>BGAレイヤー映像用チャンネル (07)。</summary>
+        public const string Layer = "07";
+        /// <summary>拡張BPM変更イベント用チャンネル (08)。</summary>
+        public const string Bpm = "08";
+        /// <summary>ストップシーケンスイベント用チャンネル (09)。</summary>
+        public const string Stop = "09";
+    }
+
     private readonly BmsonFormat _bmson = bmson;
     private readonly PulseToBmsTimeCalculator _timeCalc = timeCalc;
     private readonly PulseToRealTimeCalculator _realTimeCalc = realTimeCalc;
     private readonly AudioSliceManager _audioSliceManager = audioSliceManager;
     private readonly bool _keyNotesOnly = keyNotesOnly;
-    private int _radix = AppConstants.Definition.RadixBase62; // Default, will be recalculated
+    private int _radix = RadixBase62; // Default, will be recalculated
     private readonly bool _isDoublePlay = DetermineIsDoublePlay(bmson);
 
     private static readonly string[] MeasureStrings = GenerateMeasureStrings();
@@ -58,7 +142,7 @@ public class BmsScoreGenerator(
         public ChannelLayer(int length)
         {
             Notes = new string[length];
-            Array.Fill(Notes, AppConstants.Definition.Rest);
+            Array.Fill(Notes, RestValue);
             CurrentGcd = length;
         }
 
@@ -96,30 +180,30 @@ public class BmsScoreGenerator(
     public string GenerateBmsText()
     {
         PerformanceDebugLogger.ClearAccumulated();
-        PerformanceDebugLogger.WriteLine("  [BmsScoreGenerator] Start GenerateBmsText");
+        PerformanceDebugLogger.WriteDebug(nameof(BmsScoreGenerator), "Start GenerateBmsText");
         var timer = PerformanceDebugLogger.StartTimer();
 
         // 0. Y座標データの事前計算 (次元 of 分離)
         PrecalculateYPositions();
-        PerformanceDebugLogger.WriteLine($"  [BmsScoreGenerator] PrecalculateYPositions: {timer.Lap("PrecalculateYPositions")} ms");
+        PerformanceDebugLogger.WriteDebug(nameof(BmsScoreGenerator), $"PrecalculateYPositions: {timer.Lap("PrecalculateYPositions")} ms");
 
         // 音声ソースの投機的並列プリロード
         PreloadAudioSources();
-        PerformanceDebugLogger.WriteLine($"  [BmsScoreGenerator] PreloadAudioSources (Parallel): {timer.Lap("PreloadAudioSources")} ms");
+        PerformanceDebugLogger.WriteDebug(nameof(BmsScoreGenerator), $"  [BmsScoreGenerator] PreloadAudioSources (Parallel): {timer.Lap("PreloadAudioSources")} ms");
 
         // 1. Choose optimal radix based on total upper bound notes
         int totalNotesUpperBound = _bmson.SoundChannels?.Sum(static c => c.Notes?.Count ?? 0) ?? 0;
-        _radix = totalNotesUpperBound <= AppConstants.Definition.MaxNumberBase36 ? AppConstants.Definition.RadixBase36 : AppConstants.Definition.RadixBase62;
+        _radix = totalNotesUpperBound <= MaxNumberBase36 ? RadixBase36 : RadixBase62;
 
         ProcessSoundChannels();
-        PerformanceDebugLogger.WriteLine($"  [BmsScoreGenerator] ProcessSoundChannels: {timer.Lap("ProcessSoundChannels")} ms");
-        PerformanceDebugLogger.PrintAccumulatedGrouped("AudioSliceManager Metrics (Grouped by Channel)", LogLevel.Debug);
+        PerformanceDebugLogger.WriteDebug(nameof(BmsScoreGenerator), $"ProcessSoundChannels: {timer.Lap("ProcessSoundChannels")} ms");
+        PerformanceDebugLogger.PrintAccumulatedGrouped("BmsScoreGenerator", "AudioSliceManager Metrics (Grouped by Channel)", LogLevel.Debug);
 
         ProcessBpmEvents();
         ProcessStopEvents();
         ProcessBgaEvents();
         ProcessMeasureLengths();
-        PerformanceDebugLogger.WriteLine($"  [BmsScoreGenerator] Other events processing: {timer.Lap("OtherEventsProcessing")} ms");
+        PerformanceDebugLogger.WriteDebug(nameof(BmsScoreGenerator), $"Other events processing: {timer.Lap("OtherEventsProcessing")} ms");
 
         var sb = new StringBuilder(262144);
 
@@ -132,7 +216,7 @@ public class BmsScoreGenerator(
         // 3. データブロック出力
         WriteDataBlocks(sb);
 
-        PerformanceDebugLogger.WriteLine($"  [BmsScoreGenerator] StringBuilder formatting: {timer.Lap("StringBuilderFormatting")} ms");
+        PerformanceDebugLogger.WriteDebug(nameof(BmsScoreGenerator), $"StringBuilder formatting: {timer.Lap("StringBuilderFormatting")} ms");
         return sb.ToString();
     }
 
@@ -189,59 +273,59 @@ public class BmsScoreGenerator(
 
     private void WriteHeader(StringBuilder sb)
     {
-        sb.AppendLine(_isDoublePlay ? "#PLAYER 3" : "#PLAYER 1");
+        sb.AppendLine(BmsHeader.Format(BmsHeader.Player, _isDoublePlay ? "3" : "1"));
 
         // GENRE
         if (!string.IsNullOrWhiteSpace(_bmson.Info.Genre))
-            sb.AppendLine($"#GENRE {_bmson.Info.Genre}");
+            sb.AppendLine(BmsHeader.Format(BmsHeader.Genre, _bmson.Info.Genre));
 
         // TITLE
         if (!string.IsNullOrWhiteSpace(_bmson.Info.Title))
-            sb.AppendLine($"#TITLE {_bmson.Info.Title}");
+            sb.AppendLine(BmsHeader.Format(BmsHeader.Title, _bmson.Info.Title));
 
         // ARTIST
         if (!string.IsNullOrWhiteSpace(_bmson.Info.Artist))
-            sb.AppendLine($"#ARTIST {_bmson.Info.Artist}");
+            sb.AppendLine(BmsHeader.Format(BmsHeader.Artist, _bmson.Info.Artist));
 
         // SUBARTIST
         if (_bmson.Info.Subartists?.Count > 0)
         {
-            sb.AppendLine($"#SUBARTIST {string.Join(" ", _bmson.Info.Subartists)}");
+            sb.AppendLine(BmsHeader.Format(BmsHeader.Subartist, string.Join(" ", _bmson.Info.Subartists)));
         }
 
         // BPM
-        sb.AppendLine($"{AppConstants.Definition.BpmPrefix} {Math.Round(_bmson.Info.InitBpm, 3)}");
+        sb.AppendLine(BmsHeader.Format(BmsHeader.BpmPrefix, Math.Round(_bmson.Info.InitBpm, 3)));
 
         // PLAYLEVEL
-        sb.AppendLine($"#PLAYLEVEL {_bmson.Info.Level}");
+        sb.AppendLine(BmsHeader.Format(BmsHeader.PlayLevel, _bmson.Info.Level));
 
         // RANK
         int rank = 3; // Easy
         if (_bmson.Info.JudgeRank <= 33) rank = 0; // Very Hard
         else if (_bmson.Info.JudgeRank <= 66) rank = 1; // Hard
         else if (_bmson.Info.JudgeRank <= 99) rank = 2; // Normal
-        sb.AppendLine($"#RANK {rank}");
+        sb.AppendLine(BmsHeader.Format(BmsHeader.Rank, rank));
 
         // TOTAL (Approach B: bmsonの%トータル値が100%の場合は省略し、それ以外はプレイアブルノーツ数から算出した絶対値を実数で出力)
         int playableNotes = _bmson.SoundChannels?
             .Sum(static ch => ch.Notes?.Count(static n => n.X > 0) ?? 0) ?? 0;
 
-        if (Math.Abs(_bmson.Info.Total - AppConstants.BmsTotal.DefaultPercentage) > 0.0001 && playableNotes > 0)
+        if (Math.Abs(_bmson.Info.Total - DefaultPercentage) > 0.0001 && playableNotes > 0)
         {
             // bmsonの基準式（black train近似式）により、100%時のデフォルト値を計算
             double defaultTotal = Math.Max(
-                AppConstants.BmsTotal.MinimumFloor,
-                AppConstants.BmsTotal.IidxMultiplier * playableNotes /
-                ((AppConstants.BmsTotal.IidxNotesCoefficient * playableNotes) + AppConstants.BmsTotal.IidxConstantTerm)
+                MinimumFloor,
+                IidxMultiplier * playableNotes /
+                ((IidxNotesCoefficient * playableNotes) + IidxConstantTerm)
             );
 
             // %値を掛け合わせて絶対値を算出
-            double realTotal = defaultTotal * (_bmson.Info.Total / AppConstants.BmsTotal.DefaultPercentage);
-            sb.AppendLine($"#TOTAL {Math.Round(realTotal, 4)}");
+            double realTotal = defaultTotal * (_bmson.Info.Total / DefaultPercentage);
+            sb.AppendLine(BmsHeader.Format(BmsHeader.Total, Math.Round(realTotal, 4)));
         }
 
         // LNTYPE (bmsonのLNはType1相当だが、BMSでの互換性のためにLNTYPE 1を指定)
-        sb.AppendLine("#LNTYPE 1");
+        sb.AppendLine(BmsHeader.Format(BmsHeader.LnType, "1"));
     }
 
     private void WriteDefinitions(StringBuilder sb)
@@ -252,28 +336,28 @@ public class BmsScoreGenerator(
         foreach (var kvp in _wavDefinitions.OrderBy(k => k.Value))
         {
             string fileName = kvp.Key.Item1;
-            sb.AppendLine($"{AppConstants.Definition.WavPrefix}{kvp.Value} {fileName}");
+            sb.AppendLine(BmsHeader.FormatIndexed(BmsHeader.WavPrefix, kvp.Value, fileName));
         }
 
         // BMP
         if (_bmpDefinitions.Count > 0) sb.AppendLine();
         foreach (var kvp in _bmpDefinitions.OrderBy(k => k.Value))
         {
-            sb.AppendLine($"{AppConstants.Definition.BmpPrefix}{kvp.Value} {_bmson.Bga?.BgaHeader?.FirstOrDefault(h => h.Id == kvp.Key)?.Name}");
+            sb.AppendLine(BmsHeader.FormatIndexed(BmsHeader.BmpPrefix, kvp.Value, _bmson.Bga?.BgaHeader?.FirstOrDefault(h => h.Id == kvp.Key)?.Name));
         }
 
         // BPM
         if (_bpmDefinitions.Count > 0) sb.AppendLine();
         foreach (var kvp in _bpmDefinitions.OrderBy(k => k.Value))
         {
-            sb.AppendLine($"{AppConstants.Definition.BpmPrefix}{kvp.Value} {kvp.Key}");
+            sb.AppendLine(BmsHeader.FormatIndexed(BmsHeader.BpmPrefix, kvp.Value, kvp.Key));
         }
 
         // STOP
         if (_stopDefinitions.Count > 0) sb.AppendLine();
         foreach (var kvp in _stopDefinitions.OrderBy(k => k.Value))
         {
-            sb.AppendLine($"{AppConstants.Definition.StopPrefix}{kvp.Value} {kvp.Key}");
+            sb.AppendLine(BmsHeader.FormatIndexed(BmsHeader.StopPrefix, kvp.Value, kvp.Key));
         }
     }
 
@@ -445,12 +529,12 @@ public class BmsScoreGenerator(
             double roundedBpm = Math.Round(b.Bpm, 3);
             if (!_bpmDefinitions.TryGetValue(roundedBpm, out string? bpmId))
             {
-                bpmId = RadixConvert.IntToZZ(_bpmCounter++, AppConstants.Definition.RadixBase36);
+                bpmId = RadixConvert.IntToZZ(_bpmCounter++, RadixBase36);
                 _bpmDefinitions[roundedBpm] = bpmId;
             }
 
             var yData = _yDataMap[b.Y];
-            AddNote(yData.Measure, "08", yData.StepIndex, yData.MeasureLength, bpmId);
+            AddNote(yData.Measure, BmsChannel.Bpm, yData.StepIndex, yData.MeasureLength, bpmId);
         }
     }
 
@@ -463,7 +547,7 @@ public class BmsScoreGenerator(
 
             if (!_stopDefinitions.TryGetValue(bmsStopVal, out string? stopId))
             {
-                stopId = RadixConvert.IntToZZ(_stopCounter++, AppConstants.Definition.RadixBase36);
+                stopId = RadixConvert.IntToZZ(_stopCounter++, RadixBase36);
                 _stopDefinitions[bmsStopVal] = stopId;
             }
 
@@ -481,7 +565,7 @@ public class BmsScoreGenerator(
         {
             if (!_bmpDefinitions.ContainsKey(h.Id))
             {
-                _bmpDefinitions[h.Id] = RadixConvert.IntToZZ(_bmpCounter++, AppConstants.Definition.RadixBase36);
+                _bmpDefinitions[h.Id] = RadixConvert.IntToZZ(_bmpCounter++, RadixBase36);
             }
         }
 
@@ -518,11 +602,11 @@ public class BmsScoreGenerator(
             {
                 string multStr = mult.ToString("0.000000").TrimEnd('0').TrimEnd('.');
                 if (!_measures.ContainsKey(m)) _measures[m] = [];
-                if (!_measures[m].ContainsKey("02"))
+                if (!_measures[m].ContainsKey(BmsChannel.Meter))
                 {
                     var layer = new ChannelLayer(1);
                     layer.SetNote(0, multStr);
-                    _measures[m]["02"] = [layer];
+                    _measures[m][BmsChannel.Meter] = [layer];
                 }
             }
         }
@@ -560,12 +644,12 @@ public class BmsScoreGenerator(
             mDict[channel] = layers;
         }
 
-        if (channel == "01")
+        if (channel == BmsChannel.Bgm)
         {
             bool placed = false;
             foreach (var layer in layers)
             {
-                if (layer.Notes.Length == measureLength && layer.Notes[step] == AppConstants.Definition.Rest)
+                if (layer.Notes.Length == measureLength && layer.Notes[step] == RestValue)
                 {
                     layer.SetNote(step, id);
                     placed = true;
@@ -583,10 +667,10 @@ public class BmsScoreGenerator(
         {
             if (layers[0].Notes.Length == measureLength)
             {
-                if (layers[0].Notes[step] != AppConstants.Definition.Rest)
+                if (layers[0].Notes[step] != RestValue)
                 {
                     // 同一レーン・同一タイミングでの衝突(和音)はBGMレーンに退避させる
-                    AddNoteDirect(measure, "01", step, measureLength, id);
+                    AddNoteDirect(measure, BmsChannel.Bgm, step, measureLength, id);
                 }
                 else
                 {
@@ -598,7 +682,7 @@ public class BmsScoreGenerator(
 
     private static string MapLaneToChannel(int x, bool isLn)
     {
-        if (x == 0) return "01";
+        if (x == 0) return BmsChannel.Bgm;
 
         int prefix = (x <= 8) ? (isLn ? 5 : 1) : (isLn ? 6 : 2);
         int suffix = (((x - 1) % 8) + 1) switch

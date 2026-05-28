@@ -1,4 +1,4 @@
-﻿namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
+namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 
 /// <summary>
 /// 定義削減の統計情報を管理するクラス。
@@ -52,12 +52,12 @@ internal class DefinitionStatistics(
     {
         var stats = CalculateStatistics();
 
-        PerformanceDebugLogger.WriteLine($"=== Statistics ===");
-        PerformanceDebugLogger.WriteLine($"Processing range: {_startPoint} - {_endPoint}");
-        PerformanceDebugLogger.WriteLine($"Total definitions: {stats.TotalDefinitions}");
-        PerformanceDebugLogger.WriteLine($"Unique files: {stats.UniqueFiles}");
-        PerformanceDebugLogger.WriteLine($"Replaced: {stats.ReplacedFiles}");
-        PerformanceDebugLogger.WriteLine($"Reduction rate: {stats.ReductionRate:F1}%");
+        PerformanceDebugLogger.WriteDebug(nameof(DefinitionStatistics), $"=== Statistics ===");
+        PerformanceDebugLogger.WriteDebug(nameof(DefinitionStatistics), $"Processing range: {_startPoint} - {_endPoint}");
+        PerformanceDebugLogger.WriteDebug(nameof(DefinitionStatistics), $"Total definitions: {stats.TotalDefinitions}");
+        PerformanceDebugLogger.WriteDebug(nameof(DefinitionStatistics), $"Unique files: {stats.UniqueFiles}");
+        PerformanceDebugLogger.WriteDebug(nameof(DefinitionStatistics), $"Replaced: {stats.ReplacedFiles}");
+        PerformanceDebugLogger.WriteDebug(nameof(DefinitionStatistics), $"Reduction rate: {stats.ReductionRate:F1}%");
     }
 
     /// <summary>
@@ -80,11 +80,11 @@ internal class DefinitionStatistics(
     {
         var stats = CalculateStatistics();
 
-        PerformanceDebugLogger.WriteLine($"=== GetUniqueFileCount Detail ===");
-        PerformanceDebugLogger.WriteLine($"  Total in range: {stats.TotalInRange}");
-        PerformanceDebugLogger.WriteLine($"  Unique (self-ref): {stats.UniqueFiles}");
-        PerformanceDebugLogger.WriteLine($"  Not processed (==0): {stats.NotProcessed}");
-        PerformanceDebugLogger.WriteLine($"  Processed (>0): {stats.Processed}");
+        PerformanceDebugLogger.WriteDebug(nameof(DefinitionStatistics), $"=== GetUniqueFileCount Detail ===");
+        PerformanceDebugLogger.WriteDebug(nameof(DefinitionStatistics), $"  Total in range: {stats.TotalInRange}");
+        PerformanceDebugLogger.WriteDebug(nameof(DefinitionStatistics), $"  Unique (self-ref): {stats.UniqueFiles}");
+        PerformanceDebugLogger.WriteDebug(nameof(DefinitionStatistics), $"  Not processed (==0): {stats.NotProcessed}");
+        PerformanceDebugLogger.WriteDebug(nameof(DefinitionStatistics), $"  Processed (>0): {stats.Processed}");
 
         return stats.UniqueFiles;
     }

@@ -412,7 +412,7 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
         StatusMessage = "bmsonをダウンコンバート中...";
         try
         {
-            using (PerformanceDebugLogger.MeasureTime("Total Flow (Downconvert + LoadBmsFile)"))
+            using (PerformanceDebugLogger.MeasureTime("MainViewModel", "Total Flow (Downconvert + LoadBmsFile)"))
             {
                 Core.Audio.VirtualAudioRegistry.Clear();
                 Core.Audio.PointerAudioRegistry.Clear();

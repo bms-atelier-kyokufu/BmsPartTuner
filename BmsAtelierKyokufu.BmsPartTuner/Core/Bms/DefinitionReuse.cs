@@ -115,40 +115,40 @@ public class DefinitionReuse
         // Why: コンストラクタ時点では範囲が未確定(0-0)のため、正しい範囲で作り直す必要がある
         _statistics = new DefinitionStatistics(_fileList, _replaces,
             _rangeManager.StartPoint, _rangeManager.EndPoint);
-        PerformanceDebugLogger.WriteLine($"  [ReductDefinition] DetermineProcessingRange: {timer.Lap("DetermineProcessingRange")} ms");
+        PerformanceDebugLogger.WriteDebug(nameof(DefinitionReuse), $"DetermineProcessingRange: {timer.Lap("DetermineProcessingRange")} ms");
 
         var (_, loadedCache) = AudioCacheManager.PreloadAudioData(_fileList, progress, normalizationMode);
         _audioCache = loadedCache;
-        PerformanceDebugLogger.WriteLine($"  [ReductDefinition] PreloadAudioData: {timer.Lap("PreloadAudioData")} ms");
+        PerformanceDebugLogger.WriteDebug(nameof(DefinitionReuse), $"PreloadAudioData: {timer.Lap("PreloadAudioData")} ms");
         progress.Report(AppConstants.Progress.PreloadComplete);
 
         CreateReplaceTable(progress, options.R2Threshold, options.SelectedKeywords);
-        PerformanceDebugLogger.WriteLine($"  [ReductDefinition] CreateReplaceTable: {timer.Lap("CreateReplaceTable")} ms");
+        PerformanceDebugLogger.WriteDebug(nameof(DefinitionReuse), $"CreateReplaceTable: {timer.Lap("CreateReplaceTable")} ms");
         progress.Report(AppConstants.Progress.ComparisonComplete);
 
         _rewriter = new BmsFileRewriter(_fileList, _replaces,
             _rangeManager.StartPoint, _rangeManager.EndPoint, _inputBmsContent);
         var writeData = _rewriter.ReplaceAndAlignBmsFile(bmsFileName);
-        PerformanceDebugLogger.WriteLine($"  [ReductDefinition] ReplaceAndAlignBmsFile: {timer.Lap("ReplaceAndAlignBmsFile")} ms");
+        PerformanceDebugLogger.WriteDebug(nameof(DefinitionReuse), $"ReplaceAndAlignBmsFile: {timer.Lap("ReplaceAndAlignBmsFile")} ms");
         progress.Report(AppConstants.Progress.RewriteComplete);
 
         BmsFileWriter.WriteBmsFile(saveFileName, writeData);
-        PerformanceDebugLogger.WriteLine($"  [ReductDefinition] WriteBmsFile to disk: {timer.Lap("WriteBmsFile to disk")} ms");
+        PerformanceDebugLogger.WriteDebug(nameof(DefinitionReuse), $"WriteBmsFile to disk: {timer.Lap("WriteBmsFile to disk")} ms");
 
         // メモリ上のスライスを物理ディスクに書き出す
         FlushMemorySlicesToDisk(saveFileName);
-        PerformanceDebugLogger.WriteLine($"  [ReductDefinition] FlushMemorySlicesToDisk: {timer.Lap("FlushMemorySlicesToDisk")} ms");
+        PerformanceDebugLogger.WriteDebug(nameof(DefinitionReuse), $"FlushMemorySlicesToDisk: {timer.Lap("FlushMemorySlicesToDisk")} ms");
 
         if (options.IsPhysicalDeletionEnabled)
         {
             PerformPhysicalDeletion();
-            PerformanceDebugLogger.WriteLine($"  [ReductDefinition] PerformPhysicalDeletion: {timer.Lap("PerformPhysicalDeletion")} ms");
+            PerformanceDebugLogger.WriteDebug(nameof(DefinitionReuse), $"PerformPhysicalDeletion: {timer.Lap("PerformPhysicalDeletion")} ms");
         }
 
         progress.Report(AppConstants.Progress.Complete);
 
         long totalElapsed = timerTotal.Lap("Total");
-        PerformanceDebugLogger.WriteLine($"=== DefinitionReuse completed in {totalElapsed} ms ({totalElapsed / 1000.0:F2}s) ===");
+        PerformanceDebugLogger.WriteDebug(nameof(DefinitionReuse), $"=== DefinitionReuse completed in {totalElapsed} ms ({totalElapsed / 1000.0:F2}s) ===");
 
         _statistics.LogStatistics();
     }
@@ -184,7 +184,7 @@ public class DefinitionReuse
         if (_rewriter == null) return;
 
         var unusedFiles = _fileList.Except(_rewriter.KeptFiles).ToList();
-        PerformanceDebugLogger.WriteLine($"=== Physical Deletion: {unusedFiles.Count} files to delete ===");
+        PerformanceDebugLogger.WriteDebug(nameof(DefinitionReuse), $"=== Physical Deletion: {unusedFiles.Count} files to delete ===");
 
         int deletedCount = 0;
         foreach (var file in unusedFiles)
@@ -195,15 +195,15 @@ public class DefinitionReuse
                 {
                     File.Delete(file.Name);
                     deletedCount++;
-                    PerformanceDebugLogger.WriteLine($"Deleted: {file.Name}");
+                    PerformanceDebugLogger.WriteDebug(nameof(DefinitionReuse), $"Deleted: {file.Name}");
                 }
             }
             catch (Exception ex)
             {
-                PerformanceDebugLogger.WriteLine($"Failed to delete {file.Name}: {ex.Message}");
+                PerformanceDebugLogger.WriteDebug(nameof(DefinitionReuse), $"Failed to delete {file.Name}: {ex.Message}");
             }
         }
-        PerformanceDebugLogger.WriteLine($"=== Physical Deletion Complete: {deletedCount}/{unusedFiles.Count} files deleted ===");
+        PerformanceDebugLogger.WriteDebug(nameof(DefinitionReuse), $"=== Physical Deletion Complete: {deletedCount}/{unusedFiles.Count} files deleted ===");
     }
 
     /// <summary>
@@ -278,12 +278,12 @@ public class DefinitionReuse
     {
         var timer = PerformanceDebugLogger.StartTimer();
         var groups = AudioFileGroupingStrategy.GroupFiles(_audioCache, _fileList, _rangeManager.StartPoint, _rangeManager.EndPoint, selectedKeywords);
-        PerformanceDebugLogger.WriteLine($"    [CreateReplaceTable] GroupFiles (groups={groups.Count}): {timer.Lap("GroupFiles")} ms");
+        PerformanceDebugLogger.WriteDebug(nameof(DefinitionReuse), $"    [CreateReplaceTable] GroupFiles (groups={groups.Count}): {timer.Lap("GroupFiles")} ms");
 
         var parameters = new AudioComparisonParameters(_fileList, _audioCache, _replaces, _rangeManager.StartPoint, _rangeManager.EndPoint);
         var comparisonEngine = new ParallelAudioComparisonEngine(parameters);
         comparisonEngine.CompareGroups(groups, r2val, progress);
-        PerformanceDebugLogger.WriteLine($"    [CreateReplaceTable] CompareGroups: {timer.Lap("CompareGroups")} ms");
+        PerformanceDebugLogger.WriteDebug(nameof(DefinitionReuse), $"CompareGroups: {timer.Lap("CompareGroups")} ms");
     }
 
     #endregion

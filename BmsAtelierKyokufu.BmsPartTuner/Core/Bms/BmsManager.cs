@@ -1,4 +1,4 @@
-﻿using System.Text.RegularExpressions;
+using System.Text.RegularExpressions;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 
@@ -116,12 +116,12 @@ internal partial class BmsManager(string bmsFilePath, string? bmsContent = null)
         }
         catch (ArgumentException ex)
         {
-            PerformanceDebugLogger.WriteLine($"[BmsManager] Encoding Error: {ex.Message}");
+            PerformanceDebugLogger.WriteDebug(nameof(BmsManager), $"Encoding Error: {ex.Message}");
             throw;
         }
         catch (Exception ex)
         {
-            PerformanceDebugLogger.WriteLine($"[BmsManager] Parse Error in file '{Path.GetFileName(_bmsFilePath)}': {ex.Message}");
+            PerformanceDebugLogger.WriteDebug(nameof(BmsManager), $"[BmsManager] Parse Error in file '{Path.GetFileName(_bmsFilePath)}': {ex.Message}");
         }
 
         return definitions;

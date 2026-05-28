@@ -1,4 +1,4 @@
-﻿using System.Text.RegularExpressions;
+using System.Text.RegularExpressions;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Services.Bms;
 
@@ -163,7 +163,7 @@ public partial class InstrumentNameDetectionService(
         }
         catch (Exception ex)
         {
-            PerformanceDebugLogger.WriteLine($"[InstrumentNameDetectionService.DetectInstruments] ERROR: {ex.Message}");
+            PerformanceDebugLogger.WriteDebug(nameof(InstrumentNameDetectionService), $"ERROR: {ex.Message}");
             return new InstrumentDetectionResult();
         }
     }
@@ -300,7 +300,7 @@ public partial class InstrumentNameDetectionService(
         }
         catch (Exception ex)
         {
-            PerformanceDebugLogger.WriteLine($"[InstrumentNameDetectionService.FindBestInstrumentMatch] ERROR: {ex.Message}");
+            PerformanceDebugLogger.WriteDebug(nameof(InstrumentNameDetectionService), $"ERROR: {ex.Message}");
         }
 
         return string.Empty;
@@ -360,7 +360,7 @@ public partial class InstrumentNameDetectionService(
         }
         catch (Exception ex)
         {
-            PerformanceDebugLogger.WriteLine($"[InstrumentNameDetectionService.ExtractInstrumentCandidates] ERROR: {ex.Message}");
+            PerformanceDebugLogger.WriteDebug(nameof(InstrumentNameDetectionService), $"ERROR: {ex.Message}");
             return new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
         }
     }

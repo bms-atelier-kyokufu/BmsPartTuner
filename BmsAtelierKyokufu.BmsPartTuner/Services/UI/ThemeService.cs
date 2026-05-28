@@ -1,4 +1,4 @@
-﻿using Microsoft.Win32;
+using Microsoft.Win32;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Services.UI;
 
@@ -35,7 +35,7 @@ public class ThemeService
         {
             var mergedDictionaries = Application.Current.Resources.MergedDictionaries;
 
-            PerformanceDebugLogger.WriteLine($"テーマ切り替え開始: {(isDark ? "Dark" : "Light")}");
+            PerformanceDebugLogger.WriteDebug(nameof(ThemeService), $"テーマ切り替え開始: {(isDark ? "Dark" : "Light")}");
 
             // 新しいテーマを読み込む
             var newTheme = new ResourceDictionary { Source = new Uri(themePath, UriKind.Relative) };
@@ -71,12 +71,12 @@ public class ThemeService
 
             ThemeChanged?.Invoke(this, isDark);
 
-            PerformanceDebugLogger.WriteLine($"テーマを適用しました: {(isDark ? "Dark" : "Light")}");
+            PerformanceDebugLogger.WriteDebug(nameof(ThemeService), $"テーマを適用しました: {(isDark ? "Dark" : "Light")}");
         }
         catch (Exception ex)
         {
-            PerformanceDebugLogger.WriteLine($"テーマの適用に失敗しました: {ex.Message}");
-            PerformanceDebugLogger.WriteLine(ex.StackTrace);
+            PerformanceDebugLogger.WriteDebug(nameof(ThemeService), $"テーマの適用に失敗しました: {ex.Message}");
+            PerformanceDebugLogger.WriteDebug(nameof(ThemeService), ex.StackTrace ?? string.Empty);
         }
     }
 
@@ -93,7 +93,7 @@ public class ThemeService
         }
         catch (Exception ex)
         {
-            PerformanceDebugLogger.WriteLine($"システムテーマの読み取りエラー: {ex}");
+            PerformanceDebugLogger.WriteDebug(nameof(ThemeService), $"システムテーマの読み取りエラー: {ex}");
             return false;
         }
     }

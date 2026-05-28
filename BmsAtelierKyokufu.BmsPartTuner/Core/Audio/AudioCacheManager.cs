@@ -68,9 +68,9 @@ internal static class AudioCacheManager
         IProgress<int>? progress,
         Models.NormalizationMode normalizationMode = Models.NormalizationMode.None)
     {
-        PerformanceDebugLogger.WriteLine("=== PreloadAudioData Start ===");
-        PerformanceDebugLogger.WriteLine($"Total files to preload: {fileList.Count}");
-        PerformanceDebugLogger.WriteLine($"Normalization mode: {normalizationMode}");
+        PerformanceDebugLogger.WriteDebug(nameof(AudioCacheManager), "=== PreloadAudioData Start ===");
+        PerformanceDebugLogger.WriteDebug(nameof(AudioCacheManager), $"Total files to preload: {fileList.Count}");
+        PerformanceDebugLogger.WriteDebug(nameof(AudioCacheManager), $"Normalization mode: {normalizationMode}");
 
         int loaded = 0;
         int totalFiles = fileList.Count;
@@ -81,7 +81,7 @@ internal static class AudioCacheManager
 
         if (totalFiles == 0)
         {
-            PerformanceDebugLogger.WriteLine("WARNING: No files to preload");
+            PerformanceDebugLogger.WriteDebug(nameof(AudioCacheManager), "WARNING: No files to preload");
             progress?.Report(AppConstants.Progress.PreloadComplete);
             return (new List<string>(), audioCache);
         }
@@ -92,7 +92,7 @@ internal static class AudioCacheManager
             isSsd = Helpers.StorageTypeDetector.IsSolidStateDrive(fileList[0].Name);
         }
 
-        PerformanceDebugLogger.WriteLine($"Storage type detected as: {(isSsd ? "SSD (Full Parallel Mode)" : "HDD (Batch Mode)")}");
+        PerformanceDebugLogger.WriteDebug(nameof(AudioCacheManager), $"Storage type detected as: {(isSsd ? "SSD (Full Parallel Mode)" : "HDD (Batch Mode)")}");
         PerformanceDebugLogger.StartMemoryDiagnosis(); // 5秒後の強制レポート機能をオン
 
         var timer = PerformanceDebugLogger.StartTimer();
@@ -115,13 +115,13 @@ internal static class AudioCacheManager
 
                 if (currentCount % 100 == 0 || currentCount == totalFiles)
                 {
-                    PerformanceDebugLogger.WriteLine($"Load progress: {currentCount}/{totalFiles} (Success: {successCount}, Fail: {failCount})");
+                    PerformanceDebugLogger.WriteDebug(nameof(AudioCacheManager), $"Load progress: {currentCount}/{totalFiles} (Success: {successCount}, Fail: {failCount})");
                 }
 
                 int percentage = (int)((float)currentCount / totalFiles * AppConstants.Progress.PreloadComplete);
                 progress?.Report(percentage);
 
-                PerformanceDebugLogger.CheckAndHaltIfDiagnosisTriggered("AudioCacheManager Parallel Loop", audioCache);
+                PerformanceDebugLogger.CheckAndHaltIfDiagnosisTriggered("AudioCacheManager", "AudioCacheManager Parallel Loop", audioCache);
             });
         }
         else
@@ -129,7 +129,7 @@ internal static class AudioCacheManager
             int batchSize = CalculateOptimalBatchSize(totalFiles);
             var batches = CreateBatches(fileList, batchSize);
 
-            PerformanceDebugLogger.WriteLine($"Preloading {totalFiles} files in {batches.Count} batches (batch size: ~{batchSize})");
+            PerformanceDebugLogger.WriteDebug(nameof(AudioCacheManager), $"Preloading {totalFiles} files in {batches.Count} batches (batch size: ~{batchSize})");
 
             int completedBatches = 0;
 
@@ -147,14 +147,14 @@ internal static class AudioCacheManager
 
                 if (currentBatch % 5 == 0 || currentBatch == batches.Count)
                 {
-                    PerformanceDebugLogger.WriteLine($"Batch progress: {currentBatch}/{batches.Count} (Success: {successCount}, Fail: {failCount})");
+                    PerformanceDebugLogger.WriteDebug(nameof(AudioCacheManager), $"Batch progress: {currentBatch}/{batches.Count} (Success: {successCount}, Fail: {failCount})");
                 }
 
                 int percentage = (int)((float)currentBatch / batches.Count * AppConstants.Progress.PreloadComplete);
                 progress?.Report(percentage);
 
                 // ループのたびに5秒経過していないかチェックし、経過していれば停止・レポート
-                PerformanceDebugLogger.CheckAndHaltIfDiagnosisTriggered("AudioCacheManager Batch Loop", audioCache);
+                PerformanceDebugLogger.CheckAndHaltIfDiagnosisTriggered("AudioCacheManager", "AudioCacheManager Batch Loop", audioCache);
             });
         }
 
@@ -242,7 +242,7 @@ internal static class AudioCacheManager
             }
             catch (Exception ex)
             {
-                PerformanceDebugLogger.WriteLine($"[AudioCacheManager] Exception loading {Path.GetFileName(file.Name)}: {ex.Message}");
+                PerformanceDebugLogger.WriteDebug(nameof(AudioCacheManager), $"[AudioCacheManager] Exception loading {Path.GetFileName(file.Name)}: {ex.Message}");
                 fail++;
                 failedFiles.Add(file.Name);
             }
@@ -286,22 +286,22 @@ internal static class AudioCacheManager
             }
         }
 
-        PerformanceDebugLogger.WriteLine("=== PreloadAudioData Complete ===");
-        PerformanceDebugLogger.WriteLine($"Preload completed: {loaded}/{totalFiles} files processed");
-        PerformanceDebugLogger.WriteLine($"Success: {successCount}, Failed: {failCount}");
-        PerformanceDebugLogger.WriteLine($"Actual cached count: {cachedCount}");
-        PerformanceDebugLogger.WriteLine($"Cache success rate: {(totalFiles > 0 ? (double)cachedCount / totalFiles * 100 : 0):F1}%");
-        PerformanceDebugLogger.WriteLine($"Total cached memory: {totalMemoryMB:F2} MB");
-        PerformanceDebugLogger.WriteLine($"Load time: {elapsedMs} ms");
-        PerformanceDebugLogger.WriteLine($"Throughput: {(elapsedMs > 0 ? (double)loaded / elapsedMs * 1000 : 0):F1} files/sec");
+        PerformanceDebugLogger.WriteDebug(nameof(AudioCacheManager), "=== PreloadAudioData Complete ===");
+        PerformanceDebugLogger.WriteDebug(nameof(AudioCacheManager), $"Preload completed: {loaded}/{totalFiles} files processed");
+        PerformanceDebugLogger.WriteDebug(nameof(AudioCacheManager), $"Success: {successCount}, Failed: {failCount}");
+        PerformanceDebugLogger.WriteDebug(nameof(AudioCacheManager), $"Actual cached count: {cachedCount}");
+        PerformanceDebugLogger.WriteDebug(nameof(AudioCacheManager), $"Cache success rate: {(totalFiles > 0 ? (double)cachedCount / totalFiles * 100 : 0):F1}%");
+        PerformanceDebugLogger.WriteDebug(nameof(AudioCacheManager), $"Total cached memory: {totalMemoryMB:F2} MB");
+        PerformanceDebugLogger.WriteDebug(nameof(AudioCacheManager), $"Load time: {elapsedMs} ms");
+        PerformanceDebugLogger.WriteDebug(nameof(AudioCacheManager), $"Throughput: {(elapsedMs > 0 ? (double)loaded / elapsedMs * 1000 : 0):F1} files/sec");
 
         if (cachedCount == 0)
         {
-            PerformanceDebugLogger.WriteLine("CRITICAL ERROR: No audio data cached! This will cause 0% reduction rate.");
+            PerformanceDebugLogger.WriteDebug(nameof(AudioCacheManager), "CRITICAL ERROR: No audio data cached! This will cause 0% reduction rate.");
         }
         else if (cachedCount < totalFiles * 0.9)
         {
-            PerformanceDebugLogger.WriteLine($"WARNING: Only {(double)cachedCount / totalFiles * 100:F1}% of files cached successfully");
+            PerformanceDebugLogger.WriteDebug(nameof(AudioCacheManager), $"WARNING: Only {(double)cachedCount / totalFiles * 100:F1}% of files cached successfully");
         }
     }
 }

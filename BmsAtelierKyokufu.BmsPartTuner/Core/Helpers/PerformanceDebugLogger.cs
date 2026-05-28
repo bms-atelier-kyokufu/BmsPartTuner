@@ -1,4 +1,7 @@
 using System.Collections.Concurrent;
+using System.Diagnostics;
+using System.Text;
+using System.Threading.Channels;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Core.Helpers;
 
@@ -15,9 +18,9 @@ public enum LogLevel
 
 public static class PerformanceDebugLogger
 {
-    private static readonly Lock LockObj = new();
     private static readonly string LogPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "perf_measure.log");
-
+    private static readonly Channel<string> _logChannel = Channel.CreateUnbounded<string>();
+    private static readonly CancellationTokenSource _cts = new();
 
     public static LogLevel ActiveLogLevel { get; set; } = LogLevel.Debug;
 
@@ -31,100 +34,134 @@ public static class PerformanceDebugLogger
         {
             ActiveLogLevel = LogLevel.Debug;
         }
+
+        // バックグラウンドでログ書き込みタスクを開始
+        Task.Run(ProcessLogQueueAsync);
     }
 
-    [Conditional("DEBUG")]
-    public static void WriteLine(string? message, LogLevel level = LogLevel.Debug)
+    private static async Task ProcessLogQueueAsync()
     {
-        if (level < ActiveLogLevel) return;
-
-        lock (LockObj)
+        try
         {
-            if (message == null) return;
+            // バッチ書き込み用
+            var buffer = new List<string>(100);
 
-            var timestamp = $"[{DateTime.Now:HH:mm:ss.fff}] [{level.ToString().ToUpper()}] ";
-            var indent = new string(' ', timestamp.Length);
-
-            var lines = message.Split(["\r\n", "\r", "\n"], StringSplitOptions.None);
-            var sb = new StringBuilder();
-            for (int i = 0; i < lines.Length; i++)
+            await foreach (var logMessage in _logChannel.Reader.ReadAllAsync(_cts.Token))
             {
-                if (i == 0)
-                {
-                    sb.Append(timestamp).Append(lines[i]);
-                }
-                else
-                {
-                    sb.Append(Environment.NewLine).Append(indent).Append(lines[i]);
-                }
-            }
+                buffer.Add(logMessage);
 
-            var logMessage = sb.ToString();
-            Debug.WriteLine(logMessage);
-            try
-            {
-                File.AppendAllText(LogPath, logMessage + Environment.NewLine);
+                // 少し待ってキューに溜まっていればまとめて書き込む
+                while (_logChannel.Reader.TryRead(out var msg))
+                {
+                    buffer.Add(msg);
+                    if (buffer.Count >= 100) break;
+                }
+
+                try
+                {
+                    File.AppendAllLines(LogPath, buffer);
+                }
+                catch { } // I/Oエラー無視
+
+                buffer.Clear();
             }
-            catch { }
+        }
+        catch (OperationCanceledException)
+        {
+            // シャットダウン時
         }
     }
 
-    [Conditional("DEBUG")]
-    public static void WriteTrace(string? message) => WriteLine(message, LogLevel.Trace);
+    public static void Shutdown()
+    {
+        _logChannel.Writer.Complete();
+        _cts.Cancel();
+    }
+
+    private static void Log(LogLevel level, string tag, string message)
+    {
+        if (level < ActiveLogLevel) return;
+        if (message == null) return;
+
+        var timestamp = $"[{DateTime.Now:HH:mm:ss.fff}]";
+        var levelStr = level.ToString().ToUpper();
+
+        // ANSIカラーの割り当て (コンソールやVS拡張出力用)
+        string colorPrefix = level switch
+        {
+            LogLevel.Trace => "\x1b[90m",   // Gray
+            LogLevel.Verbose => "\x1b[36m", // Cyan
+            LogLevel.Debug => "\x1b[37m",   // White
+            LogLevel.Info => "\x1b[32m",    // Green
+            LogLevel.Warning => "\x1b[33m", // Yellow
+            LogLevel.Error => "\x1b[31m",   // Red
+            _ => "\x1b[0m"
+        };
+        string colorSuffix = "\x1b[0m";
+
+        // フォーマット: [Time] [LEVEL] [Tag] Message
+        var logLine = $"{timestamp} [{levelStr}] [{tag}] {message}";
+
+        // ターミナル用にはカラーリングして出力
+        Debug.WriteLine($"{colorPrefix}{logLine}{colorSuffix}");
+
+        // ファイル用にはプレーンテキストをキューへ
+        _logChannel.Writer.TryWrite(logLine);
+    }
 
     [Conditional("DEBUG")]
-    public static void WriteVerbose(string? message) => WriteLine(message, LogLevel.Verbose);
+    public static void WriteTrace(string tag, string message) => Log(LogLevel.Trace, tag, message);
 
     [Conditional("DEBUG")]
-    public static void WriteDebug(string? message) => WriteLine(message, LogLevel.Debug);
+    public static void WriteVerbose(string tag, string message) => Log(LogLevel.Verbose, tag, message);
 
     [Conditional("DEBUG")]
-    public static void WriteInfo(string? message) => WriteLine(message, LogLevel.Info);
+    public static void WriteDebug(string tag, string message) => Log(LogLevel.Debug, tag, message);
 
     [Conditional("DEBUG")]
-    public static void WriteWarning(string? message) => WriteLine(message, LogLevel.Warning);
+    public static void WriteInfo(string tag, string message) => Log(LogLevel.Info, tag, message);
 
     [Conditional("DEBUG")]
-    public static void WriteError(string? message) => WriteLine(message, LogLevel.Error);
+    public static void WriteWarning(string tag, string message) => Log(LogLevel.Warning, tag, message);
 
     [Conditional("DEBUG")]
-    public static void WriteError(string? message, Exception ex)
+    public static void WriteError(string tag, string message) => Log(LogLevel.Error, tag, message);
+
+    [Conditional("DEBUG")]
+    public static void WriteError(string tag, string message, Exception ex)
     {
         if (LogLevel.Error < ActiveLogLevel) return;
         var sb = new StringBuilder();
         sb.AppendLine(message);
         sb.AppendLine($"Exception: {ex.GetType().FullName} - {ex.Message}");
         sb.AppendLine($"Stack Trace: {ex.StackTrace}");
-        WriteLine(sb.ToString(), LogLevel.Error);
+        Log(LogLevel.Error, tag, sb.ToString());
     }
 
     [Conditional("DEBUG")]
-    public static void LogMemoryUsage(string? context = null)
+    public static void LogMemoryUsage(string tag)
     {
         if (LogLevel.Debug < ActiveLogLevel) return;
         var process = System.Diagnostics.Process.GetCurrentProcess();
         long mem = process.WorkingSet64 / (1024 * 1024);
         long privateMem = process.PrivateMemorySize64 / (1024 * 1024);
         long gcMem = GC.GetTotalMemory(false) / (1024 * 1024);
-        WriteLine($"[Memory] {context ?? "Usage"}: WorkingSet={mem}MB, Private={privateMem}MB, GC={gcMem}MB", LogLevel.Debug);
+        Log(LogLevel.Debug, tag, $"WorkingSet={mem}MB, Private={privateMem}MB, GC={gcMem}MB");
     }
 
-    public static IDisposable MeasureTime(string scopeName, LogLevel level = LogLevel.Debug)
+    public static IDisposable MeasureTime(string tag, string scopeName, LogLevel level = LogLevel.Debug)
     {
-        return new MeasureScope(scopeName, level);
+        return new MeasureScope(tag, scopeName, level);
     }
 
     [Conditional("DEBUG")]
     public static void Clear()
     {
-        lock (LockObj)
+        try
         {
-            try
-            {
-                if (File.Exists(LogPath)) File.Delete(LogPath);
-            }
-            catch { }
+            if (File.Exists(LogPath)) File.Delete(LogPath);
         }
+        catch { }
     }
 
     private static readonly ConcurrentDictionary<string, long> _accumulatedTimes = new();
@@ -136,16 +173,16 @@ public static class PerformanceDebugLogger
     }
 
     [Conditional("DEBUG")]
-    public static void PrintAccumulated(string prefixMessage, LogLevel level = LogLevel.Debug)
+    public static void PrintAccumulated(string tag, string prefixMessage, LogLevel level = LogLevel.Debug)
     {
         if (level < ActiveLogLevel) return;
         if (_accumulatedTimes.IsEmpty) return;
         var parts = _accumulatedTimes.Select(static kv => $"{kv.Key}: {kv.Value} ms").ToArray();
-        WriteLine($"{prefixMessage} [{string.Join(", ", parts)}]", level);
+        Log(level, tag, $"{prefixMessage} [{string.Join(", ", parts)}]");
     }
 
     [Conditional("DEBUG")]
-    public static void PrintAccumulatedGrouped(string title, LogLevel level = LogLevel.Debug)
+    public static void PrintAccumulatedGrouped(string tag, string title, LogLevel level = LogLevel.Debug)
     {
         if (level < ActiveLogLevel) return;
         if (_accumulatedTimes.IsEmpty) return;
@@ -171,7 +208,7 @@ public static class PerformanceDebugLogger
             var metricsStr = string.Join(", ", g.Select(static x => $"{x.Metric}: {x.Value} ms"));
             sb.AppendLine($"  [{g.Key}] {metricsStr}");
         }
-        WriteLine(sb.ToString(), level);
+        Log(level, tag, sb.ToString());
     }
 
     [Conditional("DEBUG")]
@@ -195,27 +232,26 @@ public static class PerformanceDebugLogger
 
     public static PerformanceTimer StartTimer() => new();
 
-    /// <summary>
-    /// usingスコープを用いて処理時間を計測し、自動的にログ出力するクラス。
-    /// </summary>
     private class MeasureScope : IDisposable
     {
+        private readonly string _tag;
         private readonly string _scopeName;
         private readonly LogLevel _level;
         private readonly Stopwatch _sw;
 
-        public MeasureScope(string scopeName, LogLevel level)
+        public MeasureScope(string tag, string scopeName, LogLevel level)
         {
+            _tag = tag;
             _scopeName = scopeName;
             _level = level;
             _sw = Stopwatch.StartNew();
-            WriteLine($"[Start Scope] {_scopeName}", _level);
+            Log(_level, _tag, $"[Start Scope] {_scopeName}");
         }
 
         public void Dispose()
         {
             _sw.Stop();
-            WriteLine($"[End Scope] {_scopeName} took {_sw.ElapsedMilliseconds} ms", _level);
+            Log(_level, _tag, $"[End Scope] {_scopeName} took {_sw.ElapsedMilliseconds} ms");
         }
     }
 
@@ -226,11 +262,11 @@ public static class PerformanceDebugLogger
     public static void StartMemoryDiagnosis()
     {
         _diagnosisStartTime = DateTime.UtcNow;
-        WriteLine("=== Memory Diagnosis Started ===", LogLevel.Info);
+        Log(LogLevel.Info, "MemoryDiag", "=== Memory Diagnosis Started ===");
     }
 
     [Conditional("DEBUG")]
-    public static void CheckAndHaltIfDiagnosisTriggered(string context, object? targetObject = null)
+    public static void CheckAndHaltIfDiagnosisTriggered(string tag, string context, object? targetObject = null)
     {
         if (_diagnosisStartTime == null) return;
 
@@ -244,7 +280,7 @@ public static class PerformanceDebugLogger
 
             var sb = new StringBuilder();
             sb.AppendLine("============================================");
-            sb.AppendLine("      MEMORY DIAGNOSIS HALT REPORT          ");
+            sb.AppendLine("         MEMORY DIAGNOSIS REPORT");
             sb.AppendLine("============================================");
             sb.AppendLine($"Context      : {context}");
             sb.AppendLine($"Elapsed Time : {elapsed.TotalSeconds:F2} seconds");
@@ -274,11 +310,8 @@ public static class PerformanceDebugLogger
             sb.AppendLine("============================================");
 
             string report = sb.ToString();
-            WriteLine(report, LogLevel.Trace);
-            WriteLine("Memory diagnosis halt triggered: 5 seconds elapsed.", LogLevel.Trace);
-
-            //Thread.Sleep(100);
-            //Environment.FailFast("Memory diagnosis halt triggered: 5 seconds elapsed.");
+            Log(LogLevel.Trace, tag, report);
+            Log(LogLevel.Trace, tag, "Memory diagnosis halt triggered: 5 seconds elapsed.");
         }
     }
 }

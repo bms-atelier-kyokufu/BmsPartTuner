@@ -77,7 +77,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio
 
                     if (read == 0)
                     {
-                        PerformanceDebugLogger.WriteLine($"[CachedSoundData] WARNING: Read returned 0 at {totalRead}/{totalSamples} for {Path.GetFileName(path)}");
+                        PerformanceDebugLogger.WriteDebug(nameof(AudioProcessingService), $"[CachedSoundData] WARNING: Read returned 0 at {totalRead}/{totalSamples} for {Path.GetFileName(path)}");
                         break;
                     }
 

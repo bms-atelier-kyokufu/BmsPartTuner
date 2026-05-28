@@ -51,7 +51,7 @@ internal static class BmsFileWriter
             }
             File.Move(tempFileName, saveFileName);
 
-            PerformanceDebugLogger.WriteLine($"BMS file written atomically: {saveFileName}");
+            PerformanceDebugLogger.WriteDebug(nameof(BmsFileWriter), $"BMS file written atomically: {saveFileName}");
         }
         catch (IOException)
         {
@@ -64,11 +64,11 @@ internal static class BmsFileWriter
                     if (originalExists)
                     {
                         File.Delete(tempFileName);
-                        PerformanceDebugLogger.WriteLine($"Cleanup: Incomplete temp file deleted: {tempFileName}");
+                        PerformanceDebugLogger.WriteDebug(nameof(BmsFileWriter), $"Cleanup: Incomplete temp file deleted: {tempFileName}");
                     }
                     else
                     {
-                        PerformanceDebugLogger.WriteLine($"CRITICAL WARNING: Original file lost, keeping temp file for recovery: {tempFileName}");
+                        PerformanceDebugLogger.WriteDebug(nameof(BmsFileWriter), $"CRITICAL WARNING: Original file lost, keeping temp file for recovery: {tempFileName}");
                     }
                 }
             }
@@ -86,7 +86,7 @@ internal static class BmsFileWriter
                 if (File.Exists(tempFileName))
                 {
                     File.Delete(tempFileName);
-                    PerformanceDebugLogger.WriteLine($"Cleanup: Temp file deleted due to access denied: {tempFileName}");
+                    PerformanceDebugLogger.WriteDebug(nameof(BmsFileWriter), $"Cleanup: Temp file deleted due to access denied: {tempFileName}");
                 }
             }
             catch

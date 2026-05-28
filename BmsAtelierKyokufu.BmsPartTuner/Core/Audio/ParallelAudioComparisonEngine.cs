@@ -178,11 +178,11 @@ internal class ParallelAudioComparisonEngine(AudioComparisonParameters parameter
         }
         catch (OperationCanceledException)
         {
-            PerformanceDebugLogger.WriteLine("=== CompareGroups Cancelled ===");
+            PerformanceDebugLogger.WriteDebug(nameof(ParallelAudioComparisonEngine), "=== CompareGroups Cancelled ===");
             throw;
         }
 
-        PerformanceDebugLogger.WriteLine($"=== CompareGroups Complete: {totalComparisons} comparisons, {timer.Lap("CompareGroups")}ms ===");
+        PerformanceDebugLogger.WriteDebug(nameof(ParallelAudioComparisonEngine), $"=== CompareGroups Complete: {totalComparisons} comparisons, {timer.Lap("CompareGroups")}ms ===");
     }
 
     #endregion

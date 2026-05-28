@@ -294,10 +294,10 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
                 StatusMessage = "最適化エラー";
             });
 
-            PerformanceDebugLogger.WriteLine($"=== ExecuteThresholdOptimizationAsync Exception ===");
-            PerformanceDebugLogger.WriteLine($"Exception Type: {ex.GetType().FullName}");
-            PerformanceDebugLogger.WriteLine($"Message: {ex.Message}");
-            PerformanceDebugLogger.WriteLine($"StackTrace: {ex.StackTrace}");
+            PerformanceDebugLogger.WriteDebug(nameof(OptimizationViewModel), $"=== ExecuteThresholdOptimizationAsync Exception ===");
+            PerformanceDebugLogger.WriteDebug(nameof(OptimizationViewModel), $"Exception Type: {ex.GetType().FullName}");
+            PerformanceDebugLogger.WriteDebug(nameof(OptimizationViewModel), $"Message: {ex.Message}");
+            PerformanceDebugLogger.WriteDebug(nameof(OptimizationViewModel), $"StackTrace: {ex.StackTrace}");
 
             return null;
         }
@@ -400,7 +400,7 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
         {
             ErrorOccurred?.Invoke(this, $"処理エラー: {ex.Message}");
             StatusMessage = "処理エラー";
-            PerformanceDebugLogger.WriteLine($"ExecuteDefinitionReductionInternalAsync Exception: {ex}");
+            PerformanceDebugLogger.WriteDebug(nameof(OptimizationViewModel), $"ExecuteDefinitionReductionInternalAsync Exception: {ex}");
         }
         finally
         {
@@ -410,7 +410,7 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
             // メモリリーク対策: 処理完了後にキャッシュをクリアしてメモリを解放
             await Task.Run(() =>
             {
-                PerformanceDebugLogger.WriteLine("=== OptimizationViewModel: Clearing caches ===");
+                PerformanceDebugLogger.WriteDebug(nameof(OptimizationViewModel), "=== OptimizationViewModel: Clearing caches ===");
                 if (bmsFileList != null)
                 {
                     // キャッシュの解放は BmsOptimizationService 内部で実行されるため、ここでは何もしません

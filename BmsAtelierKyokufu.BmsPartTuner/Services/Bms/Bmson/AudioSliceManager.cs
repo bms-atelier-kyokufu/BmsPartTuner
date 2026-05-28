@@ -96,7 +96,7 @@ public class AudioSliceManager(string bmsonDir, bool throwOnMissingFile = true) 
 
         if (trimmedLengthBytes < lengthBytes)
         {
-            PerformanceDebugLogger.WriteTrace($"[AudioSliceManager] Trimmed silence: {sourceFileName} (offset={offsetSec:F2}s, duration={durationSec:F2}s) from {lengthBytes / 1024.0:F1}KB to {trimmedLengthBytes / 1024.0:F1}KB");
+            PerformanceDebugLogger.WriteTrace(nameof(AudioSliceManager), $"Trimmed silence: {sourceFileName} (offset={offsetSec:F2}s, duration={durationSec:F2}s) from {lengthBytes / 1024.0:F1}KB to {trimmedLengthBytes / 1024.0:F1}KB");
         }
 
         // 4. トリミング後の真の長さを用いてキャッシュキーを作成
@@ -131,7 +131,7 @@ public class AudioSliceManager(string bmsonDir, bool throwOnMissingFile = true) 
                 }
                 catch (Exception ex)
                 {
-                    PerformanceDebugLogger.WriteError($"[AudioSliceManager] スライス失敗: {sourceFileName}", ex);
+                    PerformanceDebugLogger.WriteError(nameof(AudioSliceManager), $"スライス失敗: {sourceFileName}", ex);
                     return string.Empty;
                 }
             });
@@ -430,7 +430,7 @@ public class AudioSliceManager(string bmsonDir, bool throwOnMissingFile = true) 
                                     PcmLength = dataLength;
 
                                     long fastElapsed = timer.Lap($"{Path.GetFileName(path)}|CachedAudioSource Load FastPath");
-                                    PerformanceDebugLogger.WriteLine($"[CachedAudioSource Load] {Path.GetFileName(path)} (FastPath Direct Load) loaded in {fastElapsed} ms", LogLevel.Debug);
+                                    PerformanceDebugLogger.WriteDebug(nameof(AudioSliceManager), $"[CachedAudioSource Load] {Path.GetFileName(path)} (FastPath Direct Load) loaded in {fastElapsed} ms");
                                     return;
                                 }
                             }
@@ -439,7 +439,7 @@ public class AudioSliceManager(string bmsonDir, bool throwOnMissingFile = true) 
                 }
                 catch (Exception ex)
                 {
-                    PerformanceDebugLogger.WriteError($"[CachedAudioSource] Custom WAV parser failed, falling back to NAudio: {path}", ex);
+                    PerformanceDebugLogger.WriteError(nameof(AudioSliceManager), $"[CachedAudioSource] Custom WAV parser failed, falling back to NAudio: {path}", ex);
                 }
             }
 
@@ -501,7 +501,7 @@ public class AudioSliceManager(string bmsonDir, bool throwOnMissingFile = true) 
 
                     if (totalBytesWritten + neededBytes > maxAllowedBytes)
                     {
-                        PerformanceDebugLogger.WriteLine($"[AudioSliceManager] Reached length limit ({maxAllowedBytes} bytes) for {Path.GetFileName(path)}. Stopping decode.", LogLevel.Debug);
+                        PerformanceDebugLogger.WriteDebug(nameof(AudioSliceManager), $"[AudioSliceManager] Reached length limit ({maxAllowedBytes} bytes) for {Path.GetFileName(path)}. Stopping decode.");
                         break;
                     }
 
@@ -532,7 +532,8 @@ public class AudioSliceManager(string bmsonDir, bool throwOnMissingFile = true) 
             }
 
             long elapsed = timer.Lap($"{Path.GetFileName(path)}|CachedAudioSource Load");
-            PerformanceDebugLogger.WriteLine($"[CachedAudioSource Load] {Path.GetFileName(path)} (Format: {WaveFormat.SampleRate}Hz, {WaveFormat.Channels}ch, Size: {PcmLength} bytes) loaded in {elapsed} ms", LogLevel.Debug);
+            PerformanceDebugLogger.WriteTrace(nameof(AudioSliceManager), $"[{path}] WaveFormat: {WaveFormat.SampleRate}Hz, {WaveFormat.Channels}ch, {WaveFormat.BitsPerSample}bit");
+            PerformanceDebugLogger.WriteDebug(nameof(AudioSliceManager), $"[CachedAudioSource Load] {Path.GetFileName(path)} (Format: {WaveFormat.SampleRate}Hz, {WaveFormat.Channels}ch, Size: {PcmLength} bytes) loaded in {elapsed} ms");
         }
 
         /// <summary>

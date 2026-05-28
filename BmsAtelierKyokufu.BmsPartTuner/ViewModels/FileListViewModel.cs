@@ -1,4 +1,4 @@
-﻿using BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
+using BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 using BmsAtelierKyokufu.BmsPartTuner.Services.Audio;
 using BmsAtelierKyokufu.BmsPartTuner.Services.Bms;
 
@@ -149,7 +149,7 @@ public partial class FileListViewModel : ObservableObject, IDisposable
     /// </remarks>
     public void LoadBmsFile(string bmsFilePath, string? bmsContent = null)
     {
-        PerformanceDebugLogger.WriteLine($"=== FileListViewModel.LoadBmsFile Started for {Path.GetFileName(bmsFilePath)} ===");
+        PerformanceDebugLogger.WriteDebug(nameof(FileListViewModel), $"=== FileListViewModel.LoadBmsFile Started for {Path.GetFileName(bmsFilePath)} ===");
         var timerTotal = PerformanceDebugLogger.StartTimer();
         var timer = PerformanceDebugLogger.StartTimer();
         try
@@ -157,10 +157,10 @@ public partial class FileListViewModel : ObservableObject, IDisposable
             _bmsFileList = new BmsDefinitionManager(bmsFilePath, bmsContent);
             var fileList = _bmsFileList.CreateFileList();
             FileListItems = fileList;
-            PerformanceDebugLogger.WriteLine($"  [LoadBmsFile] BmsDefinitionManager construction and CreateFileList: {timer.Lap("BmsDefinitionManager construction and CreateFileList")} ms");
+            PerformanceDebugLogger.WriteDebug(nameof(FileListViewModel), $"BmsDefinitionManager construction and CreateFileList: {timer.Lap("BmsDefinitionManager construction and CreateFileList")} ms");
 
             InitializeInstrumentFilters(fileList);
-            PerformanceDebugLogger.WriteLine($"  [LoadBmsFile] FilterChips and InstrumentGroups generation: {timer.Lap("FilterChips and InstrumentGroups generation")} ms");
+            PerformanceDebugLogger.WriteDebug(nameof(FileListViewModel), $"FilterChips and InstrumentGroups generation: {timer.Lap("FilterChips and InstrumentGroups generation")} ms");
 
             if (_bmsFileList.MissingFiles.Count == 0 && fileList.Count > 0)
             {
@@ -171,7 +171,7 @@ public partial class FileListViewModel : ObservableObject, IDisposable
                     IsSuccess = true
                 });
             }
-            PerformanceDebugLogger.WriteLine($"=== FileListViewModel.LoadBmsFile Finished: {timerTotal.Lap("Total")} ms ===");
+            PerformanceDebugLogger.WriteDebug(nameof(FileListViewModel), $"=== FileListViewModel.LoadBmsFile Finished: {timerTotal.Lap("Total")} ms ===");
         }
         catch (Exception ex)
         {

@@ -108,7 +108,7 @@ internal static class FastWaveCompare
             data1.Channels != data2.Channels ||
             data1.BitsPerSample != data2.BitsPerSample)
         {
-            PerformanceDebugLogger.WriteDebug($"[DEBUG-FormatMismatch] {System.IO.Path.GetFileName(data1.FilePath)} vs {System.IO.Path.GetFileName(data2.FilePath)}");
+            // PerformanceDebugLogger.WriteDebug(nameof(FastWaveCompare), $"[DEBUG-FormatMismatch] {System.IO.Path.GetFileName(data1.FilePath)} vs {System.IO.Path.GetFileName(data2.FilePath)}");
             return false;
         }
 
@@ -121,7 +121,7 @@ internal static class FastWaveCompare
 
         if (activeRegions1 == null || activeRegions2 == null || activeRegions1.Length == 0 || activeRegions2.Length == 0)
         {
-            PerformanceDebugLogger.WriteDebug($"[DEBUG-NoActiveRegions] {System.IO.Path.GetFileName(data1.FilePath)} vs {System.IO.Path.GetFileName(data2.FilePath)}");
+            // PerformanceDebugLogger.WriteDebug(nameof(FastWaveCompare), $"[DEBUG-NoActiveRegions] {System.IO.Path.GetFileName(data1.FilePath)} vs {System.IO.Path.GetFileName(data2.FilePath)}");
             return false;
         }
 
@@ -146,7 +146,7 @@ internal static class FastWaveCompare
         // If only one is entirely silent
         if (isData1Silent || isData2Silent)
         {
-            PerformanceDebugLogger.WriteDebug($"[DEBUG-SilenceReject] {System.IO.Path.GetFileName(data1.FilePath)}({isData1Silent}) vs {System.IO.Path.GetFileName(data2.FilePath)}({isData2Silent})");
+            // PerformanceDebugLogger.WriteDebug(nameof(FastWaveCompare), $"[DEBUG-SilenceReject] {System.IO.Path.GetFileName(data1.FilePath)}({isData1Silent}) vs {System.IO.Path.GetFileName(data2.FilePath)}({isData2Silent})");
             return false;
         }
 
@@ -195,7 +195,7 @@ internal static class FastWaveCompare
                 double nonOverlapRms = Math.Sqrt(nonOverlapSumSq / nonOverlapCount);
                 if (nonOverlapRms > AppConstants.AudioComparison.SilenceRmsThreshold)
                 {
-                    PerformanceDebugLogger.WriteDebug($"[DEBUG-IsMatch] Rejected due to non-silent tail (RMS={nonOverlapRms:F6})");
+                    // PerformanceDebugLogger.WriteDebug(nameof(FastWaveCompare), $"[DEBUG-IsMatch] Rejected due to non-silent tail (RMS={nonOverlapRms:F6})");
                     return false;
                 }
             }
@@ -205,7 +205,7 @@ internal static class FastWaveCompare
         {
             string n1 = System.IO.Path.GetFileName(data1.FilePath);
             string n2 = System.IO.Path.GetFileName(data2.FilePath);
-            PerformanceDebugLogger.WriteDebug($"[DEBUG-IsMatch] {n1} vs {n2} corr={correlation:F4}, offset={offset}, thr={threshold}");
+            // PerformanceDebugLogger.WriteDebug(nameof(FastWaveCompare), $"[DEBUG-IsMatch] {n1} vs {n2} corr={correlation:F4}, offset={offset}, thr={threshold}");
         }
 
         return correlation >= threshold;

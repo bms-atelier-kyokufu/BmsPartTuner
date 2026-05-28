@@ -1,4 +1,4 @@
-﻿namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
+namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 
 /// <summary>
 /// 定義番号の処理範囲を管理するクラス。
@@ -103,6 +103,6 @@ internal class DefinitionRangeManager(IReadOnlyList<BmsAudioFile> fileList)
         StartPoint = Math.Max(firstNum, defStart);
         EndPoint = Math.Min(maxDefined, defEnd);
 
-        PerformanceDebugLogger.WriteLine($"Processing range: {StartPoint} - {EndPoint} ({EndPoint - StartPoint + 1} definitions)");
+        PerformanceDebugLogger.WriteDebug(nameof(DefinitionRangeManager), $"Processing range: {StartPoint} - {EndPoint} ({EndPoint - StartPoint + 1} definitions)");
     }
 }
