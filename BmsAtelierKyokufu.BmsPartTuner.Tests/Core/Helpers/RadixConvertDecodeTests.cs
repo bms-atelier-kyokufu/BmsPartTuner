@@ -139,8 +139,8 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Helpers
         [Theory]
         [InlineData("0a", 36)]     // 小文字
         [InlineData("0A", 10)]     // 大文字（36進数でも62進数でも10）
-        [InlineData("aA", 36 * 62 + 10)]  // 小文字大文字混在
-        [InlineData("Aa", 10 * 62 + 36)]  // 大文字小文字混在
+        [InlineData("aA", (36 * 62) + 10)]  // 小文字大文字混在
+        [InlineData("Aa", (10 * 62) + 36)]  // 大文字小文字混在
         public void ZZToInt_MixedCase_DistinguishesCorrectly(string input, int expected)
         {
             // 62進数では大文字小文字は別の値
