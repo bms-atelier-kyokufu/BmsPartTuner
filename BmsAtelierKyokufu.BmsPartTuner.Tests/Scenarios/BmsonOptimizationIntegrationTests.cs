@@ -1,4 +1,5 @@
 using System.IO;
+using System.Text;
 using System.Text.Json;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 using BmsAtelierKyokufu.BmsPartTuner.Models;
@@ -16,7 +17,7 @@ public class BmsonOptimizationIntegrationTests
     public BmsonOptimizationIntegrationTests(ITestOutputHelper output)
     {
         _output = output;
-        System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
+        Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
     }
 
     [Fact]
@@ -242,5 +243,123 @@ public class BmsonOptimizationIntegrationTests
         // Cleanup
         if (File.Exists(outputBmsFilePath)) File.Delete(outputBmsFilePath);
         if (File.Exists(optimizedBmsFilePath)) File.Delete(optimizedBmsFilePath);
+    }
+
+    [Fact]
+    public void DiscoverHeuristicThreshold_FFT16D_R2_Relationship()
+    {
+        // Arrange
+        string testDataDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TestData", "bmson_sample", "bms");
+        string bmsFilePath = Path.Combine(testDataDir, "bmson_base62.bms");
+        Assert.True(File.Exists(bmsFilePath), $"Test input file not found: {bmsFilePath}");
+
+        var manager = new BmsDefinitionManager(bmsFilePath);
+        var fileList = manager.CreateFileList();
+        
+        // Cache all files
+        var audioCache = new Dictionary<string, ICachedSoundData>();
+        string bmsDir = Path.GetDirectoryName(bmsFilePath) ?? "";
+        foreach (var file in fileList)
+        {
+            if (file.NumInteger < 1 || file.NumInteger > 3843) continue;
+            string fullPath = Path.Combine(bmsDir, file.Name);
+            if (!File.Exists(fullPath)) continue;
+            
+            if (!audioCache.ContainsKey(file.Name))
+            {
+                var data = BmsAtelierKyokufu.BmsPartTuner.Core.Audio.AudioProcessingService.LoadAndProcess(fullPath, NormalizationMode.None);
+                audioCache[file.Name] = data;
+            }
+        }
+
+        var cachedList = audioCache.Values.ToList();
+        _output.WriteLine($"Loaded {cachedList.Count} unique audio files.");
+
+        // Extract 16D vectors
+        var vectors = new Dictionary<string, float[]>();
+        foreach (var kvp in audioCache)
+        {
+            var data = kvp.Value;
+            var vec = new float[16];
+            if (data.FftSpectrum != null && data.FftSpectrum.Length > 0 && data.FftSpectrum[0] != null)
+            {
+                var spec = data.FftSpectrum[0];
+                double sumSq = 0;
+                for (int i = 1; i <= 16; i++) // bins 1 to 16
+                {
+                    float mag = spec[i].Magnitude;
+                    vec[i - 1] = mag;
+                    sumSq += mag * mag;
+                }
+                
+                // L2 Normalize the vector to ignore volume differences
+                if (sumSq > 0)
+                {
+                    float norm = (float)Math.Sqrt(sumSq);
+                    for (int i = 0; i < 16; i++)
+                    {
+                        vec[i] /= norm;
+                    }
+                }
+            }
+            vectors[kvp.Key] = vec;
+        }
+
+        float maxEuclideanForR2Match = 0f;
+        int matchCount = 0;
+
+        _output.WriteLine("R2_Score\tEuclidean_Dist\tFile1\tFile2");
+
+        for (int i = 0; i < cachedList.Count; i++)
+        {
+            for (int j = i + 1; j < cachedList.Count; j++)
+            {
+                var data1 = cachedList[i];
+                var data2 = cachedList[j];
+
+                if (data1.Channels != data2.Channels || data1.SampleRate != data2.SampleRate) continue;
+
+                int targetChannel = 0;
+                if (data1.GetActiveRegions()[0] == null || data1.GetActiveRegions()[0].Count == 0) targetChannel = 1;
+                
+                var shorter = data1.TotalSamples < data2.TotalSamples ? data1 : data2;
+                var longer = data1.TotalSamples < data2.TotalSamples ? data2 : data1;
+                int shorterFrames = shorter.TotalSamples / shorter.Channels;
+                int longerFrames = longer.TotalSamples / longer.Channels;
+                var shorterSpan = shorter.GetRawSpan(targetChannel, 0, shorterFrames);
+                var longerFullSpan = longer.GetRawSpan(targetChannel, 0, longerFrames);
+
+                float r = BmsAtelierKyokufu.BmsPartTuner.Core.Audio.FastWaveCompare.CalculateMaxCorrelation(
+                    shorter, longer, targetChannel, shorterFrames, longerFrames, shorterSpan, longerFullSpan, out _);
+
+                var v1 = vectors[data1.FilePath];
+                var v2 = vectors[data2.FilePath];
+                
+                if (v1.Length == 16 && v2.Length == 16)
+                {
+                    float distSq = 0;
+                    for (int k = 0; k < 16; k++)
+                    {
+                        float diff = v1[k] - v2[k];
+                        distSq += diff * diff;
+                    }
+                    float dist = (float)Math.Sqrt(distSq);
+
+                    if (r >= 0.40f)
+                    {
+                        matchCount++;
+                        if (dist > maxEuclideanForR2Match) maxEuclideanForR2Match = dist;
+                        _output.WriteLine($"{r:F4}\t{dist:F4}\t{Path.GetFileName(data1.FilePath)}\t{Path.GetFileName(data2.FilePath)}");
+                    }
+                }
+            }
+        }
+
+        _output.WriteLine($"---");
+        _output.WriteLine($"Matches with R2 >= 0.40 : {matchCount}");
+        _output.WriteLine($"Max Euclidean Distance for these matches: {maxEuclideanForR2Match:F4}");
+        
+        float suggestedThreshold = maxEuclideanForR2Match * 1.5f; // 50% safety margin
+        _output.WriteLine($"Suggested Safe Distance Threshold (with 50% margin): {suggestedThreshold:F4}");
     }
 }
