@@ -113,4 +113,9 @@ public interface ICachedSoundData : IDisposable
     /// <param name="channel">チャンネル番号 (0 or 1)。</param>
     /// <returns>LSH有効ビットマスク配列。</returns>
     ReadOnlySpan<ulong> GetLshMask(int channel);
+
+    /// <summary>
+    /// カスケード分類による事前足切り用の16次元ベクトル（FFT低周波ビンのL2正規化済み振幅）。
+    /// </summary>
+    float[]? SpectralFeatures { get; }
 }

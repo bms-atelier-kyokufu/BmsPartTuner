@@ -88,6 +88,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Models
         public Complex32[][]? FftSpectrum { get; }
 
         /// <inheritdoc />
+        public float[]? SpectralFeatures { get; }
+
+        /// <inheritdoc />
         public ulong ShiftInvariantLsh { get; }
 
         /// <inheritdoc />
@@ -133,6 +136,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Models
             ulong[][]? signLsh,
             ulong[][]? signLshMask,
             Complex32[][]? fftSpectrum,
+            float[]? spectralFeatures,
             ulong shiftInvariantLsh)
         {
             FilePath = filePath;
@@ -147,6 +151,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Models
             _signLsh = signLsh;
             _signLshMask = signLshMask;
             FftSpectrum = fftSpectrum;
+            SpectralFeatures = spectralFeatures;
             ShiftInvariantLsh = shiftInvariantLsh;
         }
 

@@ -54,6 +54,9 @@ public class PointerSoundData(
     public Complex32[][]? FftSpectrum => null;
 
     /// <inheritdoc />
+    public float[]? SpectralFeatures => null;
+
+    /// <inheritdoc />
     public ulong ShiftInvariantLsh => 0;
 
     private BaseAudioOptimizationData? _baseData = baseData;

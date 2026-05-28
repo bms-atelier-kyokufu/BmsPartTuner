@@ -37,6 +37,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
 
 
         public MathNet.Numerics.Complex32[][]? FftSpectrum { get; }
+        public float[]? SpectralFeatures { get; }
         public ulong ShiftInvariantLsh { get; }
 
         private readonly ulong[][] _signLsh;
@@ -67,6 +68,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
             _signLshMask = signLshMask;
 
             FftSpectrum = GenerateFftSpectrum(samplesPerChannel, Channels);
+            SpectralFeatures = GenerateSpectralFeatures(FftSpectrum);
             ShiftInvariantLsh = GenerateShiftInvariantLsh(FftSpectrum);
         }
 
@@ -295,6 +297,28 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
                 }
             }
             return hash;
+        }
+
+        private static float[]? GenerateSpectralFeatures(Complex32[][]? fftSpectrum)
+        {
+            if (fftSpectrum == null || fftSpectrum.Length == 0 || fftSpectrum[0] == null) return null;
+            var spec = fftSpectrum[0];
+            if (spec.Length < 17) return null;
+
+            var vec = new float[16];
+            double sumSq = 0;
+            for (int i = 1; i <= 16; i++)
+            {
+                float mag = spec[i].Magnitude;
+                vec[i - 1] = mag;
+                sumSq += mag * mag;
+            }
+            if (sumSq > 0)
+            {
+                float norm = (float)Math.Sqrt(sumSq);
+                for (int i = 0; i < 16; i++) vec[i] /= norm;
+            }
+            return vec;
         }
     }
 }

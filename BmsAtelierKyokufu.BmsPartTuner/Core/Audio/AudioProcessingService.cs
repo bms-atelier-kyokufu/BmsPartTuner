@@ -107,6 +107,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio
                 float totalRms = CalculateTotalRms(samplesPerChannel, samplesPerChannelLen, channels);
                 var (signLsh, signLshMask) = GenerateLsh(samplesPerChannel, samplesPerChannelLen, channels);
                 var fftSpectrum = GenerateFftSpectrum(samplesPerChannel, normalizedRegions, channels);
+                float[]? spectralFeatures = GenerateSpectralFeatures(fftSpectrum);
                 ulong shiftInvariantLsh = GenerateShiftInvariantLsh(fftSpectrum);
 
                 return new PreNormalizedSoundData(
@@ -122,6 +123,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio
                     signLsh,
                     signLshMask,
                     fftSpectrum,
+                    spectralFeatures,
                     shiftInvariantLsh
                 );
             }
@@ -483,6 +485,33 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio
                 }
             }
             return hash;
+        }
+        /// <summary>
+        /// カスケード分類による事前足切り用の16次元ベクトル（FFT低周波ビンのL2正規化済み振幅）を抽出します。
+        /// </summary>
+        private static float[]? GenerateSpectralFeatures(Complex32[][]? fftSpectrum)
+        {
+            if (fftSpectrum == null || fftSpectrum.Length == 0 || fftSpectrum[0] == null) return null;
+            var spec = fftSpectrum[0];
+            if (spec.Length < 17) return null;
+
+            var vec = new float[16];
+            double sumSq = 0;
+            for (int i = 1; i <= 16; i++) // bins 1 to 16 (exclude DC offset at bin 0)
+            {
+                float mag = spec[i].Magnitude;
+                vec[i - 1] = mag;
+                sumSq += mag * mag;
+            }
+            if (sumSq > 0)
+            {
+                float norm = (float)Math.Sqrt(sumSq);
+                for (int i = 0; i < 16; i++)
+                {
+                    vec[i] /= norm;
+                }
+            }
+            return vec;
         }
     }
 }

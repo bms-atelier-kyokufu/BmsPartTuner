@@ -57,6 +57,24 @@ internal static class FastWaveCompare
             return false;
         }
 
+        // Spectral Features Cascade Classifier (Heuristic Threshold: 0.88f)
+        if (data1.SpectralFeatures != null && data2.SpectralFeatures != null)
+        {
+            float distSq = 0;
+            var v1 = data1.SpectralFeatures;
+            var v2 = data2.SpectralFeatures;
+            for (int i = 0; i < 16; i++)
+            {
+                float diff = v1[i] - v2[i];
+                distSq += diff * diff;
+            }
+            // 0.88f ^ 2 = 0.7744f
+            if (distSq > 0.7744f)
+            {
+                return false;
+            }
+        }
+
         // Find first active channel to compute Pearson on (usually 0, but could be 1 if left is silent)
         int targetChannel = 0;
         if (activeRegions1[0] == null || activeRegions1[0].Count == 0)
