@@ -5,11 +5,6 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 /// 処理前後のファイル数を集計し削減率を計算、ユニークファイル数を取得することで、
 /// 自動最適化時のエルボーポイント検出などの評価指標として機能します。
 /// </summary>
-/// <param name="fileList">ファイルリスト。</param>
-/// <param name="replaces">置換テーブル。</param>
-/// <param name="startPoint">処理範囲の開始定義番号。</param>
-/// <param name="endPoint">処理範囲の終了定義番号。</param>
-/// <exception cref="ArgumentNullException">fileListまたはreplacesがnullの場合。</exception>
 internal class DefinitionStatistics(
     IReadOnlyList<BmsAudioFile> fileList,
     int[] replaces,

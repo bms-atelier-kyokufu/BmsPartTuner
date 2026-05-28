@@ -332,15 +332,7 @@ internal class ParallelAudioComparisonEngine(AudioComparisonParameters parameter
         }
     }
 
-    /// <summary>
-    /// RMS類似性判定のしきい値を計算します（通常は±20～25%、無音ファイルは特別に0～0.002）。
-    /// </summary>
-    /// <returns>最小値と最大値のタプル。</returns>
-    private static (float min, float max) CalculateRmsThresholds(float rms)
-    {
-        if (rms < AppConstants.AudioComparison.SilenceRmsThreshold) return (0f, AppConstants.AudioComparison.SilenceRmsUpperBound);
-        return (rms * AppConstants.AudioComparison.RmsLowerBoundRatio, rms * AppConstants.AudioComparison.RmsUpperBoundRatio);
-    }
+
 
     /// <summary>
     /// ファイルペアの波形を詳細に比較し、一致する場合は置換テーブルを更新します。

@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Services.Common;
 
@@ -7,6 +7,11 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Services.Common;
 /// </summary>
 public class LicenseLoaderService
 {
+    /// <summary>
+    /// サービスインスタンスの一意の識別子。
+    /// </summary>
+    public string InstanceId { get; } = Guid.NewGuid().ToString();
+
     private const string LicenseResourcePath = "BmsAtelierKyokufu.BmsPartTuner.Resources.Licenses";
 
     /// <summary>
@@ -67,7 +72,7 @@ public class LicenseLoaderService
         }
 
         // 3. 先頭のドットを除去 (例: .AppLicense -> AppLicense)
-        if (nameWithoutExt.StartsWith("."))
+        if (nameWithoutExt.StartsWith('.'))
         {
             nameWithoutExt = nameWithoutExt[1..];
         }

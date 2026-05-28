@@ -6,7 +6,6 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Services.UI
     /// トースト通知UI要素（ViewModelドリブン）です。
     /// NotificationViewModelに処理を委譲し、ViewModel層のタイマー管理を利用します。
     /// </summary>
-    /// <param name="viewModel">MainViewModel インスタンス</param>
     public class ToastElement(MainViewModel viewModel) : IUiElementService<ToastViewModel>
     {
         private readonly MainViewModel _viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));

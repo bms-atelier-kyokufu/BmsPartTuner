@@ -1,4 +1,4 @@
-﻿namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
+namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
 
 /// <summary>
 /// メモリ上に実体を持つ仮想ファイルを表現するインターフェース。
@@ -21,14 +21,12 @@ public interface IVirtualFile
 /// </summary>
 public class MemoryVirtualFile(byte[] data) : IVirtualFile
 {
-    private readonly byte[] _data = data ?? throw new ArgumentNullException(nameof(data));
+    public byte[] Data { get; } = data ?? throw new ArgumentNullException(nameof(data));
 
-    public long Length => _data.Length;
-
-    public byte[] Data => _data;
+    public long Length => Data.Length;
 
     public Stream Open()
     {
-        return new MemoryStream(_data);
+        return new MemoryStream(Data);
     }
 }

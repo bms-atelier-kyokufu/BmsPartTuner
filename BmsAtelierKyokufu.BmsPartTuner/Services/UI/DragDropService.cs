@@ -5,8 +5,6 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Services.UI;
 /// サポートされる拡張子のフィルタリングと、ドラッグ時の視覚的フィードバック（半透明化）を提供し、
 /// ドロップ完了時にはイベントを通じてUIからロジック層へ通知を行います。
 /// </summary>
-/// <param name="supportedExtensions">サポートされる拡張子の配列。</param>
-/// <exception cref="ArgumentNullException">supportedExtensionsがnullの場合。</exception>
 public class DragDropService(string[] supportedExtensions) : IDragDropService
 {
     private readonly string[] _supportedExtensions = supportedExtensions ?? throw new ArgumentNullException(nameof(supportedExtensions));
@@ -19,8 +17,6 @@ public class DragDropService(string[] supportedExtensions) : IDragDropService
     /// <summary>
     /// ファイルドロップイベントの引数を初期化します。
     /// </summary>
-    /// <param name="filePath">ファイルパス。</param>
-    /// <param name="isSupported">サポートフラグ。</param>
     public class FileDroppedEventArgs(string filePath, bool isSupported) : EventArgs
     {
         /// <summary>ドロップされたファイルパス。</summary>
@@ -34,7 +30,7 @@ public class DragDropService(string[] supportedExtensions) : IDragDropService
     /// 指定されたUI要素に対してドラッグ&amp;ドロップ機能を設定します。
     /// ドラッグ入場、退場時の視覚的フィードバック処理やドロップ時のイベントハンドリングを登録します。
     /// </summary>
-    /// <param name="element">対象のUIElement。</param>
+    /// <param name="element">対象 of UIElement.</param>
     public void SetupDragAndDrop(UIElement element)
     {
         ArgumentNullException.ThrowIfNull(element);

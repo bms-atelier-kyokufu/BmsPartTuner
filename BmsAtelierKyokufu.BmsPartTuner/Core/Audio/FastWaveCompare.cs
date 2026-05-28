@@ -22,20 +22,14 @@ internal static class FastWaveCompare
             data1.Channels != data2.Channels ||
             data1.BitsPerSample != data2.BitsPerSample)
         {
-            // PerformanceDebugLogger.WriteDebug(nameof(FastWaveCompare), $"[DEBUG-FormatMismatch] {System.IO.Path.GetFileName(data1.FilePath)} vs {System.IO.Path.GetFileName(data2.FilePath)}");
             return false;
         }
-
-        // Length difference check has been removed to allow merging of files with different tail lengths.
-        // The Pearson correlation over the zero-padded shorter file is robust enough to reject false positives.
-        _ = Math.Abs(data1.TotalSamples - data2.TotalSamples);
-
         var activeRegions1 = data1.GetActiveRegions();
         var activeRegions2 = data2.GetActiveRegions();
 
         if (activeRegions1 == null || activeRegions2 == null || activeRegions1.Length == 0 || activeRegions2.Length == 0)
         {
-            // PerformanceDebugLogger.WriteDebug(nameof(FastWaveCompare), $"[DEBUG-NoActiveRegions] {System.IO.Path.GetFileName(data1.FilePath)} vs {System.IO.Path.GetFileName(data2.FilePath)}");
+
             return false;
         }
 
@@ -60,7 +54,6 @@ internal static class FastWaveCompare
         // If only one is entirely silent
         if (isData1Silent || isData2Silent)
         {
-            // PerformanceDebugLogger.WriteDebug(nameof(FastWaveCompare), $"[DEBUG-SilenceReject] {System.IO.Path.GetFileName(data1.FilePath)}({isData1Silent}) vs {System.IO.Path.GetFileName(data2.FilePath)}({isData2Silent})");
             return false;
         }
 
@@ -74,14 +67,13 @@ internal static class FastWaveCompare
         var shorter = data1.TotalSamples < data2.TotalSamples ? data1 : data2;
         var longer = data1.TotalSamples < data2.TotalSamples ? data2 : data1;
 
-        int shorterFrames = shorter.TotalSamples / shorter.Channels;
-        int longerFrames = longer.TotalSamples / longer.Channels;
+        var shorterFrames = shorter.TotalSamples / shorter.Channels;
+        var longerFrames = longer.TotalSamples / longer.Channels;
 
         var shorterSpan = shorter.GetRawSpan(targetChannel, 0, shorterFrames);
         var longerFullSpan = longer.GetRawSpan(targetChannel, 0, longerFrames);
 
-        int offset = 0;
-        float correlation = CalculateMaxCorrelation(shorter, longer, targetChannel, shorterFrames, longerFrames, shorterSpan, longerFullSpan, out offset);
+        var correlation = CalculateMaxCorrelation(shorter, longer, targetChannel, shorterFrames, longerFrames, shorterSpan, longerFullSpan, out int offset);
 
         if (correlation >= threshold && shorterFrames < longerFrames)
         {
@@ -109,17 +101,9 @@ internal static class FastWaveCompare
                 double nonOverlapRms = Math.Sqrt(nonOverlapSumSq / nonOverlapCount);
                 if (nonOverlapRms > AppConstants.AudioComparison.SilenceRmsThreshold)
                 {
-                    // PerformanceDebugLogger.WriteDebug(nameof(FastWaveCompare), $"[DEBUG-IsMatch] Rejected due to non-silent tail (RMS={nonOverlapRms:F6})");
                     return false;
                 }
             }
-        }
-
-        if (correlation < threshold)
-        {
-            string n1 = System.IO.Path.GetFileName(data1.FilePath);
-            string n2 = System.IO.Path.GetFileName(data2.FilePath);
-            // PerformanceDebugLogger.WriteDebug(nameof(FastWaveCompare), $"[DEBUG-IsMatch] {n1} vs {n2} corr={correlation:F4}, offset={offset}, thr={threshold}");
         }
 
         return correlation >= threshold;
@@ -130,9 +114,9 @@ internal static class FastWaveCompare
     /// 最適なアライメント（位相ズレ補正）を加味した上での最大ピアソン相関係数を計算します。
     /// </summary>
     public static float CalculateMaxCorrelation(
-        ICachedSoundData shorter, ICachedSoundData longer, 
-        int targetChannel, 
-        int shorterFrames, int longerFrames, 
+        ICachedSoundData shorter, ICachedSoundData longer,
+        int targetChannel,
+        int shorterFrames, int longerFrames,
         ReadOnlySpan<float> shorterSpan, ReadOnlySpan<float> longerFullSpan,
         out int offset)
     {

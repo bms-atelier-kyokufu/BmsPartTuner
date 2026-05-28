@@ -6,8 +6,6 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 /// 指定された終了番号が0または負の場合は、ファイルリストから自動で最大定義番号を検出します。
 /// デフォルトの範囲は1（最小）から3843（62進数最大 "zz"）です。
 /// </summary>
-/// <param name="fileList">ファイルリスト。</param>
-/// <exception cref="ArgumentNullException">fileListがnullの場合。</exception>
 internal class DefinitionRangeManager(IReadOnlyList<BmsAudioFile> fileList)
 {
     private readonly IReadOnlyList<BmsAudioFile> _fileList = fileList ?? throw new ArgumentNullException(nameof(fileList));

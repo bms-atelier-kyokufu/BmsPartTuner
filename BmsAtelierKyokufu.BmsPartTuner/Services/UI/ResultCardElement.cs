@@ -5,7 +5,6 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Services.UI
     /// <summary>
     /// 結果カードUI要素（ViewModelドリブン）です。
     /// </summary>
-    /// <param name="viewModel">MainViewModel インスタンス</param>
     public class ResultCardElement(MainViewModel viewModel) : IUiElementService<ResultCardData>
     {
         private readonly MainViewModel _viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));

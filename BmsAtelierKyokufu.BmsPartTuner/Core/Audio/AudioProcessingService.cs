@@ -424,7 +424,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio
 
                 // 有音区間がない場合はゼロ配列のまま
 
-                if (regions != null && regions.Count > 0)
+                if (regions?.Count > 0)
                 {
                     int startOffset = regions[0].Offset;
                     var channelSamples = samplesPerChannel[ch];

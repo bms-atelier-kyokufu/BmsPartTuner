@@ -7,11 +7,6 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 /// 削減後の定義リストを抽出してファイル名順に整列し、新しいIDを割り当てた上で
 /// BMSファイル内の#WAV定義と譜面データの置換を行います。
 /// </summary>
-/// <param name="fileList">ファイルリスト。</param>
-/// <param name="replaces">置換テーブル（配列インデックス: 元のID、値: 置換先ID）。</param>
-/// <param name="startPoint">処理範囲の開始定義番号。</param>
-/// <param name="endPoint">処理範囲の終了定義番号。</param>
-/// <exception cref="ArgumentNullException">fileListまたはreplacesがnullの場合。</exception>
 internal partial class BmsFileRewriter(
     IReadOnlyList<BmsAudioFile> fileList,
     int[] replaces,
@@ -252,9 +247,8 @@ internal partial class BmsFileRewriter(
         if (undefinedReferences.Count > 0)
         {
             PerformanceDebugLogger.WriteDebug(nameof(BmsFileRewriter), $"[BmsFileRewriter] WARNING: Found undefined WAV references in {Path.GetFileName(bmsFileName)}: {string.Join(", ", undefinedReferences)}");
-            PerformanceDebugLogger.WriteDebug(nameof(BmsFileRewriter), $"[BmsFileRewriter] These references were preserved as-is (non-destructive policy)");
+            PerformanceDebugLogger.WriteDebug(nameof(BmsFileRewriter), "[BmsFileRewriter] These references were preserved as-is (non-destructive policy)");
         }
-
         return sb.ToString();
     }
 
