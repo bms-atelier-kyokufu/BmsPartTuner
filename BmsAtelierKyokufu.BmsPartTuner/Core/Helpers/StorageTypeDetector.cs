@@ -40,7 +40,7 @@ internal static partial class StorageTypeDetector
         // READ/WRITEアクセス権なし(0)で開くことで、管理者権限がなくてもメタデータを取得可能
         using SafeFileHandle hDevice = CreateFile(
             drivePath,
-            0, 
+            0,
             FILE_SHARE_READ | FILE_SHARE_WRITE,
             IntPtr.Zero,
             OPEN_EXISTING,
