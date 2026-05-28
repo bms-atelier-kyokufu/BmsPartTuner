@@ -15,13 +15,14 @@ public class CachedAudioSource
     public int PcmLength { get; }
 
     private BmsAtelierKyokufu.BmsPartTuner.Models.BaseAudioOptimizationData? _decodedData;
+    private readonly Lock _lock = new();
 
     public BmsAtelierKyokufu.BmsPartTuner.Models.BaseAudioOptimizationData DecodedData
     {
         get
         {
             if (_decodedData != null) return _decodedData;
-            lock (this)
+            lock (_lock)
             {
                 if (_decodedData != null) return _decodedData;
                 _decodedData = DecodeAllData();
