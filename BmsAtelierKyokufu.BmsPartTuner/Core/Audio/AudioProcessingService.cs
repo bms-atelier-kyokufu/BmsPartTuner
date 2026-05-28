@@ -16,33 +16,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio
     {
         public static PreNormalizedSoundData LoadAndProcess(string path, NormalizationMode normalizationMode)
         {
-            var fileName = Path.GetFileName(path);
-            Stream? memoryStreamToDispose = null;
-            WaveStream stream;
-            ISampleProvider sampleProvider;
-            long fileSize = 0;
-
-            if (VirtualAudioRegistry.TryGetStream(fileName, out var vStream))
-            {
-                VirtualAudioRegistry.TryGetFileSize(fileName, out var size);
-                fileSize = size;
-                memoryStreamToDispose = vStream;
-                var waveReader = new WaveFileReader(memoryStreamToDispose);
-                stream = waveReader;
-                sampleProvider = waveReader.ToSampleProvider();
-            }
-            else
-            {
-                var fi = new FileInfo(path);
-                if (!fi.Exists)
-                {
-                    throw new FileNotFoundException($"File not found: {path}");
-                }
-                fileSize = fi.Length;
-                var audioReader = new AudioFileReader(path);
-                stream = audioReader;
-                sampleProvider = audioReader;
-            }
+            var (memoryStreamToDispose, stream, sampleProvider, fileSize) = OpenAudioFile(path);
 
             using (memoryStreamToDispose)
             using (stream)
@@ -108,9 +82,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio
                 var (signLsh, signLshMask) = GenerateLsh(samplesPerChannel, samplesPerChannelLen, channels);
                 var fftSpectrum = GenerateFftSpectrum(samplesPerChannel, normalizedRegions, channels);
                 float[]? spectralFeatures = GenerateSpectralFeatures(fftSpectrum);
-                ulong shiftInvariantLsh = GenerateShiftInvariantLsh(fftSpectrum);
+                ulong[]? simHash256 = GenerateSimHash256(fftSpectrum);
 
-                return new PreNormalizedSoundData(
+                var p = new PreNormalizedSoundDataParameters(
                     path,
                     sampleRate,
                     channels,
@@ -124,11 +98,38 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio
                     signLshMask,
                     fftSpectrum,
                     spectralFeatures,
-                    shiftInvariantLsh
+                    simHash256
                 );
+                return new PreNormalizedSoundData(p);
             }
         }
 
+        /// <summary>
+        /// 音声ファイルを開き、ストリームとサンプルプロバイダーを取得します。
+        /// 仮想ファイルレジストリ（メモリキャッシュ）が存在する場合はそちらを優先して利用します。
+        /// </summary>
+        private static (Stream? memoryStreamToDispose, WaveStream stream, ISampleProvider sampleProvider, long fileSize) OpenAudioFile(string path)
+        {
+            var fileName = Path.GetFileName(path);
+            if (VirtualAudioRegistry.TryGetStream(fileName, out var vStream))
+            {
+                VirtualAudioRegistry.TryGetFileSize(fileName, out var size);
+                var waveReader = new WaveFileReader(vStream);
+                return (vStream, waveReader, waveReader.ToSampleProvider(), size);
+            }
+            else
+            {
+                var fi = new FileInfo(path);
+                if (!fi.Exists) throw new FileNotFoundException($"File not found: {path}");
+                var audioReader = new AudioFileReader(path);
+                return (null, audioReader, audioReader, fi.Length);
+            }
+        }
+
+        /// <summary>
+        /// インターリーブされたオーディオデータ（LRLRLR...）を、チャンネルごとの独立した配列（LLLL..., RRRR...）に分離します。
+        /// キャッシュ効率とSIMD処理の前提となる連続メモリ配置を確保するための重要な前処理です。
+        /// </summary>
         private static float[][] DeinterleaveChannels(float[] interleavedData, int channels, int samplesPerChannel)
         {
             var result = new float[channels][];
@@ -145,6 +146,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio
             return result;
         }
 
+        /// <summary>
+        /// 指定された正規化モード（Peak または RMS）に従って、波形全体を正規化します。
+        /// </summary>
         private static void ApplyNormalization(float[][] samplesPerChannel, int channels, NormalizationMode mode)
         {
             switch (mode)
@@ -158,6 +162,10 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio
             }
         }
 
+        /// <summary>
+        /// 波形の最大振幅が 1.0 になるようにスケーリングする Peak 正規化を行います。
+        /// クリッピングを防ぎつつ、全体の音量を最大化します。
+        /// </summary>
         private static void NormalizePeak(float[][] samplesPerChannel, int channels)
         {
             float maxAbsValue = 0.0f;
@@ -182,6 +190,10 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio
             }
         }
 
+        /// <summary>
+        /// 波形の平均的なエネルギー（RMS）が目標値になるようにスケーリングする RMS 正規化を行います。
+        /// 人間の聴覚上の音量感を揃えるのに適しています。
+        /// </summary>
         private static void NormalizeRms(float[][] samplesPerChannel, int channels, float targetRms = 0.5f)
         {
             float currentRms = CalculateTotalRms(samplesPerChannel, samplesPerChannel[0].Length, channels);
@@ -197,6 +209,10 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio
             }
         }
 
+        /// <summary>
+        /// 各チャンネルから無音区間を除外した「有音区間（Active Regions）」のリストを抽出します。
+        /// 計算量を下げるため、O(1) のスライディングウィンドウ法を用いてエネルギー（2乗和）を評価します。
+        /// </summary>
         private static List<ActiveRegion>[] ExtractActiveRegions(float[][] samplesPerChannel, int channels)
         {
             var regionsPerChannel = new List<ActiveRegion>[channels];
@@ -207,76 +223,87 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio
 
             for (int ch = 0; ch < channels; ch++)
             {
-                var samples = samplesPerChannel[ch];
-                regionsPerChannel[ch] = [];
-                int totalFrames = samples.Length;
-
-                if (totalFrames == 0) continue;
-
-                double sumSq = 0;
-                int currentWindowFrames = Math.Min(windowFrames, totalFrames);
-                for (int i = 0; i < currentWindowFrames; i++)
-                {
-                    sumSq += samples[i] * (double)samples[i];
-                }
-
-                int silenceFramesCount = 0;
-                bool inActiveRegion = false;
-                int currentRegionStart = -1;
-                int lastActiveFrame = -1;
-
-                if (sumSq > eThreshold)
-                {
-                    inActiveRegion = true;
-                    currentRegionStart = 0;
-                    lastActiveFrame = 0;
-                }
-
-                for (int i = 1; i <= totalFrames - windowFrames; i++)
-                {
-                    double prevSample = samples[i - 1];
-                    double nextSample = samples[i + windowFrames - 1];
-                    sumSq += (nextSample * nextSample) - (prevSample * prevSample);
-
-                    if (sumSq < 0) sumSq = 0;
-
-                    if (sumSq > eThreshold)
-                    {
-                        if (!inActiveRegion)
-                        {
-                            inActiveRegion = true;
-                            currentRegionStart = i;
-                        }
-                        lastActiveFrame = i;
-                        silenceFramesCount = 0;
-                    }
-                    else
-                    {
-                        if (inActiveRegion)
-                        {
-                            silenceFramesCount++;
-                            if (silenceFramesCount > maxSilenceFrames)
-                            {
-                                int regionEnd = lastActiveFrame + windowFrames;
-                                int regionLength = regionEnd - currentRegionStart;
-                                AddNormalizedRegion(regionsPerChannel[ch], samples, currentRegionStart, regionLength);
-                                inActiveRegion = false;
-                            }
-                        }
-                    }
-                }
-
-                if (inActiveRegion)
-                {
-                    int regionEnd = Math.Min(lastActiveFrame + windowFrames, totalFrames);
-                    int regionLength = regionEnd - currentRegionStart;
-                    AddNormalizedRegion(regionsPerChannel[ch], samples, currentRegionStart, regionLength);
-                }
+                regionsPerChannel[ch] = ExtractChannelActiveRegions(samplesPerChannel[ch], windowFrames, eThreshold, maxSilenceFrames);
             }
 
             return regionsPerChannel;
         }
 
+        /// <summary>
+        /// 単一チャンネルの波形から、O(1) スライディングウィンドウを用いて有音区間を抽出します。
+        /// 浮動小数点の加減算のみで次ウィンドウのエネルギーを算出するため、全フレームを舐めても高速に動作します。
+        /// </summary>
+        private static List<ActiveRegion> ExtractChannelActiveRegions(float[] samples, int windowFrames, double eThreshold, int maxSilenceFrames)
+        {
+            var regions = new List<ActiveRegion>();
+            int totalFrames = samples.Length;
+
+            if (totalFrames == 0) return regions;
+
+            double sumSq = 0;
+            int currentWindowFrames = Math.Min(windowFrames, totalFrames);
+            for (int i = 0; i < currentWindowFrames; i++)
+            {
+                sumSq += samples[i] * (double)samples[i];
+            }
+
+            int silenceFramesCount = 0;
+            bool inActiveRegion = false;
+            int currentRegionStart = -1;
+            int lastActiveFrame = -1;
+
+            if (sumSq > eThreshold)
+            {
+                inActiveRegion = true;
+                currentRegionStart = 0;
+                lastActiveFrame = 0;
+            }
+
+            for (int i = 1; i <= totalFrames - windowFrames; i++)
+            {
+                double prevSample = samples[i - 1];
+                double nextSample = samples[i + windowFrames - 1];
+                sumSq += (nextSample * nextSample) - (prevSample * prevSample);
+
+                if (sumSq < 0) sumSq = 0;
+
+                if (sumSq > eThreshold)
+                {
+                    if (!inActiveRegion)
+                    {
+                        inActiveRegion = true;
+                        currentRegionStart = i;
+                    }
+                    lastActiveFrame = i;
+                    silenceFramesCount = 0;
+                }
+                else if (inActiveRegion)
+                {
+                    silenceFramesCount++;
+                    if (silenceFramesCount > maxSilenceFrames)
+                    {
+                        int regionEnd = lastActiveFrame + windowFrames;
+                        int regionLength = regionEnd - currentRegionStart;
+                        AddNormalizedRegion(regions, samples, currentRegionStart, regionLength);
+                        inActiveRegion = false;
+                    }
+                }
+            }
+
+            if (inActiveRegion)
+            {
+                int regionEnd = Math.Min(lastActiveFrame + windowFrames, totalFrames);
+                int regionLength = regionEnd - currentRegionStart;
+                AddNormalizedRegion(regions, samples, currentRegionStart, regionLength);
+            }
+
+            return regions;
+        }
+
+        /// <summary>
+        /// 抽出された有音区間の波形に対し、平均0・分散1となるような標準化（Z-score正規化）を適用して追加します。
+        /// これにより、音量や直流オフセットの違いを無視した純粋な波形形状の比較（ピアソン相関）が可能になります。
+        /// </summary>
         private static void AddNormalizedRegion(List<ActiveRegion> regions, float[] originalSamples, int offset, int length)
         {
             if (length <= 0) return;
@@ -312,6 +339,10 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio
             regions.Add(new ActiveRegion(offset, length, normData));
         }
 
+        /// <summary>
+        /// チャンネルを跨いだ波形全体のRMS（二乗平均平方根）を計算します。
+        /// ファイル全体のエネルギー量を示す指標として使用されます。
+        /// </summary>
         private static float CalculateTotalRms(float[][] samplesPerChannel, int length, int channels)
         {
             double sumSq = 0;
@@ -330,6 +361,10 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio
             return (float)Math.Sqrt(sumSq / totalCount);
         }
 
+        /// <summary>
+        /// 曲の先頭から、最初に音が鳴り始めるまでの無音サンプル数を検出します。
+        /// 閾値は極めて小さな値（0.001f）に設定されています。
+        /// </summary>
         private static int DetectStartSilence(float[][] samplesPerChannel, int length, int channels)
         {
             const float silenceThreshold = 0.001f;
@@ -351,6 +386,10 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio
             return silenceSamples;
         }
 
+        /// <summary>
+        /// 波形の微小な時間変化を表現する LSH (Locality-Sensitive Hashing) を生成します。
+        /// 隣接する周波数ビンの大小関係をビット化することで、音量変動に強いロバストなシグネチャを作ります。
+        /// </summary>
         private static (ulong[][] signLsh, ulong[][] signLshMask) GenerateLsh(float[][] samplesPerChannel, int lengthSamples, int channels)
         {
             int extractLen = Math.Min(lengthSamples, 2048);
@@ -409,6 +448,10 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio
             return (signLsh, signLshMask);
         }
 
+        /// <summary>
+        /// 各チャンネルの有音区間の先頭部分（アタック）を抽出し、ハニング窓をかけてFFT（高速フーリエ変換）を実行します。
+        /// 音色が最も特徴的に表れる先頭の周波数スペクトルを、以降の特徴量抽出のベースとします。
+        /// </summary>
         private static Complex32[][]? GenerateFftSpectrum(float[][] samplesPerChannel, List<ActiveRegion>[] regionsPerChannel, int channels)
         {
             // FFT用の配列長（Radix-2要件）
@@ -451,43 +494,45 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio
         }
 
         /// <summary>
-        /// FFTスペクトルの振幅（低〜中域）を用いたシフト不変なLSH（SimHash）を生成します。
+        /// FFTスペクトルの振幅（低〜中域）を用いたシフト不変なLSH（SimHash）を生成します (256bit)。
         /// </summary>
-        private static ulong GenerateShiftInvariantLsh(Complex32[][]? fftSpectrum)
+        private static ulong[]? GenerateSimHash256(Complex32[][]? fftSpectrum)
         {
-            if (fftSpectrum == null || fftSpectrum.Length == 0 || fftSpectrum[0] == null) return 0;
+            if (fftSpectrum == null || fftSpectrum.Length == 0 || fftSpectrum[0] == null) return null;
 
             var spectrum = fftSpectrum[0];
-            ulong hash = 0;
+            ulong[] hash = new ulong[4];
 
-            // 擬似乱数で64個のランダムベクトルを生成し、内積を取る
+            // 擬似乱数で256個のランダムベクトルを生成し、内積を取る
             // シードを固定することで、起動ごとに一意な射影空間を保証する
-
             var random = new Random(42);
             // 人間の聴覚や特徴が集中しやすい低〜中域（256ビン）を対象とする
-
             const int features = 256;
 
-
-            for (int bit = 0; bit < 64; bit++)
+            for (int i = 0; i < 4; i++)
             {
-                double dotProduct = 0;
-                for (int i = 0; i < features; i++)
+                ulong currentHash = 0;
+                for (int bit = 0; bit < 64; bit++)
                 {
-                    double val = spectrum[i].Magnitude;
-                    double weight = (random.NextDouble() * 2.0) - 1.0;
-
-                    dotProduct += val * weight;
+                    double dotProduct = 0;
+                    for (int f = 0; f < features; f++)
+                    {
+                        double val = spectrum[f].Magnitude;
+                        double weight = (random.NextDouble() * 2.0) - 1.0;
+                        dotProduct += val * weight;
+                    }
+                    if (dotProduct > 0)
+                    {
+                        currentHash |= (1UL << bit);
+                    }
                 }
-                if (dotProduct > 0)
-                {
-                    hash |= (1UL << bit);
-                }
+                hash[i] = currentHash;
             }
             return hash;
         }
         /// <summary>
-        /// カスケード分類による事前足切り用の16次元ベクトル（FFT低周波ビンのL2正規化済み振幅）を抽出します。
+        /// FFTスペクトルの低周波ビン（0〜15）から、次元圧縮分類用の16次元特徴量ベクトルを抽出します。
+        /// エネルギーをL2正規化することで、O(1)のユークリッド距離比較による超高速な事前足切り（カスケード分類）を実現します。
         /// </summary>
         private static float[]? GenerateSpectralFeatures(Complex32[][]? fftSpectrum)
         {

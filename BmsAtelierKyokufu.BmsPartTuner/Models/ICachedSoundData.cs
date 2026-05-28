@@ -48,10 +48,10 @@ public interface ICachedSoundData : IDisposable
     Complex32[][]? FftSpectrum { get; }
 
     /// <summary>
-    /// シフト不変なLSH (SimHash) の64bitハッシュ値。
-    /// 位相ズレやトリミングの差異にロバストなグループ化に使用されます。
+    /// シフト不変なLSH (SimHash) の256bitハッシュ値（ulong[4]）。
+    /// XORとPOPCNTによる高速なハミング距離計算（スクリーニング）に利用します。
     /// </summary>
-    ulong ShiftInvariantLsh { get; }
+    ulong[]? SimHash256 { get; }
 
     /// <summary>
     /// 有音区間 (ActiveRegion) のリストを取得します。

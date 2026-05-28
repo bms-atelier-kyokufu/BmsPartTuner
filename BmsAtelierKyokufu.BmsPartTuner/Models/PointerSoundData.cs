@@ -57,7 +57,7 @@ public class PointerSoundData(
     public float[]? SpectralFeatures => null;
 
     /// <inheritdoc />
-    public ulong ShiftInvariantLsh => 0;
+    public ulong[]? SimHash256 => null;
 
     private BaseAudioOptimizationData? _baseData = baseData;
     private readonly int _startSample = startSample;
@@ -172,71 +172,80 @@ public class PointerSoundData(
 
     private static IReadOnlyList<ActiveRegion>[] ExtractPointerRegions(float[][] samplesPerChannel, int startSample, int lengthSamples)
     {
-        var regionsPerChannel = new List<ActiveRegion>[2] { [], [] };
+        int channels = samplesPerChannel.Length;
+        var regionsPerChannel = new List<ActiveRegion>[channels];
 
         const double dbThreshold = -45.0;
         const int windowFrames = 1024;
         double eThreshold = windowFrames * Math.Pow(10, dbThreshold / 10.0);
         const int maxSilenceFrames = AppConstants.Audio.StandardSampleRate / 4;
 
-        for (int ch = 0; ch < 2; ch++)
+        for (int ch = 0; ch < channels; ch++)
         {
             var samplesSpan = new ReadOnlySpan<float>(samplesPerChannel[ch], startSample, lengthSamples);
+            regionsPerChannel[ch] = ExtractChannelPointerRegions(samplesSpan, windowFrames, eThreshold, maxSilenceFrames);
+        }
 
-            int startIdx = -1;
-            int currentSilenceFrames = 0;
-            double currentEnergy = 0;
+        return regionsPerChannel;
+    }
 
-            for (int i = 0; i < lengthSamples; i++)
+    private static List<ActiveRegion> ExtractChannelPointerRegions(ReadOnlySpan<float> samplesSpan, int windowFrames, double eThreshold, int maxSilenceFrames)
+    {
+        var channelRegions = new List<ActiveRegion>();
+        int lengthSamples = samplesSpan.Length;
+        int startIdx = -1;
+        int currentSilenceFrames = 0;
+        double currentEnergy = 0;
+
+        for (int i = 0; i < lengthSamples; i++)
+        {
+            double sample = samplesSpan[i];
+            currentEnergy += sample * sample;
+
+            if (i >= windowFrames)
             {
-                double sample = samplesSpan[i];
-                currentEnergy += sample * sample;
-
-                if (i >= windowFrames)
-                {
-                    double outSample = samplesSpan[i - windowFrames];
-                    currentEnergy -= outSample * outSample;
-                    currentEnergy = Math.Max(0, currentEnergy);
-                }
-
-                if (i >= windowFrames - 1)
-                {
-                    if (currentEnergy >= eThreshold)
-                    {
-                        if (startIdx == -1)
-                        {
-                            startIdx = i - windowFrames + 1;
-                        }
-                        currentSilenceFrames = 0;
-                    }
-                    else if (startIdx != -1)
-                    {
-                        currentSilenceFrames++;
-                        if (currentSilenceFrames >= maxSilenceFrames)
-                        {
-                            int endIdx = i - currentSilenceFrames + 1;
-                            int length = endIdx - startIdx;
-                            if (length > 0)
-                            {
-                                regionsPerChannel[ch].Add(new ActiveRegion(startIdx, length, null!));
-                            }
-                            startIdx = -1;
-                            currentSilenceFrames = 0;
-                        }
-                    }
-                }
+                double outSample = samplesSpan[i - windowFrames];
+                currentEnergy -= outSample * outSample;
+                currentEnergy = Math.Max(0, currentEnergy);
             }
 
-            if (startIdx != -1)
+            if (i >= windowFrames - 1)
             {
-                int length = lengthSamples - startIdx;
-                if (length > 0)
+                if (currentEnergy >= eThreshold)
                 {
-                    regionsPerChannel[ch].Add(new ActiveRegion(startIdx, length, null!));
+                    if (startIdx == -1)
+                    {
+                        startIdx = i - windowFrames + 1;
+                    }
+                    currentSilenceFrames = 0;
+                }
+                else if (startIdx != -1)
+                {
+                    currentSilenceFrames++;
+                    if (currentSilenceFrames >= maxSilenceFrames)
+                    {
+                        int endIdx = i - currentSilenceFrames + 1;
+                        int length = endIdx - startIdx;
+                        if (length > 0)
+                        {
+                            channelRegions.Add(new ActiveRegion(startIdx, length, null!));
+                        }
+                        startIdx = -1;
+                        currentSilenceFrames = 0;
+                    }
                 }
             }
         }
 
-        return regionsPerChannel;
+        if (startIdx != -1)
+        {
+            int length = lengthSamples - startIdx;
+            if (length > 0)
+            {
+                channelRegions.Add(new ActiveRegion(startIdx, length, null!));
+            }
+        }
+
+        return channelRegions;
     }
 }

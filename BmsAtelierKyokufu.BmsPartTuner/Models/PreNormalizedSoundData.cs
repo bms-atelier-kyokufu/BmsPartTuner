@@ -7,6 +7,26 @@ using MathNet.Numerics;
 namespace BmsAtelierKyokufu.BmsPartTuner.Models
 {
     /// <summary>
+    /// PreNormalizedSoundDataの初期化パラメータ
+    /// </summary>
+    public record PreNormalizedSoundDataParameters(
+        string FilePath,
+        int SampleRate,
+        int Channels,
+        int BitsPerSample,
+        int TotalSamples,
+        long FileSize,
+        List<ActiveRegion>[]? NormalizedRegions,
+        float TotalRms,
+        int StartSilenceSamples,
+        ulong[][]? SignLsh,
+        ulong[][]? SignLshMask,
+        Complex32[][]? FftSpectrum,
+        float[]? SpectralFeatures,
+        ulong[]? SimHash256
+    );
+
+    /// <summary>
     /// 有音区間のメタデータと波形データを保持する構造体。
     /// </summary>
     public readonly struct ActiveRegion(int offset, int length, float[] data)
@@ -91,7 +111,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Models
         public float[]? SpectralFeatures { get; }
 
         /// <inheritdoc />
-        public ulong ShiftInvariantLsh { get; }
+        public ulong[]? SimHash256 { get; }
 
         /// <inheritdoc />
         public double EstimatedMemoryMB
@@ -123,36 +143,22 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Models
         /// <summary>
         /// 全データを注入してインスタンスを初期化します。
         /// </summary>
-        public PreNormalizedSoundData(
-            string filePath,
-            int sampleRate,
-            int channels,
-            int bitsPerSample,
-            int totalSamples,
-            long fileSize,
-            List<ActiveRegion>[]? normalizedRegions,
-            float totalRms,
-            int startSilenceSamples,
-            ulong[][]? signLsh,
-            ulong[][]? signLshMask,
-            Complex32[][]? fftSpectrum,
-            float[]? spectralFeatures,
-            ulong shiftInvariantLsh)
+        public PreNormalizedSoundData(PreNormalizedSoundDataParameters p)
         {
-            FilePath = filePath;
-            SampleRate = sampleRate;
-            Channels = channels;
-            BitsPerSample = bitsPerSample;
-            TotalSamples = totalSamples;
-            FileSize = fileSize;
-            NormalizedRegions = normalizedRegions;
-            TotalRms = totalRms;
-            StartSilenceSamples = startSilenceSamples;
-            _signLsh = signLsh;
-            _signLshMask = signLshMask;
-            FftSpectrum = fftSpectrum;
-            SpectralFeatures = spectralFeatures;
-            ShiftInvariantLsh = shiftInvariantLsh;
+            FilePath = p.FilePath;
+            SampleRate = p.SampleRate;
+            Channels = p.Channels;
+            BitsPerSample = p.BitsPerSample;
+            TotalSamples = p.TotalSamples;
+            FileSize = p.FileSize;
+            NormalizedRegions = p.NormalizedRegions;
+            TotalRms = p.TotalRms;
+            StartSilenceSamples = p.StartSilenceSamples;
+            _signLsh = p.SignLsh;
+            _signLshMask = p.SignLshMask;
+            FftSpectrum = p.FftSpectrum;
+            SpectralFeatures = p.SpectralFeatures;
+            SimHash256 = p.SimHash256;
         }
 
         /// <inheritdoc />
