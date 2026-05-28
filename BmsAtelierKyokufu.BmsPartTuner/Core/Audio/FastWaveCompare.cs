@@ -60,6 +60,18 @@ internal static class FastWaveCompare
             return false;
         }
 
+        // Length Heuristic: 既に末尾が無音トリム済みであるという前提に立ち、
+        // 長さ（フレーム数）が 0.1秒 以上異なる場合は、仮に部分一致しても
+        // 最終的に「はみ出た部分に音が鳴っている」として弾かれるため、重い計算をスキップする。
+        int frames1 = data1.TotalSamples / data1.Channels;
+        int frames2 = data2.TotalSamples / data2.Channels;
+        int lengthDiffThreshold = (int)(data1.SampleRate * 0.1); // 0.1秒の許容誤差
+
+        if (Math.Abs(frames1 - frames2) > lengthDiffThreshold)
+        {
+            return false;
+        }
+
         // SimHash256 Cascade Classifier (Heuristic Hamming Distance Threshold: 64)
         if (data1.SimHash256 != null && data2.SimHash256 != null)
         {
@@ -147,7 +159,6 @@ internal static class FastWaveCompare
         }
 
         return correlation >= threshold;
-
     }
 
     /// <summary>

@@ -16,6 +16,9 @@ public class AudioSliceManager(string bmsonDir, bool throwOnMissingFile = true) 
     private static readonly byte[] WavHeaderTemplate = WavHeaderGenerator.CreateWavHeaderTemplate();
 
     // key: "fileName|offsetSec|durationSec", value: "outputFileName.wav"
+    private readonly ConcurrentDictionary<string, string> _requestCache = new();
+
+    // key: "fileName|offsetByte|trimmedLengthBytes", value: "outputFileName.wav"
     private readonly ConcurrentDictionary<string, Lazy<string>> _sliceCache = new();
 
     // 楽器種別ごとの連番を管理する辞書
@@ -47,6 +50,14 @@ public class AudioSliceManager(string bmsonDir, bool throwOnMissingFile = true) 
         // 2. 要求された開始位置と長さを計算
         var (startByte, lengthBytes) = CalculateByteRange(source.PcmLength, offsetSec, durationSec);
         if (lengthBytes <= 0) return string.Empty;
+
+        // L1キャッシュ（要求ベース）の確認: ヒットすればTrim計算も不要
+        string requestCacheKey = $"{sourceFileName}|{startByte}|{lengthBytes}";
+        if (_requestCache.TryGetValue(requestCacheKey, out string? cachedFileName))
+        {
+            Interlocked.Increment(ref _cacheHitCount);
+            return cachedFileName;
+        }
 
         // 3. 末尾の無音部分をトリミングして、本当に必要な長さに切り詰める
         int trimmedLengthBytes = SilenceTrimmer.TrimSilenceFromEnd(source.RawBytes, source.PcmOffset + startByte, lengthBytes);
@@ -100,7 +111,15 @@ public class AudioSliceManager(string bmsonDir, bool throwOnMissingFile = true) 
             Interlocked.Increment(ref _cacheHitCount);
         }
 
-        return lazyVal.Value;
+        string finalFileName = lazyVal.Value;
+
+        // 次回以降のためにL1キャッシュにも覚えさせておく
+        if (!string.IsNullOrEmpty(finalFileName))
+        {
+            _requestCache.TryAdd(requestCacheKey, finalFileName);
+        }
+
+        return finalFileName;
     }
 
     /// <summary>
@@ -112,6 +131,7 @@ public class AudioSliceManager(string bmsonDir, bool throwOnMissingFile = true) 
     {
         _sourceCache.Clear();
         _sliceCache.Clear();
+        _requestCache.Clear();
         GC.SuppressFinalize(this);
     }
 

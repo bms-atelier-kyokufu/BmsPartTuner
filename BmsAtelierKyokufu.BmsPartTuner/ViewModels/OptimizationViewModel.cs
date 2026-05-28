@@ -16,7 +16,7 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
     #region プロパティ
 
     private string _r2Threshold = AppConstants.Threshold.DefaultDisplay.ToString();
-    
+
     /// <summary>
     /// 音声比較におけるマッチ許容度（しきい値）。
     /// </summary>

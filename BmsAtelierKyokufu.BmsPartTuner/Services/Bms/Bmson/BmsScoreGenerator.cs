@@ -168,12 +168,20 @@ public class BmsScoreGenerator(
     private readonly Dictionary<int, Dictionary<string, List<ChannelLayer>>> _measures = [];
 
     // Y座標の事前計算データ
-    private class YPositionData
+    private readonly struct YPositionData
     {
-        public double TimeSec { get; set; }
-        public int Measure { get; set; }
-        public int MeasureLength { get; set; }
-        public int StepIndex { get; set; }
+        public readonly double TimeSec;
+        public readonly int Measure;
+        public readonly int MeasureLength;
+        public readonly int StepIndex;
+
+        public YPositionData(double timeSec, int measure, int measureLength, int stepIndex)
+        {
+            TimeSec = timeSec;
+            Measure = measure;
+            MeasureLength = measureLength;
+            StepIndex = stepIndex;
+        }
     }
     private Dictionary<long, YPositionData> _yDataMap = [];
 
@@ -261,13 +269,12 @@ public class BmsScoreGenerator(
         {
             int m = _timeCalc.GetMeasureNumber(y);
             int mLen = (int)_timeCalc.GetMeasureLength(m);
-            return new YPositionData
-            {
-                TimeSec = _realTimeCalc.GetTimeSec(y),
-                Measure = m,
-                MeasureLength = mLen,
-                StepIndex = _timeCalc.GetStepIndex(y, mLen)
-            };
+            return new YPositionData(
+                _realTimeCalc.GetTimeSec(y),
+                m,
+                mLen,
+                _timeCalc.GetStepIndex(y, mLen)
+            );
         });
     }
 
@@ -405,20 +412,41 @@ public class BmsScoreGenerator(
         public readonly string Id = id;
     }
 
-    private static List<List<BmsonNote>> SplitNotesIntoBlocks(IReadOnlyList<BmsonNote> notes)
+    private readonly struct NoteBlock(int start, int count)
     {
-        var blocks = new List<List<BmsonNote>>();
-        List<BmsonNote>? currentBlock = null;
+        public readonly int Start = start;
+        public readonly int Count = count;
+    }
 
-        foreach (var n in notes)
+    private static List<NoteBlock> SplitNotesIntoBlocks(IReadOnlyList<BmsonNote> notes)
+    {
+        var blocks = new List<NoteBlock>();
+        if (notes.Count == 0) return blocks;
+
+        int currentStart = 0;
+        int currentCount = 0;
+
+        for (int i = 0; i < notes.Count; i++)
         {
-            if (!n.C || currentBlock == null)
+            if (!notes[i].C || currentCount == 0)
             {
-                currentBlock = [];
-                blocks.Add(currentBlock);
+                if (currentCount > 0)
+                {
+                    blocks.Add(new NoteBlock(currentStart, currentCount));
+                }
+                currentStart = i;
+                currentCount = 1;
             }
-            currentBlock.Add(n);
+            else
+            {
+                currentCount++;
+            }
         }
+        if (currentCount > 0)
+        {
+            blocks.Add(new NoteBlock(currentStart, currentCount));
+        }
+
         return blocks;
     }
 
@@ -464,22 +492,23 @@ public class BmsScoreGenerator(
         Parallel.For(0, blocks.Count, innerOptions, bIndex =>
         {
             var block = blocks[bIndex];
-            double blockStartSec = _yDataMap[block[0].Y].TimeSec;
+            double blockStartSec = _yDataMap[ch.Notes[block.Start].Y].TimeSec;
 
             double nextBlockStartSec = bIndex + 1 < blocks.Count
-                ? _yDataMap[blocks[bIndex + 1][0].Y].TimeSec
+                ? _yDataMap[ch.Notes[blocks[bIndex + 1].Start].Y].TimeSec
                 : double.PositiveInfinity;
 
-            ProcessBlock(ch.Name, block, blockStartSec, nextBlockStartSec, pendingNotes, sharedNoteIndex);
+            ProcessBlock(ch.Name, ch.Notes, block, blockStartSec, nextBlockStartSec, pendingNotes, sharedNoteIndex);
         });
     }
 
-    private void ProcessBlock(string channelName, List<BmsonNote> block, double blockStartSec, double nextBlockStartSec, PendingNote[] pendingNotes, int[] sharedNoteIndex)
+    private void ProcessBlock(string channelName, IReadOnlyList<BmsonNote> allNotes, NoteBlock block, double blockStartSec, double nextBlockStartSec, PendingNote[] pendingNotes, int[] sharedNoteIndex)
     {
         // depth は「ブロック内でのインデックス」に代数的に等価
         for (int depth = 0; depth < block.Count; depth++)
         {
-            var n = block[depth];
+            int noteIndex = block.Start + depth;
+            var n = allNotes[noteIndex];
 
             if (_keyNotesOnly && n.X == 0) continue;
 
@@ -488,9 +517,10 @@ public class BmsScoreGenerator(
             double nextSec = nextBlockStartSec;
             for (int k = depth + 1; k < block.Count; k++)
             {
-                if (block[k].Y > n.Y)
+                var nextNote = allNotes[block.Start + k];
+                if (nextNote.Y > n.Y)
                 {
-                    nextSec = _yDataMap[block[k].Y].TimeSec;
+                    nextSec = _yDataMap[nextNote.Y].TimeSec;
                     break;
                 }
             }

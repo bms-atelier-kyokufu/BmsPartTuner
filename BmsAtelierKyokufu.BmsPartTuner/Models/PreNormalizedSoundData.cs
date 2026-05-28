@@ -76,7 +76,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Models
         public int BitsPerSample { get; }
 
         /// <summary>事前正規化モードのため、元のサンプル配列への直接アクセスは非サポートです。</summary>
-        public float[]? Samples => null;
+        public static float[]? Samples => null;
 
         /// <summary>チャンネルごとのサンプル配列。</summary>
         public float[][]? SamplesPerChannel { get; private set; }
@@ -202,13 +202,13 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Models
 
         /// <inheritdoc />
         public double GetChannelSum(int channel) => throw new NotSupportedException();
-        
+
         /// <inheritdoc />
         public double GetChannelSumSq(int channel) => throw new NotSupportedException();
-        
+
         /// <inheritdoc />
         public double GetRangeSum(int channel, int offset, int length) => throw new NotSupportedException();
-        
+
         /// <inheritdoc />
         public double GetRangeSumSq(int channel, int offset, int length) => throw new NotSupportedException();
 

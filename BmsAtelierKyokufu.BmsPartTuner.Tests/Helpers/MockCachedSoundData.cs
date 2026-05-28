@@ -37,7 +37,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
 
 
         public MathNet.Numerics.Complex32[][]? FftSpectrum { get; }
-        
+
         public float[]? SpectralFeatures => DisableCascadeClassifiers ? null : _spectralFeatures;
         public ulong[]? SimHash256 => DisableCascadeClassifiers ? null : _simHash256;
 
@@ -290,7 +290,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
                 ulong currentHash = 0;
                 for (int bit = 0; bit < 64; bit++)
                 {
-                    int f = i * 64 + bit;
+                    int f = (i * 64) + bit;
                     // 隣接ビンとの比較によるロバストな1ビット量子化 (O(1))
                     if (spectrum[f].Magnitude > spectrum[f + 1].Magnitude)
                     {

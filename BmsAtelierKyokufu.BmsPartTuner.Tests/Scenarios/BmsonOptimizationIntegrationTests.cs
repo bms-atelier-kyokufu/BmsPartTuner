@@ -255,7 +255,7 @@ public class BmsonOptimizationIntegrationTests
 
         var manager = new BmsDefinitionManager(bmsFilePath);
         var fileList = manager.CreateFileList();
-        
+
         // Cache all files
         var audioCache = new Dictionary<string, ICachedSoundData>();
         string bmsDir = Path.GetDirectoryName(bmsFilePath) ?? "";
@@ -264,7 +264,7 @@ public class BmsonOptimizationIntegrationTests
             if (file.NumInteger < 1 || file.NumInteger > 3843) continue;
             string fullPath = Path.Combine(bmsDir, file.Name);
             if (!File.Exists(fullPath)) continue;
-            
+
             if (!audioCache.ContainsKey(file.Name))
             {
                 var data = BmsAtelierKyokufu.BmsPartTuner.Core.Audio.AudioProcessingService.LoadAndProcess(fullPath, NormalizationMode.None);
@@ -291,7 +291,7 @@ public class BmsonOptimizationIntegrationTests
                     vec[i - 1] = mag;
                     sumSq += mag * mag;
                 }
-                
+
                 // L2 Normalize the vector to ignore volume differences
                 if (sumSq > 0)
                 {
@@ -321,7 +321,7 @@ public class BmsonOptimizationIntegrationTests
 
                 int targetChannel = 0;
                 if (data1.GetActiveRegions()[0] == null || data1.GetActiveRegions()[0].Count == 0) targetChannel = 1;
-                
+
                 var shorter = data1.TotalSamples < data2.TotalSamples ? data1 : data2;
                 var longer = data1.TotalSamples < data2.TotalSamples ? data2 : data1;
                 int shorterFrames = shorter.TotalSamples / shorter.Channels;
@@ -334,7 +334,7 @@ public class BmsonOptimizationIntegrationTests
 
                 var v1 = vectors[data1.FilePath];
                 var v2 = vectors[data2.FilePath];
-                
+
                 if (v1.Length == 16 && v2.Length == 16)
                 {
                     float distSq = 0;
@@ -358,7 +358,7 @@ public class BmsonOptimizationIntegrationTests
         _output.WriteLine($"---");
         _output.WriteLine($"Matches with R2 >= 0.40 : {matchCount}");
         _output.WriteLine($"Max Euclidean Distance for these matches: {maxEuclideanForR2Match:F4}");
-        
+
         float suggestedThreshold = maxEuclideanForR2Match * 1.5f; // 50% safety margin
         _output.WriteLine($"Suggested Safe Distance Threshold (with 50% margin): {suggestedThreshold:F4}");
     }
@@ -373,7 +373,7 @@ public class BmsonOptimizationIntegrationTests
 
         var manager = new BmsDefinitionManager(bmsFilePath);
         var fileList = manager.CreateFileList();
-        
+
         // Cache all files
         var audioCache = new Dictionary<string, ICachedSoundData>();
         string bmsDir = Path.GetDirectoryName(bmsFilePath) ?? "";
@@ -382,7 +382,7 @@ public class BmsonOptimizationIntegrationTests
             if (file.NumInteger < 1 || file.NumInteger > 3843) continue;
             string fullPath = Path.Combine(bmsDir, file.Name);
             if (!File.Exists(fullPath)) continue;
-            
+
             if (!audioCache.ContainsKey(file.Name))
             {
                 var data = BmsAtelierKyokufu.BmsPartTuner.Core.Audio.AudioProcessingService.LoadAndProcess(fullPath, NormalizationMode.None);
@@ -410,7 +410,7 @@ public class BmsonOptimizationIntegrationTests
 
                 int targetChannel = 0;
                 if (data1.GetActiveRegions()[0] == null || data1.GetActiveRegions()[0].Count == 0) targetChannel = 1;
-                
+
                 var shorter = data1.TotalSamples < data2.TotalSamples ? data1 : data2;
                 var longer = data1.TotalSamples < data2.TotalSamples ? data2 : data1;
                 int shorterFrames = shorter.TotalSamples / shorter.Channels;
@@ -423,8 +423,8 @@ public class BmsonOptimizationIntegrationTests
 
                 var s1 = data1.SimHash256;
                 var s2 = data2.SimHash256;
-                
-                int hammingDistance = 
+
+                int hammingDistance =
                     System.Numerics.BitOperations.PopCount(s1[0] ^ s2[0]) +
                     System.Numerics.BitOperations.PopCount(s1[1] ^ s2[1]) +
                     System.Numerics.BitOperations.PopCount(s1[2] ^ s2[2]) +
@@ -442,7 +442,7 @@ public class BmsonOptimizationIntegrationTests
         _output.WriteLine($"---");
         _output.WriteLine($"Matches with R2 >= 0.40 : {matchCount}");
         _output.WriteLine($"Max Hamming Distance for these matches: {maxHammingForR2Match}");
-        
+
         Assert.True(maxHammingForR2Match <= 64, $"Threshold 64 is too strict! Max observed was {maxHammingForR2Match}");
     }
 }
