@@ -2,6 +2,7 @@ using System;
 using System.Numerics;
 using MathNet.Numerics;
 using MathNet.Numerics.IntegralTransforms;
+using GenerateSimdBatchUnrollAttribute = BmsAtelierKyokufu.BmsPartTuner.Core.Attributes.GenerateSimdBatchUnrollAttribute;
 using Vector = System.Numerics.Vector;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
@@ -10,7 +11,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
 /// 音声波形の類似度を判定するための検証クラス（SIMD最適化版）。
 /// 決定係数（R²）およびピアソンの相関係数（ρ）をSIMD（Vector&lt;T&gt;）を用いて高速に計算します。
 /// </summary>
-static public class WaveValidation
+public static partial class WaveValidation
 {
     #region パブリックメソッド
 
@@ -117,8 +118,8 @@ static public class WaveValidation
         int vectorSize = Vector<float>.Count;
         int vectorizedLength = length - (length % vectorSize);
 
-        (float sumX, float sumY, float sumX2, float sumY2, float sumXY) = ProcessVectorizedPearson(
-            wav1, wav2, vectorizedLength, vectorSize);
+        ProcessVectorizedPearson(wav1, wav2, vectorizedLength, vectorSize,
+            out float sumX, out float sumY, out float sumX2, out float sumY2, out float sumXY);
 
         (sumX, sumY, sumX2, sumY2, sumXY) = ProcessRemainderPearson(
             wav1, wav2, vectorizedLength, length, sumX, sumY, sumX2, sumY2, sumXY);
@@ -173,34 +174,10 @@ static public class WaveValidation
     /// <param name="normalizedWav1">正規化済み波形Span1。</param>
     /// <param name="normalizedWav2">正規化済み波形Span2。</param>
     /// <returns>相関係数（-1.0〜1.0）。</returns>
-    static public float CalculatePearsonFromNormalizedSIMD(ReadOnlySpan<float> normalizedWav1, ReadOnlySpan<float> normalizedWav2)
-    {
-        if (normalizedWav1.Length != normalizedWav2.Length || normalizedWav1.Length == 0)
-            return 0.0F;
+    [GenerateSimdBatchUnroll(UnrollFactor = 4, LogicType = "PearsonNormalized")]
+    public static partial float CalculatePearsonFromNormalizedSIMD(ReadOnlySpan<float> normalizedWav1, ReadOnlySpan<float> normalizedWav2);
 
-        int length = normalizedWav1.Length;
-        int vectorSize = Vector<float>.Count;
-        int vectorizedLength = length - (length % vectorSize);
 
-        Vector<float> dotProduct_vec = Vector<float>.Zero;
-
-        for (int i = 0; i < vectorizedLength; i += vectorSize)
-        {
-            Vector<float> x = new(normalizedWav1.Slice(i, vectorSize));
-            Vector<float> y = new(normalizedWav2.Slice(i, vectorSize));
-            dotProduct_vec += x * y;
-        }
-
-        Vector<float> ones = new(1.0f);
-        double dotProduct = Vector.Dot(dotProduct_vec, ones);
-
-        for (int i = vectorizedLength; i < length; i++)
-        {
-            dotProduct += normalizedWav1[i] * normalizedWav2[i];
-        }
-
-        return (float)Math.Max(-1.0, Math.Min(1.0, dotProduct));
-    }
 
     /// <summary>
     /// Phase 2: キャッシュされた波形（事前正規化または生データ）の有音区間（ActiveRegion）の重なりを用いてピアソン相関係数を計算します（SIMD最適化）。
@@ -438,39 +415,14 @@ static public class WaveValidation
     /// ベクトル化された範囲の処理（ピアソン相関係数計算用）。
     /// Vector&lt;T&gt;を使用してSIMD並列演算を実行し、(ΣX, ΣY, ΣX², ΣY², ΣXY) を返します。
     /// </summary>
-    private static (float sumX, float sumY, float sumX2, float sumY2, float sumXY) ProcessVectorizedPearson(
+    [BmsAtelierKyokufu.BmsPartTuner.Core.Attributes.GenerateSimdBatchUnroll(UnrollFactor = 4, LogicType = "PearsonStats")]
+    private static partial void ProcessVectorizedPearson(
         ReadOnlySpan<float> wav1,
         ReadOnlySpan<float> wav2,
         int vectorizedLength,
-        int vectorSize)
-    {
-        Vector<float> sumX_vec = Vector<float>.Zero;
-        Vector<float> sumY_vec = Vector<float>.Zero;
-        Vector<float> sumX2_vec = Vector<float>.Zero;
-        Vector<float> sumY2_vec = Vector<float>.Zero;
-        Vector<float> sumXY_vec = Vector<float>.Zero;
+        int vectorSize,
+        out float sumX, out float sumY, out float sumX2, out float sumY2, out float sumXY);
 
-        for (int i = 0; i < vectorizedLength; i += vectorSize)
-        {
-            Vector<float> x = new(wav1.Slice(i, vectorSize));
-            Vector<float> y = new(wav2.Slice(i, vectorSize));
-
-            sumX_vec += x;
-            sumY_vec += y;
-            sumX2_vec += x * x;
-            sumY2_vec += y * y;
-            sumXY_vec += x * y;
-        }
-
-        Vector<float> ones = new(1.0f);
-        float sumX = Vector.Dot(sumX_vec, ones);
-        float sumY = Vector.Dot(sumY_vec, ones);
-        float sumX2 = Vector.Dot(sumX2_vec, ones);
-        float sumY2 = Vector.Dot(sumY2_vec, ones);
-        float sumXY = Vector.Dot(sumXY_vec, ones);
-
-        return (sumX, sumY, sumX2, sumY2, sumXY);
-    }
 
     /// <summary>
     /// 端数処理（ベクトル化できなかった残りの要素）（ピアソン相関係数計算用）。
