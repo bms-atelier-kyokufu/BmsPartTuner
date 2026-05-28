@@ -5,36 +5,8 @@ using BmsAtelierKyokufu.BmsPartTuner.Services.Bms;
 namespace BmsAtelierKyokufu.BmsPartTuner.ViewModels;
 
 /// <summary>
-/// ファイルリストViewModel。
+/// 読み込まれたBMSファイルのリスト表示と、音声プレビュー、フィルタリングを管理するViewModel。
 /// </summary>
-/// <remarks>
-/// <para>【責務】</para>
-/// <list type="bullet">
-/// <item>BMSファイルの読み込みとファイルリスト表示</item>
-/// <item>楽器種別フィルタリング（キーワードベース）</item>
-/// <item>音声プレビュー機能の制御</item>
-/// <item>選択されたキーワードの管理</item>
-/// </list>
-///
-/// <para>【フィルタリング機能】</para>
-/// <list type="number">
-/// <item>テキストフィルタ: ファイル名による部分一致検索</item>
-/// <item>楽器種別フィルタ: kick, snare等のキーワードによる分類</item>
-/// </list>
-///
-/// <para>【楽器種別検出】</para>
-/// <see cref="InstrumentNameDetectionService"/>により、
-/// ファイル名から楽器種別を自動検出し、フィルタチップとして表示します。
-///
-/// <para>【Why フィルタリング】</para>
-/// BMSファイルには数百～数千のWAVファイルが含まれるため、
-/// 楽器種別で絞り込むことで、特定のパート（ドラムのみ等）の
-/// 最適化が可能になります。
-///
-/// <para>【音声プレビュー】</para>
-/// ファイルリストでファイルを選択すると、
-/// <see cref="AudioPreviewService"/>により自動的に音声が再生されます。
-/// </remarks>
 public partial class FileListViewModel : ObservableObject, IDisposable
 {
     private readonly AudioPreviewService _audioPreviewService;
@@ -43,42 +15,63 @@ public partial class FileListViewModel : ObservableObject, IDisposable
     private BmsDefinitionManager? _bmsFileList;
     private bool disposedValue;
 
+    /// <summary>
+    /// 表示用のBMS音声ファイルリスト。
+    /// </summary>
     [ObservableProperty]
     public partial ObservableCollection<BmsAudioFile> FileListItems { get; set; } = [];
 
+    /// <summary>
+    /// リスト上で選択されている音声ファイル。
+    /// 変更時に自動的に音声プレビューが開始されます。
+    /// </summary>
     [ObservableProperty]
     public partial BmsAudioFile? SelectedFile { get; set; }
 
+    /// <summary>
+    /// ファイル名検索用のフィルタテキスト。
+    /// </summary>
     [ObservableProperty]
     public partial string FilterText { get; set; } = string.Empty;
 
+    /// <summary>
+    /// フィルタクリアボタンの表示状態。
+    /// </summary>
     [ObservableProperty]
     public partial Visibility ClearFilterButtonVisibility { get; set; } = Visibility.Collapsed;
 
+    /// <summary>
+    /// ファイル名から自動検出された楽器グループのリスト。
+    /// </summary>
     [ObservableProperty]
     public partial ObservableCollection<InstrumentNameDetectionService.InstrumentGroup> InstrumentGroups { get; set; } = [];
 
+    /// <summary>
+    /// UIに表示されるフィルタチップのリスト。
+    /// </summary>
     [ObservableProperty]
     public partial ObservableCollection<FileListFilterService.SelectableFilterChip> FilterChips { get; set; } = [];
 
-    /// <summary>BMSファイルリスト。</summary>
+    /// <summary>
+    /// 読み込まれたBMSファイルの定義マネージャー。
+    /// </summary>
     public BmsDefinitionManager? BmsFileList => _bmsFileList;
 
-    /// <summary>ファイルリスト読み込み完了イベント。</summary>
+    /// <summary>
+    /// ファイルリストの読み込みが完了した際に発生するイベント。
+    /// </summary>
     public event EventHandler<FileListLoadedEventArgs>? FileListLoaded;
 
-    /// <summary>音声再生状態変更イベント。</summary>
+    /// <summary>
+    /// 音声の再生状態が変化した際に発生するイベント。
+    /// </summary>
     public event EventHandler<AudioPreviewService.PlaybackStateChangedEventArgs>? AudioPlaybackStateChanged;
 
-    /// <summary>選択キーワード変更イベント。</summary>
+    /// <summary>
+    /// 選択中の楽器キーワードが変化した際に発生するイベント。
+    /// </summary>
     public event EventHandler<SelectedKeywordsChangedEventArgs>? SelectedKeywordsChanged;
 
-    /// <summary>
-    /// FileListViewModelを初期化。
-    /// </summary>
-    /// <param name="audioPreviewService">音声プレビューサービス。</param>
-    /// <param name="instrumentDetectionService">楽器名検出サービス。</param>
-    /// <exception cref="ArgumentNullException">引数がnullの場合。</exception>
     public FileListViewModel(
         AudioPreviewService audioPreviewService,
         InstrumentNameDetectionService instrumentDetectionService)
@@ -89,27 +82,12 @@ public partial class FileListViewModel : ObservableObject, IDisposable
         _audioPreviewService.PlaybackStateChanged += OnAudioPlaybackStateChanged;
     }
 
-    /// <summary>
-    /// フィルタテキスト変更時の処理。
-    /// </summary>
-    /// <param name="value">新しいフィルタテキスト。</param>
-    /// <remarks>
-    /// フィルタテキストが空の場合、クリアボタンを非表示にします。
-    /// </remarks>
     partial void OnFilterTextChanged(string value)
     {
         ClearFilterButtonVisibility = string.IsNullOrWhiteSpace(value) ?
             Visibility.Collapsed : Visibility.Visible;
     }
 
-    /// <summary>
-    /// 選択ファイル変更時の処理。
-    /// </summary>
-    /// <param name="value">新しい選択ファイル。</param>
-    /// <remarks>
-    /// ファイルが選択されると、自動的に音声プレビューを開始します。
-    /// デバウンス機能により、連続選択時は最後のファイルのみ再生されます。
-    /// </remarks>
     partial void OnSelectedFileChanged(BmsAudioFile? value)
     {
         if (value != null)
@@ -119,34 +97,16 @@ public partial class FileListViewModel : ObservableObject, IDisposable
     }
 
     /// <summary>
-    /// フィルタサービスを設定。
+    /// ファイルリストに対するフィルタリングサービスを注入します。
     /// </summary>
-    /// <param name="filterService">フィルタサービス。</param>
-    /// <remarks>
-    /// DIコンテナから注入されたフィルタサービスを設定します。
-    /// </remarks>
     public void SetFilterService(FileListFilterService filterService)
     {
         _filterService = filterService;
     }
 
     /// <summary>
-    /// BMSファイルを読み込み。
+    /// 指定されたパスのBMS/bmsonファイルを読み込み、リストとフィルタを初期化します。
     /// </summary>
-    /// <param name="bmsFilePath">BMSファイルのパス。</param>
-    /// <remarks>
-    /// <para>【処理フロー】</para>
-    /// <list type="number">
-    /// <item><see cref="BmsDefinitionManager"/>を生成</item>
-    /// <item>ファイルリストを作成</item>
-    /// <item>楽器種別を検出してフィルタチップを生成</item>
-    /// <item><see cref="FileListLoaded"/>イベントを発火</item>
-    /// </list>
-    ///
-    /// <para>【エラーハンドリング】</para>
-    /// 読み込みエラー時は、<see cref="FileListLoaded"/>イベントで
-    /// IsSuccess=falseとエラーメッセージを通知します。
-    /// </remarks>
     public void LoadBmsFile(string bmsFilePath, string? bmsContent = null)
     {
         PerformanceDebugLogger.WriteDebug(nameof(FileListViewModel), $"=== FileListViewModel.LoadBmsFile Started for {Path.GetFileName(bmsFilePath)} ===");
@@ -201,12 +161,8 @@ public partial class FileListViewModel : ObservableObject, IDisposable
     }
 
     /// <summary>
-    /// フィルタチップの選択状態を切り替え。
+    /// 楽器フィルタチップの選択状態を反転させます。
     /// </summary>
-    /// <param name="chip">対象のフィルタチップ。</param>
-    /// <remarks>
-    /// チップの選択/解除を切り替え、選択キーワード変更イベントを発火します。
-    /// </remarks>
     public void ToggleChipSelection(FileListFilterService.SelectableFilterChip chip)
     {
         if (chip == null) return;
@@ -216,16 +172,9 @@ public partial class FileListViewModel : ObservableObject, IDisposable
     }
 
     /// <summary>
-    /// 選択されたキーワードを取得。
+    /// 現在選択されているフィルタキーワードの配列を取得します。
+    /// 最適化対象を絞り込む際に使用されます。
     /// </summary>
-    /// <returns>選択されたキーワードの配列。</returns>
-    /// <remarks>
-    /// <para>【用途】</para>
-    /// 定義削減処理時に、特定の楽器種別のみを対象にする場合に使用されます。
-    ///
-    /// <para>【例】</para>
-    /// ["kick", "snare"] → ドラム系のみを処理
-    /// </remarks>
     public string[] GetSelectedKeywords()
     {
         return [.. FilterChips
@@ -242,22 +191,12 @@ public partial class FileListViewModel : ObservableObject, IDisposable
         });
     }
 
-    /// <summary>
-    /// フィルタをクリア。
-    /// </summary>
     [RelayCommand]
     private void ClearFilter()
     {
         FilterText = string.Empty;
     }
 
-    /// <summary>
-    /// 楽器フィルタを切り替え。
-    /// </summary>
-    /// <param name="parameter">楽器グループ。</param>
-    /// <remarks>
-    /// 楽器グループの選択/解除を切り替え、フィルタを適用します。
-    /// </remarks>
     [RelayCommand]
     private void ToggleInstrumentFilter(object? parameter)
     {
@@ -268,12 +207,6 @@ public partial class FileListViewModel : ObservableObject, IDisposable
         }
     }
 
-    /// <summary>
-    /// 楽器フィルタを適用。
-    /// </summary>
-    /// <remarks>
-    /// 選択された楽器グループに基づいて、ファイルリストをフィルタリングします。
-    /// </remarks>
     private void ApplyInstrumentFilter()
     {
         if (_filterService == null) return;
@@ -286,14 +219,8 @@ public partial class FileListViewModel : ObservableObject, IDisposable
     }
 
     /// <summary>
-    /// 選択されたファイルをリストから削除します。
+    /// 選択されたファイルをリスト表示から除外します（最適化対象から外す目的）。
     /// </summary>
-    /// <param name="items">削除対象のファイルリスト（IList）。</param>
-    /// <remarks>
-    /// <para>【用途】</para>
-    /// ユーザーがリストから不要なファイルを除外するために使用します。
-    /// UIでの複数選択に対応しています。
-    /// </remarks>
     [RelayCommand]
     public void DeleteSelectedFiles(System.Collections.IList? items)
     {
@@ -304,14 +231,12 @@ public partial class FileListViewModel : ObservableObject, IDisposable
     }
 
     /// <summary>
-    /// 指定されたファイルをリストから削除します。
+    /// 指定されたファイルのコレクションをリストから除外します。
     /// </summary>
-    /// <param name="filesToDelete">削除するファイルのリスト。</param>
     public void DeleteFiles(IEnumerable<BmsAudioFile> filesToDelete)
     {
         if (filesToDelete == null) return;
 
-        // リストを複製して操作（foreach中のコレクション変更を避けるため）
         var itemsToRemove = filesToDelete.ToList();
 
         foreach (var file in itemsToRemove)
@@ -326,35 +251,24 @@ public partial class FileListViewModel : ObservableObject, IDisposable
     }
 
     /// <summary>
-    /// ファイルリスト読み込み完了イベントの引数。
+    /// ファイルリスト読み込み完了イベントの引数を提供します。
     /// </summary>
     public class FileListLoadedEventArgs : EventArgs
     {
-        /// <summary>ファイルパス。</summary>
         public string FilePath { get; set; } = string.Empty;
-
-        /// <summary>ファイル数。</summary>
         public int FileCount { get; set; }
-
-        /// <summary>成功フラグ。</summary>
         public bool IsSuccess { get; set; }
-
-        /// <summary>エラーメッセージ。</summary>
         public string? ErrorMessage { get; set; }
     }
 
     /// <summary>
-    /// 選択キーワード変更イベントの引数。
+    /// 選択キーワード変更イベントの引数を提供します。
     /// </summary>
     public class SelectedKeywordsChangedEventArgs : EventArgs
     {
-        /// <summary>選択されたキーワード。</summary>
         public string[] SelectedKeywords { get; set; } = [];
     }
 
-    /// <summary>
-    /// リソースを解放（内部実装）。
-    /// </summary>
     protected virtual void Dispose(bool disposing)
     {
         if (!disposedValue)
@@ -367,10 +281,7 @@ public partial class FileListViewModel : ObservableObject, IDisposable
         }
     }
 
-    /// <summary>
-    /// リソースを解放。
-    /// </summary>
-    void IDisposable.Dispose()
+    public void Dispose()
     {
         Dispose(disposing: true);
         GC.SuppressFinalize(this);

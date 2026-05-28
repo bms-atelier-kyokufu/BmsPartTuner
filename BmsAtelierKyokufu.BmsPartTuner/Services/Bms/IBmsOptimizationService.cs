@@ -1,22 +1,15 @@
-﻿using BmsAtelierKyokufu.BmsPartTuner.Services.Common;
+using BmsAtelierKyokufu.BmsPartTuner.Services.Common;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Services.Bms
 {
     /// <summary>
-    /// BMS最適化サービスのインターフェース。
+    /// BMSファイルの定義最適化やしきい値シミュレーションなどの機能を提供するサービスのインターフェース。
+    /// 入力値の検証機能も提供します。
     /// </summary>
-    /// <remarks>
-    /// <para>【責務】</para>
-    /// <list type="bullet">
-    /// <item>しきい値最適化シミュレーション</item>
-    /// <item>定義削減処理の実行</item>
-    /// <item>入力値検証（<see cref="IInputValidationService"/>継承）</item>
-    /// </list>
-    /// </remarks>
     public interface IBmsOptimizationService : IInputValidationService
     {
         /// <summary>
-        /// 最適なしきい値を見つけるため、100回のシミュレーションを実行します
+        /// 最適なしきい値を見つけるため、指定された範囲でシミュレーションを実行します。
         /// </summary>
         Task<OptimizationResult?> FindOptimalThresholdsAsync(
             List<string> files,
@@ -25,7 +18,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Services.Bms
             IProgress<int>? progress = null);
 
         /// <summary>
-        /// 定義削減処理を実行
+        /// 提供された音声ファイルリストとオプションに基づき、BMSの定義削減処理を実行します。
         /// </summary>
         Task<BmsOptimizationService.ReductionResult> ExecuteDefinitionReductionAsync(
             IReadOnlyList<BmsAudioFile> fileList,
@@ -34,4 +27,3 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Services.Bms
             DefinitionReductionOptions options);
     }
 }
-

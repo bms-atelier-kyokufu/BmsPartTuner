@@ -5,27 +5,10 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 
 /// <summary>
 /// BMSファイルに関連付けられたオーディオファイルリストの管理および解析を行います。
+/// BMSファイルからの#WAV定義の解析、参照ファイルの存在確認とメタデータ取得、
+/// および楽器名の統計的推定（<see cref="InstrumentNameDetectionService"/>）を統合して実行します。
+/// ObservableCollectionを利用してUIへ変更を通知します。
 /// </summary>
-/// <remarks>
-/// <para>【責務】</para>
-/// <list type="number">
-/// <item>BMSファイルから#WAV定義を解析</item>
-/// <item>参照されているオーディオファイルの存在確認</item>
-/// <item>ファイルメタデータ（サイズ、定義番号）の取得</item>
-/// <item>楽器名の統計的推定（<see cref="InstrumentNameDetectionService"/>連携）</item>
-/// </list>
-///
-/// <para>【Why ObservableCollection】</para>
-/// WPFのListBoxやDataGridにバインドされるため、コレクション変更を自動的にUIに反映させる必要があります。
-/// </remarks>
-/// <remarks>
-/// BmsDefinitionManagerを初期化します。
-/// </remarks>
-/// <remarks>
-/// <para>【Why InstrumentNameDetectionServiceを内部生成】</para>
-/// BmsDefinitionManagerは単一のBMSファイルを管理するため、
-/// 楽器検出サービスのライフサイクルもこれに合わせます。
-/// </remarks>
 public partial class BmsDefinitionManager(string bmsFilePath, string? bmsContent = null)
 {
     [System.Text.RegularExpressions.GeneratedRegex("[a-z]")]
@@ -37,13 +20,9 @@ public partial class BmsDefinitionManager(string bmsFilePath, string? bmsContent
     private readonly InstrumentNameDetectionService _instrumentDetectionService = new();
 
     /// <summary>
-    /// 見つからなかったファイルパスを記録するリスト。
+    /// 見つからなかったファイルパスを記録するリストです。
+    /// ユーザーに欠落ファイルを通知し、BMSファイルの修正を促すために使用されます。
     /// </summary>
-    /// <remarks>
-    /// <para>【用途】</para>
-    /// ユーザーに欠落ファイルを通知し、BMSファイルの修正を促します。
-    /// 例: "kick_01.wav が見つかりません"
-    /// </remarks>
     public List<string> MissingFiles { get; private set; } = [];
 
     public string GetBmsDirectory() => _bmsDirectory;
@@ -53,27 +32,9 @@ public partial class BmsDefinitionManager(string bmsFilePath, string? bmsContent
 
     /// <summary>
     /// BMSファイルからファイルリストを作成します。
+    /// #WAV定義の解析、基数の自動判定、ファイル存在確認、およびメタデータの取得を行います。
+    /// その後、楽器名を推定してObservableCollectionに一括で追加し、UI更新頻度を最適化します。
     /// </summary>
-    /// <remarks>
-    /// <para>【処理フロー】</para>
-    /// <list type="number">
-    /// <item>BMSファイルから#WAV定義を解析</item>
-    /// <item>基数（36進 or 62進）を自動判定</item>
-    /// <item>ファイル存在確認とメタデータ取得</item>
-    /// <item>楽器名を統計的に推定</item>
-    /// <item>ObservableCollectionに追加（UI反映）</item>
-    /// </list>
-    ///
-    /// <para>【Why 一時リストを使用】</para>
-    /// <see cref="ObservableCollection{T}"/>への頻繁なAddは、毎回CollectionChangedイベントを
-    /// 発火させUIを更新するため、パフォーマンスが低下します。
-    /// 一時リストで処理してから一括追加することで、UI更新回数を削減します。
-    ///
-    /// <para>【Why 基数を自動判定】</para>
-    /// BMSフォーマットは36進数（0-9,A-Z）が標準ですが、
-    /// 拡張仕様で62進数（0-9,A-Z,a-z）も使用されます。
-    /// 定義に小文字が含まれていれば62進数と判定します。
-    /// </remarks>
     public ObservableCollection<BmsAudioFile> CreateFileList()
     {
         PerformanceDebugLogger.WriteDebug(nameof(BmsDefinitionManager), $"=== BmsDefinitionManager.CreateFileList Started for {Path.GetFileName(_bmsFilePath)} ===");
@@ -141,16 +102,8 @@ public partial class BmsDefinitionManager(string bmsFilePath, string? bmsContent
 
     /// <summary>
     /// ファイル名の統計分析に基づいて楽器名を推定・設定します。
+    /// 処理に失敗した場合は例外を捕捉し、InstrumentNameが空のまま安全に続行されます。
     /// </summary>
-    /// <remarks>
-    /// <para>【Why try-catch】</para>
-    /// 楽器名推定はオプショナルな機能であり、失敗してもファイルリスト作成は
-    /// 継続すべきです。エラーが発生しても、InstrumentNameを空文字列のままにして処理を続行します。
-    ///
-    /// <para>【処理タイミング】</para>
-    /// ObservableCollectionに追加する前に実行することで、
-    /// UIへの通知回数を削減（InstrumentName設定による追加通知を避ける）します。
-    /// </remarks>
     private void AssignInstrumentNames(List<BmsAudioFile> files)
     {
         try

@@ -1,41 +1,4 @@
 namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
-
-/// <summary>
-/// 並列オーディオ比較エンジン。
-/// </summary>
-/// <remarks>
-/// <para>【責務】</para>
-/// <list type="bullet">
-/// <item>グループ単位での並列音声比較</item>
-/// <item>スレッドセーフな置換テーブル更新</item>
-/// <item>進捗レポート</item>
-/// </list>
-///
-/// <para>【最適化戦略】</para>
-/// <list type="number">
-/// <item>Sort &amp; Sweep: RMS値で事前ソートし、近傍のみを比較（$O(N^2)$ → $O(N \times K)$）</item>
-/// <item>Union-Find: 推移的な一致関係を効率的に管理（$O(\alpha(n))$）</item>
-/// <item>Parallel.ForEach: CPUコアを最大限に活用した並行演算</item>
-/// </list>
-///
-/// <para>【並列化戦略】</para>
-/// <list type="bullet">
-/// <item>グループ間: 並列（Parallel.ForEach）</item>
-/// <item>グループ内: 順次（メモリ効率）</item>
-/// <item>最大並列度: CPUコア数</item>
-/// </list>
-///
-/// <para>【スレッドセーフ】</para>
-/// <list type="bullet">
-/// <item>Interlocked操作（原子性保証）</item>
-/// <item>CAS（Compare-And-Swap）</item>
-/// <item>ロックレス設計</item>
-/// </list>
-/// </remarks>
-/// <remarks>
-/// ParallelAudioComparisonEngineのインスタンスを作成。
-/// </remarks>
-
 /// <summary>
 /// 並列オーディオ比較エンジンの実行パラメーター。
 /// </summary>
@@ -47,6 +10,10 @@ internal record AudioComparisonParameters(
     int EndPoint
 );
 
+/// <summary>
+/// グループ単位での並列音声比較やスレッドセーフな置換テーブルの更新を行うオーディオ比較エンジンです。
+/// RMS値による事前ソート（Sort &amp; Sweep）やUnion-Findを用いたマッチング管理により、効率的な比較を実現します。
+/// </summary>
 internal class ParallelAudioComparisonEngine(AudioComparisonParameters parameters)
 {
     #region 定数定義
@@ -85,18 +52,9 @@ internal class ParallelAudioComparisonEngine(AudioComparisonParameters parameter
     #region RMSソート用構造体
 
     /// <summary>
-    /// RMSソート用の軽量構造体。
+    /// RMSソート用の軽量構造体。ヒープ割り当てを避け、スタック上で高速に処理します。
+    /// RMS値で昇順ソートし、同じRMSの場合はファイル番号でソートすることで決定性を保証します。
     /// </summary>
-    /// <remarks>
-    /// <para>【Why readonly struct】</para>
-    /// ヒープ割り当てを避け、スタック上で高速に処理するため。
-    ///
-    /// <para>【ソートキー】</para>
-    /// <list type="bullet">
-    /// <item>第1キー: RMS値（昇順）</item>
-    /// <item>第2キー: ファイル番号（決定性の保証）</item>
-    /// </list>
-    /// </remarks>
     private readonly struct AudioEntry(int index, float rms, int fileNum, float[]? pivotDistances = null) : IComparable<AudioEntry>
     {
         public readonly int OriginalIndex = index;
@@ -122,23 +80,14 @@ internal class ParallelAudioComparisonEngine(AudioComparisonParameters parameter
     #region パブリックメソッド
 
     /// <summary>
-    /// グループ単位の音声ファイル比較。
+    /// グループ単位の音声ファイル比較を行います。
+    /// 各グループを並列処理（Parallel.ForEach）し、グループ内ではSort &amp; Sweepを用いて効率的に比較します。
+    /// スレッドセーフに置換テーブルを更新します。
     /// </summary>
     /// <param name="groups">ファイルインデックスのグループリスト。</param>
     /// <param name="r2Threshold">相関係数しきい値。</param>
     /// <param name="progress">進捗報告用のIProgress。</param>
-    /// <remarks>
-    /// <para>【処理内容】</para>
-    /// <list type="number">
-    /// <item>各グループを並列処理（Parallel.ForEach）</item>
-    /// <item>グループ内でSort &amp; Sweep比較</item>
-    /// <item>スレッドセーフに置換テーブルを更新</item>
-    /// </list>
-    ///
-    /// <para>【Why グループ並列】</para>
-    /// グループ間は独立しているため、並列処理でCPUコアを最大限に活用できます。
-    /// グループ内は順次処理することで、メモリアクセスの局所性を保ちます。
-    /// </remarks>
+    /// <param name="cancellationToken">キャンセルトークン。</param>
     public void CompareGroups(
         IReadOnlyList<IReadOnlyList<int>> groups,
         float r2Threshold,
@@ -191,22 +140,8 @@ internal class ParallelAudioComparisonEngine(AudioComparisonParameters parameter
 
     /// <summary>
     /// 単一グループの比較処理（Sort &amp; Sweep 最適化版）。
+    /// RMS値でソート後、近傍ファイルのみを比較することで、計算量を大幅に削減します。
     /// </summary>
-    /// <remarks>
-    /// <para>【アルゴリズム】</para>
-    /// <list type="number">
-    /// <item>ファイルをRMS値でソート: $O(N \log N)$</item>
-    /// <item>各ファイルに対して近傍のみを比較: $O(N \times K)$</item>
-    /// <item>RMS差が大きいファイルはスキップ</item>
-    /// </list>
-    ///
-    /// <para>【計算量】</para>
-    /// $O(N \log N) + O(N \times K)$（$K \ll N$）
-    ///
-    /// <para>【Why Sort &amp; Sweep】</para>
-    /// RMS値が近いファイルのみが音響的に類似している可能性が高いため、
-    /// ソート後に近傍のみを比較することで、計算量を大幅に削減します。
-    /// </remarks>
     private void CompareGroup(
         IReadOnlyList<int> group,
         float r2Threshold,
@@ -249,10 +184,10 @@ internal class ParallelAudioComparisonEngine(AudioComparisonParameters parameter
     private AudioEntry[] CreateSortedEntries(IReadOnlyList<int> group)
     {
         var entries = new AudioEntry[group.Count];
-        
+
         bool usePruning = group.Count >= 10;
         int numPivots = Math.Min(3, group.Count);
-        
+
         int[] pivotIndices = new int[numPivots];
         ICachedSoundData[] pivotData = new ICachedSoundData[numPivots];
 
@@ -275,7 +210,7 @@ internal class ParallelAudioComparisonEngine(AudioComparisonParameters parameter
             int idx = group[i];
             _audioCache.TryGetValue(_fileList[idx].Name, out var cachedData);
             float rms = (cachedData == null) ? float.MaxValue : cachedData.TotalRms;
-            
+
             float[]? distances = null;
             if (usePruning && cachedData != null)
             {
@@ -284,7 +219,7 @@ internal class ParallelAudioComparisonEngine(AudioComparisonParameters parameter
                 {
                     var pd = pivotData[k];
                     if (pd == null) continue;
-                    
+
                     if (ReferenceEquals(cachedData, pd))
                     {
                         distances[k] = 0f;
@@ -295,19 +230,19 @@ internal class ParallelAudioComparisonEngine(AudioComparisonParameters parameter
                     int ch = (cachedData.GetActiveRegions()[0] == null || cachedData.GetActiveRegions()[0].Count == 0) ? 1 : 0;
                     var shorter = cachedData.TotalSamples < pd.TotalSamples ? cachedData : pd;
                     var longer = cachedData.TotalSamples < pd.TotalSamples ? pd : cachedData;
-                    
+
                     int shorterFrames = shorter.TotalSamples / shorter.Channels;
                     int longerFrames = longer.TotalSamples / longer.Channels;
                     var shorterSpan = shorter.GetRawSpan(ch, 0, shorterFrames);
                     var longerFullSpan = longer.GetRawSpan(ch, 0, longerFrames);
 
                     float r = FastWaveCompare.CalculateMaxCorrelation(shorter, longer, ch, shorterFrames, longerFrames, shorterSpan, longerFullSpan, out _);
-                    
+
                     // 相関 r を距離 d に変換: d = sqrt(2 * max(0, 1 - r))
                     distances[k] = (float)Math.Sqrt(2.0 * Math.Max(0.0, 1.0 - r));
                 }
             }
-            
+
             entries[i] = new AudioEntry(idx, rms, _fileList[idx].NumInteger, distances);
         }
         Array.Sort(entries);
@@ -315,12 +250,9 @@ internal class ParallelAudioComparisonEngine(AudioComparisonParameters parameter
     }
 
     /// <summary>
-    /// Sort &amp; Sweepアルゴリズムで比較を実行。
+    /// Sort &amp; Sweepアルゴリズムで比較を実行します。
+    /// RMS値の昇順にソートされたエントリに対して、各エントリと後続の近傍エントリのみを比較します。
     /// </summary>
-    /// <remarks>
-    /// RMS値の昇順にソートされたエントリに対して、
-    /// 各エントリと後続の近傍エントリのみを比較します。
-    /// </remarks>
     private void PerformSortAndSweep(
         AudioEntry[] entries,
         float r2Threshold,
@@ -363,9 +295,8 @@ internal class ParallelAudioComparisonEngine(AudioComparisonParameters parameter
     }
 
     /// <summary>
-    /// 近傍エントリとの比較。
+    /// 近傍エントリとの比較を行います。
     /// </summary>
-    /// <remarks>
     private void CompareWithNearbyEntries(AudioEntry[] entries, int currentIndex, ICachedSoundData cachedData1, float r2Threshold, ref int comparisons, ref int matches, ref int skipped)
     {
         float dThreshold = (float)Math.Sqrt(2.0 * Math.Max(0.0, 1.0 - r2Threshold));
@@ -402,16 +333,9 @@ internal class ParallelAudioComparisonEngine(AudioComparisonParameters parameter
     }
 
     /// <summary>
-    /// RMS類似性判定のしきい値を計算。
+    /// RMS類似性判定のしきい値を計算します（通常は±20～25%、無音ファイルは特別に0～0.002）。
     /// </summary>
     /// <returns>最小値と最大値のタプル。</returns>
-    /// <remarks>
-    /// <para>【しきい値】</para>
-    /// <list type="bullet">
-    /// <item>通常: RMS × (0.8～1.25)（±20～25%）</item>
-    /// <item>無音ファイル: 0～0.002（特別扱い）</item>
-    /// </list>
-    /// </remarks>
     private static (float min, float max) CalculateRmsThresholds(float rms)
     {
         if (rms < AppConstants.AudioComparison.SilenceRmsThreshold) return (0f, AppConstants.AudioComparison.SilenceRmsUpperBound);
@@ -419,17 +343,9 @@ internal class ParallelAudioComparisonEngine(AudioComparisonParameters parameter
     }
 
     /// <summary>
-    /// ファイルペアの比較。
+    /// ファイルペアの波形を詳細に比較し、一致する場合は置換テーブルを更新します。
+    /// 比較の前に高速チェック（ファイル名やフィンガープリント）を行い、不要な処理をスキップします。
     /// </summary>
-    /// <remarks>
-    /// <para>【比較ステップ】</para>
-    /// <list type="number">
-    /// <item>範囲チェック</item>
-    /// <item>高速チェック（ファイル名、フィンガープリント）</item>
-    /// <item>詳細波形比較（<see cref="FastWaveCompare"/>）</item>
-    /// <item>一致した場合、置換テーブル更新</item>
-    /// </list>
-    /// </remarks>
     private void CompareFilePair(int iIdx, int jIdx, ICachedSoundData cachedData1, float r2Threshold, ref int comparisons, ref int matches, ref int skipped)
     {
         _ = _fileList[iIdx].NumInteger;
@@ -460,18 +376,9 @@ internal class ParallelAudioComparisonEngine(AudioComparisonParameters parameter
     }
 
     /// <summary>
-    /// 置換テーブルの更新（Union-Find 方式）。
+    /// 置換テーブルを更新します（Union-Find 方式）。
+    /// 経路圧縮により推移的なマッチングを効率的に管理し、CompareExchangeによるCAS操作でスレッドセーフな更新を実現します。
     /// </summary>
-    /// <remarks>
-    /// <para>【Union-Findアルゴリズム】</para>
-    /// 経路圧縮により推移的なマッチングを効率的に管理（$O(\alpha(n))$）。
-    ///
-    /// <para>【スレッドセーフ】</para>
-    /// CompareExchangeによるCAS操作で、ロックレスな更新を実現します。
-    ///
-    /// <para>【例】</para>
-    /// A=B, B=C → A=C（推移的統合）
-    /// </remarks>
     private void UpdateReplaceTable(int i, int j)
     {
         int rootI = FindRoot(_fileList[i].NumInteger);
@@ -504,11 +411,8 @@ internal class ParallelAudioComparisonEngine(AudioComparisonParameters parameter
     }
 
     /// <summary>
-    /// Union-Findのルート検索（経路圧縮付き）。
+    /// Union-Findのルート検索を行います。経路圧縮により2回目以降の検索が高速化されます。
     /// </summary>
-    /// <remarks>
-    /// 経路圧縮により、2回目以降のルート検索が高速化されます。
-    /// </remarks>
     private int FindRoot(int fileNum)
     {
         int current = fileNum;
@@ -522,12 +426,8 @@ internal class ParallelAudioComparisonEngine(AudioComparisonParameters parameter
     }
 
     /// <summary>
-    /// 進捗レポート。
+    /// 100ファイルごと、または完了時に進捗を報告し、オーバーヘッドを削減します。
     /// </summary>
-    /// <remarks>
-    /// 100ファイルごとまたは完了時に進捗を報告することで、
-    /// オーバーヘッドを削減します。
-    /// </remarks>
     private static void ReportProgress(ref int processedCount, int totalCount, IProgress<int> progress)
     {
         int current = processedCount;

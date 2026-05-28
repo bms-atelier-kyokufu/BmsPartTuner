@@ -1,102 +1,27 @@
-﻿using BmsAtelierKyokufu.BmsPartTuner.Services.Audio.AudioPlayer;
+using BmsAtelierKyokufu.BmsPartTuner.Services.Audio.AudioPlayer;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Services.Audio;
 
 /// <summary>
-/// 音声プレビューサービス。
+/// 音声ファイルのバックグラウンド再生・プレビュー機能を提供するサービス。
+/// UIスレッドのブロック回避や連続再生要求のデバウンス処理を担います。
 /// </summary>
-/// <remarks>
-/// <para>【責務】</para>
-/// <list type="bullet">
-/// <item>WAVファイルの再生とプレビュー機能</item>
-/// <item>デバウンス機能（連続クリック対策）</item>
-/// <item>再生状態の通知（イベント駆動）</item>
-/// </list>
-///
-/// <para>【デバウンス機構】</para>
-/// ユーザーが連続してファイルを選択した場合、
-/// 300msの遅延を設けることで、最後に選択されたファイルのみを再生します。
-/// これにより、無駄なディスクI/Oと再生処理を削減します。
-///
-/// <para>【非同期処理】</para>
-/// UIスレッドをブロックしないよう、ファイル読み込みと再生を
-/// 非同期で実行します。
-///
-/// <para>【リソース管理】</para>
-/// WaveOutとAudioFileReaderは適切にDispose処理を行い、
-/// メモリリークを防ぎます。
-/// </remarks>
-/// <remarks>
-/// AudioPreviewServiceのインスタンスを作成。
-/// </remarks>
-/// <param name="dispatcher">UIスレッドのディスパッチャー。</param>
-/// <param name="playerFactory">AudioPlayerのファクトリー。</param>
-/// <exception cref="ArgumentNullException">dispatcherまたはplayerFactoryがnullの場合。</exception>
 public class AudioPreviewService(BmsAtelierKyokufu.BmsPartTuner.Services.UI.IUIThreadDispatcher dispatcher, IAudioPlayerFactory? playerFactory = null) : IDisposable
 {
-    #region フィールド
-
     private IAudioPlayer? _currentPlayer;
     private CancellationTokenSource? _cancellationTokenSource;
     private readonly BmsAtelierKyokufu.BmsPartTuner.Services.UI.IUIThreadDispatcher _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
     private readonly IAudioPlayerFactory _playerFactory = playerFactory ?? new NAudioPlayerFactory();
 
-    #endregion
-
-    #region イベント
-
     /// <summary>
-    /// 再生状態が変更された時のイベント。
+    /// 再生状態（読み込み中、再生中、エラーなど）が変更された際に発生するイベント。
     /// </summary>
     public event EventHandler<PlaybackStateChangedEventArgs>? PlaybackStateChanged;
 
     /// <summary>
-    /// 再生状態変更イベントの引数。
+    /// 指定された音声ファイルの再生（プレビュー）を非同期に開始します。
+    /// 連続して呼び出された場合はデバウンス処理により最後の要求のみが処理されます。
     /// </summary>
-    public class PlaybackStateChangedEventArgs : EventArgs
-    {
-        /// <summary>ファイル名。</summary>
-        public string? FileName { get; set; }
-
-        /// <summary>読み込み中かどうか。</summary>
-        public bool IsLoading { get; set; }
-
-        /// <summary>再生中かどうか。</summary>
-        public bool IsPlaying { get; set; }
-
-        /// <summary>エラーメッセージ。</summary>
-        public string? ErrorMessage { get; set; }
-    }
-
-    #endregion
-    #region コンストラクタ
-
-    #endregion
-
-    #region パブリックメソッド
-
-    /// <summary>
-    /// 音声ファイルのプレビューを開始。
-    /// </summary>
-    /// <param name="filePath">再生する音声ファイルパス。</param>
-    /// <remarks>
-    /// <para>【処理フロー】</para>
-    /// <list type="number">
-    /// <item>前回の再生をキャンセル</item>
-    /// <item>300msのデバウンス待機</item>
-    /// <item>キャンセルされていなければ読み込み開始</item>
-    /// <item>UIスレッドで再生開始</item>
-    /// <item>再生状態をイベントで通知</item>
-    /// </list>
-    ///
-    /// <para>【Why デバウンス】</para>
-    /// ユーザーがリストを素早くスクロールしたり、連続でファイルを選択した場合、
-    /// 最後に選択されたファイルのみを再生することで、無駄なリソース消費を抑えます。
-    ///
-    /// <para>【エラーハンドリング】</para>
-    /// ファイル読み込みエラーや再生エラーは、
-    /// <see cref="PlaybackStateChanged"/>イベントで通知されます。
-    /// </remarks>
     public async Task PreviewAudioAsync(string filePath)
     {
         if (string.IsNullOrWhiteSpace(filePath))
@@ -147,16 +72,8 @@ public class AudioPreviewService(BmsAtelierKyokufu.BmsPartTuner.Services.UI.IUIT
     }
 
     /// <summary>
-    /// 現在の再生を停止。
+    /// 現在の再生処理を停止し、リソースを解放します。
     /// </summary>
-    /// <remarks>
-    /// <para>【処理内容】</para>
-    /// <list type="bullet">
-    /// <item>キャンセルトークンをキャンセル</item>
-    /// <item>WaveOutを停止してDispose</item>
-    /// <item>リソースを解放</item>
-    /// </list>
-    /// </remarks>
     public void StopCurrentPlayback()
     {
         _cancellationTokenSource?.Cancel();
@@ -168,26 +85,12 @@ public class AudioPreviewService(BmsAtelierKyokufu.BmsPartTuner.Services.UI.IUIT
         _currentPlayer = null;
     }
 
-    /// <summary>
-    /// リソースの解放。
-    /// </summary>
     public void Dispose()
     {
         StopCurrentPlayback();
         GC.SuppressFinalize(this);
     }
 
-    #endregion
-
-    #region プライベートメソッド
-
-    /// <summary>
-    /// 状態変更を通知。
-    /// </summary>
-    /// <param name="fileName">ファイル名（任意）。</param>
-    /// <param name="isLoading">読み込み中フラグ。</param>
-    /// <param name="isPlaying">再生中フラグ。</param>
-    /// <param name="errorMessage">エラーメッセージ（任意）。</param>
     private void NotifyStateChanged(string? fileName = null, bool isLoading = false,
         bool isPlaying = false, string? errorMessage = null)
     {
@@ -200,5 +103,14 @@ public class AudioPreviewService(BmsAtelierKyokufu.BmsPartTuner.Services.UI.IUIT
         });
     }
 
-    #endregion
+    /// <summary>
+    /// 再生状態変更イベントの引数を提供します。
+    /// </summary>
+    public class PlaybackStateChangedEventArgs : EventArgs
+    {
+        public string? FileName { get; set; }
+        public bool IsLoading { get; set; }
+        public bool IsPlaying { get; set; }
+        public string? ErrorMessage { get; set; }
+    }
 }

@@ -1,32 +1,13 @@
-﻿using System.Windows.Media.Animation;
+using System.Windows.Media.Animation;
 using BmsAtelierKyokufu.BmsPartTuner.ViewModels;
 using BmsAtelierKyokufu.BmsPartTuner.Views.Controls;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Services.UI;
 
 /// <summary>
-/// トースト通知サービス。
+/// Material Design風のトースト通知を表示し、アニメーション（表示→維持→非表示）や
+/// エラー状態の視覚的区別を制御するサービス。
 /// </summary>
-/// <remarks>
-/// <para>【責務】</para>
-/// <list type="bullet">
-/// <item>Material Design風のトースト通知を表示</item>
-/// <item>アニメーション（表示→維持→非表示）の制御</item>
-/// <item>エラー/通常状態の視覚的区別</item>
-/// </list>
-///
-/// <para>【アニメーション】</para>
-/// ToastSequence Storyboardを使用して、以下のシーケンスを実行:
-/// <list type="number">
-/// <item>フェードイン</item>
-/// <item>3秒間表示</item>
-/// <item>フェードアウト</item>
-/// </list>
-///
-/// <para>【テーマ対応】</para>
-/// M3ErrorBrush、ToastBackgroundBrushをResourcesから取得し、
-/// テーマに応じた色を自動適用します。
-/// </remarks>
 public class ToastNotificationService : IUiElementService<ToastViewModel>
 {
     private Border? _container;
@@ -65,13 +46,9 @@ public class ToastNotificationService : IUiElementService<ToastViewModel>
 
     /// <summary>
     /// UIコントロールを初期化（ToastControl版）。
+    /// 既存コード（MainWindow）との互換性を保ちつつ、新しいToastControlコンポーネントにも対応します。
     /// </summary>
     /// <param name="control">ToastControlインスタンス。</param>
-    /// <remarks>
-    /// <para>【Why 2つの初期化メソッド】</para>
-    /// 既存コード（MainWindow）との互換性を保ちつつ、
-    /// 新しいToastControlコンポーネントにも対応するため。
-    /// </remarks>
     public void Initialize(ToastControl control)
     {
         ArgumentNullException.ThrowIfNull(control);
@@ -105,35 +82,18 @@ public class ToastNotificationService : IUiElementService<ToastViewModel>
     }
 
     /// <summary>
-    /// ステートをリセット。
+    /// ステートをリセットします。Hide()と同義です。
     /// </summary>
-    /// <remarks>
-    /// ToastNotificationServiceでは<see cref="Hide"/>と同義です。
-    /// </remarks>
     public void Clear()
     {
         Hide();
     }
 
     /// <summary>
-    /// トースト通知を表示。
+    /// 前のアニメーションを停止し、メッセージとアイコンを設定してトースト通知を表示します。
+    /// エラー状態に応じてテーマ対応の背景色を自動的に適用し、フェードインアニメーションを開始します。
     /// </summary>
     /// <param name="data">表示するデータ。</param>
-    /// <remarks>
-    /// <para>【処理内容】</para>
-    /// <list type="number">
-    /// <item>前のアニメーションを停止（連続クリック対策）</item>
-    /// <item>メッセージとアイコンを設定</item>
-    /// <item>エラー状態に応じて背景色を変更</item>
-    /// <item>アニメーション開始</item>
-    /// </list>
-    ///
-    /// <para>【テーマ対応】</para>
-    /// <list type="bullet">
-    /// <item>エラー: M3ErrorBrush（Material 3 Error Color）</item>
-    /// <item>通常: ToastBackgroundBrush（テーマに応じた背景色）</item>
-    /// </list>
-    /// </remarks>
     public void Show(ToastViewModel data)
     {
         if (_container == null)

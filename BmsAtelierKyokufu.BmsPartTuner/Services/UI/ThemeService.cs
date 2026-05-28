@@ -108,12 +108,9 @@ public class ThemeService
 
     /// <summary>
     /// UI要素を強制的に再描画します。
+    /// テーマ切り替え時に、一部のUI要素（絵文字、アイコンなど）が動的リソースを参照していても
+    /// 更新されない場合があるため、全てのWindowとその子要素を再描画します。
     /// </summary>
-    /// <remarks>
-    /// テーマ切り替え時に、一部のUI要素（絵文字、アイコンなど）が
-    /// 動的リソースを参照していても更新されない場合があります。
-    /// この問題を解決するため、全てのWindowとその子要素を再描画します。
-    /// </remarks>
     private static void ForceUiRefresh()
     {
         Application.Current?.Dispatcher.BeginInvoke(new Action(static () =>

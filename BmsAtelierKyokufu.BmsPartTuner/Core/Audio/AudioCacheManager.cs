@@ -1,68 +1,21 @@
 namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
 
 /// <summary>
-/// オーディオファイルのキャッシュ管理。
+/// オーディオファイルのキャッシュ管理を行います。
+/// 全オーディオデータをメモリにプリロードし、CPUコア数に応じたバッチ処理による並列ロードを行うことで、
+/// 効率的なメモリ管理とディスクI/Oの大幅な削減を実現します。
 /// </summary>
-/// <remarks>
-/// <para>【責務】</para>
-/// <list type="bullet">
-/// <item>全オーディオデータのメモリプリロード</item>
-/// <item>バッチ処理による並列ロード</item>
-/// <item>メモリ使用量の監視と統計情報出力</item>
-/// </list>
-///
-/// <para>【最適化の根拠】</para>
-/// <list type="bullet">
-/// <item>Before: 2,408,310回の比較 × 2ファイル = 約480万回のディスクI/O</item>
-/// <item>After: 2,196ファイルの一括読み込み = 2,196回のディスクI/O</item>
-/// <item>結果: 約2,200倍のI/O削減</item>
-/// </list>
-///
-/// <para>【メモリ使用量】</para>
-/// 2,196ファイル × 200KB ? 440MB（現代のPCでは許容範囲）
-///
-/// <para>【バッチ処理戦略】</para>
-/// <list type="bullet">
-/// <item>CPUコア数に合わせてバッチサイズを動的決定</item>
-/// <item>バッチごとに並列処理でスループット最大化</item>
-/// <item>進捗レポートはバッチ単位（オーバーヘッド削減）</item>
-/// </list>
-///
-/// <para>【Why バッチ並列・内部順次】</para>
-/// バッチ間は並列処理でCPUコアを活用し、バッチ内は順次処理でディスク負荷を制御します。
-/// ディスクI/Oはランダムアクセスが遅いため、順次アクセスの方が効率的です。
-/// </remarks>
 internal static class AudioCacheManager
 {
     /// <summary>
-    /// 全オーディオデータをメモリにプリロード。
+    /// 全オーディオデータをメモリにプリロードします。
+    /// バッチごとに並列処理しつつ、バッチ内では順次ロードすることでディスク負荷を制御し、
+    /// 読み込みに失敗したファイルは無視して処理を続行しますが、そのパスのリストを返却します。
     /// </summary>
     /// <param name="fileList">ファイルリスト。</param>
     /// <param name="progress">進捗報告用のIProgress。</param>
     /// <param name="normalizationMode">正規化モード（デフォルト: None）。</param>
-    /// <returns>読み込みに失敗したファイルパスのリスト。</returns>
-    /// <remarks>
-    /// <para>【処理フロー】</para>
-    /// <list type="number">
-    /// <item>バッチサイズの動的計算（CPUコア数 × 4）</item>
-    /// <item>ファイルリストをバッチに分割</item>
-    /// <item>バッチごとに並列処理（Parallel.ForEach）</item>
-    /// <item>バッチ内は順次ロード（ディスク負荷制御）</item>
-    /// <item>5バッチごとまたは完了時に進捗報告</item>
-    /// <item>統計情報をデバッグログに出力</item>
-    /// </list>
-    ///
-    /// <para>【統計情報】</para>
-    /// <list type="bullet">
-    /// <item>ロード成功率</item>
-    /// <item>総メモリ使用量</item>
-    /// <item>スループット（files/sec）</item>
-    /// </list>
-    ///
-    /// <para>【失敗ファイルの扱い】</para>
-    /// 破損ファイルや読み込みに失敗したファイルは無視して処理を続行しますが、
-    /// そのファイルパスをリストで返却します。呼び出し元でユーザーに警告を表示できます。
-    /// </remarks>
+    /// <returns>読み込みに失敗したファイルパスのリストと、オーディオキャッシュのタプル。</returns>
     public static (List<string> FailedFiles, System.Collections.Concurrent.ConcurrentDictionary<string, ICachedSoundData> Cache) PreloadAudioData(
         IReadOnlyList<BmsAudioFile> fileList,
         IProgress<int>? progress,
@@ -165,16 +118,9 @@ internal static class AudioCacheManager
     }
 
     /// <summary>
-    /// 最適なバッチサイズを計算。
+    /// 総ファイル数とCPUコア数に基づいて最適なバッチサイズを計算します。
     /// </summary>
     /// <returns>バッチサイズ。</returns>
-    /// <remarks>
-    /// <para>【計算式】</para>
-    /// バッチサイズ = max(10, 総ファイル数 / (CPUコア数 × 4))
-    ///
-    /// <para>【例】</para>
-    /// 8コアなら32バッチ、2196ファイルなら約69ファイル/バッチ
-    /// </remarks>
     private static int CalculateOptimalBatchSize(int totalFiles)
     {
         int coreCount = Environment.ProcessorCount;
@@ -211,11 +157,8 @@ internal static class AudioCacheManager
     }
 
     /// <summary>
-    /// バッチ内のファイルをロード。
+    /// バッチ内のファイルをロードします。バッチ間は並列、バッチ内は順次でディスク負荷を制御します。
     /// </summary>
-    /// <remarks>
-    /// バッチ間は並列、バッチ内は順次でディスク負荷を制御します。
-    /// </remarks>
     private static (int SuccessCount, int FailCount) LoadBatch(
         IReadOnlyList<BmsAudioFile> batch,
         Models.NormalizationMode normalizationMode,
@@ -251,19 +194,8 @@ internal static class AudioCacheManager
     }
 
     /// <summary>
-    /// キャッシュ統計のログ出力。
+    /// 処理したファイル数、成功率、総メモリ使用量、スループット等のキャッシュ統計をログに出力します。
     /// </summary>
-    /// <remarks>
-    /// <para>【出力項目】</para>
-    /// <list type="bullet">
-    /// <item>処理したファイル数</item>
-    /// <item>成功・失敗数</item>
-    /// <item>キャッシュ成功率</item>
-    /// <item>総メモリ使用量（MB）</item>
-    /// <item>ロード時間（ms）</item>
-    /// <item>スループット（files/sec）</item>
-    /// </list>
-    /// </remarks>
     private static void LogCacheStatistics(
         IReadOnlyList<BmsAudioFile> fileList,
         System.Collections.Concurrent.ConcurrentDictionary<string, ICachedSoundData> audioCache,

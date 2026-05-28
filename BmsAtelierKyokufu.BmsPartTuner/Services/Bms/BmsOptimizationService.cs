@@ -7,21 +7,8 @@ using ValidationResult = BmsAtelierKyokufu.BmsPartTuner.Core.Validation.Validati
 namespace BmsAtelierKyokufu.BmsPartTuner.Services.Bms;
 
 /// <summary>
-/// BMS最適化サービス。
+/// BMS定義の最適化、しきい値のシミュレーション、および関連する入力の検証を担当するサービス。
 /// </summary>
-/// <remarks>
-/// <para>【責務】</para>
-/// <list type="bullet">
-/// <item>BMS定義の削減処理</item>
-/// <item>入力検証（定義範囲、相関係数しきい値）← IInputValidationService</item>
-/// <item>しきい値最適化シミュレーション（100回シミュレーション）</item>
-/// </list>
-///
-/// <para>【設計パターン】</para>
-/// <list type="bullet">
-/// <item>Strategy Pattern: Validator（<see cref="DefinitionRangeValidator"/>, <see cref="R2ThresholdValidator"/>）</item>
-/// </list>
-/// </remarks>
 public class BmsOptimizationService : IBmsOptimizationService
 {
     private readonly DefinitionRangeValidator _definitionRangeValidator;
@@ -39,34 +26,14 @@ public class BmsOptimizationService : IBmsOptimizationService
     #region パブリックメソッド
 
     /// <summary>
-    /// 最適なしきい値を見つけるため、100回のシミュレーションを実行します。
+    /// 最適なしきい値を見つけるため、指定された範囲でシミュレーションを実行します。
+    /// 実行時間とメモリ使用量を計測し、結果を返します。
     /// </summary>
-    /// <param name="files">ファイルリスト。</param>
-    /// <param name="startDefinition">開始定義。</param>
-    /// <param name="endDefinition">終了定義。</param>
-    /// <param name="progress">進捗報告（0.0～1.0）。</param>
-    /// <returns>最適化結果。</returns>
-    /// <remarks>
-    /// <para>【処理フロー】</para>
-    /// <list type="number">
-    /// <item>Stopwatchで実行時間を計測開始</item>
-    /// <item>メモリ使用量の初期値を取得</item>
-    /// <item>SimulationEngineで0.00～1.00の範囲でしきい値を変化させつつシミュレーション実行</item>
-    /// <item>Base36（1295）とBase62（3843）制限に基づいて最適値を探索</item>
-    /// <item>実行時間とメモリ使用量を計測</item>
-    /// <item>結果をOptimizationResultに詰めて返す</item>
-    /// </list>
-    ///
-    /// <para>【最適値探索ロジック】</para>
-    /// <list type="bullet">
-    /// <item>Base36: ファイル数がBase36Limit（1295）以下で、かつしきい値が最大のもを選択</item>
-    /// <item>Base62: ファイル数がBase62Limit（3843）以下で、かつしきい値が最大のものを選択</item>
-    /// <item>制限を超える場合は、制限以下で最も高いしきい値を選択</item>
-    /// </list>
-    ///
-    /// <para>【メモリ計測】</para>
-    /// GC.GetTotalMemory(false)で推定メモリ使用量を計測します。
-    /// </remarks>
+    /// <param name="files">処理対象のファイルリスト。</param>
+    /// <param name="startDefinition">最適化を開始する定義のインデックス。</param>
+    /// <param name="endDefinition">最適化を終了する定義のインデックス。</param>
+    /// <param name="progress">進捗を報告するためのオブジェクト。</param>
+    /// <returns>最適化のシミュレーション結果。エラー時はnullを返します。</returns>
     public async Task<Models.OptimizationResult?> FindOptimalThresholdsAsync(
         List<string> files,
         int startDefinition,
@@ -280,16 +247,11 @@ public class BmsOptimizationService : IBmsOptimizationService
     }
 
     /// <summary>
-    /// ファイル数制限に基づいて最適なしきい値を探索します。
+    /// 指定されたファイル数制限を超えない範囲で、最も高いしきい値（品質が最高となる値）を探索します。
     /// </summary>
-    /// <param name="simulationData">シミュレーションデータ。</param>
-    /// <param name="fileLimit">ファイル数制限。</param>
+    /// <param name="simulationData">シミュレーションデータのリスト。</param>
+    /// <param name="fileLimit">許容される最大ファイル数。</param>
     /// <returns>最適なしきい値とそのときのファイル数のタプル。</returns>
-    /// <remarks>
-    /// <para>【探索アルゴリズム】</para>
-    /// ファイル数がfileLimitを超えない範囲で、最も高いしきい値を選択します。
-    /// しきい値が高いほど品質が保たれるため、制限を満たす最大しきい値が最適です。
-    /// </remarks>
     private static (float Threshold, int Count) FindOptimalThreshold(
         List<(double Threshold, int Count)> simulationData,
         int fileLimit)
@@ -362,26 +324,13 @@ public class BmsOptimizationService : IBmsOptimizationService
     }
 
     /// <summary>
-    /// 定義削減処理を実行。
+    /// 入力されたBMSファイルに対して定義削減処理を非同期で実行します。
     /// </summary>
-    /// <param name="fileList">ファイルリスト。</param>
-    /// <param name="inputPath">入力BMSファイルパス。</param>
-    /// <param name="outputPath">出力BMSファイルパス。</param>
-    /// <param name="options">削減実行オプション。</param>
-    /// <returns>最適化結果。</returns>
-    /// <remarks>
-    /// <para>【処理フロー】</para>
-    /// <list type="number">
-    /// <item><see cref="DefinitionReuse"/>で削減処理を実行</item>
-    /// <item>削減後のユニークファイル数を取得</item>
-    /// <item>削減率を計算</item>
-    /// <item>結果を返す</item>
-    /// </list>
-    ///
-    /// <para>【Why Task.Run】</para>
-    /// 削減処理は長時間かかるため、UIスレッドをブロックしないよう
-    /// バックグラウンドスレッドで実行します。
-    /// </remarks>
+    /// <param name="fileList">対象となるBMS音声ファイルのリスト。</param>
+    /// <param name="inputPath">入力BMSファイルのパス。</param>
+    /// <param name="outputPath">出力BMSファイルのパス。</param>
+    /// <param name="options">定義削減のオプション設定。</param>
+    /// <returns>定義削減処理の結果。</returns>
     public async Task<ReductionResult> ExecuteDefinitionReductionAsync(
         IReadOnlyList<BmsAudioFile> fileList,
         string inputPath,
@@ -525,15 +474,11 @@ public class BmsOptimizationService : IBmsOptimizationService
     }
 
     /// <summary>
-    /// 定義範囲の検証。
+    /// 指定された開始および終了の定義値が正しい範囲にあるかを検証します。
     /// </summary>
-    /// <param name="startVal">開始定義値。</param>
-    /// <param name="endVal">終了定義値。</param>
+    /// <param name="startVal">開始定義の値の文字列表現。</param>
+    /// <param name="endVal">終了定義の値の文字列表現。</param>
     /// <returns>検証結果。</returns>
-    /// <remarks>
-    /// <para>【Strategy Pattern使用】</para>
-    /// <see cref="DefinitionRangeValidator"/>に検証ロジックを委譲します。
-    /// </remarks>
     public ValidationResult ValidateDefinitionRange(string startVal, string endVal)
     {
         DefinitionRange range = new(startVal, endVal);
@@ -541,14 +486,10 @@ public class BmsOptimizationService : IBmsOptimizationService
     }
 
     /// <summary>
-    /// 相関係数しきい値の検証。
+    /// 相関係数のしきい値文字列を検証し、有効なfloat値を取得します。
     /// </summary>
-    /// <param name="r2Text">しきい値文字列。</param>
-    /// <returns>検証結果（値付き）。</returns>
-    /// <remarks>
-    /// <para>【Strategy Pattern使用】</para>
-    /// <see cref="R2ThresholdValidator"/>に検証ロジックを委譲します。
-    /// </remarks>
+    /// <param name="r2Text">検証対象のしきい値文字列。</param>
+    /// <returns>検証結果とパースされたしきい値。</returns>
     public ValidationResult<float> ValidateR2Threshold(string r2Text)
     {
         return R2ThresholdValidator.ValidateWithValue(r2Text);
@@ -580,15 +521,10 @@ public class BmsOptimizationService : IBmsOptimizationService
     }
 
     /// <summary>
-    /// 未使用ファイルを物理削除します。
+    /// 削減処理によって未使用となった音源ファイルを物理的に削除します。
     /// </summary>
-    /// <param name="unusedFiles">削除対象のファイルパス一覧。</param>
-    /// <returns>削除に成功したファイル数。</returns>
-    /// <remarks>
-    /// <para>【Why 個別try-catch】</para>
-    /// 一部のファイルが削除できなくても処理を継続するため、
-    /// 各ファイルの削除を個別にtry-catchで囲みます。
-    /// </remarks>
+    /// <param name="unusedFiles">削除対象となる未使用ファイルのパスのリスト。</param>
+    /// <returns>正常に削除されたファイルの数。</returns>
     private static int DeleteUnusedFiles(IEnumerable<string> unusedFiles)
     {
         int deletedCount = 0;

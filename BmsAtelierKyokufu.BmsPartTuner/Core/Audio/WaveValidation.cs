@@ -7,69 +7,9 @@ using Vector = System.Numerics.Vector;
 namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
 
 /// <summary>
-/// 波形検証クラス（SIMD最適化版）。
+/// 音声波形の類似度を判定するための検証クラス（SIMD最適化版）。
+/// 決定係数（R²）およびピアソンの相関係数（ρ）をSIMD（Vector&lt;T&gt;）を用いて高速に計算します。
 /// </summary>
-/// <remarks>
-/// <para>【責務】</para>
-/// <list type="bullet">
-/// <item>決定係数（R²）の計算</item>
-/// <item>ピアソンの相関係数の計算</item>
-/// <item>SIMD（Vector&lt;T&gt;）による並列演算最適化</item>
-/// </list>
-///
-/// <para>【数学的定義】</para>
-/// <para>
-/// 決定係数（R²）:
-/// R² = 1 - RSS/DSS
-/// RSS (Residual Sum of Squares) = Σ(x - y)²
-/// DSS (Deviation Sum of Squares) = Σ(x - x̄)²
-/// </para>
-/// <para>
-/// ピアソンの相関係数（ρ）:
-/// ρ = Cov(X,Y) / (σX × σY)
-/// Cov(X, Y) = (1/n) × Σ(x - x̄)(y - ȳ)
-/// σX = √((1/n) × Σ(x - x̄)²), σY = √((1/n) × Σ(y - ȳ)²)
-/// </para>
-///
-/// <para>【比較】</para>
-/// <list type="bullet">
-/// <item>R²: 説明力（回帰の当てはまりの良さ）、y = x の形の関係を想定</item>
-/// <item>ρ: 相関の強さ（スケール不変）、音量差に強い</item>
-/// </list>
-///
-/// <para>【解釈】</para>
-/// <para>決定係数（R²）：</para>
-/// <list type="bullet">
-/// <item><description>R² = 1.0: 完全一致</description></item>
-/// <item><description>R² ≥ 0.98: ほぼ同一（厳密モード）</description></item>
-/// <item><description>R² ≥ 0.95: 非常に似ている（標準）</description></item>
-/// <item><description>R² ≥ 0.90: 似ている（緩いモード）</description></item>
-/// <item><description>R² &lt; 0.90: 異なる</description></item>
-/// </list>
-/// <para>ピアソン相関係数（ρ）：</para>
-/// <list type="bullet">
-/// <item><description>ρ = 1.0: 完全相関</description></item>
-/// <item><description>ρ ≥ 0.98: 非常に強い相関</description></item>
-/// <item><description>ρ ≥ 0.95: 強い相関（推奨）</description></item>
-/// <item><description>ρ ≥ 0.90: 中程度の相関</description></item>
-/// <item><description>ρ &lt; 0.90: 弱い相関</description></item>
-/// </list>
-///
-/// <para>【SIMD最適化】</para>
-/// <list type="bullet">
-/// <item>Vector&lt;T&gt;による並列演算</item>
-/// <item>AVX2: 8個のfloatを同時処理</item>
-/// <item>AVX-512: 16個のfloatを同時処理</item>
-/// <item>従来比: 3〜8倍高速化</item>
-/// </list>
-///
-/// <para>【Phase 2最適化】</para>
-/// <list type="bullet">
-/// <item>事前正規化波形によりドット積でピアソン相関を計算</item>
-/// <item>5変数の累積計算を1変数に削減</item>
-/// <item>演算密度80%削減</item>
-/// </list>
-/// </remarks>
 static public class WaveValidation
 {
     #region パブリックメソッド
@@ -89,41 +29,12 @@ static public class WaveValidation
     }
 
     /// <summary>
-    /// 決定係数（R²）を計算（Span版 - ゼロコピー対応）。
+    /// 決定係数（R²）を計算します（Span版・ゼロコピー対応）。
+    /// 単一ループで Σx, Σx², Σ(x-y)² を同時にSIMD演算し、高速に処理します。
     /// </summary>
     /// <param name="wav1">音声データSpan1。</param>
     /// <param name="wav2">音声データSpan2。</param>
     /// <returns>決定係数（0.0〜1.0）。</returns>
-    /// <remarks>
-    /// <para>【1パスアルゴリズム】</para>
-    /// 従来は2パス必要だった計算を1パスで実行:
-    /// <list type="bullet">
-    /// <item>パス1: 平均値計算（Σx / n）</item>
-    /// <item>パス2: 分散と誤差計算</item>
-    /// </list>
-    ///
-    /// <para>【最適化後】</para>
-    /// 単一ループで Σx, Σx², Σ(x-y)² を同時計算。
-    /// メモリアクセス回数: 半減
-    ///
-    /// <para>【SIMD並列化】</para>
-    /// <list type="bullet">
-    /// <item>Vector&lt;T&gt;で複数要素を一度に処理</item>
-    /// <item>ベクトル化可能な範囲: SIMD処理</item>
-    /// <item>端数: スカラー処理</item>
-    /// </list>
-    ///
-    /// <para>【計算式】</para>
-    /// DSS = Σ(x²) - (Σx)²/n （1パス公式）
-    /// R² = 1 - RSS/DSS
-    ///
-    /// <para>【Why double精度】</para>
-    /// 次の2つの問題に対処するためdoubleで計算してからfloatにキャスト:
-    /// <list type="bullet">
-    /// <item>floatの精度限界により、大きな値の計算で桁落ちが発生する可能性</item>
-    /// <item>sumX * sumX がオーバーフローする可能性（長い音声の場合）</item>
-    /// </list>
-    /// </remarks>
     static public float CalculateRSquaredSIMD(ReadOnlySpan<float> wav1, ReadOnlySpan<float> wav2)
     {
         if (wav1.Length != wav2.Length || wav1.Length == 0)
@@ -158,26 +69,12 @@ static public class WaveValidation
     }
 
     /// <summary>
-    /// 波形1と波形2のピアソンの相関係数（ρ）をSIMDで計算します。
+    /// 波形1と波形2のピアソンの相関係数（ρ）をSIMDで計算します（配列版）。
+    /// 音量（スケール）の違いに強く、波形の「形状」の相似性を評価します。
     /// </summary>
     /// <param name="wav1">音声データ配列1。</param>
     /// <param name="wav2">音声データ配列2。</param>
     /// <returns>相関係数（-1.0〜1.0、通常は0.0〜1.0）。</returns>
-    /// <remarks>
-    /// <para>【特徴】</para>
-    /// <list type="bullet">
-    /// <item>音量（スケール）の違いに強い</item>
-    /// <item>波形の「形状」の相似性を評価</item>
-    /// <item>圧縮音声での位相ズレに対してロバスト</item>
-    /// </list>
-    ///
-    /// <para>【計算式】</para>
-    /// ρ = Cov(X,Y) / (σX × σY)
-    /// ρ = Σ((x - x̄) × (y - ȳ)) / √(Σ(x - x̄)² × Σ(y - ȳ)²)
-    ///
-    /// <para>【1パス最適化】</para>
-    /// Σx, Σy, Σx², Σy², Σ(x×y) を同時計算。
-    /// </remarks>
     static public float CalculatePearsonCorrelation(float[] wav1, float[] wav2)
     {
         if (wav1.Length != wav2.Length || wav1.Length == 0)
@@ -187,25 +84,12 @@ static public class WaveValidation
     }
 
     /// <summary>
-    /// ピアソンの相関係数を計算（Span版 - ゼロコピー対応、SIMD最適化、1パス）。
+    /// ピアソンの相関係数を計算します（Span版・ゼロコピー対応・SIMD最適化・1パス計算）。
+    /// 1パスでΣx, Σy, Σx², Σy², Σxyを計算し、高速に処理します。
     /// </summary>
     /// <param name="wav1">音声データSpan1。</param>
     /// <param name="wav2">音声データSpan2。</param>
     /// <returns>相関係数（-1.0〜1.0、通常は0.0〜1.0）。</returns>
-    /// <remarks>
-    /// <para>【計算フロー】</para>
-    /// <list type="number">
-    /// <item>SIMD処理: ベクトル化可能な範囲</item>
-    /// <item>端数処理: ベクトル化できなかった残り</item>
-    /// <item>平均値計算</item>
-    /// <item>分散・共分散計算（1パス公式）</item>
-    /// <item>相関係数計算: ρ = Cov(X,Y) / (σX × σY)</item>
-    /// </list>
-    ///
-    /// <para>【1パス公式】</para>
-    /// Cov(X,Y) = E[XY] - E[X]E[Y]
-    /// Var(X) = E[X²] - E[X]²
-    /// </remarks>
     static public float CalculatePearsonCorrelationSIMD(ReadOnlySpan<float> wav1, ReadOnlySpan<float> wav2)
     {
         if (wav1.Length != wav2.Length || wav1.Length == 0)
@@ -270,23 +154,11 @@ static public class WaveValidation
     }
 
     /// <summary>
-    /// Phase 2: 正規化済み波形のドット積でピアソン相関係数を計算（配列版）。
+    /// Phase 2: 正規化済み波形のドット積でピアソン相関係数を高速に計算します（配列版）。
     /// </summary>
     /// <param name="normalizedWav1">正規化済み波形1。</param>
     /// <param name="normalizedWav2">正規化済み波形2。</param>
     /// <returns>相関係数（-1.0〜1.0）。</returns>
-    /// <remarks>
-    /// <para>【数学的背景】</para>
-    /// 正規化波形（平均0、ノルム1）の場合、ピアソン相関係数は単純なドット積に帰着:
-    /// r = Σ(x̂ × ŷ)
-    ///
-    /// <para>【効果】</para>
-    /// <list type="bullet">
-    /// <item>5変数の累積計算を1変数に削減</item>
-    /// <item>演算密度80%削減</item>
-    /// <item>CPUパイプライン効率向上</item>
-    /// </list>
-    /// </remarks>
     static public float CalculatePearsonFromNormalized(float[] normalizedWav1, float[] normalizedWav2)
     {
         if (normalizedWav1.Length != normalizedWav2.Length || normalizedWav1.Length == 0)
@@ -296,28 +168,11 @@ static public class WaveValidation
     }
 
     /// <summary>
-    /// Phase 2: 正規化済み波形のドット積でピアソン相関係数を計算（Span版・SIMD最適化）。
+    /// Phase 2: 正規化済み波形のドット積でピアソン相関係数を高速に計算します（Span版・SIMD最適化）。
     /// </summary>
     /// <param name="normalizedWav1">正規化済み波形Span1。</param>
     /// <param name="normalizedWav2">正規化済み波形Span2。</param>
     /// <returns>相関係数（-1.0〜1.0）。</returns>
-    /// <remarks>
-    /// <para>【処理内容】</para>
-    /// 正規化済み波形（平均0、ノルム1）の場合、ドット積がピアソン相関係数に等しい:
-    /// r = Σ(x̂ × ŷ)
-    ///
-    /// <para>【SIMD最適化】</para>
-    /// <list type="bullet">
-    /// <item>単純な乗算・加算のみでベクトル化効率最大</item>
-    /// <item>FMA（Fused Multiply-Add）命令との相性良好</item>
-    /// <item>AVX2で8要素同時処理</item>
-    /// </list>
-    ///
-    /// <para>【標準版との比較】</para>
-    /// <list type="bullet">
-    /// <item>標準版: 5変数の累積（Σx, Σy, Σx², Σy², Σxy）+ 複雑な除算</item>
-    /// </list>
-    /// </remarks>
     static public float CalculatePearsonFromNormalizedSIMD(ReadOnlySpan<float> normalizedWav1, ReadOnlySpan<float> normalizedWav2)
     {
         if (normalizedWav1.Length != normalizedWav2.Length || normalizedWav1.Length == 0)
@@ -348,13 +203,9 @@ static public class WaveValidation
     }
 
     /// <summary>
-    /// Phase 2: キャッシュされた波形（事前正規化または生データ）の有音区間（ActiveRegion）の重なりを用いてピアソン相関係数を計算（SIMD最適化）。
+    /// Phase 2: キャッシュされた波形（事前正規化または生データ）の有音区間（ActiveRegion）の重なりを用いてピアソン相関係数を計算します（SIMD最適化）。
+    /// 事前計算や無音区間のスキップにより、極めて高速かつ省メモリに処理を行います。
     /// </summary>
-    /// <remarks>
-    /// IsPreNormalized == true の場合は2パス目のドット積としてそのまま計算し、
-    /// IsPreNormalized == false の場合は生データのドット積を求めてから1パス用の補正計算を行います。
-    /// 無音区間の計算はサボるため、極めて高速かつ省メモリです。
-    /// </remarks>
     static public float CalculatePearsonForCachedDataSIMD(BmsAtelierKyokufu.BmsPartTuner.Models.ICachedSoundData data1, BmsAtelierKyokufu.BmsPartTuner.Models.ICachedSoundData data2, int channel = 0)
     {
         // 1. 符号ビットLSHによる O(1) 事前棄却（Early Pruning）
@@ -524,11 +375,8 @@ static public class WaveValidation
 
     /// <summary>
     /// ベクトル化された範囲の処理（R²計算用）。
+    /// Vector&lt;T&gt;を使用してSIMD並列演算を実行し、(Σx, Σx², RSS) を返します。
     /// </summary>
-    /// <returns>(Σx, Σx², RSS)</returns>
-    /// <remarks>
-    /// Vector&lt;T&gt;を使用してSIMD並列演算を実行します。
-    /// </remarks>
     private static (float sumX, float sumX2, float rss) ProcessVectorized(
         ReadOnlySpan<float> wav1,
         ReadOnlySpan<float> wav2,
@@ -588,11 +436,8 @@ static public class WaveValidation
 
     /// <summary>
     /// ベクトル化された範囲の処理（ピアソン相関係数計算用）。
+    /// Vector&lt;T&gt;を使用してSIMD並列演算を実行し、(ΣX, ΣY, ΣX², ΣY², ΣXY) を返します。
     /// </summary>
-    /// <returns>(ΣX, ΣY, ΣX², ΣY², ΣXY)</returns>
-    /// <remarks>
-    /// Vector&lt;T&gt;を使用してSIMD並列演算を実行します。
-    /// </remarks>
     private static (float sumX, float sumY, float sumX2, float sumY2, float sumXY) ProcessVectorizedPearson(
         ReadOnlySpan<float> wav1,
         ReadOnlySpan<float> wav2,

@@ -25,7 +25,7 @@ public class PulseToBmsTimeCalculator(int resolution, List<BmsonLineEvent> lines
 
         while (left <= right)
         {
-            int mid = left + (right - left) / 2;
+            int mid = left + ((right - left) / 2);
             if (_lines[mid].Y <= y)
             {
                 m = mid;
@@ -56,7 +56,7 @@ public class PulseToBmsTimeCalculator(int resolution, List<BmsonLineEvent> lines
         else
         {
             // 次の小節線がない場合は、デフォルトの小節長（4/4拍子）を仮定
-            nextY = currentY + 4 * _resolution;
+            nextY = currentY + (4 * _resolution);
         }
 
         return nextY - currentY;

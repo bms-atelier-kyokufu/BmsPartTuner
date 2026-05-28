@@ -1,24 +1,10 @@
 namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 
 /// <summary>
-/// 定義削減の統計情報を管理するクラス。
+/// 定義削減の統計情報を管理するクラスです。
+/// 処理前後のファイル数を集計し削減率を計算、ユニークファイル数を取得することで、
+/// 自動最適化時のエルボーポイント検出などの評価指標として機能します。
 /// </summary>
-/// <remarks>
-/// <para>【責務】</para>
-/// <list type="bullet">
-/// <item>処理前後のファイル数を集計</item>
-/// <item>削減率の計算</item>
-/// <item>ユニークファイル数の取得</item>
-/// <item>デバッグログへの統計情報出力</item>
-/// </list>
-///
-/// <para>【用途】</para>
-/// 自動最適化（<see cref="Core.Optimization.CorrelationThresholdOptimizer"/>）において、
-/// エルボーポイント検出のための評価指標として使用されます。
-/// </remarks>
-/// <remarks>
-/// DefinitionStatisticsを初期化します。
-/// </remarks>
 /// <param name="fileList">ファイルリスト。</param>
 /// <param name="replaces">置換テーブル。</param>
 /// <param name="startPoint">処理範囲の開始定義番号。</param>
@@ -36,55 +22,38 @@ internal class DefinitionStatistics(
     private readonly int _endPoint = endPoint;
 
     /// <summary>
-    /// 処理統計情報のログ出力。
+    /// 処理統計情報（処理範囲、総定義数、ユニークファイル数、置換されたファイル数、削減率）をログに出力します。
     /// </summary>
-    /// <remarks>
-    /// <para>【出力項目】</para>
-    /// <list type="bullet">
-    /// <item>処理範囲（開始-終了）</item>
-    /// <item>総定義数</item>
-    /// <item>ユニークファイル数</item>
-    /// <item>置換されたファイル数</item>
-    /// <item>削減率（%）</item>
-    /// </list>
-    /// </remarks>
     public void LogStatistics()
     {
         var stats = CalculateStatistics();
 
-        PerformanceDebugLogger.WriteDebug(nameof(DefinitionStatistics), $"=== Statistics ===");
-        PerformanceDebugLogger.WriteDebug(nameof(DefinitionStatistics), $"Processing range: {_startPoint} - {_endPoint}");
-        PerformanceDebugLogger.WriteDebug(nameof(DefinitionStatistics), $"Total definitions: {stats.TotalDefinitions}");
-        PerformanceDebugLogger.WriteDebug(nameof(DefinitionStatistics), $"Unique files: {stats.UniqueFiles}");
-        PerformanceDebugLogger.WriteDebug(nameof(DefinitionStatistics), $"Replaced: {stats.ReplacedFiles}");
-        PerformanceDebugLogger.WriteDebug(nameof(DefinitionStatistics), $"Reduction rate: {stats.ReductionRate:F1}%");
+        PerformanceDebugLogger.WriteDebug(nameof(DefinitionStatistics), $$"""
+            === Statistics ===
+            Processing range: {{_startPoint}} - {{_endPoint}}
+            Total definitions: {{stats.TotalDefinitions}}
+            Unique files: {{stats.UniqueFiles}}
+            Replaced: {{stats.ReplacedFiles}}
+            Reduction rate: {{stats.ReductionRate:F1}}%
+            """);
     }
 
     /// <summary>
-    /// 削減後のユニークファイル数を取得。
+    /// 削減後のユニークファイル数（置換テーブルで自分自身を指しているファイルの数）を取得します。
+    /// この値は自動最適化のエルボーポイント検出において評価指標として利用されます。
     /// </summary>
     /// <returns>ユニークファイル数。</returns>
-    /// <remarks>
-    /// <para>【計算方法】</para>
-    /// 置換テーブルで自分自身を指している（置換されていない）ファイルの数を集計します。
-    ///
-    /// <para>【用途】</para>
-    /// 自動最適化のエルボーポイント検出において、
-    /// 相関係数のしきい値を変化させた際のファイル数を評価します。
-    ///
-    /// <para>【デバッグ情報】</para>
-    /// 処理範囲内の総ファイル数、ユニークファイル数、未処理ファイル数を
-    /// デバッグログに出力します。
-    /// </remarks>
     public int GetUniqueFileCount()
     {
         var stats = CalculateStatistics();
 
-        PerformanceDebugLogger.WriteDebug(nameof(DefinitionStatistics), $"=== GetUniqueFileCount Detail ===");
-        PerformanceDebugLogger.WriteDebug(nameof(DefinitionStatistics), $"  Total in range: {stats.TotalInRange}");
-        PerformanceDebugLogger.WriteDebug(nameof(DefinitionStatistics), $"  Unique (self-ref): {stats.UniqueFiles}");
-        PerformanceDebugLogger.WriteDebug(nameof(DefinitionStatistics), $"  Not processed (==0): {stats.NotProcessed}");
-        PerformanceDebugLogger.WriteDebug(nameof(DefinitionStatistics), $"  Processed (>0): {stats.Processed}");
+        PerformanceDebugLogger.WriteDebug(nameof(DefinitionStatistics), $$"""
+            === GetUniqueFileCount Detail ===
+              Total in range: {{stats.TotalInRange}}
+              Unique (self-ref): {{stats.UniqueFiles}}
+              Not processed (==0): {{stats.NotProcessed}}
+              Processed (>0): {{stats.Processed}}
+            """);
 
         return stats.UniqueFiles;
     }
@@ -92,25 +61,9 @@ internal class DefinitionStatistics(
     #region プライベートメソッド
 
     /// <summary>
-    /// 統計情報を計算。
+    /// 処理範囲内の総定義数、置換されたファイル数、ユニークファイル数、未処理ファイル数、削減率などの統計情報を計算します。
     /// </summary>
     /// <returns>統計データ構造体。</returns>
-    /// <remarks>
-    /// <para>【集計項目】</para>
-    /// <list type="bullet">
-    /// <item>総定義数: 処理範囲内のファイル数</item>
-    /// <item>置換されたファイル数: 別のファイルに置換されたファイル数</item>
-    /// <item>ユニークファイル数: 自分自身を指している（残された）ファイル数</item>
-    /// <item>削減率: 置換されたファイル数 / 総定義数 × 100</item>
-    /// </list>
-    ///
-    /// <para>【判定ロジック】</para>
-    /// <list type="bullet">
-    /// <item>_replaces[i] == i: 自分自身を指している（ユニーク）</item>
-    /// <item>_replaces[i] > 0 かつ _replaces[i] != i: 別のファイルに置換された</item>
-    /// <item>_replaces[i] == 0: 未処理（範囲外またはスキップ）</item>
-    /// </list>
-    /// </remarks>
     private StatisticsData CalculateStatistics()
     {
         int totalDefs = 0;

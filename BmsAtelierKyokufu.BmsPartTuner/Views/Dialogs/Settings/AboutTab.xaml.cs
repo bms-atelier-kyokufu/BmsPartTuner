@@ -1,21 +1,18 @@
-﻿using BmsAtelierKyokufu.BmsPartTuner.Services.UI;
+using BmsAtelierKyokufu.BmsPartTuner.Services.UI;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Views.Dialogs.Settings
 {
     /// <summary>
-    /// AboutTab.xaml の相互作用ロジック
-    /// </summary>
-    /// <remarks>
-    /// ThemeServiceへのアクセスが必要な場合は、以下のパターンを使用してください：
+    /// AboutTab.xaml の相互作用ロジックを提供します。
+    /// ThemeServiceへのアクセスが必要な場合は、リフレクションを使用せず Application.Current 経由で取得してください。
     /// <code>
-    /// // リフレクションを使用しないでThemeServiceにアクセスする正しい方法:
-    /// if (Application.Current is App app <![CDATA[&&]]> app.ThemeService != null)
+    /// if (Application.Current is App app &amp;&amp; app.ThemeService != null)
     /// {
     ///     var themeService = app.ThemeService;
     ///     // themeServiceを使用...
     /// }
     /// </code>
-    /// </remarks>
+    /// </summary>
     public partial class AboutTab : UserControl
     {
         // NOTE: This field is part of the example implementation for PR #118.

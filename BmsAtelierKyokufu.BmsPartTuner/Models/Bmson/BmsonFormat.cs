@@ -1,4 +1,4 @@
-﻿using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Models.Bmson;
 
@@ -102,7 +102,7 @@ public class BmsonBpmEvent
 }
 
 /// <summary>
-/// ストップ（一時停止）イベント。
+/// ストップ (一時停止) イベント。
 /// </summary>
 public class BmsonStopEvent
 {
@@ -114,7 +114,7 @@ public class BmsonStopEvent
 }
 
 /// <summary>
-/// サウンドチャンネル（ステム/キー音）。
+/// サウンドチャンネル (ステム/キー音)。
 /// </summary>
 public class BmsonSoundChannel
 {
@@ -131,7 +131,7 @@ public class BmsonSoundChannel
 public class BmsonNote
 {
     /// <summary>
-    /// 配置されるレーン。0=BGM、1~7=鍵盤、8=スクラッチ など。
+    /// 配置されるレーン (0 = BGM, 1~7 = 鍵盤, 8 = スクラッチ など)。
     /// </summary>
     [JsonPropertyName("x")]
     public int X { get; set; }
@@ -143,13 +143,13 @@ public class BmsonNote
     public long Y { get; set; }
 
     /// <summary>
-    /// ロングノーツの長さ。0の場合は単ノート。
+    /// ロングノーツの長さ (0の場合は単ノート)。
     /// </summary>
     [JsonPropertyName("l")]
     public long L { get; set; } = 0;
 
     /// <summary>
-    /// 音声を継続させるか（true=継続、false=カット）。
+    /// 音声を継続させるかどうか (<c>true</c> = 継続、<c>false</c> = カット)。
     /// </summary>
     [JsonPropertyName("c")]
     public bool C { get; set; } = true;

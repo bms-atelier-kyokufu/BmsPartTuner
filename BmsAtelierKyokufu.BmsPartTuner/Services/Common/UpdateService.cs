@@ -7,19 +7,10 @@ using System.Text.Json.Serialization;
 namespace BmsAtelierKyokufu.BmsPartTuner.Services.Common;
 
 /// <summary>
-/// Chrome-style の自動アップデートサービス。
+/// アプリケーションの自動アップデート機能（Chromeスタイル）を提供するサービス。
+/// バックグラウンドで新しいリリースを確認し、ダウンロード後、アプリ終了時にインストールを実行します。
+/// これにより、ユーザーの作業を中断させることなく最新版への更新を実現します。
 /// </summary>
-/// <remarks>
-/// <para>【動作概要】</para>
-/// <list type="number">
-/// <item>アプリ起動時にバックグラウンドでGitHub Releases APIを確認</item>
-/// <item>新しいバージョンがあればインストーラーを一時フォルダにダウンロード</item>
-/// <item>アプリ終了時にインストーラーを起動</item>
-/// </list>
-///
-/// <para>【Why 終了時更新】</para>
-/// ユーザーの作業を中断させず、次回起動時に最新版にするため。
-/// </remarks>
 public class UpdateService : IDisposable
 {
     private const string GitHubApiUrl = "https://api.github.com/repos/bms-atelier-kyokufu/BmsPartTuner/releases/latest";
@@ -47,13 +38,9 @@ public class UpdateService : IDisposable
     }
 
     /// <summary>
-    /// バックグラウンドでアップデートを確認します。
+    /// GitHub APIを利用してバックグラウンドでアップデートの有無を確認し、
+    /// 新しいバージョンが利用可能な場合はインストーラーをダウンロードします。
     /// </summary>
-    /// <remarks>
-    /// <para>【Why Task.Run不使用】</para>
-    /// 呼び出し元でTask.Runを使用することを想定しているため、
-    /// このメソッド自体はasyncのみとしています。
-    /// </remarks>
     public async Task CheckForUpdatesAsync()
     {
         try
@@ -164,12 +151,9 @@ public class UpdateService : IDisposable
     }
 
     /// <summary>
-    /// アップデートインストーラーを起動します。
+    /// ダウンロード済みのアップデートインストーラーを起動します。
+    /// 通常、アプリケーションの終了時（App.OnExit）に呼び出されます。
     /// </summary>
-    /// <remarks>
-    /// <para>【呼び出しタイミング】</para>
-    /// App.OnExitで呼び出されることを想定しています。
-    /// </remarks>
     public void LaunchUpdateInstaller()
     {
         if (!IsUpdateReady)

@@ -16,7 +16,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
                 samplesPerChannel[i] = new float[samplesPerCh];
                 for (int j = 0; j < samplesPerCh; j++)
                 {
-                    samplesPerChannel[i][j] = samples[j * channels + i];
+                    samplesPerChannel[i][j] = samples[(j * channels) + i];
                 }
             }
 

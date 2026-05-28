@@ -52,7 +52,7 @@ public class CachedAudioSource
         for (int i = 0; i < frames; i++)
         {
             short l = System.Buffers.Binary.BinaryPrimitives.ReadInt16LittleEndian(data.Slice(i * 4, 2));
-            short r = System.Buffers.Binary.BinaryPrimitives.ReadInt16LittleEndian(data.Slice(i * 4 + 2, 2));
+            short r = System.Buffers.Binary.BinaryPrimitives.ReadInt16LittleEndian(data.Slice((i * 4) + 2, 2));
 
             float fl = l / 32768f;
             float fr = r / 32768f;

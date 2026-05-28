@@ -234,7 +234,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio
                 {
                     double prevSample = samples[i - 1];
                     double nextSample = samples[i + windowFrames - 1];
-                    sumSq += nextSample * nextSample - prevSample * prevSample;
+                    sumSq += (nextSample * nextSample) - (prevSample * prevSample);
 
                     if (sumSq < 0) sumSq = 0;
 

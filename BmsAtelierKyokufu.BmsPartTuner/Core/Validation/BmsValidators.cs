@@ -1,4 +1,4 @@
-﻿namespace BmsAtelierKyokufu.BmsPartTuner.Core.Validation;
+namespace BmsAtelierKyokufu.BmsPartTuner.Core.Validation;
 
 /// <summary>
 /// 定義範囲の検証データ。
@@ -9,28 +9,9 @@ public record DefinitionRange(string Start, string End);
 
 /// <summary>
 /// 定義範囲のValidator実装（Strategy Pattern）。
+/// 開始・終了がともに2桁の62進数であり、開始≧01、終了≦zzの範囲内で、終了 &gt; 開始の順序を満たしているかを検証します。
+/// BMSフォーマットの仕様に基づき、62進数として有効な文字列であるかを判定します。
 /// </summary>
-/// <remarks>
-/// <para>【検証項目】</para>
-/// <list type="number">
-/// <item>長さチェック: 開始・終了ともに2桁であること</item>
-/// <item>範囲チェック: 開始≧01、終了≦zz（62進数の最大値）</item>
-/// <item>順序チェック: 終了 &gt; 開始</item>
-/// <item>形式チェック: 62進数として有効な文字列であること</item>
-/// </list>
-///
-/// <para>【Why 62進数】</para>
-/// BMSフォーマットでは、定義番号を62進数（0-9, a-z, A-Z）で表現します。
-/// 2桁の62進数で01～zzの範囲（1～3843）を表現できます。
-///
-/// <para>【例】</para>
-/// <code>
-/// 01 → 1
-/// 0z → 35
-/// 10 → 36
-/// zz → 3843
-/// </code>
-/// </remarks>
 public class DefinitionRangeValidator : IValidator<DefinitionRange>
 {
     /// <summary>
@@ -76,39 +57,16 @@ public class DefinitionRangeValidator : IValidator<DefinitionRange>
 
 /// <summary>
 /// 相関係数しきい値のValidator実装（Strategy Pattern）。
+/// 入力値が空白でなく、0.0～1.0（または0～100）の範囲の数値に変換可能であるかを検証します。
 /// </summary>
-/// <remarks>
-/// <para>【検証項目】</para>
-/// <list type="number">
-/// <item>空白チェック: 値が入力されていること</item>
-/// <item>数値チェック: float型に変換可能であること</item>
-/// <item>範囲チェック: 0.0～1.0の範囲内であること</item>
-/// </list>
-///
-/// <para>【Why 0.0～1.0】</para>
-/// ピアソン相関係数は定義上-1.0～1.0の範囲ですが、
-/// 音声比較では負の相関（逆相）を統合することはないため、
-/// 0.0～1.0の範囲に限定しています。
-///
-/// <para>【推奨値】</para>
-/// <list type="bullet">
-/// <item>0.95～0.98: 標準（推奨）</item>
-/// <item>0.90～0.95: やや緩い</item>
-/// <item>0.98～1.00: 厳密</item>
-/// </list>
-/// </remarks>
 public class R2ThresholdValidator : IValidator<string>
 {
     /// <summary>
-    /// 相関係数しきい値を検証し、値を返す。
+    /// 相関係数しきい値を検証し、パースされた値を同時に返します。
+    /// 検証とパースを同時に行うことで、重複した処理を排除します。
     /// </summary>
     /// <param name="r2Text">しきい値文字列。</param>
     /// <returns>検証結果（値付き）。</returns>
-    /// <remarks>
-    /// <para>【Why 値付き検証】</para>
-    /// 検証とパースを同時に行うことで、呼び出し側での再パースを不要にします。
-    /// これにより、エラーが発生しやすい重複したパース処理を排除できます。
-    /// </remarks>
     public static ValidationResult<float> ValidateWithValue(string r2Text)
     {
         if (string.IsNullOrWhiteSpace(r2Text))

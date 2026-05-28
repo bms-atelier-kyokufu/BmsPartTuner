@@ -1,32 +1,10 @@
-﻿namespace BmsAtelierKyokufu.BmsPartTuner.Services.UI;
+namespace BmsAtelierKyokufu.BmsPartTuner.Services.UI;
 
 /// <summary>
-/// ドラッグ&amp;ドロップサービス。
+/// BMSファイルなどのドラッグ&amp;ドロップ機能を管理するサービス。
+/// サポートされる拡張子のフィルタリングと、ドラッグ時の視覚的フィードバック（半透明化）を提供し、
+/// ドロップ完了時にはイベントを通じてUIからロジック層へ通知を行います。
 /// </summary>
-/// <remarks>
-/// <para>【責務】</para>
-/// <list type="bullet">
-/// <item>BMSファイルのドラッグ&amp;ドロップ機能</item>
-/// <item>サポートされる拡張子のフィルタリング</item>
-/// <item>視覚的フィードバック（ドラッグ中の半透明化）</item>
-/// </list>
-///
-/// <para>【視覚フィードバック】</para>
-/// サポートされるファイルがドラッグされた場合、
-/// 対象要素を半透明（Opacity = 0.7）にして、
-/// ドロップ可能であることを視覚的に示します。
-///
-/// <para>【イベント駆動】</para>
-/// ファイルがドロップされた際、<see cref="FileDropped"/>イベントを発火し、
-/// ViewModelに通知します。これにより、UIとロジックの分離を実現します。
-///
-/// <para>【拡張子フィルタ】</para>
-/// コンストラクタで指定された拡張子のみを受け入れます。
-/// 例: [".bms", ".bme", ".bml", ".pms"]
-/// </remarks>
-/// <remarks>
-/// DragDropServiceを初期化。
-/// </remarks>
 /// <param name="supportedExtensions">サポートされる拡張子の配列。</param>
 /// <exception cref="ArgumentNullException">supportedExtensionsがnullの場合。</exception>
 public class DragDropService(string[] supportedExtensions) : IDragDropService
@@ -39,11 +17,8 @@ public class DragDropService(string[] supportedExtensions) : IDragDropService
     public event EventHandler<FileDroppedEventArgs>? FileDropped;
 
     /// <summary>
-    /// ファイルドロップイベントの引数。
+    /// ファイルドロップイベントの引数を初期化します。
     /// </summary>
-    /// <remarks>
-    /// FileDroppedEventArgsを初期化。
-    /// </remarks>
     /// <param name="filePath">ファイルパス。</param>
     /// <param name="isSupported">サポートフラグ。</param>
     public class FileDroppedEventArgs(string filePath, bool isSupported) : EventArgs
@@ -56,19 +31,10 @@ public class DragDropService(string[] supportedExtensions) : IDragDropService
     }
 
     /// <summary>
-    /// UI要素にドラッグ&amp;ドロップ機能を設定。
+    /// 指定されたUI要素に対してドラッグ&amp;ドロップ機能を設定します。
+    /// ドラッグ入場、退場時の視覚的フィードバック処理やドロップ時のイベントハンドリングを登録します。
     /// </summary>
     /// <param name="element">対象のUIElement。</param>
-    /// <remarks>
-    /// <para>【設定内容】</para>
-    /// <list type="bullet">
-    /// <item>AllowDrop = true</item>
-    /// <item>PreviewDragOver: ドラッグ中の処理</item>
-    /// <item>Drop: ドロップ時の処理</item>
-    /// <item>DragEnter: 視覚フィードバック開始</item>
-    /// <item>DragLeave: 視覚フィードバック終了</item>
-    /// </list>
-    /// </remarks>
     public void SetupDragAndDrop(UIElement element)
     {
         ArgumentNullException.ThrowIfNull(element);
@@ -81,12 +47,8 @@ public class DragDropService(string[] supportedExtensions) : IDragDropService
     }
 
     /// <summary>
-    /// ドラッグオーバー時の処理。
+    /// ドラッグオーバー時の処理。サポートされるファイルの場合はCopyエフェクトを、それ以外はNoneエフェクトを設定します。
     /// </summary>
-    /// <remarks>
-    /// サポートされるファイルの場合はCopyエフェクト、
-    /// それ以外はNoneエフェクトを設定します。
-    /// </remarks>
     private void OnPreviewDragOver(object sender, DragEventArgs e)
     {
         if (e.Data.GetDataPresent(DataFormats.FileDrop))
@@ -109,12 +71,8 @@ public class DragDropService(string[] supportedExtensions) : IDragDropService
     }
 
     /// <summary>
-    /// ドラッグ入場時の処理（視覚フィードバック）。
+    /// ドラッグ入場時の処理（視覚フィードバック）。サポートされるファイルがドラッグされた場合、要素を半透明（Opacity = 0.7）にします。
     /// </summary>
-    /// <remarks>
-    /// サポートされるファイルがドラッグされた場合、
-    /// 要素を半透明（Opacity = 0.7）にします。
-    /// </remarks>
     private void OnDragEnter(object sender, DragEventArgs e)
     {
         if (e.Data.GetDataPresent(DataFormats.FileDrop))
@@ -131,11 +89,8 @@ public class DragDropService(string[] supportedExtensions) : IDragDropService
     }
 
     /// <summary>
-    /// ドラッグ退場時の処理。
+    /// ドラッグ退場時の処理。要素のOpacityを元の状態（1.0）に戻します。
     /// </summary>
-    /// <remarks>
-    /// 要素のOpacityを元に戻します（1.0）。
-    /// </remarks>
     private void OnDragLeave(object sender, DragEventArgs e)
     {
         if (sender is UIElement element)
@@ -145,17 +100,8 @@ public class DragDropService(string[] supportedExtensions) : IDragDropService
     }
 
     /// <summary>
-    /// ドロップ時の処理。
+    /// ドロップ時の処理。要素のOpacityを元に戻し、サポート状況を判定してイベントを発火します。
     /// </summary>
-    /// <remarks>
-    /// <para>【処理内容】</para>
-    /// <list type="number">
-    /// <item>要素のOpacityを元に戻す</item>
-    /// <item>ファイルパスを取得</item>
-    /// <item>サポート状況を判定</item>
-    /// <item><see cref="FileDropped"/>イベントを発火</item>
-    /// </list>
-    /// </remarks>
     private void OnDrop(object sender, DragEventArgs e)
     {
         if (sender is UIElement element)

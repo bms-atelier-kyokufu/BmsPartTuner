@@ -6,7 +6,8 @@ using Microsoft.Win32;
 namespace BmsAtelierKyokufu.BmsPartTuner.ViewModels;
 
 /// <summary>
-/// 設定画面のViewModel。
+/// アプリケーションの設定画面の状態と操作を管理するViewModel。
+/// テーマ設定、プレイヤーパス設定、ライセンス情報などを提供します。
 /// </summary>
 public partial class SettingsViewModel : ObservableObject
 {
@@ -17,14 +18,14 @@ public partial class SettingsViewModel : ObservableObject
     private readonly AppSettings _settings;
 
     /// <summary>
-    /// 設定画面のタブインデックス。
-    /// 0: 全般, 1: 情報
+    /// 設定画面で現在選択されているタブのインデックス。
+    /// 0: 全般設定, 1: アプリ情報・ライセンス
     /// </summary>
     [ObservableProperty]
     public partial int SelectedTabIndex { get; set; }
 
     /// <summary>
-    /// mBMplayの実行ファイルパス。
+    /// mBMplayなど、テスト再生に使用する外部プレイヤーの実行ファイルパス。
     /// </summary>
     public string MbmPlayPath
     {
@@ -43,12 +44,12 @@ public partial class SettingsViewModel : ObservableObject
     }
 
     /// <summary>
-    /// プレイヤーパスが設定されているかどうか。
+    /// プレイヤーの実行ファイルパスが設定され、かつファイルが存在するかどうか。
     /// </summary>
     public bool HasPlayerPath => !string.IsNullOrWhiteSpace(MbmPlayPath) && File.Exists(MbmPlayPath);
 
     /// <summary>
-    /// ダークテーマを使用するかどうか。
+    /// UIのダークテーマが有効化されているかどうか。
     /// </summary>
     public bool IsDarkTheme
     {
@@ -61,7 +62,6 @@ public partial class SettingsViewModel : ObservableObject
                 OnPropertyChanged();
                 _settingsService.Save(_settings);
 
-                // UseSystemThemeがfalseの場合のみテーマを適用
                 if (!UseSystemTheme)
                 {
                     _themeService.ApplyTheme(value);
@@ -71,7 +71,7 @@ public partial class SettingsViewModel : ObservableObject
     }
 
     /// <summary>
-    /// システムテーマに追従するかどうか。
+    /// OSのシステムテーマ（ダーク/ライト）に自動的に追従するかどうか。
     /// </summary>
     public bool UseSystemTheme
     {
@@ -97,7 +97,7 @@ public partial class SettingsViewModel : ObservableObject
     }
 
     /// <summary>
-    /// アプリケーションのバージョン。
+    /// アセンブリ情報から取得したアプリケーションのバージョン文字列。
     /// </summary>
     public static string AppVersion
     {
@@ -110,7 +110,7 @@ public partial class SettingsViewModel : ObservableObject
     }
 
     /// <summary>
-    /// アプリケーション名。
+    /// アセンブリ情報から取得したアプリケーションの表示名。
     /// </summary>
     public static string AppName
     {
@@ -123,7 +123,7 @@ public partial class SettingsViewModel : ObservableObject
     }
 
     /// <summary>
-    /// 作者情報。
+    /// アセンブリ情報から取得した作者・組織情報。
     /// </summary>
     public static string AuthorInfo
     {
@@ -136,7 +136,7 @@ public partial class SettingsViewModel : ObservableObject
     }
 
     /// <summary>
-    /// GitHubリポジトリURL。
+    /// プロジェクトのGitHubリポジトリURL。
     /// </summary>
     public static string GitHubUrl
     {
@@ -149,18 +149,18 @@ public partial class SettingsViewModel : ObservableObject
     }
 
     /// <summary>
-    /// ライセンス情報のコレクション。
+    /// OSSライセンス情報のコレクション。
     /// </summary>
     public ObservableCollection<LicenseInfo> Licenses { get; } = [];
 
     /// <summary>
-    /// 選択されたライセンス。
+    /// 現在リストで選択されているOSSライセンス情報。
     /// </summary>
     [ObservableProperty]
     public partial LicenseInfo? SelectedLicense { get; set; }
 
     /// <summary>
-    /// ライセンス詳細表示状態。
+    /// ライセンス詳細情報のオーバーレイ表示状態。
     /// </summary>
     [ObservableProperty]
     public partial bool IsLicenseDetailVisible { get; set; }
@@ -172,7 +172,6 @@ public partial class SettingsViewModel : ObservableObject
         _licenseLoaderService = licenseLoaderService ?? throw new ArgumentNullException(nameof(licenseLoaderService));
         _settings = _settingsService.Load();
 
-        // テーマサービスからの変更通知を購読
         _themeService.ThemeChanged += (_, isDark) =>
         {
             if (_settings.IsDarkTheme != isDark)
@@ -197,9 +196,6 @@ public partial class SettingsViewModel : ObservableObject
         SelectedLicense = null;
     }
 
-    /// <summary>
-    /// プレイヤーの実行ファイルを選択するコマンド。
-    /// </summary>
     [RelayCommand]
     private void SelectPlayerPath()
     {
@@ -221,46 +217,30 @@ public partial class SettingsViewModel : ObservableObject
         }
     }
 
-    /// <summary>
-    /// プレイヤーパスをクリアするコマンド。
-    /// </summary>
     [RelayCommand]
     private void ClearPlayerPath()
     {
         MbmPlayPath = string.Empty;
     }
 
-    /// <summary>
-    /// GitHubリンクを開くコマンド。
-    /// </summary>
     [RelayCommand]
     private static void OpenGitHub()
     {
         OpenUrl(GitHubUrl);
     }
 
-    /// <summary>
-    /// GitHub Issues を開くコマンド。
-    /// </summary>
     [RelayCommand]
     private static void OpenGitHubIssues()
     {
         OpenUrl($"{AppConstants.Files.GitHubRepositoryUrl}/issues");
     }
 
-    /// <summary>
-    /// Twitter (X) を開くコマンド。
-    /// </summary>
     [RelayCommand]
     private static void OpenTwitter()
     {
         OpenUrl("https://x.com/rian_eimu");
     }
 
-    /// <summary>
-    /// 指定されたURLをデフォルトブラウザで開きます。
-    /// </summary>
-    /// <param name="url">開くURL。</param>
     private static void OpenUrl(string url)
     {
         try
@@ -279,7 +259,7 @@ public partial class SettingsViewModel : ObservableObject
     }
 
     /// <summary>
-    /// 初期テーマを適用します(アプリケーション起動時に呼び出し)。
+    /// アプリケーション起動時に、設定に基づいた初期テーマをUIに適用します。
     /// </summary>
     public void ApplyInitialTheme()
     {

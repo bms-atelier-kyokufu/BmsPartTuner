@@ -120,7 +120,7 @@ public class PulseToRealTimeCalculator
 
         while (low <= high)
         {
-            int mid = low + (high - low) / 2;
+            int mid = low + ((high - low) / 2);
             if (_segments[mid].StartY <= y)
             {
                 ans = mid;

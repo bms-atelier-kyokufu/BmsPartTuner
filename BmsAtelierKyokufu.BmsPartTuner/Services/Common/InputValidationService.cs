@@ -1,11 +1,10 @@
-﻿using BmsAtelierKyokufu.BmsPartTuner.Core.Validation;
+using BmsAtelierKyokufu.BmsPartTuner.Core.Validation;
 using ValidationResult = BmsAtelierKyokufu.BmsPartTuner.Core.Validation.ValidationResult;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Services.Common;
 
 /// <summary>
-/// 入力値検証サービスの実装。
-/// 責務: ユーザー入力の検証（定義範囲、相関係数しきい値）
+/// ユーザー入力（定義範囲や相関係数しきい値など）の検証を行うサービスの実装。
 /// </summary>
 public class InputValidationService : IInputValidationService
 {

@@ -1,6 +1,6 @@
 using BmsAtelierKyokufu.BmsPartTuner.Core.Optimization;
-using BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers;
 using BmsAtelierKyokufu.BmsPartTuner.Models;
+using BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Scenarios
 {
@@ -60,7 +60,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Scenarios
             var samplesC = samplesA.ToArray();
             var rand = new Random(123);
             for (int i = 0; i < sampleCount; i++)
-                samplesC[i] += (float)(rand.NextDouble() * 0.2 - 0.1);
+                samplesC[i] += (float)((rand.NextDouble() * 0.2) - 0.1);
             samplesC = NormalizeToRms(samplesC, targetRms);
 
             // ファイルD: 全く異なる波形（コサイン波）

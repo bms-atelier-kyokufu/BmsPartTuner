@@ -1,13 +1,10 @@
-﻿using BmsAtelierKyokufu.BmsPartTuner.ViewModels;
+using BmsAtelierKyokufu.BmsPartTuner.ViewModels;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Services.UI
 {
     /// <summary>
-    /// 結果カードUI要素（ViewModelドリブン）
+    /// 結果カードUI要素（ViewModelドリブン）です。
     /// </summary>
-    /// <remarks>
-    /// コンストラクタ
-    /// </remarks>
     /// <param name="viewModel">MainViewModel インスタンス</param>
     public class ResultCardElement(MainViewModel viewModel) : IUiElementService<ResultCardData>
     {

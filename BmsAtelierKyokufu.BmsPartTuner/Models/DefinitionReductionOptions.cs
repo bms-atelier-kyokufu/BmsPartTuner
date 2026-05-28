@@ -1,7 +1,7 @@
-﻿namespace BmsAtelierKyokufu.BmsPartTuner.Models;
+namespace BmsAtelierKyokufu.BmsPartTuner.Models;
 
 /// <summary>
-/// BMS定義削減処理のオプションパラメータを表します。
+/// BMS定義削減処理のオプションパラメータを提供します。
 /// </summary>
 public class DefinitionReductionOptions
 {

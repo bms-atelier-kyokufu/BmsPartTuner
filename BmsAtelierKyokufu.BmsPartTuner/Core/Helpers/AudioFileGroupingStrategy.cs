@@ -1,56 +1,23 @@
 namespace BmsAtelierKyokufu.BmsPartTuner.Core.Helpers;
 
 /// <summary>
-/// 音声ファイルのグループ化戦略。
+/// 音声ファイルの効率的なグループ化戦略を提供するクラスです。
+/// 全ファイル総当たり比較（$O(N^2)$）を避け、類似ファイルのみを比較（$O(\sum m^2)$）することで計算量を大幅に削減します。
+/// キーワードフィルタ（楽器種別など）や、ファイルサイズとRMS値による分類を利用してグループ化を行い、巨大なグループは自動的に分割します。
 /// </summary>
-/// <remarks>
-/// <para>【責務】</para>
-/// <list type="bullet">
-/// <item>ファイルサイズとRMSによる効率的なグループ分割</item>
-/// <item>キーワードベースのパート分離（楽器種別ごとのグループ化）</item>
-/// <item>巨大グループの自動分割（<see cref="AppConstants.MaxGroupSize"/>単位）</item>
-/// </list>
-///
-/// <para>【グループ化戦略】</para>
-/// <list type="number">
-/// <item>キーワードフィルタあり: 楽器種別（kick, snare等）ごとに独立グループ化</item>
-/// <item>キーワードフィルタなし: 全体を統合グループ化</item>
-/// </list>
-///
-/// <para>【グループキーの生成】</para>
-/// <para>
-/// ファイルサイズ（バイト）+ RMS値（量子化）を組み合わせたキーで分類:
-/// </para>
-/// <para>
-/// GroupKey = $"{fileSize}_{rmsQuantized}"<br/>
-/// rmsQuantized = (int)(rms × <see cref="AppConstants.RmsQuantizationFactor"/>)
-/// </para>
-///
-/// <para>【Why グループ化が必要か】</para>
-/// 全ファイル総当たり比較（$O(N^2)$）を避け、類似ファイルのみを比較（$O(\sum m^2)$）することで、
-/// 計算量を大幅に削減します（実測: 約800倍高速化）。
-///
-/// <para>【キーワードベースの利点】</para>
-/// 楽器種別ごとに分離することで、異なる楽器同士の無駄な比較を回避し、
-/// さらなる高速化と精度向上を実現します。
-/// </remarks>
 public static class AudioFileGroupingStrategy
 {
     /// <summary>
-    /// ファイルリストをグループ化。
+    /// ファイルリストをグループ化します。
+    /// 指定されたキーワードフィルタがある場合はキーワードベースのパート分離を、
+    /// 指定がない場合はファイルサイズとRMSを利用した従来の全体グループ化を行います。
     /// </summary>
+    /// <param name="audioCache">音声キャッシュデータ。</param>
     /// <param name="fileList">音声ファイルリスト。</param>
     /// <param name="startPoint">開始位置。</param>
     /// <param name="endPoint">終了位置。</param>
     /// <param name="selectedKeywords">選択されたキーワード（nullまたは空の場合は全て処理）。</param>
     /// <returns>グループ化されたインデックスリスト。</returns>
-    /// <remarks>
-    /// <para>【動作モード】</para>
-    /// <list type="bullet">
-    /// <item>selectedKeywordsが指定されている: <see cref="GroupFilesByKeywords"/>を使用</item>
-    /// <item>selectedKeywordsがnullまたは空: <see cref="GroupFilesTraditional"/>を使用</item>
-    /// </list>
-    /// </remarks>
     public static IReadOnlyList<IReadOnlyList<int>> GroupFiles(
         IReadOnlyDictionary<string, ICachedSoundData> audioCache,
         IReadOnlyList<BmsAudioFile> fileList,
@@ -77,28 +44,10 @@ public static class AudioFileGroupingStrategy
     }
 
     /// <summary>
-    /// キーワードベースのパート分離グループ化。
+    /// キーワードベースのパート分離グループ化を行います。
+    /// ファイル名（拡張子なし）に対して大文字小文字を区別せず部分一致でキーワードを判定し、
+    /// 該当するキーワードのグループに追加します。巨大なグループは分割されます。
     /// </summary>
-    /// <remarks>
-    /// <para>【処理フロー】</para>
-    /// <list type="number">
-    /// <item>各キーワードごとにグループ辞書を初期化</item>
-    /// <item>ファイル名からキーワードを判定</item>
-    /// <item>該当するキーワードのグループに追加</item>
-    /// <item>巨大グループを分割（<see cref="AppConstants.MaxGroupSize"/>単位）</item>
-    /// </list>
-    ///
-    /// <para>【キーワード判定】</para>
-    /// ファイル名（拡張子なし）に対して、大文字小文字を区別せずに
-    /// 部分一致（Contains）でキーワードをマッチングします。
-    ///
-    /// <para>【除外条件】</para>
-    /// <list type="bullet">
-    /// <item>範囲外のファイル番号</item>
-    /// <item>キャッシュが存在しない</item>
-    /// <item>どのキーワードにも該当しない</item>
-    /// </list>
-    /// </remarks>
     private static List<IReadOnlyList<int>> GroupFilesByKeywords(
         IReadOnlyDictionary<string, ICachedSoundData> audioCache,
         IReadOnlyList<BmsAudioFile> fileList,
@@ -217,22 +166,10 @@ public static class AudioFileGroupingStrategy
     }
 
     /// <summary>
-    /// 従来の全体グループ化（キーワードフィルタなし）。
+    /// 従来の全体グループ化（キーワードフィルタなし）を行います。
+    /// 全ファイルをファイルサイズとRMS値（浮動小数点の誤差を吸収するために量子化）を組み合わせたキーで分類し、
+    /// 巨大なグループは分割します。
     /// </summary>
-    /// <remarks>
-    /// <para>【処理フロー】</para>
-    /// <list type="number">
-    /// <item>全ファイルをファイルサイズ+RMSでグループ化</item>
-    /// <item>巨大グループを分割（<see cref="AppConstants.MaxGroupSize"/>単位）</item>
-    /// </list>
-    ///
-    /// <para>【グループキーの生成】</para>
-    /// GroupKey = $"{fileSize}_{rmsQuantized}"
-    ///
-    /// <para>【Why RMS量子化】</para>
-    /// 浮動小数点の完全一致は困難なため、<see cref="AppConstants.RmsQuantizationFactor"/>倍して
-    /// 整数化することで、近いRMS値を持つファイルを同じグループに分類します。
-    /// </remarks>
     private static List<IReadOnlyList<int>> GroupFilesTraditional(
         IReadOnlyDictionary<string, ICachedSoundData> audioCache,
         IReadOnlyList<BmsAudioFile> fileList,

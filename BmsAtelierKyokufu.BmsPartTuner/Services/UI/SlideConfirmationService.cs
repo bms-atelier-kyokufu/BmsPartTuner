@@ -1,11 +1,10 @@
-﻿using System.Windows.Media.Animation;
+using System.Windows.Media.Animation;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Services.UI
 {
     /// <summary>
-    /// スライド確認サービス
-    /// 危険な操作（上書き等）の確認UI
-    /// M3準拠のプログレッシブ・フィル実装
+    /// ファイルの上書きなど危険な操作の前にユーザーに確認を求めるスライドUIを制御するサービス。
+    /// Material Design 3に準拠したプログレッシブ・フィルやバウンスアニメーションを提供します。
     /// </summary>
     public class SlideConfirmationService
     {

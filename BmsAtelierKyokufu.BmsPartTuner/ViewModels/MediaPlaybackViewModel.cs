@@ -1,38 +1,37 @@
-﻿namespace BmsAtelierKyokufu.BmsPartTuner.ViewModels;
+namespace BmsAtelierKyokufu.BmsPartTuner.ViewModels;
 
 /// <summary>
 /// 外部メディアプレイヤーの制御を担当するViewModel。
-/// 責務: テスト再生、プレイヤー起動管理
 /// </summary>
 public partial class MediaPlaybackViewModel : ObservableObject
 {
-    /// <summary>プレイヤーパスが設定されているかどうか。</summary>
+    /// <summary>
+    /// 外部プレイヤーのパスが設定されているかどうか。
+    /// </summary>
     [ObservableProperty]
     public partial bool IsPlayerConfigured { get; set; }
 
-    /// <summary>テスト再生可能かどうか。</summary>
+    /// <summary>
+    /// 現在の状態でテスト再生が可能かどうか。
+    /// </summary>
     [ObservableProperty]
     public partial bool CanPlayback { get; set; }
 
     /// <summary>
-    /// テスト再生をリクエストするイベント。
-    /// (UI層から呼び出す)
+    /// UI層からのテスト再生リクエストを通知するイベント。
     /// </summary>
     public event EventHandler<PlaybackRequestEventArgs>? PlaybackRequested;
 
     /// <summary>
-    /// プレイヤー起動エラーが発生したイベント。
+    /// プレイヤー起動時にエラーが発生した際に発生するイベント。
     /// </summary>
     public event EventHandler<string>? PlaybackError;
 
     /// <summary>
-    /// テスト再生状態が変わったイベント。
+    /// テスト再生の状態が変化した際に発生するイベント。
     /// </summary>
     public event EventHandler<PlaybackStateChangedEventArgs>? PlaybackStateChanged;
 
-    /// <summary>
-    /// MediaPlaybackViewModelを初期化。
-    /// </summary>
     public MediaPlaybackViewModel()
     {
         IsPlayerConfigured = false;
@@ -40,7 +39,7 @@ public partial class MediaPlaybackViewModel : ObservableObject
     }
 
     /// <summary>
-    /// プレイヤーパスを設定して状態を更新。
+    /// 外部プレイヤーの実行ファイルパスを設定し、再生可能状態を更新します。
     /// </summary>
     public void SetPlayerPath(string? playerPath)
     {
@@ -55,9 +54,6 @@ public partial class MediaPlaybackViewModel : ObservableObject
         CanPlayback = true;
     }
 
-    /// <summary>
-    /// テスト再生コマンド。
-    /// </summary>
     [RelayCommand(CanExecute = nameof(CanPlayback))]
     private void TestPlay()
     {
@@ -65,7 +61,7 @@ public partial class MediaPlaybackViewModel : ObservableObject
     }
 
     /// <summary>
-    /// プレイヤーを起動。
+    /// 指定されたプレイヤーを使用して対象ファイルを再生します。
     /// </summary>
     public void LaunchPlayer(string playerPath, string targetFile, string fileType)
     {
@@ -110,17 +106,15 @@ public partial class MediaPlaybackViewModel : ObservableObject
         }
     }
 
-    #region イベント引数クラス
-
     /// <summary>
-    /// テスト再生リクエストのイベント引数。
+    /// テスト再生リクエストのイベント引数を提供します。
     /// </summary>
     public class PlaybackRequestEventArgs : EventArgs
     {
     }
 
     /// <summary>
-    /// 再生状態変化のイベント引数。
+    /// 再生状態変化のイベント引数を提供します。
     /// </summary>
     public class PlaybackStateChangedEventArgs : EventArgs
     {
@@ -128,6 +122,4 @@ public partial class MediaPlaybackViewModel : ObservableObject
         public string? FileName { get; set; }
         public string? FileType { get; set; }
     }
-
-    #endregion
 }

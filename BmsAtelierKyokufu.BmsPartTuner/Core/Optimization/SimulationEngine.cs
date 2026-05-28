@@ -4,38 +4,10 @@ using BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
 namespace BmsAtelierKyokufu.BmsPartTuner.Core.Optimization;
 
 /// <summary>
-/// 高速並列シミュレーションエンジン。
+/// 複数のしきい値で並列シミュレーションを実行するエンジンです。
+/// Union-Find方式を用いた高速なユニークファイル数カウントと、グループ単位での並列処理により
+/// 計算量を最小化しつつ、最適な削減率のシミュレーションを行います。
 /// </summary>
-/// <remarks>
-/// <para>【責務】</para>
-/// <list type="bullet">
-/// <item>複数のしきい値で並列シミュレーションを実行</item>
-/// <item>Union-Find方式による高速なユニークファイル数カウント</item>
-/// <item>グループ単位の並列処理で$O(N^2)$を最小化</item>
-/// </list>
-///
-/// <para>【並列化戦略】</para>
-/// <list type="number">
-/// <item>しきい値レベル: 各しきい値を並列実行（Parallel.ForEach）</item>
-/// <item>グループレベル: 各グループを並列実行（Parallel.ForEach）</item>
-/// <item>最大並列度: CPUコア数 - 1（システムリソース確保のため）</item>
-/// </list>
-///
-/// <para>【Union-Findアルゴリズム】</para>
-/// 推移的なマッチング関係を効率的に管理:
-/// A=B, B=C → A=C（自動的に統合）
-/// 計算量: $O(\alpha(n))$（逆アッカーマン関数、実質定数時間）
-///
-/// <para>【スレッドセーフ設計】</para>
-/// <list type="bullet">
-/// <item>Interlocked.CompareExchange: CAS操作による排他制御</item>
-/// <item>ConcurrentBag: スレッドセーフな結果収集</item>
-/// <item>非再帰版FindRoot: スタックオーバーフロー防止</item>
-/// </list>
-/// </remarks>
-/// <remarks>
-/// SimulationEngineを初期化。
-/// </remarks>
 /// <exception cref="ArgumentNullException">fileListがnullの場合。</exception>
 internal class SimulationEngine(
     IReadOnlyList<BmsAudioFile> fileList,
@@ -107,36 +79,15 @@ internal class SimulationEngine(
     }
 
     /// <summary>
-    /// 並列シミュレーション実行。
+    /// 各しきい値でシミュレーションを順次実行（しきい値降順）し、Base36またはBase62の制限条件を
+    /// 満たした段階で早期終了することで無駄な計算を省きます。
+    /// 結果はしきい値降順のリストとして返されます。
     /// </summary>
     /// <param name="rangeMin">しきい値の最小値。</param>
     /// <param name="rangeMax">しきい値の最大値。</param>
     /// <param name="step">しきい値のステップ幅。</param>
     /// <param name="progress">進捗報告用のIProgress。</param>
     /// <returns>シミュレーション結果のリスト（しきい値降順）。</returns>
-    /// <remarks>
-    /// <para>【処理フロー】</para>
-    /// <list type="number">
-    /// <item>しきい値リストを生成（0.05～0.99を0.01刻み）</item>
-    /// <item>各しきい値でシミュレーション（順次実行、しきい値降順）</item>
-    /// <item>結果をリストに収集</item>
-    /// <item>Base36/Base62の両方の条件を同時監視</item>
-    /// <item>Base36条件を満たしたら早期終了</item>
-    /// </list>
-    ///
-    /// <para>【早期終了戦略】</para>
-    /// Base36制限（1295件）とBase62制限（3844件）を同時に監視し、
-    /// それぞれの条件を満たした最初のしきい値を記録します。
-    /// Base36条件を満たしたら（より厳しい条件）、シミュレーションを終了します。
-    ///
-    /// <para>【音声キャッシュの検証】</para>
-    /// キャッシュが0件の場合、すべてのシミュレーションで削減率0%となるため、
-    /// 開始時にキャッシュ状態をログ出力して問題を早期発見します。
-    ///
-    /// <para>【進捗報告】</para>
-    /// 10回ごとまたは完了時に進捗を報告（0-70%の範囲）。
-    /// 残り30%はデータ平滑化とエルボーポイント検出に割り当てられます。
-    /// </remarks>
     public IReadOnlyList<SimulationPoint> RunParallelSimulation(
         float rangeMin,
         float rangeMax,
@@ -263,23 +214,13 @@ internal class SimulationEngine(
     }
 
     /// <summary>
-    /// 単一しきい値でのシミュレーション。
+    /// 単一しきい値でのシミュレーションを実行します。
+    /// ファイルをグループ化して並列処理し、Union-Findで置換テーブルを構築後、
+    /// 自分自身がルートであるファイル（ユニークファイル）の数をカウントします。
     /// </summary>
     /// <param name="threshold">相関係数しきい値。</param>
+    /// <param name="groups">グループ化されたファイルインデックス。</param>
     /// <returns>ユニークファイル数。</returns>
-    /// <remarks>
-    /// <para>【処理フロー】</para>
-    /// <list type="number">
-    /// <item>ファイルをグループ化（<see cref="AudioFileGroupingStrategy"/>）</item>
-    /// <item>各グループを並列処理（Parallel.ForEach）</item>
-    /// <item>Union-Findで置換テーブルを構築</item>
-    /// <item>ルートが自分自身のファイルをカウント（ユニーク数）</item>
-    /// </list>
-    ///
-    /// <para>【Union-Findによるカウント】</para>
-    /// 置換テーブルで代表値（ルート）を辿り、自分自身がルートのファイルのみをカウント。
-    /// これにより、推移的な統合を考慮した正確なユニーク数を取得できます。
-    /// </remarks>
     private int SimulateThreshold(float threshold, IReadOnlyList<IReadOnlyList<int>> groups)
     {
         var uf = new UnionFind(AppConstants.Definition.ReplaceTableSize); // BMSの最大定義番号

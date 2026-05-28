@@ -1,29 +1,12 @@
-﻿using Microsoft.Xaml.Behaviors;
+using Microsoft.Xaml.Behaviors;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Behaviors;
 
 /// <summary>
-/// ドラッグ＆ドロップをサポートするBehavior。
-/// コードビハインドからのDrag&Drop処理をXAMLに移動します。
+/// ドラッグ＆ドロップをサポートするBehaviorです。
+/// MVVMパターンに準拠するため、イベントハンドラーをコードビハインドから分離し、
+/// ドロップされたファイルのパスや、成功・失敗時のコマンドバインディングをXAMLから定義可能にします。
 /// </summary>
-/// <remarks>
-/// <para>【WPF原則】</para>
-/// MVVM パターンに準拠するため、イベントハンドラーをコードビハインドから
-/// Behavior に移動し、XAML でバインド可能にします。
-///
-/// <para>【使用例】</para>
-/// <code>
-/// &lt;TextBox&gt;
-///     &lt;i:Interaction.Behaviors&gt;
-///         &lt;behaviors:DragDropBehavior
-///             SupportedExtensions=".bms,.bme,.bml,.pms"
-///             DroppedFilePath="{Binding InputPath, Mode=TwoWay}"
-///             DropSuccessCommand="{Binding FileDroppedCommand}"
-///             DropFailureCommand="{Binding UnsupportedFileDroppedCommand}" /&gt;
-///     &lt;/i:Interaction.Behaviors&gt;
-/// &lt;/TextBox&gt;
-/// </code>
-/// </remarks>
 public class DragDropBehavior : Behavior<UIElement>
 {
     #region 依存関係プロパティ

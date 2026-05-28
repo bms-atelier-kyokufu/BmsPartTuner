@@ -77,7 +77,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
         {
             var random = new Random(42);
             var original = GenerateSineWave(1000);
-            var noisy = original.Select(x => x + noiseLevel * (float)(random.NextDouble() * 2 - 1)).ToArray();
+            var noisy = original.Select(x => x + (noiseLevel * (float)((random.NextDouble() * 2) - 1))).ToArray();
 
             RunPearsonTest(original, noisy, correlation =>
                 Assert.True(correlation >= minExpectedCorrelation,

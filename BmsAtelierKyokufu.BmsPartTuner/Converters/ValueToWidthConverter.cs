@@ -1,48 +1,23 @@
-﻿using System.Globalization;
+using System.Globalization;
 using System.Windows.Data;
 using System.Windows.Markup;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Converters;
 
 /// <summary>
-/// 0.0～1.0の値を幅パーセンテージに変換するコンバーター。
+/// 0.0～1.0の値を指定された総幅に基づくプログレスバー等の幅に変換するコンバーターです。
+/// 相関係数（0.0～1.0）をUI表示用の幅に変換するために使用します。
+/// {local:ValueToWidthConverter}としてXAMLで記述した際にApp.xamlのグローバルリソースを
+/// 優先利用することで、インスタンスの重複定義を防ぎ、メモリ効率を向上させています。
 /// </summary>
-/// <remarks>
-/// <para>【責務】</para>
-/// <list type="bullet">
-/// <item>相関係数（0.0～1.0）をプログレスバーの幅に変換</item>
-/// <item>App.xamlのグローバルリソースを優先して使用（インスタンス重複回避）</item>
-/// </list>
-///
-/// <para>【用途】</para>
-/// 相関係数入力TextBoxに、現在値を視覚的に表示するプログレスバー背景として使用。
-///
-/// <para>【変換式】</para>
-/// 幅 = totalWidth × clamp(value, 0.0, 1.0)
-///
-/// <para>【Why MarkupExtension】</para>
-/// <see cref="ProvideValue"/>をオーバーライドすることで、
-/// XAMLで{local:ValueToWidthConverter}と記述した際に、
-/// App.xamlのグローバルリソースを再利用できます。
-///
-/// <para>【メリット】</para>
-/// <list type="bullet">
-/// <item>Converterインスタンスの重複定義を防止</item>
-/// <item>メモリ効率の向上</item>
-/// <item>全参照を単一インスタンスに統一</item>
-/// </list>
-/// </remarks>
 public class ValueToWidthConverter : MarkupExtension, IMultiValueConverter
 {
     /// <summary>
-    /// XAMLからの参照時にApp.xamlのグローバルリソースを優先して返す。
+    /// XAMLからの参照時にApp.xamlのグローバルリソース（キー "ValueToWidthConverter"）を優先して返します。
+    /// 存在しない場合は自身のインスタンスを返します。
     /// </summary>
     /// <param name="serviceProvider">XAMLサービスプロバイダー。</param>
     /// <returns>Converterインスタンス。</returns>
-    /// <remarks>
-    /// App.xaml に "ValueToWidthConverter" キーでリソースが登録されている場合、
-    /// それを返します。存在しない場合は自インスタンスを返します。
-    /// </remarks>
     public override object ProvideValue(IServiceProvider serviceProvider)
     {
         try
@@ -62,21 +37,14 @@ public class ValueToWidthConverter : MarkupExtension, IMultiValueConverter
     }
 
     /// <summary>
-    /// 値と幅を受け取り、パーセンテージ幅に変換。
+    /// 値と総幅を受け取り、パーセンテージ幅に変換します。
+    /// 値は自動的に 0.0 ～ 1.0 の範囲にクランプされます。
     /// </summary>
     /// <param name="values">values[0]: 値（0.0～1.0）、values[1]: 総幅。</param>
     /// <param name="targetType">ターゲット型（未使用）。</param>
     /// <param name="parameter">パラメータ（未使用）。</param>
     /// <param name="culture">カルチャ情報（未使用）。</param>
     /// <returns>計算された幅。</returns>
-    /// <remarks>
-    /// <para>【計算】</para>
-    /// 1. 値を0.0～1.0の範囲にクランプ
-    /// 2. 総幅を乗算
-    ///
-    /// <para>【例】</para>
-    /// values[0] = 0.75, values[1] = 200.0 → 150.0
-    /// </remarks>
     public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
     {
         if (values.Length != 2 ||
@@ -91,14 +59,10 @@ public class ValueToWidthConverter : MarkupExtension, IMultiValueConverter
     }
 
     /// <summary>
-    /// 逆変換（サポート対象外）。
+    /// 逆変換はサポート対象外です。
+    /// ConvertBackの引数から総幅（totalWidth）が取得できないため、<see cref="Binding.DoNothing"/>を返します。
+    /// これにより、TwoWayバインディングで使用された場合でも安全にソースの更新をキャンセルします。
     /// </summary>
-    /// <remarks>
-    /// 逆変換には総幅（totalWidth）の情報が必要ですが、
-    /// ConvertBackの引数からは取得できないため、何も行いません（Binding.DoNothingを返します）。
-    /// これにより、TwoWayバインディングで使用された場合でも例外が発生せず、
-    /// ソースプロパティの更新が行われない安全な挙動となります。
-    /// </remarks>
     public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
     {
         var result = new object[targetTypes.Length];

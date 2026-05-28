@@ -1,43 +1,60 @@
-namespace BmsAtelierKyokufu.BmsPartTuner.Models;
-
+using BmsAtelierKyokufu.BmsPartTuner.Core.Attributes;
 using MathNet.Numerics;
 
+namespace BmsAtelierKyokufu.BmsPartTuner.Models;
+
 /// <summary>
-/// 元の大きなWAVファイル（ベース）の特定の範囲を指し示すポインタ。
-/// 音声のfloat配列を自身のメモリに抱えず、ベースWAVの配列をSpanとして返すため、
-/// 何千個生成してもメモリを一切消費しません。
+/// 元の大きなWAVファイル（ベース）の特定の範囲を指し示すポインタモデルです。
+/// 自身のメモリを確保せず、ベースWAVの配列を <see cref="Span{T}"/> として返すFlyweightパターンを採用しており、
+/// 多数生成してもメモリを消費しません。
 /// </summary>
-/// <remarks>
-/// PointerSoundData のコンストラクタ。
-/// </remarks>
+[ADRAnchor("OPT-05", nameof(PointerSoundData))]
 public class PointerSoundData(
     string filePath,
     BaseAudioOptimizationData baseData,
     int startSample,
     int lengthSamples) : ICachedSoundData
 {
+    /// <inheritdoc />
     public string FilePath { get; } = filePath;
+
+    /// <inheritdoc />
     public int SampleRate => AppConstants.Audio.StandardSampleRate;
+
+    /// <inheritdoc />
     public int Channels => 2;
+
+    /// <inheritdoc />
     public int BitsPerSample => 16;
+
+    /// <inheritdoc />
     public int TotalSamples { get; } = lengthSamples * 2;
+
+    /// <inheritdoc />
     public long FileSize => TotalSamples * 2;
 
+    /// <inheritdoc />
     public float TotalRms { get; } = CalculateTotalRms(baseData.SamplesPerChannel, startSample, lengthSamples);
 
+    /// <inheritdoc />
     public int StartSilenceSamples { get; } = DetectStartSilence(baseData.SamplesPerChannel, startSample, lengthSamples);
 
+    /// <inheritdoc />
     public int EffectiveLength => TotalSamples > StartSilenceSamples * Channels
         ? TotalSamples - (StartSilenceSamples * Channels)
         : 0;
 
+    /// <inheritdoc />
     public double EstimatedMemoryMB => 0.0;
 
+    /// <inheritdoc />
     public bool IsPreNormalized => false;
 
+    /// <inheritdoc />
     public Complex32[][]? FftSpectrum => null;
 
-    public ulong ShiftInvariantLsh => 0; // ポインタ方式ではPhase 2のグループ化には関与しない（または別途実装）
+    /// <inheritdoc />
+    public ulong ShiftInvariantLsh => 0;
 
     private BaseAudioOptimizationData? _baseData = baseData;
     private readonly int _startSample = startSample;
@@ -45,31 +62,35 @@ public class PointerSoundData(
 
     private BaseAudioOptimizationData BaseData => _baseData ?? throw new ObjectDisposedException(nameof(PointerSoundData));
 
-    // Lazy initialized ActiveRegions
     private IReadOnlyList<ActiveRegion>[]? _regions;
 
+    /// <inheritdoc />
     public IReadOnlyList<ActiveRegion>[] GetActiveRegions()
     {
         _regions ??= ExtractPointerRegions(BaseData.SamplesPerChannel, _startSample, _lengthSamples);
         return _regions;
     }
 
+    /// <inheritdoc />
     public double GetChannelSum(int channel)
     {
         return GetRangeSum(channel, 0, _lengthSamples);
     }
 
+    /// <inheritdoc />
     public double GetChannelSumSq(int channel)
     {
         return GetRangeSumSq(channel, 0, _lengthSamples);
     }
 
+    /// <inheritdoc />
     public ReadOnlySpan<float> GetRawSpan(int channel, int offset, int length)
     {
         if (channel < 0 || channel >= 2) throw new ArgumentOutOfRangeException(nameof(channel));
         return new ReadOnlySpan<float>(BaseData.SamplesPerChannel[channel], _startSample + offset, length);
     }
 
+    /// <inheritdoc />
     public double GetRangeSum(int channel, int offset, int length)
     {
         if (channel < 0 || channel >= 2) throw new ArgumentOutOfRangeException(nameof(channel));
@@ -77,6 +98,7 @@ public class PointerSoundData(
         return BaseData.PrefixSum[channel][globalStart + length] - BaseData.PrefixSum[channel][globalStart];
     }
 
+    /// <inheritdoc />
     public double GetRangeSumSq(int channel, int offset, int length)
     {
         if (channel < 0 || channel >= 2) throw new ArgumentOutOfRangeException(nameof(channel));
@@ -84,6 +106,7 @@ public class PointerSoundData(
         return BaseData.PrefixSumSq[channel][globalStart + length] - BaseData.PrefixSumSq[channel][globalStart];
     }
 
+    /// <inheritdoc />
     public ReadOnlySpan<ulong> GetLsh(int channel)
     {
         if (channel < 0 || channel >= 2) throw new ArgumentOutOfRangeException(nameof(channel));
@@ -92,6 +115,7 @@ public class PointerSoundData(
         return new ReadOnlySpan<ulong>(BaseData.SignLsh[channel], globalStartLshIdx, lshCount);
     }
 
+    /// <inheritdoc />
     public ReadOnlySpan<ulong> GetLshMask(int channel)
     {
         if (channel < 0 || channel >= 2) throw new ArgumentOutOfRangeException(nameof(channel));
@@ -100,6 +124,7 @@ public class PointerSoundData(
         return new ReadOnlySpan<ulong>(BaseData.SignLshMask[channel], globalStartLshIdx, lshCount);
     }
 
+    /// <inheritdoc />
     public void Dispose()
     {
         _baseData = null;
@@ -111,9 +136,8 @@ public class PointerSoundData(
     {
         if (lengthSamples == 0) return 0f;
 
-
         double sumSquares = 0;
-        int totalAnalyzedSamples = lengthSamples * 2; // 2ch
+        int totalAnalyzedSamples = lengthSamples * 2;
 
         for (int ch = 0; ch < 2; ch++)
         {
@@ -148,9 +172,9 @@ public class PointerSoundData(
         var regionsPerChannel = new List<ActiveRegion>[2] { [], [] };
 
         const double dbThreshold = -45.0;
-        const int windowFrames = 1024; // 約23ms (44.1kHz時)
+        const int windowFrames = 1024;
         double eThreshold = windowFrames * Math.Pow(10, dbThreshold / 10.0);
-        const int maxSilenceFrames = AppConstants.Audio.StandardSampleRate / 4; // 250ms
+        const int maxSilenceFrames = AppConstants.Audio.StandardSampleRate / 4;
 
         for (int ch = 0; ch < 2; ch++)
         {

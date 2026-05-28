@@ -1,20 +1,9 @@
-﻿namespace BmsAtelierKyokufu.BmsPartTuner.Core.Validation;
+namespace BmsAtelierKyokufu.BmsPartTuner.Core.Validation;
 
 /// <summary>
-/// 検証結果を表すResult Pattern。
+/// 検証結果を表すResult Patternです。
+/// 例外を投げる代わりに検証結果を値として返すことで、パフォーマンスの向上と明示的で型安全なエラーハンドリングを実現します。
 /// </summary>
-/// <remarks>
-/// <para>【Result Pattern】</para>
-/// 例外を投げる代わりに、検証結果を値として返すことで、
-/// エラーハンドリングを明示的かつ型安全に行えます。
-///
-/// <para>【Why Result Pattern】</para>
-/// <list type="bullet">
-/// <item>例外よりもパフォーマンスが良い（スタック巻き戻し不要）</item>
-/// <item>エラーハンドリングが強制される（コンパイラが保証）</item>
-/// <item>複数のエラーを集約できる</item>
-/// </list>
-/// </remarks>
 public sealed class ValidationResult
 {
     /// <summary>検証が成功したかどうか。</summary>
@@ -70,21 +59,9 @@ public sealed class ValidationResult
 
 /// <summary>
 /// 値を含む検証結果。
+/// 検証成功時にパースされた値を一緒に返すことで、呼び出し側での再パース処理を省略できます。
 /// </summary>
 /// <typeparam name="T">検証値の型。</typeparam>
-/// <remarks>
-/// <para>【用途】</para>
-/// 検証成功時に、パースされた値を一緒に返すことで、
-/// 呼び出し側でのパース処理を省略できます。
-///
-/// <para>【例】</para>
-/// <code>
-/// var result = ValidateR2Threshold("0.95");
-/// if (result.IsValid) {
-///     float threshold = result.Value; // 再パース不要
-/// }
-/// </code>
-/// </remarks>
 public sealed class ValidationResult<T>
 {
     /// <summary>検証が成功したかどうか。</summary>

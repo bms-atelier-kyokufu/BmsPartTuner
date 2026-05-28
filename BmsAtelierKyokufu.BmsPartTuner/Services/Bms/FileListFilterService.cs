@@ -1,21 +1,9 @@
-﻿namespace BmsAtelierKyokufu.BmsPartTuner.Services.Bms;
+namespace BmsAtelierKyokufu.BmsPartTuner.Services.Bms;
 
 /// <summary>
-/// WPF CollectionViewのフィルタリング機能を抽象化し、テキスト/楽器種別/Smart Filter Chipsによるフィルターを提供します。
+/// BMSファイルリストに対するフィルタリング（テキスト検索、楽器種別、キーワードチップ）機能を提供するサービス。
+/// WPFのICollectionViewを利用してUIとデータの同期を管理します。
 /// </summary>
-/// <remarks>
-/// <para>【目的】</para>
-/// <list type="number">
-/// <item>テキストベースフィルタリング（ファイル名検索）</item>
-/// <item>楽器種別フィルタリング（チェックボックス選択）</item>
-/// <item>Smart Filter Chips生成（統計ベースの候補提示）</item>
-/// </list>
-///
-/// <para>【Why CollectionViewを使用】</para>
-/// WPFの<see cref="ICollectionView"/>は、元のコレクションを変更せずに
-/// 表示内容をフィルター・ソートできるため、UIとデータを分離できます。
-/// また、フィルター変更時にUIが自動的に更新されます。
-/// </remarks>
 public partial class FileListFilterService
 {
     private ICollectionView? _collectionView;
@@ -36,13 +24,8 @@ public partial class FileListFilterService
     }
 
     /// <summary>
-    /// 選択可能なFilterChip データモデル（双方向バインディング用）。
+    /// UIでの選択状態を双方向にバインディング可能なフィルターチップのデータモデル。
     /// </summary>
-    /// <remarks>
-    /// <para>【Why ObservableObject】</para>
-    /// IsSelectedプロパティの変更をUIに自動反映するため。
-    /// チェックボックスの状態とプロパティを双方向バインディングします。
-    /// </remarks>
     public partial class SelectableFilterChip : ObservableObject
     {
         [ObservableProperty]
@@ -53,26 +36,16 @@ public partial class FileListFilterService
 
     /// <summary>
     /// FileListFilterServiceを初期化します。
+    /// 楽器名の検出には緩めの基準（出現回数2回以上）を使用します。
     /// </summary>
-    /// <remarks>
-    /// <para>【Why minimumOccurrences=2】</para>
-    /// FilterChips生成では、<see cref="InstrumentNameDetectionService"/>（minimumOccurrences=3）より
-    /// 緩い基準を使用します。理由: フィルターUIでは候補を多く提示する方がユーザビリティが高いため。
-    /// </remarks>
     public FileListFilterService()
     {
         _instrumentDetectionService = new InstrumentNameDetectionService(minimumOccurrences: 2);
     }
 
     /// <summary>
-    /// CollectionViewを設定します。
+    /// フィルタリングの対象となるCollectionViewを設定します。
     /// </summary>
-    /// <remarks>
-    /// <para>【Why 外部から注入】</para>
-    /// ViewModelが管理するCollectionViewを受け取ることで、
-    /// Serviceは状態を持たず、複数のViewModelで再利用可能です。
-    /// </para>
-    /// </remarks>
     public void SetCollectionView(ICollectionView collectionView)
     {
         _collectionView = collectionView;
@@ -88,14 +61,8 @@ public partial class FileListFilterService
     }
 
     /// <summary>
-    /// 楽器種別フィルターを適用します（AND条件）。
+    /// 指定された楽器種別のセットに基づいてファイルリストをフィルタリングします（AND条件）。
     /// </summary>
-    /// <remarks>
-    /// <para>【Why HashSetをコピー】</para>
-    /// 元のコレクションが変更されても、フィルター条件が変わらないよう防御的コピーを行います。
-    /// また、Contains()がO(1)で高速なため、大量のファイル処理に適しています。
-    /// </para>
-    /// </remarks>
     public void ApplyInstrumentFilter(HashSet<string> selectedInstruments)
     {
         _selectedInstruments = selectedInstruments != null
@@ -106,19 +73,9 @@ public partial class FileListFilterService
     }
 
     /// <summary>
-    /// フィルター条件を結合してCollectionViewに適用します。
+    /// 現在設定されているテキストフィルターと楽器フィルターの条件を結合し、CollectionViewに適用します。
+    /// スレッドセーフ性を確保するため、フィルター実行時には条件のローカルコピーを使用します。
     /// </summary>
-    /// <remarks>
-    /// <para>【フィルターロジック】</para>
-    /// テキストフィルター AND 楽器フィルター の両方を満たす項目のみ表示。
-    /// フィルターなしの場合、全項目を表示（Filter=null）。
-    ///
-    /// <para>【Why ローカル変数selectedSetにキャプチャ】</para>
-    /// Predicateデリゲート内で_selectedInstrumentsを直接参照すると、
-    /// フィルター実行中に別スレッドで_selectedInstrumentsが変更される可能性があります。
-    /// ローカル変数にコピーすることでスレッドセーフを確保します。
-    /// </para>
-    /// </remarks>
     private void UpdateFilter()
     {
         if (_collectionView == null) return;
@@ -166,20 +123,9 @@ public partial class FileListFilterService
     }
 
     /// <summary>
-    /// Filter Chipベースのフィルターを適用します（OR条件）。
+    /// 選択されたキーワードのリストに基づいて、いずれかに一致するファイルを抽出します（OR条件）。
+    /// 統計的推定による楽器名との完全一致を優先し、フォールバックとしてファイル名の部分一致を使用します。
     /// </summary>
-    /// <remarks>
-    /// <para>【Why OR条件】</para>
-    /// ユーザーが複数のチップを選択した場合、いずれかに該当すれば表示する方が直感的です。
-    /// 例: "kick" OR "snare" → キックかスネアのいずれかを表示。
-    ///
-    /// <para>【マッチング戦略】</para>
-    /// <list type="number">
-    /// <item>InstrumentName（統計的推定）での一致を優先</item>
-    /// <item>ファイル名での部分一致で補完</item>
-    /// </list>
-    /// </para>
-    /// </remarks>
     public void ApplyChipFilter(IEnumerable<string> selectedKeywords)
     {
         if (_collectionView == null) return;
@@ -225,27 +171,13 @@ public partial class FileListFilterService
     }
 
     /// <summary>
-    /// Smart Filter Chipsを生成します（選択可能版）。
+    /// ファイルリストから頻出するプレフィックスを抽出し、選択可能なフィルターチップのリストを生成します。
     /// </summary>
-    /// <param name="files">ファイルリスト。</param>
-    /// <param name="minOccurrences">最小出現回数（デフォルト: 2）。</param>
-    /// <param name="maxChips">最大チップ数（デフォルト: 8、UI表示の限界）。</param>
-    /// <param name="minKeywordLength">最小キーワード長（デフォルト: 3）。</param>
-    /// <returns>SelectableFilterChipのコレクション。</returns>
-    /// <remarks>
-    /// <para>【アルゴリズム】</para>
-    /// <list type="number">
-    /// <item>ファイル名の先頭単語（プレフィックス）を抽出</item>
-    /// <item>出現回数をカウント</item>
-    /// <item>頻度降順でソートし、上位N件を採用</item>
-    /// </list>
-    ///
-    /// <para>【Why 先頭単語のみ】</para>
-    /// BMSの命名規則では、楽器名がプレフィックスに来ることが多いです。
-    /// 例: "kick_01.wav", "snare_loud.wav"
-    /// 先頭のみに絞ることで、ノイズ（"01", "loud"等）を削減します。
-    /// </para>
-    /// </remarks>
+    /// <param name="files">対象のファイルリスト。</param>
+    /// <param name="minOccurrences">チップとして抽出されるための最小出現回数。</param>
+    /// <param name="maxChips">生成するチップの最大数。</param>
+    /// <param name="minKeywordLength">キーワードとして抽出される最小の文字列長。</param>
+    /// <returns>選択可能なフィルターチップのコレクション。</returns>
     public static ObservableCollection<SelectableFilterChip> GenerateSelectableFilterChips(
         ObservableCollection<BmsAudioFile> files,
         int minOccurrences = 2,
@@ -289,25 +221,8 @@ public partial class FileListFilterService
     }
 
     /// <summary>
-    /// Smart Filter Chipsを生成します（読み取り専用版）。
+    /// 統計的推定とファイル名解析を組み合わせて、効果的なフィルターチップ（読み取り専用）を生成します。
     /// </summary>
-    /// <remarks>
-    /// <para>【生成戦略】</para>
-    /// <list type="number">
-    /// <item>InstrumentName（統計的推定）を優先使用</item>
-    /// <item>InstrumentNameが不足している場合、ファイル名統計で補完</item>
-    /// </list>
-    ///
-    /// <para>【Why 2段階アプローチ】</para>
-    /// <see cref="InstrumentNameDetectionService"/>が高精度な楽器名を推定しているため、
-    /// これを最優先で使用します。不足分のみファイル名統計で補うことで、
-    /// ノイズを最小限に抑えながら十分な候補を提供します。
-    ///
-    /// <para>【補完条件】</para>
-    /// maxChips / 2 未満の場合のみ補完。
-    /// 理由: 楽器名が十分に推定されている場合、ファイル名統計は不要です。
-    /// </para>
-    /// </remarks>
     public IList<FilterChip> GenerateFilterChips(
         ObservableCollection<BmsAudioFile> files,
         int minOccurrences = 2,

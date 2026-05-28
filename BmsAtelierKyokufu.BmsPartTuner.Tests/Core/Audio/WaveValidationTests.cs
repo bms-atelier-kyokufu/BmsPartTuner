@@ -24,7 +24,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
             var result = new float[samples];
             for (int i = 0; i < samples; i++)
             {
-                result[i] = amplitude * (float)Math.Sin(2 * Math.PI * frequency * i / samples + phase);
+                result[i] = amplitude * (float)Math.Sin((2 * Math.PI * frequency * i / samples) + phase);
             }
             return result;
         }
@@ -61,7 +61,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
             );
 
             var similar1 = GenerateSineWave(1000);
-            var similar2 = similar1.Select(x => x + 0.01f * (float)(new Random(42).NextDouble() - 0.5)).ToArray();
+            var similar2 = similar1.Select(x => x + (0.01f * (float)(new Random(42).NextDouble() - 0.5))).ToArray();
             data.AddCase(
                 wav1: similar1,
                 wav2: similar2,

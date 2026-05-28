@@ -2,14 +2,8 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Core;
 
 /// <summary>
 /// アプリケーション全体で使用される定数を一元管理します。
+/// マジックナンバーを排除し、パフォーマンスや環境設定のパラメータを集約してコードの意図を明確化します。
 /// </summary>
-/// <remarks>
-/// <para>【設計思想】</para>
-/// <list type="bullet">
-/// <item>マジックナンバーを排除し、コードの意図を明確化</item>
-/// <item>パフォーマンスチューニングのパラメータを集約</item>
-/// <item>環境に応じた調整を容易にする</item>
-/// </list>
 public static class AppConstants
 {
     /// <summary>
@@ -31,22 +25,16 @@ public static class AppConstants
         public const int MaxNumberBase62 = 3843;
 
         /// <summary>
-        /// 置換テーブルのサイズ（62進数の最大値+1）。
+        /// 置換テーブルのサイズ（62進数の最大値+1）。0-indexedで全定義番号を直接アクセス可能にするために+1しています。
         /// </summary>
-        /// <remarks>
-        /// Why +1: 0-indexedで全定義番号を直接アクセス可能にするため。
-        /// </remarks>
         public const int ReplaceTableSize = MaxNumberBase62 + 1;
 
         /// <summary>デフォルトの定義範囲開始値（文字列）。</summary>
         public const string Start = "01";
 
         /// <summary>
-        /// デフォルトの定義範囲終了値（文字列、0=自動検出）。
+        /// デフォルトの定義範囲終了値（文字列、"00"は特別な値で、自動的に最大定義番号を検出することを示します）。
         /// </summary>
-        /// <remarks>
-        /// "00"は特別な値で、自動的に最大定義番号を検出することを示します。
-        /// </remarks>
         public const string End = "00";
 
         /// <summary>
@@ -135,64 +123,30 @@ public static class AppConstants
     {
         /// <summary>
         /// サンプル長の類似性判定における許容誤差（±10%）。
+        /// 標準設定として末尾の無音の違いを許容します。
         /// </summary>
-        /// <remarks>
-        /// <para>【調整ガイド】</para>
-        /// <list type="bullet">
-        /// <item>厳密: 0.05f（±5%） - サンプル数がほぼ一致する場合のみ</item>
-        /// <item>標準: 0.1f（±10%） - 推奨、末尾無音の違いを許容</item>
-        /// <item>緩い: 0.15f（±15%） - フェードアウトの差を許容</item>
-        /// </list>
-        /// </remarks>
         public const float LengthSimilarityTolerance = 0.1f;
 
         /// <summary>
         /// RMS（音圧）の類似性判定における許容誤差（±20%）。
+        /// Phase 3フィルタで使用され、全比較の約85%をここで除外する標準的な設定です。
         /// </summary>
-        /// <remarks>
-        /// <para>【重要】</para>
-        /// Phase 3フィルタで使用。全比較の約85%をここで除外します。
-        ///
-        /// <para>【調整ガイド】</para>
-        /// <list type="bullet">
-        /// <item>厳密: 0.1f（±10%） - 音量がほぼ同じファイルのみ</item>
-        /// <item>標準: 0.2f（±20%） - 推奨、正規化された音源に適合</item>
-        /// <item>緩い: 0.3f（±30%） - 音量差が大きいライブラリ向け</item>
-        /// </list>
-        /// </remarks>
         public const float RmsSimilarityThreshold = 0.2f;
 
         /// <summary>
-        /// RMS類似性判定の下限倍率（-20%）。
+        /// RMS類似性判定の下限倍率（-20%、1.0 - 0.2 = 0.8）。
         /// </summary>
-        /// <remarks>
-        /// RmsSimilarityThresholdから計算: 1.0 - 0.2 = 0.8
-        /// </remarks>
         public const float RmsLowerBoundRatio = 0.8f;
 
         /// <summary>
-        /// RMS類似性判定の上限倍率（+25%）。
+        /// RMS類似性判定の上限倍率（+25%、1 / 0.8 = 1.25）。
         /// </summary>
-        /// <remarks>
-        /// RmsLowerBoundRatioの逆数: 1 / 0.8 = 1.25
-        /// </remarks>
         public const float RmsUpperBoundRatio = 1.25f;
 
         /// <summary>
         /// 早期終了チェックで使用するサンプル数（44.1kHz × 0.1秒）。
+        /// 全サンプル比較の前に、冒頭部分のみで高速判定を行うことで処理時間を短縮します。
         /// </summary>
-        /// <remarks>
-        /// <para>【目的】</para>
-        /// 全サンプル比較の前に、冒頭部分のみで高速判定。
-        /// Phase 4フィルタで約6%をここで除外します。
-        ///
-        /// <para>【調整ガイド】</para>
-        /// <list type="bullet">
-        /// <item>高速: 2205（0.05秒） - 処理速度優先</item>
-        /// <item>標準: 4410（0.1秒） - 推奨、精度とのバランス</item>
-        /// <item>高精度: 8820（0.2秒） - 精度優先、処理時間増</item>
-        /// </list>
-        /// </remarks>
         public const int QuickCheckSampleCount = 4410;
 
         /// <summary>
@@ -202,10 +156,8 @@ public static class AppConstants
 
         /// <summary>
         /// 無音ファイルのRMS上限閾値。
+        /// SilenceRmsThresholdの2倍の値とし、無音判定の安全マージンとして使用します。
         /// </summary>
-        /// <remarks>
-        /// SilenceRmsThresholdの2倍の値。無音判定の安全マージンとして使用。
-        /// </remarks>
         public const float SilenceRmsUpperBound = 0.002f;
     }
 
@@ -253,41 +205,14 @@ public static class AppConstants
     {
         /// <summary>
         /// グループの最大サイズ（ファイル数）。
+        /// 並列化効率とメモリ使用量のバランスを取るための標準設定（約20MB/100ファイル）です。
         /// </summary>
-        /// <remarks>
-        /// <para>【目的】</para>
-        /// 並列化効率とメモリ使用量のバランスを取ります。
-        ///
-        /// <para>【Why 100】</para>
-        /// <list type="bullet">
-        /// <item>100ファイルの全ペア比較: 4,950回（許容範囲）</item>
-        /// <item>メモリ: 100ファイル × 200KB ≈ 20MB（許容範囲）</item>
-        /// </list>
-        ///
-        /// <para>【調整ガイド】</para>
-        /// <list type="bullet">
-        /// <item>大規模環境（メモリ豊富）: 50-75</item>
-        /// <item>標準環境: 100（推奨）</item>
-        /// <item>小規模環境（メモリ制約）: 150-200</item>
-        /// </list>
-        /// </remarks>
         public const int MaxGroupSize = 100;
 
         /// <summary>
         /// RMS量子化係数（0.01刻み = 100）。
+        /// RMS値を整数化してグループキーを生成するために使用します（例: RMS=0.456 → int(0.456 × 100) = 45）。
         /// </summary>
-        /// <remarks>
-        /// <para>【目的】</para>
-        /// RMS値を整数化してグループキーを生成。
-        /// 例: RMS=0.456 → int(0.456 × 100) = 45
-        ///
-        /// <para>【調整ガイド】</para>
-        /// <list type="bullet">
-        /// <item>粗い分割: 50（0.02刻み） - グループ数減、比較回数増</item>
-        /// <item>標準: 100（0.01刻み） - 推奨</item>
-        /// <item>細かい分割: 200（0.005刻み） - グループ数増、比較回数減</item>
-        /// </list>
-        /// </remarks>
         public const int RmsQuantizationFactor = 100;
     }
 
@@ -302,19 +227,9 @@ public static class AppConstants
         public const int MinBatchSize = 10;
 
         /// <summary>
-        /// バッチ分割の除数（CPUコア数 × この値）。
+        /// バッチ分割の除数。
+        /// CPUコア数にこの値を乗じた数にバッチを分割します（例: 8コア × 4 = 32バッチに分割）。
         /// </summary>
-        /// <remarks>
-        /// <para>【計算例】</para>
-        /// 8コア × 4 = 32バッチに分割
-        ///
-        /// <para>【調整ガイド】</para>
-        /// <list type="bullet">
-        /// <item>メモリ豊富: 2（大きなバッチ、ロードオーバーヘッド削減）</item>
-        /// <item>標準: 4（推奨）</item>
-        /// <item>メモリ制約: 8（小さなバッチ、メモリピーク削減）</item>
-        /// </list>
-        /// </remarks>
         public const int BatchSizeDivisor = 4;
     }
 
@@ -360,13 +275,10 @@ public static class AppConstants
 
         /// <summary>
         /// ファイル拡張子から対応する種類名を取得します。
+        /// UI表示時に「BMSファイルを選択」等の適切なメッセージを生成するために使用します。
         /// </summary>
         /// <param name="extension">ファイル拡張子（.bms など）。</param>
         /// <returns>種類名（"BMSファイル" など）、不明な場合は "ファイル"。</returns>
-        /// <remarks>
-        /// <para>【用途】</para>
-        /// UI表示時に「BMSファイルを選択」等の適切なメッセージを生成します。
-        /// </remarks>
         public static string GetFileTypeName(string extension)
         {
             return extension?.ToLower() switch
@@ -434,18 +346,14 @@ public static class AppConstants
 
         /// <summary>
         /// プログレスローダーの遅延表示時間（ミリ秒）。
+        /// 処理が高速に完了する場合のローダーチラつき防止用に使用します。
         /// </summary>
-        /// <remarks>
-        /// 処理が高速に完了する場合のローダーチラつき防止用。
-        /// </remarks>
         public const int LoaderDelayMs = 500;
 
         /// <summary>
         /// 音声プレビューのデバウンス遅延時間（ミリ秒）。
+        /// 連続クリック時に最後の選択のみを再生するための遅延として機能します。
         /// </summary>
-        /// <remarks>
-        /// 連続クリック時に最後の選択のみを再生するための遅延。
-        /// </remarks>
         public const int AudioPreviewDelayMs = 300;
     }
 

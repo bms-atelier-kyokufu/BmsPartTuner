@@ -3,31 +3,10 @@ using System.Text.RegularExpressions;
 namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 
 /// <summary>
-/// BMSファイルの書き換えと定義整列を担当するクラス。
+/// BMSファイルの書き換えと定義の整列を担当するクラスです。
+/// 削減後の定義リストを抽出してファイル名順に整列し、新しいIDを割り当てた上で
+/// BMSファイル内の#WAV定義と譜面データの置換を行います。
 /// </summary>
-/// <remarks>
-/// <para>【責務】</para>
-/// <list type="bullet">
-/// <item>削減後の定義リストを抽出・整列</item>
-/// <item>新しいID（01, 02, ...）の割り当て</item>
-/// <item>BMSファイル内の#WAV定義と譜面データの置換</item>
-/// </list>
-///
-/// <para>【処理フロー】</para>
-/// <list type="number">
-/// <item>削減後の定義ファイルを抽出</item>
-/// <item>ファイル名順に整列</item>
-/// <item>新しいID（01, 02, ...）を割り当て</item>
-/// <item>BMSファイル内の定義とデータを置換</item>
-/// </list>
-///
-/// <para>【Why ファイル名順】</para>
-/// 整列により、類似ファイルが連続して並ぶため、視認性が向上します。
-/// 例: kick_01, kick_02, kick_03, snare_01, snare_02...
-/// </remarks>
-/// <remarks>
-/// BmsFileRewriterを初期化します。
-/// </remarks>
 /// <param name="fileList">ファイルリスト。</param>
 /// <param name="replaces">置換テーブル（配列インデックス: 元のID、値: 置換先ID）。</param>
 /// <param name="startPoint">処理範囲の開始定義番号。</param>
@@ -66,27 +45,10 @@ internal partial class BmsFileRewriter(
     public List<BmsAudioFile> KeptFiles { get; private set; } = [];
 
     /// <summary>
-    /// BMSファイルの置換と整列を実行します。
+    /// 削減後の定義ファイルをファイル名順に整列し、新しいIDを割り当ててBMSファイル内の定義とデータを置換します。
     /// </summary>
     /// <param name="bmsFileName">入力BMSファイルのパス。</param>
     /// <returns>書き換え後のBMS内容（文字列）。</returns>
-    /// <remarks>
-    /// <para>【処理内容】</para>
-    /// <list type="number">
-    /// <item>削減後の定義ファイルを抽出</item>
-    /// <item>ファイル名順に整列</item>
-    /// <item>新しいID（01, 02, ...）を割り当て</item>
-    /// <item>BMSファイル内の定義とデータを置換</item>
-    /// </list>
-    ///
-    /// <para>【Why 3段階マップ】</para>
-    /// <list type="bullet">
-    /// <item>reductionMap: 元のID → 削減後のID（重複排除）</item>
-    /// <item>reducedToNewMap: 削減後のID → 新しいID（整列後の連番）</item>
-    /// <item>finalMap: 元のID → 新しいID（最終的な置換マップ）</item>
-    /// </list>
-    /// これにより、重複排除と整列を独立して処理できます。
-    /// </remarks>
     public string ReplaceAndAlignBmsFile(string bmsFileName)
     {
         var (reductionMap, filesToKeep) = BuildReductionMap();
@@ -105,19 +67,9 @@ internal partial class BmsFileRewriter(
 
     /// <summary>
     /// 削減マップと保持ファイルリストを構築します。
+    /// 各ファイルの元のIDと削減後のIDをマップ化し、重複排除を行いながら保持すべきファイルのリストを作成します。
     /// </summary>
     /// <returns>削減マップと保持ファイルリストのタプル。</returns>
-    /// <remarks>
-    /// <para>【処理内容】</para>
-    /// <list type="number">
-    /// <item>各ファイルの元のIDと削減後のIDをマップ化</item>
-    /// <item>削減後のIDが重複しないようにHashSetで管理</item>
-    /// <item>保持すべきファイルをリストに追加</item>
-    /// </list>
-    ///
-    /// <para>【Why HashSet】</para>
-    /// Contains()がO(1)で高速なため、重複チェックに最適です。
-    /// </remarks>
     private (Dictionary<int, int> reductionMap, List<BmsAudioFile> filesToKeep) BuildReductionMap()
     {
         var reductionMap = new Dictionary<int, int>();
@@ -160,28 +112,13 @@ internal partial class BmsFileRewriter(
     }
 
     /// <summary>
-    /// 最終的なIDマップを構築します。
+    /// 保持ファイル数に応じて36進数または62進数を自動判定し、最終的なIDマップを構築します。
+    /// 新しい定義リストはBMSディレクトリからの相対パスで作成されます。
     /// </summary>
     /// <param name="filesToKeep">保持するファイルリスト。</param>
     /// <param name="bmsFileName">BMSファイルのパス。</param>
     /// <param name="newDefinitions">新しい定義リスト（出力）。</param>
     /// <returns>元のID → 新しいIDのマップ。</returns>
-    /// <remarks>
-    /// <para>【処理内容】</para>
-    /// <list type="number">
-    /// <item>ファイル数に応じて基数を自動判定（36進 or 62進）</item>
-    /// <item>削減後のIDに新しいID（01, 02, ...）を割り当て</item>
-    /// <item>相対パスを計算して新しい定義リストを作成</item>
-    /// <item>元のIDから新しいIDへのマップを完成</item>
-    /// </list>
-    ///
-    /// <para>【Why 基数の自動判定】</para>
-    /// 36進数（0-9,A-Z）は1295定義まで、62進数（0-9,A-Z,a-z）は3843定義まで対応。
-    /// ファイル数に応じて自動的に最適な基数を選択します。
-    ///
-    /// <para>【Why 相対パス】</para>
-    /// BMSファイルから見た相対パスで記述することで、フォルダ構造の変更に強くなります。
-    /// </remarks>
     private Dictionary<string, string> BuildFinalMap(
         List<BmsAudioFile> filesToKeep,
         string bmsFileName,
@@ -233,31 +170,14 @@ internal partial class BmsFileRewriter(
     }
 
     /// <summary>
-    /// BMSコンテンツを書き換えます。
+    /// BMSファイルを行単位で読み込み、内容の書き換えを行います。
+    /// 散在している#WAV定義を先頭に一括出力して整理し、譜面データ内のIDを置換マップに従って更新します。
+    /// 定義リストに存在しないWAV ID参照は、データ非破壊の原則に基づき変更されずに維持されます。
     /// </summary>
     /// <param name="bmsFileName">入力BMSファイルのパス。</param>
     /// <param name="finalMap">IDマップ。</param>
     /// <param name="newDefinitions">新しい定義リスト。</param>
     /// <returns>書き換え後の内容。</returns>
-    /// <remarks>
-    /// <para>【処理内容】</para>
-    /// <list type="number">
-    /// <item>BMSファイルを行単位で読み込み</item>
-    /// <item>ヘッダー行: 最初の#WAV定義の位置で新しい定義リストを一括出力</item>
-    /// <item>譜面データ行: IDを置換して出力</item>
-    /// <item>その他の行: そのまま出力</item>
-    /// </list>
-    ///
-    /// <para>【Why 一括出力】</para>
-    /// 元の#WAV定義がファイル中に散在している場合でも、
-    /// 新しい定義リストを先頭にまとめて出力することで、
-    /// 可読性と管理性が向上します。
-    ///
-    /// <para>【未定義参照の扱い】</para>
-    /// 譜面データ内で参照されているが定義リストに存在しないWAV IDは、
-    /// データ非破壊の原則に従い、変更せずにそのまま維持します。
-    /// これにより、ユーザーの資産を保護します。
-    /// </remarks>
     private string RewriteBmsContent(
         string bmsFileName,
         Dictionary<string, string> finalMap,

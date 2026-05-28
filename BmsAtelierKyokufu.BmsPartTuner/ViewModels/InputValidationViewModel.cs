@@ -1,35 +1,39 @@
-﻿namespace BmsAtelierKyokufu.BmsPartTuner.ViewModels;
+namespace BmsAtelierKyokufu.BmsPartTuner.ViewModels;
 
 /// <summary>
-/// 入力値の検証を担当するViewModel。
-/// 責務: パス検証、ファイル存在確認、フォーマット検証
+/// ユーザー入力（ファイルパス等）の検証を担当するViewModel。
 /// </summary>
 public partial class InputValidationViewModel : ObservableObject
 {
-    /// <summary>入力パスが有効かどうか。</summary>
+    /// <summary>
+    /// 入力パスが有効かどうか。
+    /// </summary>
     [ObservableProperty]
     public partial bool IsInputPathValid { get; set; }
 
-    /// <summary>出力パスが有効かどうか。</summary>
+    /// <summary>
+    /// 出力パスが有効かどうか。
+    /// </summary>
     [ObservableProperty]
     public partial bool IsOutputPathValid { get; set; }
 
-    /// <summary>入力パスのエラーメッセージ。</summary>
+    /// <summary>
+    /// 入力パスに関するエラーメッセージ。
+    /// </summary>
     [ObservableProperty]
     public partial string InputPathErrorMessage { get; set; } = string.Empty;
 
-    /// <summary>出力パスのエラーメッセージ。</summary>
+    /// <summary>
+    /// 出力パスに関するエラーメッセージ。
+    /// </summary>
     [ObservableProperty]
     public partial string OutputPathErrorMessage { get; set; } = string.Empty;
 
     /// <summary>
-    /// 検証エラーが発生したイベント。
+    /// 検証エラーが発生した際に発生するイベント。
     /// </summary>
     public event EventHandler<ValidationErrorEventArgs>? ValidationErrorOccurred;
 
-    /// <summary>
-    /// InputValidationViewModelを初期化。
-    /// </summary>
     public InputValidationViewModel()
     {
         IsInputPathValid = false;
@@ -37,7 +41,7 @@ public partial class InputValidationViewModel : ObservableObject
     }
 
     /// <summary>
-    /// 入力パスを検証。
+    /// 指定された入力パスの存在とフォーマットを検証します。
     /// </summary>
     public bool ValidateInputPath(string inputPath)
     {
@@ -73,7 +77,7 @@ public partial class InputValidationViewModel : ObservableObject
     }
 
     /// <summary>
-    /// 出力パスを検証。
+    /// 指定された出力パスのディレクトリの存在と拡張子を検証します。
     /// </summary>
     public bool ValidateOutputPath(string outputPath)
     {
@@ -120,7 +124,7 @@ public partial class InputValidationViewModel : ObservableObject
     }
 
     /// <summary>
-    /// 全入力を検証。
+    /// 入力パスと出力パスの両方を検証します。
     /// </summary>
     public bool ValidateAll(string inputPath, string outputPath)
     {
@@ -130,7 +134,7 @@ public partial class InputValidationViewModel : ObservableObject
     }
 
     /// <summary>
-    /// 入力と出力の両方が設定されているかを確認。
+    /// 入力パスと出力パスの両方が指定されているかどうかを確認します。
     /// </summary>
     public static bool ArePathsSpecified(string inputPath, string outputPath)
     {
@@ -148,16 +152,12 @@ public partial class InputValidationViewModel : ObservableObject
         return string.Join(", ", AppConstants.Files.SupportedOutputBmsExtensions);
     }
 
-    #region イベント引数クラス
-
     /// <summary>
-    /// 検証エラーのイベント引数。
+    /// 検証エラーイベントの引数を提供します。
     /// </summary>
     public class ValidationErrorEventArgs(string propertyName, string errorMessage) : EventArgs
     {
         public string PropertyName { get; } = propertyName;
         public string ErrorMessage { get; } = errorMessage;
     }
-
-    #endregion
 }

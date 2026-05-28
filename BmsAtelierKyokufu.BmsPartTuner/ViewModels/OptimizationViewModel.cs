@@ -1,8 +1,13 @@
+using BmsAtelierKyokufu.BmsPartTuner.Core.Attributes;
 using BmsAtelierKyokufu.BmsPartTuner.Services.Bms;
 using BmsAtelierKyokufu.BmsPartTuner.Views.Controls;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.ViewModels;
 
+/// <summary>
+/// 音声ファイルの最適化と定義ファイル（BMS）の書き換え処理を制御するViewModel。
+/// </summary>
+[ADRAnchor("OPT-07", nameof(OptimizationViewModel))]
 public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
 {
     private readonly IBmsOptimizationService _optimizationService;
@@ -11,6 +16,10 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
     #region プロパティ
 
     private string _r2Threshold = AppConstants.Threshold.DefaultDisplay.ToString();
+    
+    /// <summary>
+    /// 音声比較におけるマッチ許容度（しきい値）。
+    /// </summary>
     public string R2Threshold
     {
         get => _r2Threshold;
@@ -24,37 +33,55 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
         }
     }
 
+    /// <summary>
+    /// 最適化対象とするBMS定義の開始インデックス。
+    /// </summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsInputValid))]
     public partial string DefinitionStart { get; set; } = AppConstants.Definition.Start;
 
+    /// <summary>
+    /// 最適化対象とするBMS定義の終了インデックス。
+    /// </summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsInputValid))]
     public partial string DefinitionEnd { get; set; } = AppConstants.Definition.End;
 
+    /// <summary>
+    /// 現在の処理状況を示すステータスメッセージ。
+    /// </summary>
     [ObservableProperty]
     public partial string StatusMessage { get; set; } = "準備完了";
 
+    /// <summary>
+    /// 現在の処理の進捗率（0〜100）。
+    /// </summary>
     [ObservableProperty]
     public partial int ProgressValue { get; set; }
 
+    /// <summary>
+    /// 進捗が不定状態（インジケーターぐるぐる状態）かどうか。
+    /// </summary>
     [ObservableProperty]
     public partial bool IsProgressIndeterminate { get; set; }
 
+    /// <summary>
+    /// 現在最適化処理が実行中かどうか。
+    /// </summary>
     [ObservableProperty]
     public partial bool IsBusy { get; set; }
 
     /// <summary>
-    /// ローダー表示フラグ。
-    /// <see cref="LoaderDelayMs"/>後に表示されるため、高速処理時のチラつきを防止。
+    /// ローダーUIの表示フラグ。
     /// </summary>
     [ObservableProperty]
     public partial bool ShowLoader { get; set; }
 
-    /// <summary>
-    /// 音源ファイルの物理削除を有効にするかどうか。
-    /// </summary>
     private bool _isPhysicalDeletionEnabled;
+
+    /// <summary>
+    /// 未使用となった音源ファイルを物理的に削除するかどうか。
+    /// </summary>
     public bool IsPhysicalDeletionEnabled
     {
         get => _isPhysicalDeletionEnabled;
@@ -74,19 +101,19 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
     public partial string SlideInstructionText { get; set; } = "スライドして上書き保存";
 
     /// <summary>
-    /// スライド方向。
+    /// スライド操作の方向。
     /// </summary>
     [ObservableProperty]
     public partial SlideDirection SwipeDirection { get; set; } = SlideDirection.LeftToRight;
 
     /// <summary>
-    /// 現在の処理状況を示すローディングメッセージ。
+    /// 処理中のローディングメッセージ。
     /// </summary>
     [ObservableProperty]
     public partial string LoadingMessage { get; set; } = string.Empty;
 
     /// <summary>
-    /// 最後の最適化結果（パフォーマンス指標表示用）。
+    /// 最後に実行された最適化処理の結果データ。
     /// </summary>
     [ObservableProperty]
     public partial Models.OptimizationResult? LastOptimizationResult { get; set; }
@@ -108,7 +135,6 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
         }
     }
 
-    // フォーム全体のエラーフラグ
     public bool HasFormLevelError { get; private set; }
 
     private void SetFormError(string message)
@@ -137,8 +163,19 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
     }
     #endregion
 
+    /// <summary>
+    /// 定義削減処理が完了した際に発生するイベント。
+    /// </summary>
     public event EventHandler<ReductionResultEventArgs>? DefinitionReductionCompleted;
+
+    /// <summary>
+    /// 処理中にエラーが発生した際に発生するイベント。
+    /// </summary>
     public event EventHandler<string>? ErrorOccurred;
+
+    /// <summary>
+    /// 処理中に警告が発生した際に発生するイベント。
+    /// </summary>
     public event EventHandler<string>? WarningOccurred;
 
     public OptimizationViewModel(IBmsOptimizationService optimizationService)
@@ -153,7 +190,6 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
             ProgressValue = percent;
             IsProgressIndeterminate = false;
 
-            // 進捗に応じてメッセージを更新
             var message = percent switch
             {
                 < 10 => "波形データを解析中...",
@@ -168,12 +204,6 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
         });
     }
 
-    /// <summary>
-    /// 遅延ローダー制御を開始します。
-    /// 高速処理時のローダーチラつきを防止するため、一定時間後にローダーを表示します。
-    /// </summary>
-    /// <param name="cancellationToken">キャンセルトークン。</param>
-    /// <returns>ローダー表示タスク。</returns>
     private async Task StartDelayedLoaderAsync(CancellationToken cancellationToken)
     {
         try
@@ -191,11 +221,6 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
         }
     }
 
-    /// <summary>
-    /// ビジー状態を開始します（遅延ローダー制御付き）。
-    /// </summary>
-    /// <param name="initialMessage">初期ローディングメッセージ。</param>
-    /// <returns>キャンセルトークンソース（ローダー制御用）。</returns>
     private CancellationTokenSource BeginBusyState(string initialMessage)
     {
         IsBusy = true;
@@ -210,10 +235,6 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
         return cts;
     }
 
-    /// <summary>
-    /// ビジー状態を終了します。
-    /// </summary>
-    /// <param name="cts">ローダー制御用キャンセルトークンソース。</param>
     private void EndBusyState(CancellationTokenSource cts)
     {
         cts.Cancel();
@@ -225,12 +246,8 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
     }
 
     /// <summary>
-    /// 100回シミュレーションによる最適しきい値探索を実行します。
+    /// しきい値の最適化シミュレーションを実行します。
     /// </summary>
-    /// <param name="files">ファイルパスリスト。</param>
-    /// <param name="startDefinition">開始定義。</param>
-    /// <param name="endDefinition">終了定義。</param>
-    /// <returns>最適化結果。</returns>
     public async Task<Models.OptimizationResult?> ExecuteThresholdOptimizationAsync(
         List<string> files,
         int startDefinition,
@@ -262,7 +279,6 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
                 {
                     LastOptimizationResult = result;
 
-                    // パフォーマンス情報をステータスに表示
                     var execTime = result.ExecutionTime.TotalSeconds;
                     var memoryMb = result.MemoryUsedBytes / 1024.0 / 1024.0;
 
@@ -270,7 +286,6 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
                                    $"Base62: {result.Base62Result.Threshold:P0} " +
                                    $"({execTime:F1}s, {memoryMb:F1}MB)";
 
-                    // 警告がある場合は表示
                     if (result.HasWarnings)
                     {
                         var warningMessage = string.Join("\n", result.Warnings);
@@ -305,8 +320,6 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
         {
             EndBusyState(loaderCts);
 
-            // メモリリーク対策: 処理完了後にGCを実行してメモリを解放
-            // 注: キャッシュのクリアはBmsOptimizationServiceで実施
             await Task.Run(() =>
             {
                 GC.Collect();
@@ -316,6 +329,9 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
         }
     }
 
+    /// <summary>
+    /// BMSの定義削減処理を実行します。
+    /// </summary>
     public async Task ExecuteDefinitionReductionAsync(
         BmsAtelierKyokufu.BmsPartTuner.Core.Bms.BmsDefinitionManager? bmsFileList,
         string? inputPath,
@@ -407,14 +423,9 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
             EndBusyState(loaderCts);
             IsBusy = false;
 
-            // メモリリーク対策: 処理完了後にキャッシュをクリアしてメモリを解放
             await Task.Run(() =>
             {
                 PerformanceDebugLogger.WriteDebug(nameof(OptimizationViewModel), "=== OptimizationViewModel: Clearing caches ===");
-                if (bmsFileList != null)
-                {
-                    // キャッシュの解放は BmsOptimizationService 内部で実行されるため、ここでは何もしません
-                }
             });
         }
     }
@@ -436,7 +447,6 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
                     }
                     else
                     {
-                        // %記号を削除して数値をパース、非ASCIIはブロック
                         var raw = R2Threshold;
                         if (raw.Any(static c => c > 0x7F))
                         {
@@ -464,7 +474,6 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
                     }
                     else
                     {
-                        // 非ASCIIを排除
                         if (DefinitionStart.Any(static c => c > 0x7F))
                         {
                             error = "英数字のみを入力してください";
@@ -511,7 +520,7 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
 
                         if (DefinitionEnd.Equals(AppConstants.Definition.End, StringComparison.OrdinalIgnoreCase))
                         {
-                            // 00は許可（ファイルから推定）
+                            // 00は許可
                         }
                         else if (!string.IsNullOrWhiteSpace(DefinitionStart))
                         {
@@ -537,12 +546,18 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
         }
     }
 
+    /// <summary>
+    /// 最適化結果イベントの引数を提供します。
+    /// </summary>
     public class OptimizationResultEventArgs : EventArgs
     {
         public object? Result { get; set; }
         public string Message { get; set; } = string.Empty;
     }
 
+    /// <summary>
+    /// 削減結果イベントの引数を提供します。
+    /// </summary>
     public class ReductionResultEventArgs : EventArgs
     {
         public object? Result { get; set; }

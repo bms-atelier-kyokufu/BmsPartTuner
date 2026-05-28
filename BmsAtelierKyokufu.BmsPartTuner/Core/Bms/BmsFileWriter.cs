@@ -15,15 +15,12 @@ internal static class BmsFileWriter
     }
 
     /// <summary>
-    /// BMSファイルを書き込みます。
+    /// BMSファイルを指定された保存先へ書き込みます。
+    /// 一時ファイルに書き込んだ後、リネームしてアトミックに書き込みを行うことで破損を防ぎます。
+    /// 互換性維持のためShift_JISエンコーディングが使用されます。
     /// </summary>
     /// <param name="saveFileName">保存先ファイルパス。</param>
     /// <param name="writeData">書き込む内容。</param>
-    /// <remarks>
-    /// <para>【Why Shift_JIS】</para>
-    /// BMSフォーマットはShift_JISエンコーディングが標準です。
-    /// 互換性維持のため、ファイル書き込みにはShift_JISを使用します。
-    /// </remarks>
     public static void WriteBmsFile(string saveFileName, string writeData)
     {
         // アトミック書き込み: 一時ファイルに書き込んでからリネーム

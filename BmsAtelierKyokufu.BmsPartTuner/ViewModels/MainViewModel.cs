@@ -6,7 +6,7 @@ using BmsAtelierKyokufu.BmsPartTuner.Services.UI;
 namespace BmsAtelierKyokufu.BmsPartTuner.ViewModels;
 
 /// <summary>
-/// メインViewModelの統合コーディネーター。
+/// 各種ViewModelを統括し、アプリケーション全体のUI状態とビジネスロジックを連携させるメインコーディネーター。
 /// </summary>
 public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposable
 {

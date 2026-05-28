@@ -1,35 +1,12 @@
-﻿using System.Windows.Media.Animation;
+using System.Windows.Media.Animation;
 using BmsAtelierKyokufu.BmsPartTuner.ViewModels;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Services.UI;
 
 /// <summary>
-/// 結果カード表示サービス。
+/// 最適化結果やパフォーマンス統計（Tech Stats）を視覚的に表示するカードUIを制御するサービス。
+/// プレースホルダーと結果カードの切り替えや、フェードインアニメーションを管理します。
 /// </summary>
-/// <remarks>
-/// <para>【責務】</para>
-/// <list type="bullet">
-/// <item>最適化結果を視覚的に表示</item>
-/// <item>プレースホルダーと結果カードの切り替え</item>
-/// <item>フェードインアニメーション</item>
-/// <item>パフォーマンス統計（Tech Stats）の表示</item>
-/// </list>
-///
-/// <para>【表示項目】</para>
-/// <list type="bullet">
-/// <item>閾値（Threshold）</item>
-/// <item>サマリー（Summary）</item>
-/// <item>削減率（Reduction）</item>
-/// <item>処理時間（Time）</item>
-/// <item>エルボーポイント（Elbow）</item>
-/// <item>安全マージン（Margin）</item>
-/// <item>Tech Stats（処理時間・メモリ使用量）</item>
-/// </list>
-///
-/// <para>【アニメーション】</para>
-/// 結果表示時にフェードイン（0.3秒）を適用し、
-/// 視覚的なフィードバックを提供します。
-/// </remarks>
 public class ResultCardService : IUiElementService<ResultCardData>
 {
     private FrameworkElement? _card;
@@ -121,11 +98,8 @@ public class ResultCardService : IUiElementService<ResultCardData>
     }
 
     /// <summary>
-    /// 結果をクリア。
+    /// 結果カードを非表示にし、プレースホルダーを表示状態に戻します。
     /// </summary>
-    /// <remarks>
-    /// 結果カードを非表示にし、プレースホルダーを表示します。
-    /// </remarks>
     public void Clear()
     {
         if (_card == null)
@@ -139,18 +113,10 @@ public class ResultCardService : IUiElementService<ResultCardData>
     }
 
     /// <summary>
-    /// 結果カードを表示。
+    /// 指定された結果データを用いて各項目を設定し、プレースホルダーを非表示にして結果カードを表示します。
+    /// 表示時には0.3秒のフェードインアニメーションが適用されます。
     /// </summary>
     /// <param name="data">表示するデータ。</param>
-    /// <remarks>
-    /// <para>【処理内容】</para>
-    /// <list type="number">
-    /// <item>各TextBlockにデータを設定</item>
-    /// <item>プレースホルダーを非表示</item>
-    /// <item>結果カードを表示</item>
-    /// <item>フェードインアニメーション（0.3秒）</item>
-    /// </list>
-    /// </remarks>
     void IUiElementService<ResultCardData>.Show(ResultCardData data)
     {
         if (_card == null)
@@ -176,18 +142,10 @@ public class ResultCardService : IUiElementService<ResultCardData>
     }
 
     /// <summary>
-    /// 最適化結果からResultCardDataを生成して表示します。
+    /// 最適化シミュレーションの結果からResultCardDataを生成し、推奨しきい値やパフォーマンス統計を視覚的に表示します。
+    /// 最も重要な情報である「推奨しきい値」が強調して表示されます。
     /// </summary>
     /// <param name="result">最適化結果。</param>
-    /// <remarks>
-    /// <para>【用途】</para>
-    /// FindOptimalThresholdsAsyncの結果を視覚的に表示する際に使用します。
-    /// Base36/Base62の推奨値とパフォーマンス統計を表示します。
-    ///
-    /// <para>【表示優先度】</para>
-    /// ユーザーが最も知りたいのは「推奨しきい値」なので、これを最も大きく表示します。
-    /// しきい値は36進数と62進数の両方を満たす最高品質（しきい値が最大）の値です。
-    /// </remarks>
     public void ShowOptimizationResult(OptimizationResult result)
     {
         ArgumentNullException.ThrowIfNull(result);
@@ -244,11 +202,8 @@ public class ResultCardService : IUiElementService<ResultCardData>
     }
 
     /// <summary>
-    /// 結果カードを非表示。
+    /// パフォーマンス統計（Tech Stats）と結果カードを非表示にし、プレースホルダー状態に戻します。
     /// </summary>
-    /// <remarks>
-    /// <see cref="Clear"/>を呼び出してプレースホルダーへ切り替えます。
-    /// </remarks>
     public void Hide()
     {
         HideTechStats();
