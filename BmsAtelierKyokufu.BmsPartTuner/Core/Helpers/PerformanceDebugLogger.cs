@@ -97,7 +97,7 @@ public static class PerformanceDebugLogger
             LogLevel.Error => "\x1b[31m",   // Red
             _ => "\x1b[0m"
         };
-        string colorSuffix = "\x1b[0m";
+        const string colorSuffix = "\x1b[0m";
 
         // フォーマット: [Time] [LEVEL] [Tag] Message
         var logLine = $"{timestamp} [{levelStr}] [{tag}] {message}";
