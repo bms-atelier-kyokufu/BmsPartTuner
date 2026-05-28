@@ -1,3 +1,6 @@
+using System.Numerics;
+using static System.Numerics.BitOperations;
+
 namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
 
 /// <summary>
@@ -55,6 +58,25 @@ internal static class FastWaveCompare
         if (isData1Silent || isData2Silent)
         {
             return false;
+        }
+
+        // SimHash256 Cascade Classifier (Heuristic Hamming Distance Threshold: 64)
+        if (data1.SimHash256 != null && data2.SimHash256 != null)
+        {
+            var s1 = data1.SimHash256;
+            var s2 = data2.SimHash256;
+
+            // ループアンローリング（展開）による分岐命令の排除とパイプラインの最適化
+            int hammingDistance =
+                BitOperations.PopCount(s1[0] ^ s2[0]) +
+                BitOperations.PopCount(s1[1] ^ s2[1]) +
+                BitOperations.PopCount(s1[2] ^ s2[2]) +
+                BitOperations.PopCount(s1[3] ^ s2[3]);
+
+            if (hammingDistance > 64)
+            {
+                return false;
+            }
         }
 
         // Spectral Features Cascade Classifier (Heuristic Threshold: 0.88f)
