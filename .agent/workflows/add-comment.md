@@ -85,7 +85,7 @@ public class UserService : IUserService
 
 ```
 
-### 適用例2：複雑な数理モデル・最適化を伴うメソッド（XML + ADR）
+### 適用例2：複雑な数理モデル・最適化を伴うメソッド（XML + ADRAnchor）
 
 ```csharp
 /// <summary>
@@ -95,28 +95,10 @@ public class UserService : IUserService
 /// <param name="y">従属変数の配列。要素数は <paramref name="x"/> と一致している必要があります。</param>
 /// <returns>回帰直線の傾き (a) と切片 (b) を含むタプル。</returns>
 /// <exception cref="ArgumentException">配列の長さが異なる、または要素数が不足している場合にスローされます。</exception>
+[ADRAnchor("M-01", nameof(FastWaveCompare))]
 public (double Slope, double Intercept) CalculateLinearRegression(double[] x, double[] y)
 {
     if (x.Length != y.Length || x.Length < 2) throw new ArgumentException("Invalid input data.");
-
-    /* ==============================================================================
-     * 【アーキテクチャ決定レコード (ADR)】
-     * * ■ 設計判断 (Why this algorithm?)
-     * 単回帰分析（Ordinary Least Squares）を使用し、回帰直線のパラメータを算出する。
-     * * ■ 数学的証明 (Mathematical Proof)
-     * 回帰直線 $y = ax + b$ において、傾き $a$ と切片 $b$ は以下の公式で求められる。
-     * * $$
-     * a = \frac{n \sum_{i=1}^{n} x_i y_i - \sum_{i=1}^{n} x_i \sum_{i=1}^{n} y_i}{n \sum_{i=1}^{n} x_i^2 - (\sum_{i=1}^{n} x_i)^2}
-     * $$
-     * * $$
-     * b = \frac{\sum_{i=1}^{n} y_i - a \sum_{i=1}^{n} x_i}{n}
-     * $$
-     * * ※ 変数対応: $n$ = `x.Length`, $\sum x$ = `sumX`, $\sum y$ = `sumY`, $\sum xy$ = `sumXY`, $\sum x^2$ = `sumX2`
-     * * ■ 非採用としたアプローチ (Rejected Alternatives / Anti-patterns)
-     * - LINQの利用廃止: 過去の実装では可読性のために `x.Zip(y, ...).Sum()` 等のLINQを使用していたが、
-     * 配列の走査が複数回発生し、大量のデータポイント（n > 10,000）でキャッシュミスとメモリアロケーションの
-     * ボトルネックとなった。そのためLINQを廃止し、1回の `for` ループで全ての総和を計算する構造を採用している。
-     * ============================================================================== */
 
     int n = x.Length;
     double sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
