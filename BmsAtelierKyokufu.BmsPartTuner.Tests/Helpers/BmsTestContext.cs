@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Text;
 using BmsAtelierKyokufu.BmsPartTuner.Core;
 
@@ -12,16 +12,15 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
     /// </summary>
     public class BmsTestContext : IDisposable
     {
-        private readonly string _tempDirectory;
         private bool _disposed;
 
         public BmsTestContext()
         {
-            _tempDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-            Directory.CreateDirectory(_tempDirectory);
+            TempDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+            Directory.CreateDirectory(TempDirectory);
         }
 
-        public string TempDirectory => _tempDirectory;
+        public string TempDirectory { get; }
 
         /// <summary>
         /// Creates a new BmsFileBuilder linked to this context.
@@ -36,9 +35,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
             if (_disposed) return;
             try
             {
-                if (Directory.Exists(_tempDirectory))
+                if (Directory.Exists(TempDirectory))
                 {
-                    Directory.Delete(_tempDirectory, true);
+                    Directory.Delete(TempDirectory, true);
                 }
             }
             catch

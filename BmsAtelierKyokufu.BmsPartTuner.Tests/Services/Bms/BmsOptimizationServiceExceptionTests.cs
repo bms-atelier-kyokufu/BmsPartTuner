@@ -69,7 +69,7 @@ public class BmsOptimizationServiceExceptionTests : IDisposable
     public Task ExecuteDefinitionReductionAsync_InputFileNotFound_ReturnsErrorResult() =>
         RunDefinitionReductionTestAsync(new()
         {
-            BuildBms = b => { },
+            BuildBms = _ => { },
             CreateFiles = dir => [new() { Num = "01", NumInteger = 1, Name = BmsTestWavHelper.CreateValidWavFile(Path.Combine(dir, "test.wav")) }],
             AssertResult = res => { Assert.NotNull(res); Assert.False(res.IsSuccess); Assert.NotNull(res.ErrorMessage); },
             BeforeExecute = _ => File.Delete(Path.Combine(_context.TempDirectory, "test.bms")) // Force file not found
@@ -92,7 +92,7 @@ public class BmsOptimizationServiceExceptionTests : IDisposable
         var file1 = BmsTestWavHelper.CreateValidWavFile(Path.Combine(_context.TempDirectory, "locked.wav"));
         var file2 = BmsTestWavHelper.CreateValidWavFile(Path.Combine(_context.TempDirectory, "normal.wav"));
 
-        using var fs = new FileStream(file1, FileMode.Open, FileAccess.Read, FileShare.Read);
+        await using var fs = new FileStream(file1, FileMode.Open, FileAccess.Read, FileShare.Read);
 
         await RunDefinitionReductionTestAsync(new()
         {
@@ -165,7 +165,7 @@ public class BmsOptimizationServiceExceptionTests : IDisposable
     {
         var validFile = BmsTestWavHelper.CreateValidWavFile(Path.Combine(_context.TempDirectory, "valid.wav"));
         var lockedFile = BmsTestWavHelper.CreateValidWavFile(Path.Combine(_context.TempDirectory, "locked.wav"));
-        using var fs = new FileStream(lockedFile, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+        await using var fs = new FileStream(lockedFile, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
 
         await RunOptimalThresholdsTestAsync(
             _ => [validFile, lockedFile],
@@ -242,8 +242,8 @@ public class BmsOptimizationServiceExceptionTests : IDisposable
         // 2. 例外（入力ファイルなし）が発生するテストを実行
         await RunDefinitionReductionTestAsync(new()
         {
-            BuildBms = b => { },
-            CreateFiles = dir => [new() { Name = "nonexistent.wav", Num = "01", NumInteger = 1 }],
+            BuildBms = _ => { },
+            CreateFiles = _ => [new() { Name = "nonexistent.wav", Num = "01", NumInteger = 1 }],
             AssertResult = res => Assert.False(res.IsSuccess),
             BeforeExecute = _ => File.Delete(Path.Combine(_context.TempDirectory, "test.bms")),
             Threshold = 0.5f,

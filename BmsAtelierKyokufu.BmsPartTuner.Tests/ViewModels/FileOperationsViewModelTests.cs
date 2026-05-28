@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers;
 using BmsAtelierKyokufu.BmsPartTuner.ViewModels;
 
@@ -16,7 +16,7 @@ public class FileOperationsViewModelTests
 
         var viewModel = new FileOperationsViewModel();
         string generatedOutputPath = "";
-        viewModel.AutoOutputPathRequested += (s, path) => generatedOutputPath = path;
+        viewModel.AutoOutputPathRequested += (_, path) => generatedOutputPath = path;
 
         // When InputPath is set to a .bmson file
         viewModel.InputPath = bmsonPath;

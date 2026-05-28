@@ -62,9 +62,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
             StartSilenceSamples = DetectStartSilence(samplesPerChannel, samplesPerChannelLen, Channels);
             TotalRms = CalculateTotalRms(samplesPerChannel, samplesPerChannelLen, Channels);
 
-            var lshResult = GenerateLsh(samplesPerChannel, samplesPerChannelLen, Channels);
-            _signLsh = lshResult.signLsh;
-            _signLshMask = lshResult.signLshMask;
+            var (signLsh, signLshMask) = GenerateLsh(samplesPerChannel, samplesPerChannelLen, Channels);
+            _signLsh = signLsh;
+            _signLshMask = signLshMask;
 
             FftSpectrum = GenerateFftSpectrum(samplesPerChannel, Channels);
             ShiftInvariantLsh = GenerateShiftInvariantLsh(FftSpectrum);
@@ -133,7 +133,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
             var regionsPerChannel = new List<ActiveRegion>[channels];
             for (int ch = 0; ch < channels; ch++)
             {
-                regionsPerChannel[ch] = new List<ActiveRegion>();
+                regionsPerChannel[ch] = [];
                 var samples = samplesPerChannel[ch];
                 if (samples.Length > 0)
                 {
@@ -178,7 +178,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
             return (float)Math.Sqrt(sumSq / totalCount);
         }
 
-        private static int DetectStartSilence(float[][] samplesPerChannel, int length, int channels)
+        private static int DetectStartSilence(float[][] _, int __, int ___)
         {
             return 0; // テスト用ダミー
         }

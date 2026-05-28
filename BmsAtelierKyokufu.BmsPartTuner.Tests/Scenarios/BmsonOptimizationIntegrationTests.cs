@@ -10,6 +10,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Scenarios;
 
 public class BmsonOptimizationIntegrationTests
 {
+    private static readonly JsonSerializerOptions Options = new() { PropertyNameCaseInsensitive = true };
     private readonly ITestOutputHelper _output;
 
     public BmsonOptimizationIntegrationTests(ITestOutputHelper output)
@@ -83,7 +84,7 @@ public class BmsonOptimizationIntegrationTests
 
         // 1. bmson -> bms conversion
         string bmsonJson = File.ReadAllText(bmsonFilePath);
-        var bmsonData = JsonSerializer.Deserialize<BmsonFormat>(bmsonJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        var bmsonData = JsonSerializer.Deserialize<BmsonFormat>(bmsonJson, Options);
         Assert.NotNull(bmsonData);
 
         var timeCalc = new PulseToBmsTimeCalculator(bmsonData.Info?.Resolution ?? 240, bmsonData.Lines ?? []);
@@ -158,12 +159,12 @@ public class BmsonOptimizationIntegrationTests
 
         // Load Oracle
         string oracleJson = File.ReadAllText(oracleFilePath);
-        var oracle = JsonSerializer.Deserialize<OracleData>(oracleJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        var oracle = JsonSerializer.Deserialize<OracleData>(oracleJson, Options);
         Assert.NotNull(oracle);
 
         // 1. bmson -> bms conversion
         string bmsonJson = File.ReadAllText(bmsonFilePath);
-        var bmsonData = JsonSerializer.Deserialize<BmsonFormat>(bmsonJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        var bmsonData = JsonSerializer.Deserialize<BmsonFormat>(bmsonJson, Options);
         Assert.NotNull(bmsonData);
 
         var timeCalc = new PulseToBmsTimeCalculator(bmsonData.Info?.Resolution ?? 240, bmsonData.Lines ?? []);
