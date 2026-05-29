@@ -1,4 +1,4 @@
-﻿using BmsAtelierKyokufu.BmsPartTuner.Core.Attributes;
+using BmsAtelierKyokufu.BmsPartTuner.Core.Attributes;
 using System.Collections.Concurrent;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
 
@@ -226,7 +226,6 @@ internal class SimulationEngine(
     private int SimulateThreshold(float threshold, IReadOnlyList<IReadOnlyList<int>> groups)
     {
         var uf = new UnionFind(AppConstants.Definition.ReplaceTableSize); // BMSの最大定義番号
-        int[] replaceTable = uf.GetRawTable();
 
         int totalComparisons = 0;
         int totalMatches = 0;
@@ -302,8 +301,6 @@ internal class SimulationEngine(
     {
         if (group == null || group.Count == 0) return;
 
-        int[] replaceTable = uf.GetRawTable();
-
         // 単一ファイルのグループでも自分自身を登録
         if (group.Count == 1)
         {
@@ -312,7 +309,7 @@ internal class SimulationEngine(
 
             if (fileNum >= _startPoint && fileNum <= _endPoint)
             {
-                System.Threading.Interlocked.CompareExchange(ref replaceTable[fileNum], fileNum, 0);
+                uf.TryMarkSelf(fileNum);
             }
             return;
         }
@@ -328,7 +325,7 @@ internal class SimulationEngine(
             if (iVal < _startPoint || iVal > _endPoint) continue;
 
             // 自分自身をマーク
-            if (System.Threading.Interlocked.CompareExchange(ref replaceTable[iVal], iVal, 0) != 0)
+            if (!uf.TryMarkSelf(iVal))
                 continue;
 
             float rms1 = entries[i].Rms;
@@ -345,10 +342,10 @@ internal class SimulationEngine(
                 int jVal = _fileList[jIdx].NumInteger;
 
                 if (jVal < _startPoint || jVal > _endPoint) continue;
-                if (replaceTable[jVal] != 0) continue;
+                if (uf.IsMapped(jVal)) continue;
 
                 // Fast path checking (Name & Fingerprint)
-                if (TryFastPathMatch(iIdx, jIdx, replaceTable, iVal, jVal, ref matches))
+                if (TryFastPathMatch(iIdx, jIdx, uf, iVal, jVal, ref matches))
                 {
                     continue;
                 }
@@ -366,7 +363,7 @@ internal class SimulationEngine(
     private bool TryFastPathMatch(
         int iIdx,
         int jIdx,
-        int[] replaceTable,
+        UnionFind uf,
         int iVal,
         int jVal,
         ref int matches)
@@ -374,7 +371,7 @@ internal class SimulationEngine(
         // Fast path: exact name match
         if (_fileList[iIdx].Name.Equals(_fileList[jIdx].Name))
         {
-            if (System.Threading.Interlocked.CompareExchange(ref replaceTable[jVal], iVal, 0) == 0)
+            if (uf.TryLink(jVal, iVal))
             {
                 System.Threading.Interlocked.Increment(ref matches);
             }
@@ -385,7 +382,7 @@ internal class SimulationEngine(
         if (!string.IsNullOrEmpty(_fileList[iIdx].AudioFingerprint) &&
             _fileList[iIdx].AudioFingerprint.Equals(_fileList[jIdx].AudioFingerprint))
         {
-            if (System.Threading.Interlocked.CompareExchange(ref replaceTable[jVal], iVal, 0) == 0)
+            if (uf.TryLink(jVal, iVal))
             {
                 System.Threading.Interlocked.Increment(ref matches);
             }

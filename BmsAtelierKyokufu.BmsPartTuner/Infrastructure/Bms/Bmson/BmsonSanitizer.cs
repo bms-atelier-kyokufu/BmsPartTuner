@@ -1,4 +1,4 @@
-﻿using BmsAtelierKyokufu.BmsPartTuner.Models.Bmson;
+using BmsAtelierKyokufu.BmsPartTuner.Models.Bmson;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms.Bmson;
 
@@ -11,46 +11,41 @@ public static class BmsonSanitizer
     /// bmsonデータをサニタイズし、変換に必要な前提条件を保証します。
     /// </summary>
     /// <param name="bmson">サニタイズ対象のbmsonデータ。</param>
-    public static void Sanitize(BmsonFormat bmson)
+    public static BmsonFormat Sanitize(BmsonFormat bmson)
     {
         if (bmson == null)
-            return;
+            return bmson!;
 
         // Lines（小節線）の制約: 最初の小節線は y = 0 でなければならない
         // bmsonの仕様上省略可能だが、BMS変換の数学モデル（小節番号・相対位置算出）では必須
-        bmson.Lines ??= [];
+        var lines = bmson.Lines?.ToList() ?? [];
 
-        if (bmson.Lines.Count == 0 || bmson.Lines[0].Y > 0)
+        if (lines.Count == 0 || lines[0].Y > 0)
         {
-            bmson.Lines.Insert(0, new BmsonLineEvent { Y = 0 });
+            lines.Insert(0, new BmsonLineEvent { Y = 0 });
         }
 
-        // yが負の小節線や、順序が逆転しているものを整理（昇順ソート）
-        bmson.Lines = [.. bmson.Lines.OrderBy(static l => l.Y)];
-
-        // 不要な重複小節線（同じy座標）を排除
-        List<BmsonLineEvent> uniqueLines = [];
-        long lastY = -1;
-        foreach (var line in bmson.Lines)
-        {
-            if (line.Y != lastY)
-            {
-                uniqueLines.Add(line);
-                lastY = line.Y;
-            }
-        }
-        bmson.Lines = uniqueLines;
+        // yが負の小節線や、順序が逆転しているものを整理（昇順ソート）し、重複を排除
+        var uniqueLines = lines
+            .OrderBy(static l => l.Y)
+            .DistinctBy(static l => l.Y)
+            .ToList();
 
         // ノーツをy座標でソートする（音声切り出しの前提条件）
-        if (bmson.SoundChannels != null)
+        var channels = bmson.SoundChannels?.ToList() ?? [];
+        for (int i = 0; i < channels.Count; i++)
         {
-            foreach (var channel in bmson.SoundChannels)
+            if (channels[i].Notes != null)
             {
-                if (channel.Notes != null)
-                {
-                    channel.Notes = [.. channel.Notes.OrderBy(static n => n.Y)];
-                }
+                var sortedNotes = channels[i].Notes.OrderBy(static n => n.Y).ToList();
+                channels[i] = channels[i] with { Notes = sortedNotes };
             }
         }
+
+        return bmson with
+        {
+            Lines = uniqueLines,
+            SoundChannels = channels
+        };
     }
 }

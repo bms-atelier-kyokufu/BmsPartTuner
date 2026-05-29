@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.IO;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 using BmsAtelierKyokufu.BmsPartTuner.Models.Bmson;
@@ -121,7 +121,7 @@ public class BmsonBenchmarkTests(ITestOutputHelper output)
         bmson.Lines.Add(new BmsonLineEvent { Y = 960 });
 
         // サニタイズ（Y=0 の小節線挿入やソート）
-        BmsonSanitizer.Sanitize(bmson);
+        bmson = BmsonSanitizer.Sanitize(bmson);
 
         var timeCalc = new PulseToBmsTimeCalculator(bmson.Info.Resolution, bmson.Lines);
         var realTimeCalc = new PulseToRealTimeCalculator(bmson.Info.Resolution, bmson.Info.InitBpm, bmson.BpmEvents, bmson.StopEvents);

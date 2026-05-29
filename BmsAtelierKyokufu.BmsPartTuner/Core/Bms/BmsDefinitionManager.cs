@@ -1,4 +1,4 @@
-﻿using BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
+using BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
 using BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Interfaces.Bms;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Optimization;
@@ -132,11 +132,12 @@ public partial class BmsDefinitionManager(string bmsFilePath, string? bmsContent
         {
             var detectionResult = _instrumentDetectionService.DetectInstruments(files);
 
-            foreach (var file in files)
+            for (int i = 0; i < files.Count; i++)
             {
+                var file = files[i];
                 if (detectionResult.FileInstrumentMap.TryGetValue(file.Name, out string? instrumentName))
                 {
-                    file.InstrumentName = instrumentName;
+                    files[i] = file with { InstrumentName = instrumentName };
                 }
             }
         }

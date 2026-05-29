@@ -91,6 +91,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "img", "img", "{2CD22421-E81
 		docs\img\Document-Hierarchy_JP.svg = docs\img\Document-Hierarchy_JP.svg
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tmp", "tmp", "{AF7011A1-6CCF-4186-B13C-B351691B0C2A}"
+	ProjectSection(SolutionItems) = preProject
+		tmp\.gitkeep = tmp\.gitkeep
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

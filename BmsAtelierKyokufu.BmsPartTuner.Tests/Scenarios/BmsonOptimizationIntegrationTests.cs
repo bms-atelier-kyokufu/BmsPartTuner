@@ -281,9 +281,9 @@ public class BmsonOptimizationIntegrationTests
         {
             var data = kvp.Value;
             var vec = new float[16];
-            if (data.FftSpectrum?[0] != null)
+            if (data is IAudioStatisticalData statData && statData.FftSpectrum?[0] != null)
             {
-                var spec = data.FftSpectrum[0];
+                var spec = statData.FftSpectrum[0];
                 double sumSq = 0;
                 for (int i = 1; i <= 16; i++) // bins 1 to 16
                 {
@@ -406,7 +406,7 @@ public class BmsonOptimizationIntegrationTests
                 var data2 = cachedList[j];
 
                 if (data1.Channels != data2.Channels || data1.SampleRate != data2.SampleRate) continue;
-                if (data1.SimHash256 == null || data2.SimHash256 == null) continue;
+                if (data1 is not IAudioStatisticalData stat1 || data2 is not IAudioStatisticalData stat2 || stat1.SimHash256 == null || stat2.SimHash256 == null) continue;
 
                 int targetChannel = 0;
                 if (data1.GetActiveRegions()[0] == null || data1.GetActiveRegions()[0].Count == 0) targetChannel = 1;
@@ -421,8 +421,8 @@ public class BmsonOptimizationIntegrationTests
                 float r = BmsAtelierKyokufu.BmsPartTuner.Core.Audio.FastWaveCompare.CalculateMaxCorrelation(
                     shorter, longer, targetChannel, shorterFrames, longerFrames, shorterSpan, longerFullSpan, out _);
 
-                var s1 = data1.SimHash256;
-                var s2 = data2.SimHash256;
+                var s1 = stat1.SimHash256;
+                var s2 = stat2.SimHash256;
 
                 int hammingDistance =
                     System.Numerics.BitOperations.PopCount(s1[0] ^ s2[0]) +

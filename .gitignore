@@ -57,6 +57,7 @@ Desktop.ini
 *.log
 *.tmp
 tmp/
+!tmp/.gitkeep
 
 # --- Local temporary test folders ---
 /wav_a/

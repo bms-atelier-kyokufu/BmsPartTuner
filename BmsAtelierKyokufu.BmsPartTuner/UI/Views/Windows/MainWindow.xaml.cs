@@ -1,8 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using BmsAtelierKyokufu.BmsPartTuner.Infrastructure;
 using BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms;
-using BmsAtelierKyokufu.BmsPartTuner.Core.Interfaces.Bms;
-using BmsAtelierKyokufu.BmsPartTuner.Core.Optimization;
 using BmsAtelierKyokufu.BmsPartTuner.UI.Services;
 using BmsAtelierKyokufu.BmsPartTuner.UI.ViewModels;
 using BmsAtelierKyokufu.BmsPartTuner.UI.Views.Controls;

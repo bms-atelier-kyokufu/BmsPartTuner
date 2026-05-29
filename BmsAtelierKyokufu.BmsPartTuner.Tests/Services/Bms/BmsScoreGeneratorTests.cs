@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 using BmsAtelierKyokufu.BmsPartTuner.Models.Bmson;
 using BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms.Bmson;
@@ -49,7 +49,7 @@ public class BmsScoreGeneratorTests
             bmson.SoundChannels.Add(channel);
             bmson.Lines.Add(new BmsonLineEvent { Y = 960 });
 
-            BmsonSanitizer.Sanitize(bmson);
+            bmson = BmsonSanitizer.Sanitize(bmson);
 
             var timeCalc = new PulseToBmsTimeCalculator(bmson.Info.Resolution, bmson.Lines);
             var realTimeCalc = new PulseToRealTimeCalculator(bmson.Info.Resolution, bmson.Info.InitBpm, bmson.BpmEvents, bmson.StopEvents);
@@ -95,7 +95,7 @@ public class BmsScoreGeneratorTests
             bmson.SoundChannels.Add(channel);
             bmson.Lines.Add(new BmsonLineEvent { Y = 960 });
 
-            BmsonSanitizer.Sanitize(bmson);
+            bmson = BmsonSanitizer.Sanitize(bmson);
 
             var timeCalc = new PulseToBmsTimeCalculator(bmson.Info.Resolution, bmson.Lines);
             var realTimeCalc = new PulseToRealTimeCalculator(bmson.Info.Resolution, bmson.Info.InitBpm, bmson.BpmEvents, bmson.StopEvents);
@@ -142,7 +142,7 @@ public class BmsScoreGeneratorTests
             bmson.SoundChannels.Add(channel);
             bmson.Lines.Add(new BmsonLineEvent { Y = 960 });
 
-            BmsonSanitizer.Sanitize(bmson);
+            bmson = BmsonSanitizer.Sanitize(bmson);
 
             var timeCalc = new PulseToBmsTimeCalculator(bmson.Info.Resolution, bmson.Lines);
             var realTimeCalc = new PulseToRealTimeCalculator(bmson.Info.Resolution, bmson.Info.InitBpm, bmson.BpmEvents, bmson.StopEvents);
@@ -176,7 +176,7 @@ public class BmsScoreGeneratorTests
 
             // 1. total = 100 (デフォルト値) の場合は #TOTAL が出力されないことの検証
             var bmsonDefault = CreateBaseBmson();
-            bmsonDefault.Info.Total = 100; // デフォルト割合
+            bmsonDefault = bmsonDefault with { Info = bmsonDefault.Info with { Total = 100 } }; // デフォルト割合
             var chDefault = new BmsonSoundChannel
             {
                 Name = "bgm.wav",
@@ -185,7 +185,7 @@ public class BmsScoreGeneratorTests
             bmsonDefault.SoundChannels.Add(chDefault);
             bmsonDefault.Lines.Add(new BmsonLineEvent { Y = 960 });
 
-            BmsonSanitizer.Sanitize(bmsonDefault);
+            bmsonDefault = BmsonSanitizer.Sanitize(bmsonDefault);
             var timeCalcDef = new PulseToBmsTimeCalculator(bmsonDefault.Info.Resolution, bmsonDefault.Lines);
             var realTimeCalcDef = new PulseToRealTimeCalculator(bmsonDefault.Info.Resolution, bmsonDefault.Info.InitBpm, bmsonDefault.BpmEvents, bmsonDefault.StopEvents);
             var audioSlicerDef = new AudioSliceManager(tempDir, false);
@@ -197,7 +197,7 @@ public class BmsScoreGeneratorTests
 
             // 2. total = 80 (カスタム値) の場合は #TOTAL が計算値 (基準デフォルト * 0.8) で出力されることの検証
             var bmsonCustom = CreateBaseBmson();
-            bmsonCustom.Info.Total = 80; // カスタム割合
+            bmsonCustom = bmsonCustom with { Info = bmsonCustom.Info with { Total = 80 } }; // カスタム割合
             var chCustom = new BmsonSoundChannel
             {
                 Name = "bgm.wav",
@@ -206,7 +206,7 @@ public class BmsScoreGeneratorTests
             bmsonCustom.SoundChannels.Add(chCustom);
             bmsonCustom.Lines.Add(new BmsonLineEvent { Y = 960 });
 
-            BmsonSanitizer.Sanitize(bmsonCustom);
+            bmsonCustom = BmsonSanitizer.Sanitize(bmsonCustom);
             var timeCalcCust = new PulseToBmsTimeCalculator(bmsonCustom.Info.Resolution, bmsonCustom.Lines);
             var realTimeCalcCust = new PulseToRealTimeCalculator(bmsonCustom.Info.Resolution, bmsonCustom.Info.InitBpm, bmsonCustom.BpmEvents, bmsonCustom.StopEvents);
             var audioSlicerCust = new AudioSliceManager(tempDir, false);
