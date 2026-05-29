@@ -1,7 +1,6 @@
 using BmsAtelierKyokufu.BmsPartTuner.Services.UI;
 using BmsAtelierKyokufu.BmsPartTuner.Views.Windows;
 using Microsoft.Extensions.DependencyInjection;
-using Scrutor;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Extensions
 {
@@ -24,8 +23,8 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Extensions
                     // InNamespaces は前方一致のため、サブ名前空間（Common, Audio等）も全て含まれます。
                     .AddClasses(classes => classes.InNamespaces($"{baseNamespace}.Services")
                         // 特殊な初期化が必要なクラスは除外
-                        .Where(type => type != typeof(DragDropService) && type != typeof(WpfUIThreadDispatcher)))
-                    .AsSelfWithInterfaces()
+                        .Where(type => type != typeof(DragDropService) && type != typeof(WpfUIThreadDispatcher))
+                    ).AsSelfWithInterfaces()
                     .WithSingletonLifetime()
                     // ViewModels配下のクラスをTransientとして登録
                     .AddClasses(classes => classes.InNamespaces($"{baseNamespace}.ViewModels"))
