@@ -1,6 +1,6 @@
-﻿using System.Text.Json;
+using System.IO;
 using System.Text.Json.Serialization;
-using BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
+using BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms.Bmson.Pipeline;
 using BmsAtelierKyokufu.BmsPartTuner.Models.Bmson;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms.Bmson;
@@ -23,45 +23,18 @@ public static class BmsonIntegrationFacade
     /// <returns>生成されたBMSテキスト</returns>
     public static string GenerateBmsText(string bmsonFilePath, bool keyNotesOnly)
     {
-        PerformanceDebugLogger.Clear();
-        PerformanceDebugLogger.WriteDebug(nameof(BmsonIntegrationFacade), "=== Downconvert started ===");
-        var timerTotal = PerformanceDebugLogger.StartTimer();
+        // 変換パイプラインの構築
+        var pipeline = new BmsonConversionPipeline()
+            .AddStep(new BmsonValidationStep())
+            .AddStep(new BmsonParseStep())
+            .AddStep(new BmsonSanitizeStep())
+            .AddStep(new BmsonBuildCalculatorsStep())
+            .AddStep(new BmsonPrepareAudioSlicerStep())
+            .AddStep(new BmsScoreGenerateStep());
 
-        if (!File.Exists(bmsonFilePath))
-            throw new FileNotFoundException("Bmson file not found.", bmsonFilePath);
-
-        var timer = PerformanceDebugLogger.StartTimer();
-
-        // 1. JSONパース (Source Generation + Streamを使用)
-        using var stream = File.OpenRead(bmsonFilePath);
-        var bmson = JsonSerializer.Deserialize(stream, BmsonJsonContext.Default.BmsonFormat)
-            ?? throw new InvalidOperationException("Failed to parse the bmson file (returned null).");
-        PerformanceDebugLogger.WriteDebug(nameof(BmsonIntegrationFacade), $"JSON read & parse: {timer.Lap("JSON read & parse")} ms");
-
-        // 2. サニタイズ（数学的制約の保証）
-        BmsonSanitizer.Sanitize(bmson);
-        PerformanceDebugLogger.WriteDebug(nameof(BmsonIntegrationFacade), $"Sanitize: {timer.Lap("Sanitize")} ms");
-
-        // 3. 数学的時間モデルの構築
-        var timeCalc = new PulseToBmsTimeCalculator(bmson.Info.Resolution, bmson.Lines);
-        var realTimeCalc = new PulseToRealTimeCalculator(bmson.Info.Resolution, bmson.Info.InitBpm, bmson.BpmEvents, bmson.StopEvents);
-        PerformanceDebugLogger.WriteDebug(nameof(BmsonIntegrationFacade), $"Time calculators build: {timer.Lap("Time calculators build")} ms");
-
-        // 4. 音声スライスエンジンの準備
-        string bmsonDir = Path.GetDirectoryName(bmsonFilePath) ?? string.Empty;
-        using var audioSlicer = new AudioSliceManager(bmsonDir);
-
-        PerformanceDebugLogger.LogMemoryUsage("Before BmsScoreGenerator (Engine ready)");
-
-        // 5. スコアジェネレータの実行
-        // ※内部でPre-Sliceを行い、スライス数を数えた上で最適な進数(36 or 62)を自動選択する
-        var generator = new BmsScoreGenerator(bmson, timeCalc, realTimeCalc, audioSlicer, keyNotesOnly);
-        string result = generator.GenerateBmsText();
-        PerformanceDebugLogger.WriteDebug(nameof(BmsonIntegrationFacade), $"BmsScoreGenerator run: {timer.Lap("BmsScoreGenerator run")} ms");
-
-        PerformanceDebugLogger.LogMemoryUsage("After BmsScoreGenerator (Downconvert finished)");
-
-        PerformanceDebugLogger.WriteDebug(nameof(BmsonIntegrationFacade), $"=== Downconvert finished. Total: {timerTotal.Lap("Total")} ms ===");
-        return result;
+        // 使い終わったリソース（AudioSliceManager等）を安全に解放するため、usingを使用
+        using var context = new BmsonConversionContext(bmsonFilePath, keyNotesOnly);
+        return pipeline.Execute(context);
     }
 }
+
