@@ -5,194 +5,194 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Models.Bmson;
 /// <summary>
 /// bmsonフォーマットのルート要素。
 /// </summary>
-public class BmsonFormat
+public record BmsonFormat
 {
     [JsonPropertyName("version")]
-    public string Version { get; set; } = "1.0.0";
+    public string Version { get; init; } = "1.0.0";
 
     [JsonPropertyName("info")]
-    public BmsonInfo Info { get; set; } = new();
+    public BmsonInfo Info { get; init; } = new();
 
     [JsonPropertyName("lines")]
-    public List<BmsonLineEvent> Lines { get; set; } = [];
+    public List<BmsonLineEvent> Lines { get; init; } = [];
 
     [JsonPropertyName("bpm_events")]
-    public List<BmsonBpmEvent> BpmEvents { get; set; } = [];
+    public List<BmsonBpmEvent> BpmEvents { get; init; } = [];
 
     [JsonPropertyName("stop_events")]
-    public List<BmsonStopEvent> StopEvents { get; set; } = [];
+    public List<BmsonStopEvent> StopEvents { get; init; } = [];
 
     [JsonPropertyName("sound_channels")]
-    public List<BmsonSoundChannel> SoundChannels { get; set; } = [];
+    public List<BmsonSoundChannel> SoundChannels { get; init; } = [];
 
     [JsonPropertyName("bga")]
-    public BmsonBga? Bga { get; set; }
+    public BmsonBga? Bga { get; init; }
 }
 
 /// <summary>
 /// 楽曲のメタデータ情報。
 /// </summary>
-public class BmsonInfo
+public record BmsonInfo
 {
     [JsonPropertyName("title")]
-    public string Title { get; set; } = string.Empty;
+    public string Title { get; init; } = string.Empty;
 
     [JsonPropertyName("subtitle")]
-    public string Subtitle { get; set; } = string.Empty;
+    public string Subtitle { get; init; } = string.Empty;
 
     [JsonPropertyName("artist")]
-    public string Artist { get; set; } = string.Empty;
+    public string Artist { get; init; } = string.Empty;
 
     [JsonPropertyName("subartists")]
-    public List<string> Subartists { get; set; } = [];
+    public List<string> Subartists { get; init; } = [];
 
     [JsonPropertyName("genre")]
-    public string Genre { get; set; } = string.Empty;
+    public string Genre { get; init; } = string.Empty;
 
     [JsonPropertyName("mode_hint")]
-    public string ModeHint { get; set; } = "beat-7k";
+    public string ModeHint { get; init; } = "beat-7k";
 
     [JsonPropertyName("chart_name")]
-    public string ChartName { get; set; } = string.Empty;
+    public string ChartName { get; init; } = string.Empty;
 
     [JsonPropertyName("level")]
-    public int Level { get; set; } = 1;
+    public int Level { get; init; } = 1;
 
     [JsonPropertyName("init_bpm")]
-    public double InitBpm { get; set; } = 120.0;
+    public double InitBpm { get; init; } = 120.0;
 
     [JsonPropertyName("judge_rank")]
-    public double JudgeRank { get; set; } = 100.0;
+    public double JudgeRank { get; init; } = 100.0;
 
     [JsonPropertyName("total")]
-    public double Total { get; set; } = 100.0;
+    public double Total { get; init; } = 100.0;
 
     [JsonPropertyName("back_image")]
-    public string BackImage { get; set; } = string.Empty;
+    public string BackImage { get; init; } = string.Empty;
 
     [JsonPropertyName("eyecatch_image")]
-    public string EyecatchImage { get; set; } = string.Empty;
+    public string EyecatchImage { get; init; } = string.Empty;
 
     [JsonPropertyName("banner_image")]
-    public string BannerImage { get; set; } = string.Empty;
+    public string BannerImage { get; init; } = string.Empty;
 
     [JsonPropertyName("resolution")]
-    public int Resolution { get; set; } = 240;
+    public int Resolution { get; init; } = 240;
 }
 
 /// <summary>
 /// 小節線を定義するイベント。
 /// </summary>
-public class BmsonLineEvent
+public record BmsonLineEvent
 {
     [JsonPropertyName("y")]
-    public long Y { get; set; }
+    public long Y { get; init; }
 }
 
 /// <summary>
 /// BPM変更イベント。
 /// </summary>
-public class BmsonBpmEvent
+public record BmsonBpmEvent
 {
     [JsonPropertyName("y")]
-    public long Y { get; set; }
+    public long Y { get; init; }
 
     [JsonPropertyName("bpm")]
-    public double Bpm { get; set; }
+    public double Bpm { get; init; }
 }
 
 /// <summary>
 /// ストップ (一時停止) イベント。
 /// </summary>
-public class BmsonStopEvent
+public record BmsonStopEvent
 {
     [JsonPropertyName("y")]
-    public long Y { get; set; }
+    public long Y { get; init; }
 
     [JsonPropertyName("duration")]
-    public long Duration { get; set; }
+    public long Duration { get; init; }
 }
 
 /// <summary>
 /// サウンドチャンネル (ステム/キー音)。
 /// </summary>
-public class BmsonSoundChannel
+public record BmsonSoundChannel
 {
     [JsonPropertyName("name")]
-    public string Name { get; set; } = string.Empty;
+    public string Name { get; init; } = string.Empty;
 
     [JsonPropertyName("notes")]
-    public List<BmsonNote> Notes { get; set; } = [];
+    public List<BmsonNote> Notes { get; init; } = [];
 }
 
 /// <summary>
 /// サウンドチャンネル内に配置されるノーツ。
 /// </summary>
-public class BmsonNote
+public record BmsonNote
 {
     /// <summary>
     /// 配置されるレーン (0 = BGM, 1~7 = 鍵盤, 8 = スクラッチ など)。
     /// </summary>
     [JsonPropertyName("x")]
-    public int X { get; set; }
+    public int X { get; init; }
 
     /// <summary>
     /// ノーツが配置される絶対パルス値。
     /// </summary>
     [JsonPropertyName("y")]
-    public long Y { get; set; }
+    public long Y { get; init; }
 
     /// <summary>
     /// ロングノーツの長さ (0の場合は単ノート)。
     /// </summary>
     [JsonPropertyName("l")]
-    public long L { get; set; } = 0;
+    public long L { get; init; } = 0;
 
     /// <summary>
     /// 音声を継続させるかどうか (<c>true</c> = 継続、<c>false</c> = カット)。
     /// </summary>
     [JsonPropertyName("c")]
-    public bool C { get; set; } = true;
+    public bool C { get; init; } = true;
 }
 
 /// <summary>
 /// BGA定義とイベント。
 /// </summary>
-public class BmsonBga
+public record BmsonBga
 {
     [JsonPropertyName("bga_header")]
-    public List<BmsonBgaHeader> BgaHeader { get; set; } = [];
+    public List<BmsonBgaHeader> BgaHeader { get; init; } = [];
 
     [JsonPropertyName("bga_events")]
-    public List<BmsonBgaEvent> BgaEvents { get; set; } = [];
+    public List<BmsonBgaEvent> BgaEvents { get; init; } = [];
 
     [JsonPropertyName("layer_events")]
-    public List<BmsonBgaEvent> LayerEvents { get; set; } = [];
+    public List<BmsonBgaEvent> LayerEvents { get; init; } = [];
 
     [JsonPropertyName("poor_events")]
-    public List<BmsonBgaEvent> PoorEvents { get; set; } = [];
+    public List<BmsonBgaEvent> PoorEvents { get; init; } = [];
 }
 
 /// <summary>
 /// BGA/BMPファイルのヘッダー定義。
 /// </summary>
-public class BmsonBgaHeader
+public record BmsonBgaHeader
 {
     [JsonPropertyName("id")]
-    public int Id { get; set; }
+    public int Id { get; init; }
 
     [JsonPropertyName("name")]
-    public string Name { get; set; } = string.Empty;
+    public string Name { get; init; } = string.Empty;
 }
 
 /// <summary>
 /// BGA画像を切り替えるイベント。
 /// </summary>
-public class BmsonBgaEvent
+public record BmsonBgaEvent
 {
     [JsonPropertyName("y")]
-    public long Y { get; set; }
+    public long Y { get; init; }
 
     [JsonPropertyName("id")]
-    public int Id { get; set; }
+    public int Id { get; init; }
 }

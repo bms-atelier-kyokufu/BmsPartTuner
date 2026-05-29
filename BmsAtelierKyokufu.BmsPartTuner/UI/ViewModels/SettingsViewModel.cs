@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Common;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Interfaces.Common;
 using BmsAtelierKyokufu.BmsPartTuner.UI.Services;
@@ -16,7 +16,7 @@ public partial class SettingsViewModel : ObservableObject
     private readonly SettingsService _settingsService;
     private readonly ThemeService _themeService;
     private readonly LicenseLoaderService _licenseLoaderService;
-    private readonly AppSettings _settings;
+    private AppSettings _settings;
 
     /// <summary>
     /// 設定画面で現在選択されているタブのインデックス。
@@ -36,7 +36,7 @@ public partial class SettingsViewModel : ObservableObject
             var cleanValue = value?.Trim('"') ?? string.Empty;
             if (_settings.MbmPlayPath != cleanValue)
             {
-                _settings.MbmPlayPath = cleanValue;
+                _settings = _settings with { MbmPlayPath = cleanValue };
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(HasPlayerPath));
                 _settingsService.Save(_settings);
@@ -59,7 +59,7 @@ public partial class SettingsViewModel : ObservableObject
         {
             if (_settings.IsDarkTheme != value)
             {
-                _settings.IsDarkTheme = value;
+                _settings = _settings with { IsDarkTheme = value };
                 OnPropertyChanged();
                 _settingsService.Save(_settings);
 
@@ -81,7 +81,7 @@ public partial class SettingsViewModel : ObservableObject
         {
             if (_settings.UseSystemTheme != value)
             {
-                _settings.UseSystemTheme = value;
+                _settings = _settings with { UseSystemTheme = value };
                 OnPropertyChanged();
                 _settingsService.Save(_settings);
 
@@ -177,7 +177,7 @@ public partial class SettingsViewModel : ObservableObject
         {
             if (_settings.IsDarkTheme != isDark)
             {
-                _settings.IsDarkTheme = isDark;
+                _settings = _settings with { IsDarkTheme = isDark };
                 OnPropertyChanged(nameof(IsDarkTheme));
             }
         };
