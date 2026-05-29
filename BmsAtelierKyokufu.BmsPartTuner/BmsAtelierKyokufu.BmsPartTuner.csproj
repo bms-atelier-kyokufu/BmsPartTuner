@@ -44,7 +44,7 @@
         </None>
         <None Include=".copilot\prompts\gen-commit.prompt.md" />
         <None Include=".copilot\prompts\gen-pull-request.prompt.md" />
-        <None Include=".github\workflows\ci.yml" />
+        <None Include="..\.github\workflows\ci.yml" />
         <Resource Include="Properties\Resources\icon.ico" />
         <Content Include="Properties\Resources\BmpPartTunerLogo.light-dark-variable.svg">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
