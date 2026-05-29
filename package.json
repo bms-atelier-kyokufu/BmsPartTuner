@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "format:style": "dotnet format style --severity info --exclude-diagnostics IDE0060 IDE0130",
-    "format:analyzers": "dotnet format analyzers --severity info --exclude-diagnostics IDE0060 IDE0130",
+    "format:style": "dotnet format style --severity info --exclude-diagnostics IDE0060 IDE0130 /p:RunningFormat=true",
+    "format:analyzers": "dotnet format analyzers --severity info --exclude-diagnostics IDE0060 IDE0130 /p:RunningFormat=true",
     "format": "npm run format:style && npm run format:analyzers",
     "test": "dotnet test",
     "test:coverage": "dotnet test --collect:\"XPlat Code Coverage\"",

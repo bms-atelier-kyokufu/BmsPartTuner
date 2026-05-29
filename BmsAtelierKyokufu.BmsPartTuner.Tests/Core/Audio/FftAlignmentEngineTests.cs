@@ -1,6 +1,4 @@
-﻿using System;
-using BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
-using Xunit;
+﻿using BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio;
 

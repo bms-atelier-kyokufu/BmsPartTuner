@@ -1,6 +1,5 @@
-﻿using MathNet.Numerics;
-using System.Numerics;
-using MathNet.Numerics.IntegralTransforms;
+﻿using System.Numerics;
+using MathNet.Numerics;
 using GenerateSimdBatchUnrollAttribute = BmsAtelierKyokufu.BmsPartTuner.Core.Attributes.GenerateSimdBatchUnrollAttribute;
 using Vector = System.Numerics.Vector;
 

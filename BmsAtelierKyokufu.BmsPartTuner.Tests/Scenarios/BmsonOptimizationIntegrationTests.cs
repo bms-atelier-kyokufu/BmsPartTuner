@@ -2,9 +2,9 @@ using System.IO;
 using System.Text;
 using System.Text.Json;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
+using BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms.Bmson;
 using BmsAtelierKyokufu.BmsPartTuner.Models;
 using BmsAtelierKyokufu.BmsPartTuner.Models.Bmson;
-using BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms.Bmson;
 using Xunit.Abstractions;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Scenarios;

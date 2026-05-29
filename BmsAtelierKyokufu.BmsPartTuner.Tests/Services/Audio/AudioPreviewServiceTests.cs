@@ -1,6 +1,5 @@
 ﻿using BmsAtelierKyokufu.BmsPartTuner.Core.Interfaces.Audio;
 using BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Audio;
-using BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Audio.AudioPlayer;
 using Moq;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Services.Audio;

@@ -245,18 +245,41 @@ public interface IPerformanceLogger
 /// </summary>
 public static class PerformanceLoggerExtensions
 {
-    [Conditional("DEBUG")] public static void WriteTrace(this IPerformanceLogger logger, string msg) => PerformanceDebugLogger.WriteTrace(logger.Tag, msg);
-    [Conditional("DEBUG")] public static void WriteVerbose(this IPerformanceLogger logger, string msg) => PerformanceDebugLogger.WriteVerbose(logger.Tag, msg);
-    [Conditional("DEBUG")] public static void WriteDebug(this IPerformanceLogger logger, string msg) => PerformanceDebugLogger.WriteDebug(logger.Tag, msg);
-    [Conditional("DEBUG")] public static void WriteInfo(this IPerformanceLogger logger, string msg) => PerformanceDebugLogger.WriteInfo(logger.Tag, msg);
-    [Conditional("DEBUG")] public static void WriteWarning(this IPerformanceLogger logger, string msg) => PerformanceDebugLogger.WriteWarning(logger.Tag, msg);
-    [Conditional("DEBUG")] public static void WriteError(this IPerformanceLogger logger, string msg) => PerformanceDebugLogger.WriteError(logger.Tag, msg);
-    [Conditional("DEBUG")] public static void WriteError(this IPerformanceLogger logger, string msg, Exception ex) => PerformanceDebugLogger.WriteError(logger.Tag, msg, ex);
-    [Conditional("DEBUG")] public static void LogMemoryUsage(this IPerformanceLogger logger) => PerformanceDebugLogger.LogMemoryUsage(logger.Tag);
-    public static IDisposable MeasureTime(this IPerformanceLogger logger, string scope, LogLevel level = LogLevel.Debug) => PerformanceDebugLogger.MeasureTime(logger.Tag, scope, level);
-    [Conditional("DEBUG")] public static void PrintAccumulated(this IPerformanceLogger logger, string prefix, LogLevel level = LogLevel.Debug) => PerformanceDebugLogger.PrintAccumulated(logger.Tag, prefix, level);
-    [Conditional("DEBUG")] public static void PrintAccumulatedGrouped(this IPerformanceLogger logger, string title, LogLevel level = LogLevel.Debug) => PerformanceDebugLogger.PrintAccumulatedGrouped(logger.Tag, title, level);
-    [Conditional("DEBUG")] public static void CheckAndHaltIfDiagnosisTriggered(this IPerformanceLogger logger, string context, object? target = null) => PerformanceDebugLogger.CheckAndHaltIfDiagnosisTriggered(logger.Tag, context, target);
+    [Conditional("DEBUG")]
+    public static void WriteTrace(this IPerformanceLogger logger, string msg)
+        => PerformanceDebugLogger.WriteTrace(logger.Tag, msg);
+    [Conditional("DEBUG")]
+    public static void WriteVerbose(this IPerformanceLogger logger, string msg)
+        => PerformanceDebugLogger.WriteVerbose(logger.Tag, msg);
+    [Conditional("DEBUG")]
+    public static void WriteDebug(this IPerformanceLogger logger, string msg)
+        => PerformanceDebugLogger.WriteDebug(logger.Tag, msg);
+    [Conditional("DEBUG")]
+    public static void WriteInfo(this IPerformanceLogger logger, string msg)
+        => PerformanceDebugLogger.WriteInfo(logger.Tag, msg);
+    [Conditional("DEBUG")]
+    public static void WriteWarning(this IPerformanceLogger logger, string msg)
+        => PerformanceDebugLogger.WriteWarning(logger.Tag, msg);
+    [Conditional("DEBUG")]
+    public static void WriteError(this IPerformanceLogger logger, string msg)
+        => PerformanceDebugLogger.WriteError(logger.Tag, msg);
+    [Conditional("DEBUG")]
+    public static void WriteError(this IPerformanceLogger logger, string msg, Exception ex)
+        => PerformanceDebugLogger.WriteError(logger.Tag, msg, ex);
+    [Conditional("DEBUG")]
+    public static void LogMemoryUsage(this IPerformanceLogger logger)
+        => PerformanceDebugLogger.LogMemoryUsage(logger.Tag);
+    public static IDisposable MeasureTime(this IPerformanceLogger logger, string scope, LogLevel level = LogLevel.Debug)
+        => PerformanceDebugLogger.MeasureTime(logger.Tag, scope, level);
+    [Conditional("DEBUG")]
+    public static void PrintAccumulated(this IPerformanceLogger logger, string prefix, LogLevel level = LogLevel.Debug)
+        => PerformanceDebugLogger.PrintAccumulated(logger.Tag, prefix, level);
+    [Conditional("DEBUG")]
+    public static void PrintAccumulatedGrouped(this IPerformanceLogger logger, string title, LogLevel level = LogLevel.Debug)
+        => PerformanceDebugLogger.PrintAccumulatedGrouped(logger.Tag, title, level);
+    [Conditional("DEBUG")]
+    public static void CheckAndHaltIfDiagnosisTriggered(this IPerformanceLogger logger, string context, object? target = null)
+        => PerformanceDebugLogger.CheckAndHaltIfDiagnosisTriggered(logger.Tag, context, target);
 }
 
 /// <summary>

@@ -1,5 +1,3 @@
-using CommunityToolkit.Mvvm.Messaging.Messages;
-
 namespace BmsAtelierKyokufu.BmsPartTuner.Core.Messages;
 
 /// <summary>

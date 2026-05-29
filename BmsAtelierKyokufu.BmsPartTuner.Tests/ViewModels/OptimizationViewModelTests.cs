@@ -1,12 +1,11 @@
 ﻿using BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
+using BmsAtelierKyokufu.BmsPartTuner.Core.Interfaces.Bms;
+using BmsAtelierKyokufu.BmsPartTuner.Core.Optimization;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Validation;
 using BmsAtelierKyokufu.BmsPartTuner.Models;
-using BmsAtelierKyokufu.BmsPartTuner.Core.Optimization;
-using BmsAtelierKyokufu.BmsPartTuner.Core.Interfaces.Bms;
-using BmsAtelierKyokufu.BmsPartTuner.UseCases;
-using BmsAtelierKyokufu.BmsPartTuner.UseCases.Dto;
 using BmsAtelierKyokufu.BmsPartTuner.Tests.Infrastructure;
 using BmsAtelierKyokufu.BmsPartTuner.UI.ViewModels;
+using BmsAtelierKyokufu.BmsPartTuner.UseCases.Dto;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Tests.ViewModels
 {

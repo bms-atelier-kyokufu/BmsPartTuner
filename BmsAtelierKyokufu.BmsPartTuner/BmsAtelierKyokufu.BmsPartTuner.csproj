@@ -175,4 +175,10 @@
             <SubType>Designer</SubType>
         </Page>
     </ItemGroup>
+
+    <!-- Automatically format code before building, preventing infinite recursion during formatting -->
+    <Target Name="AutoFormatBeforeBuild" BeforeTargets="BeforeBuild" Condition="'$(RunningFormat)' != 'true'">
+        <Message Importance="high" Text="[AutoFormat] Running 'npm run format'..." />
+        <Exec Command="npm run format" WorkingDirectory="$(MSBuildThisFileDirectory)..\" ContinueOnError="true" />
+    </Target>
 </Project>

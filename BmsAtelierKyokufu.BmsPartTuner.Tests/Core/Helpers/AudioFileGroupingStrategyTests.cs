@@ -1,6 +1,6 @@
 using BmsAtelierKyokufu.BmsPartTuner.Core.Helpers;
-using BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers;
 using BmsAtelierKyokufu.BmsPartTuner.Models;
+using BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Helpers;
 

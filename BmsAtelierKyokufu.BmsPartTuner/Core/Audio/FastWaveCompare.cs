@@ -1,5 +1,4 @@
 ﻿using System.Numerics;
-using static System.Numerics.BitOperations;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
 

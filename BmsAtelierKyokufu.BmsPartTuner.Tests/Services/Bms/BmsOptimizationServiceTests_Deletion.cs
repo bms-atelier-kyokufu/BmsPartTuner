@@ -1,9 +1,7 @@
 using System.IO;
 using System.Text;
-using BmsAtelierKyokufu.BmsPartTuner.Models;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Optimization;
-using BmsAtelierKyokufu.BmsPartTuner.Core.Interfaces.Bms;
-using BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms;
+using BmsAtelierKyokufu.BmsPartTuner.Models;
 using BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers;
 using static BmsAtelierKyokufu.BmsPartTuner.Core.Optimization.BmsOptimizationService;
 
