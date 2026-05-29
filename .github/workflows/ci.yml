@@ -1,18 +1,26 @@
-﻿name: Build Verification
+name: Build Verification
 
 on:
-  pull_request:
-    branches: [ "main", "develop" ] # 監視対象ブランチ
+  push:
+    branches: [ "main", "develop" ] # 監視対象ブランチへのプッシュ
     paths:
       - '**.cs'
       - '**.csproj'
       - '**.sln'
       - '**.props'
+  pull_request:
+    branches: [ "main", "develop" ] # プルリクエスト作成時
+    paths:
+      - '**.cs'
+      - '**.csproj'
+      - '**.sln'
+      - '**.props'
+  workflow_dispatch: # GitHub上で手動実行を可能にする
 
 jobs:
   build:
     name: Build Check
-    runs-on: ubuntu-latest
+    runs-on: windows-latest # WPFアプリケーションのビルドに必要な Windows SDK のために windows-latest を指定
 
     steps:
       - name: Checkout code
