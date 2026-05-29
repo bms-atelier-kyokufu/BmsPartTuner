@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using BmsAtelierKyokufu.BmsPartTuner.Infrastructure;
 using BmsAtelierKyokufu.BmsPartTuner.Services.Bms;
 using BmsAtelierKyokufu.BmsPartTuner.Services.UI;
@@ -10,6 +11,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Views.Windows
     /// MainWindow.xaml の相互作用ロジック
     /// ViewModelとUIサービスを橋渡しする薄い層
     /// </summary>
+    [ExcludeFromCodeCoverage]
     public partial class MainWindow : Window
     {
         #region フィールド
@@ -19,6 +21,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Views.Windows
         private readonly IUiElementService<ResultCardData> _resultCardService;
         private readonly IDragDropService _dragDropService;
         private readonly FileListFilterService _filterService;
+        private ICollectionView? _collectionView;
 
         #endregion
 
@@ -79,7 +82,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Views.Windows
             {
                 if (e.IsSupported)
                 {
-                    _viewModel.InputPath = e.FilePath;
+                    _viewModel.FileOperations.InputPath = e.FilePath;
                 }
                 else
                 {
@@ -132,15 +135,21 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Views.Windows
             // FileListViewの更新監視（FilterService用）
             _viewModel.PropertyChanged += (s, e) =>
             {
-                if (e.PropertyName == nameof(MainViewModel.FileListItems))
+                if (e.PropertyName == "FileListItems")
                 {
-                    var view = System.Windows.Data.CollectionViewSource.GetDefaultView(_viewModel.FileListItems);
-                    _filterService?.SetCollectionView(view);
+                    _collectionView = System.Windows.Data.CollectionViewSource.GetDefaultView(_viewModel.BmsDefinitionManager.FileListItems);
 
                     // Filter Chipsの生成（選択可能版）
-                    if (_viewModel.FileListItems?.Count > 0)
+                    if (_viewModel.BmsDefinitionManager.FileListItems?.Count > 0)
                     {
-                        var chips = FileListFilterService.GenerateSelectableFilterChips(_viewModel.FileListItems);
+                        // Check if items are currently bound to FileListItems
+                        if (FilesListView.ItemsSource == _viewModel.BmsDefinitionManager.FileListItems)
+                        {
+                            var items = FilesListView.SelectedItems;
+                            var files = items.Cast<BmsAudioFile>().ToList();
+                            _viewModel.BmsDefinitionManager.DeleteFiles(files);
+                        }
+                        var chips = FileListFilterService.GenerateSelectableFilterChips(_viewModel.BmsDefinitionManager.FileListItems);
                         if (chips != null)
                         {
                             // FilterChipsをViewModelに設定
@@ -164,17 +173,29 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Views.Windows
 
             // FileListViewModelの選択キーワード変更イベント購読
             _viewModel.BmsDefinitionManager.SelectedKeywordsChanged += (s, e) => UpdateChipFilter();
+            _viewModel.BmsDefinitionManager.InstrumentFilterChanged += (s, e) => UpdateTextAndInstrumentFilter();
         }
 
         private void UpdateChipFilter()
         {
+            if (_collectionView == null) return;
             var selectedKeywords = _viewModel.BmsDefinitionManager.GetSelectedKeywords();
-            _filterService?.ApplyChipFilter(selectedKeywords);
+            _collectionView.Filter = FileListFilterService.CreateChipFilterPredicate(selectedKeywords);
+            _collectionView.Refresh();
         }
 
         #endregion
 
         #region イベントハンドラ
+
+        private void MainGrid_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (_viewModel.Notification.IsSlideConfirmationVisible)
+            {
+                _viewModel.Notification.IsSlideConfirmationVisible = false;
+                e.Handled = true;
+            }
+        }
 
         private void OnSlideConfirmationRequested(object? sender, EventArgs e)
         {
@@ -192,10 +213,31 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Views.Windows
             // キャンセル時のトースト通知は廃止
         }
 
-        //XAMLでバインドされているイベントハンドラ
         private void FilterTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
-            _filterService?.ApplyFilter(_viewModel.FilterText);
+            UpdateTextAndInstrumentFilter();
+        }
+
+        private void UpdateTextAndInstrumentFilter()
+        {
+            if (_collectionView == null) return;
+
+            var selectedInstruments = new HashSet<string>(
+                _viewModel.BmsDefinitionManager.InstrumentGroups.Where(g => g.IsSelected).Select(g => g.Name),
+                StringComparer.OrdinalIgnoreCase);
+
+            _collectionView.Filter = FileListFilterService.CreateFilterPredicate(
+                _viewModel.BmsDefinitionManager.FilterText,
+                selectedInstruments);
+            _collectionView.Refresh();
+        }
+
+        private void FilterTextBox_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            if (e.Key == System.Windows.Input.Key.Enter)
+            {
+                _viewModel.BmsDefinitionManager.FilterText = FilterTextBox.Text;
+            }
         }
 
         private void FilterChip_Click(object sender, RoutedEventArgs e)
@@ -222,9 +264,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Views.Windows
                     }
                     break;
 
-                case nameof(MainViewModel.IsSlideConfirmationVisible):
+                case nameof(NotificationViewModel.IsSlideConfirmationVisible):
                     // スライド確認UIが非表示になったらリセット
-                    if (!_viewModel.IsSlideConfirmationVisible)
+                    if (!_viewModel.Notification.IsSlideConfirmationVisible)
                     {
                         // UIスレッドで実行
                         Dispatcher.BeginInvoke(new Action(() => SlideConfirmation?.Reset()), System.Windows.Threading.DispatcherPriority.Background);

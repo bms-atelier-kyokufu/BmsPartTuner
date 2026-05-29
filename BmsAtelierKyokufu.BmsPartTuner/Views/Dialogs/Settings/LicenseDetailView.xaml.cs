@@ -1,8 +1,9 @@
-﻿namespace BmsAtelierKyokufu.BmsPartTuner.Views.Dialogs.Settings
+namespace BmsAtelierKyokufu.BmsPartTuner.Views.Dialogs.Settings
 {
     /// <summary>
     /// LicenseDetailView.xaml の相互作用ロジック
     /// </summary>
+    [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     public partial class LicenseDetailView : UserControl
     {
         public LicenseDetailView()

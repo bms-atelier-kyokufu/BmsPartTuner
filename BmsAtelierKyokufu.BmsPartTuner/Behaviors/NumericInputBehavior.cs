@@ -1,4 +1,4 @@
-﻿using System.Text.RegularExpressions;
+using System.Text.RegularExpressions;
 using Microsoft.Xaml.Behaviors;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Behaviors
@@ -7,6 +7,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Behaviors
     /// 数値入力のみを許可するビヘイビア
     /// TextBoxに添付して使用し、継承なしで機能を拡張
     /// </summary>
+    [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     public partial class NumericInputBehavior : Behavior<TextBox>
     {
         private static readonly Regex _numericRegex = NumericRegex();

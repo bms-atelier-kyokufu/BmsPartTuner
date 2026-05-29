@@ -1,4 +1,4 @@
-﻿using BmsAtelierKyokufu.BmsPartTuner.ViewModels;
+using BmsAtelierKyokufu.BmsPartTuner.ViewModels;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Services.UI
 {
@@ -18,7 +18,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Services.UI
         /// <summary>
         /// スライド確認UIの表示状態
         /// </summary>
-        public bool IsVisible => _viewModel?.IsSlideConfirmationVisible is true;
+        public bool IsVisible => _viewModel?.Notification.IsSlideConfirmationVisible is true;
 
         public void Initialize(MainViewModel viewModel)
         {

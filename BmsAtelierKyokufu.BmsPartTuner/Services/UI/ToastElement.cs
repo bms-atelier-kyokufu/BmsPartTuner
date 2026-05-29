@@ -13,7 +13,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Services.UI
         /// <summary>
         /// トースト通知の表示状態
         /// </summary>
-        public bool IsVisible => _viewModel.IsToastVisible;
+        public bool IsVisible => _viewModel.Notification.IsToastVisible;
 
         /// <summary>
         /// トースト通知を表示する

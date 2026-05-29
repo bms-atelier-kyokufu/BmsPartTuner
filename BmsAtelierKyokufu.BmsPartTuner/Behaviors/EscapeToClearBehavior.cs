@@ -1,10 +1,11 @@
-﻿using Microsoft.Xaml.Behaviors;
+using Microsoft.Xaml.Behaviors;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Behaviors;
 
 /// <summary>
 /// テキストボックスでEscapeキーを押すとテキストをクリアするBehavior。
 /// </summary>
+[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 public class EscapeToClearBehavior : Behavior<TextBox>
 {
     protected override void OnAttached()

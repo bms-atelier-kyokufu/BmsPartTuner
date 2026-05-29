@@ -1,4 +1,4 @@
-﻿using Microsoft.Xaml.Behaviors;
+using Microsoft.Xaml.Behaviors;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Behaviors;
 
@@ -7,6 +7,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Behaviors;
 /// - フォーカス時: 単位を一時的に除去
 /// - フォーカスアウト/初期表示: 単位を付加
 /// </summary>
+[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 public class UnitSuffixBehavior : Behavior<TextBox>
 {
     public static readonly DependencyProperty UnitProperty = DependencyProperty.Register(

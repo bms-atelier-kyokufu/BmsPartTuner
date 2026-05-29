@@ -1,4 +1,4 @@
-﻿using BmsAtelierKyokufu.BmsPartTuner.Infrastructure.UI;
+using BmsAtelierKyokufu.BmsPartTuner.Infrastructure.UI;
 using Microsoft.Xaml.Behaviors;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Behaviors
@@ -7,6 +7,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Behaviors
     /// テキストボックスにバーチャルスライダー機能を追加するBehavior
     /// マウスドラッグで数値を増減可能にする（Shift: 高速、Ctrl: 微調整）
     /// </summary>
+    [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     public class VirtualSliderBehavior : Behavior<TextBox>
     {
         #region Dependency Properties

@@ -2,15 +2,27 @@ using BmsAtelierKyokufu.BmsPartTuner.Services.Audio;
 using BmsAtelierKyokufu.BmsPartTuner.Services.Bms;
 using BmsAtelierKyokufu.BmsPartTuner.Services.Common;
 using BmsAtelierKyokufu.BmsPartTuner.Services.UI;
+using BmsAtelierKyokufu.BmsPartTuner.Core.Messages;
+using CommunityToolkit.Mvvm.Messaging;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.ViewModels;
 
 /// <summary>
 /// 各種ViewModelを統括し、アプリケーション全体のUI状態とビジネスロジックを連携させるメインコーディネーター。
 /// </summary>
-public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposable
+public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposable,
+    IRecipient<InputPathChangedMessage>,
+    IRecipient<AutoOutputPathRequestedMessage>,
+    IRecipient<FileListLoadedMessage>,
+    IRecipient<AudioPlaybackStateChangedMessage>,
+    IRecipient<DefinitionReductionCompletedMessage>,
+    IRecipient<OptimizationErrorMessage>,
+    IRecipient<ValidationErrorMessage>,
+    IRecipient<MediaPlaybackErrorMessage>
 {
     private readonly AudioPreviewService _audioPreviewService;
+    private readonly IBmsonConversionService _bmsonConversionService;
+    private readonly IFileSystemService _fileSystemService;
     private bool _disposed;
     private string? _workingBmsPath;
     private string? _workingBmsContent;
@@ -46,81 +58,21 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
     [ObservableProperty]
     public partial bool IsSettingsOpen { get; set; }
 
+    /// <summary>
+    /// アプリケーション全体のステータスメッセージ。
+    /// </summary>
+    [ObservableProperty]
+    public partial string StatusMessage { get; set; } = "準備完了";
+
+    /// <summary>
+    /// 処理中かどうか。
+    /// </summary>
+    [ObservableProperty]
+    public partial bool IsBusy { get; set; }
+
     #region フォワードプロパティ
 
-    public string InputPath
-    {
-        get => FileOperations.InputPath;
-        set => FileOperations.InputPath = value;
-    }
-
-    public string OutputPath
-    {
-        get => FileOperations.OutputPath;
-        set => FileOperations.OutputPath = value;
-    }
-
-    public string R2Threshold
-    {
-        get => Optimization.R2Threshold;
-        set => Optimization.R2Threshold = value;
-    }
-
-    public string DefinitionStart
-    {
-        get => Optimization.DefinitionStart;
-        set => Optimization.DefinitionStart = value;
-    }
-
-    public string DefinitionEnd
-    {
-        get => Optimization.DefinitionEnd;
-        set => Optimization.DefinitionEnd = value;
-    }
-
-    public string StatusMessage
-    {
-        get => Optimization.StatusMessage;
-        set => Optimization.StatusMessage = value;
-    }
-
-    public int ProgressValue
-    {
-        get => Optimization.ProgressValue;
-        set => Optimization.ProgressValue = value;
-    }
-
-    public bool IsProgressIndeterminate
-    {
-        get => Optimization.IsProgressIndeterminate;
-        set => Optimization.IsProgressIndeterminate = value;
-    }
-
-    public bool IsBusy
-    {
-        get => Optimization.IsBusy;
-        set => Optimization.IsBusy = value;
-    }
-
-    public Views.Controls.SlideDirection SlideDirection
-    {
-        get => Optimization.SlideDirection;
-    }
-
-    public string SlideInstruction
-    {
-        get => Optimization.SlideInstruction;
-    }
-
-    public bool IsPhysicalDeletionEnabled
-    {
-        get => Optimization.IsPhysicalDeletionEnabled;
-        set => Optimization.IsPhysicalDeletionEnabled = value;
-    }
-
-    public ICommand BrowseInputFileCommand => FileOperations.BrowseInputFileCommand;
-    public ICommand BrowseOutputFileCommand => FileOperations.BrowseOutputFileCommand;
-    public ICommand ClearFilterCommand => BmsDefinitionManager.ClearFilterCommand;
+    // XAML側で直接子ViewModelのプロパティをバインドするように修正済み
 
     #endregion
 
@@ -129,37 +81,30 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
     /// </summary>
     public MainViewModel(
         IBmsOptimizationService optimizationService,
+        BmsAtelierKyokufu.BmsPartTuner.Services.UseCases.IBmsOptimizationUseCase optimizationUseCase,
+        IBmsonConversionService bmsonConversionService,
+        IFileSystemService fileSystemService,
+        FileListViewModel fileListViewModel,
         AudioPreviewService audioPreviewService,
-        InstrumentNameDetectionService instrumentDetectionService,
         FileListFilterService filterService,
         SettingsService settingsService,
         ThemeService themeService,
         LicenseLoaderService licenseLoaderService)
     {
+        _bmsonConversionService = bmsonConversionService ?? throw new ArgumentNullException(nameof(bmsonConversionService));
+        _fileSystemService = fileSystemService ?? throw new ArgumentNullException(nameof(fileSystemService));
         _audioPreviewService = audioPreviewService ?? throw new ArgumentNullException(nameof(audioPreviewService));
 
         FileOperations = new FileOperationsViewModel();
-        BmsDefinitionManager = new FileListViewModel(audioPreviewService, instrumentDetectionService);
+        BmsDefinitionManager = fileListViewModel ?? throw new ArgumentNullException(nameof(fileListViewModel));
         BmsDefinitionManager.SetFilterService(filterService);
-        Optimization = new OptimizationViewModel(optimizationService);
+        Optimization = new OptimizationViewModel(optimizationService, optimizationUseCase);
         Notification = new NotificationViewModel();
         Settings = new SettingsViewModel(settingsService, themeService, licenseLoaderService);
         MediaPlayback = new MediaPlaybackViewModel();
         InputValidation = new InputValidationViewModel();
-
-        // イベントハンドラー登録
-        FileOperations.InputPathChanged += OnInputPathChanged;
-        FileOperations.AutoOutputPathRequested += OnAutoOutputPathRequested;
-        BmsDefinitionManager.FileListLoaded += OnFileListLoaded;
-        BmsDefinitionManager.AudioPlaybackStateChanged += OnAudioPlaybackStateChanged;
-        Optimization.DefinitionReductionCompleted += OnDefinitionReductionCompleted;
-        Optimization.ErrorOccurred += OnOptimizationError;
-
-        // 検証エラーハンドラー
-        InputValidation.ValidationErrorOccurred += OnInputValidationError;
-
-        // メディア再生エラーハンドラー
-        MediaPlayback.PlaybackError += OnMediaPlaybackError;
+        // イベントハンドラーの代わりにMessengerを使用
+        WeakReferenceMessenger.Default.RegisterAll(this);
 
         FileOperations.PropertyChanged += OnFileOperationsPropertyChanged;
         BmsDefinitionManager.PropertyChanged += OnBmsDefinitionManagerPropertyChanged;
@@ -198,7 +143,7 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
         var playerPath = Settings.MbmPlayPath;
 
         // プレイヤーパスが設定されていない、または存在しない場合はトースト
-        if (string.IsNullOrWhiteSpace(playerPath) || !File.Exists(playerPath))
+        if (string.IsNullOrWhiteSpace(playerPath) || !_fileSystemService.FileExists(playerPath))
         {
             ShowMessage("外部プレイヤーが設定されていないか、ファイルが見つかりません。設定画面でmBMplay.exeのパスを指定してください。", isError: true);
             return;
@@ -207,16 +152,16 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
         MediaPlayback.SetPlayerPath(playerPath);
 
         // 処理後の出力ファイルが存在する場合は優先して再生
-        var outputFile = OutputPath?.Trim('"');
-        if (!string.IsNullOrWhiteSpace(outputFile) && File.Exists(outputFile))
+        var outputFile = FileOperations.OutputPath?.Trim('"');
+        if (!string.IsNullOrWhiteSpace(outputFile) && _fileSystemService.FileExists(outputFile))
         {
             MediaPlayback.LaunchPlayer(playerPath, outputFile, "処理後");
             return;
         }
 
         // 入力ファイルが存在する場合は再生
-        var inputFile = InputPath?.Trim('"');
-        if (!string.IsNullOrWhiteSpace(inputFile) && File.Exists(inputFile))
+        var inputFile = FileOperations.InputPath?.Trim('"');
+        if (!string.IsNullOrWhiteSpace(inputFile) && _fileSystemService.FileExists(inputFile))
         {
             MediaPlayback.LaunchPlayer(playerPath, inputFile, "処理前");
             return;
@@ -229,7 +174,7 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
     [RelayCommand(CanExecute = nameof(CanExecuteThresholdOptimization))]
     private async Task ExecuteThresholdOptimizationAsync()
     {
-        var inputPath = (_workingBmsPath ?? InputPath)?.Trim('"') ?? string.Empty;
+        var inputPath = (_workingBmsPath ?? FileOperations.InputPath)?.Trim('"') ?? string.Empty;
 
         if (string.IsNullOrWhiteSpace(inputPath))
         {
@@ -238,7 +183,7 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
             return;
         }
 
-        if (!File.Exists(inputPath))
+        if (!_fileSystemService.FileExists(inputPath))
         {
             ShowMessage($"入力ファイルが見つかりません: {Path.GetFileName(inputPath)}", isError: true);
             StatusMessage = "入力ファイルが存在しません";
@@ -281,8 +226,8 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
 
         var result = await Optimization.ExecuteThresholdOptimizationAsync(
             files,
-            RadixConvert.ZZToInt(DefinitionStart),
-            RadixConvert.ZZToInt(DefinitionEnd));
+            Core.Helpers.RadixConvert.ZZToInt(Optimization.DefinitionStart),
+            Core.Helpers.RadixConvert.ZZToInt(Optimization.DefinitionEnd));
 
         if (result != null)
         {
@@ -315,7 +260,7 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
             return;
         }
 
-        var inputToUse = _workingBmsPath ?? InputPath;
+        var inputToUse = _workingBmsPath ?? FileOperations.InputPath;
 
         // BMSONファイルがそのまま渡されており、かつダウンコンバート済みコンテンツがない場合はブロックする
         if (Path.GetExtension(inputToUse).Equals(".bmson", StringComparison.OrdinalIgnoreCase) && _workingBmsContent == null)
@@ -324,7 +269,7 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
             return;
         }
 
-        if (FileOperations.CheckOverwriteRequired() || IsPhysicalDeletionEnabled)
+        if (FileOperations.CheckOverwriteRequired() || Optimization.IsPhysicalDeletionEnabled)
         {
             SlideConfirmationRequested?.Invoke(this, EventArgs.Empty);
             return;
@@ -335,16 +280,16 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
         await Optimization.ExecuteDefinitionReductionAsync(
             BmsDefinitionManager.BmsFileList,
             inputToUse,
-            OutputPath,
+            FileOperations.OutputPath,
             _workingBmsContent,
             selectedKeywords);
 
         // 処理完了後、出力先のファイルでリストを再読み込み
         // InputPathとOutputPathが同じ場合（上書き保存）でも、
         // ファイルの内容が変更されているため再読み込みが必要
-        if (string.Equals(inputToUse, OutputPath, StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(inputToUse, FileOperations.OutputPath, StringComparison.OrdinalIgnoreCase))
         {
-            if (File.Exists(inputToUse))
+            if (_fileSystemService.FileExists(inputToUse))
             {
                 BmsDefinitionManager.LoadBmsFile(inputToUse);
             }
@@ -352,7 +297,7 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
         else
         {
             // 別名保存の場合は入力パスを切り替えて読み込み
-            InputPath = OutputPath;
+            FileOperations.InputPath = FileOperations.OutputPath;
         }
     }
 
@@ -360,9 +305,10 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
 
     private bool CanExecuteReduction() => !Optimization.IsBusy && !_isDownconverting;
 
-    private async void OnInputPathChanged(object? sender, string path)
+    public void Receive(InputPathChangedMessage message)
     {
-        if (File.Exists(path))
+        var path = message.Path;
+        if (_fileSystemService.FileExists(path))
         {
             var extension = Path.GetExtension(path);
             if (string.Equals(extension, ".bmson", StringComparison.OrdinalIgnoreCase))
@@ -376,7 +322,7 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
 
                 if (_isDownconverting) return;
 
-                await DownconvertBmsonAsync(path);
+                _ = DownconvertBmsonAsync(path);
             }
             else
             {
@@ -416,8 +362,7 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
             {
                 Core.Audio.VirtualAudioRegistry.Clear();
                 Core.Audio.PointerAudioRegistry.Clear();
-                string bmsText = await Task.Run(() =>
-                    Services.Bms.Bmson.BmsonIntegrationFacade.GenerateBmsText(path, keyNotesOnly: false));
+                string bmsText = await _bmsonConversionService.GenerateBmsTextAsync(path, keyNotesOnly: false);
 
                 _workingBmsPath = path;
                 _workingBmsContent = bmsText;
@@ -447,48 +392,48 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
         }
     }
 
-    private void OnAutoOutputPathRequested(object? sender, string autoPath)
+    public void Receive(AutoOutputPathRequestedMessage message)
     {
-        OutputPath = autoPath;
+        FileOperations.OutputPath = message.OutputPath;
     }
 
-    private void OnFileListLoaded(object? sender, FileListViewModel.FileListLoadedEventArgs e)
+    public void Receive(FileListLoadedMessage message)
     {
         Application.Current?.Dispatcher.BeginInvoke(new Action(() =>
         {
-            if (e.IsSuccess)
+            if (message.IsSuccess)
             {
-                var fileTypeName = FileOperationsViewModel.GetFileTypeName(e.FilePath);
-                StatusMessage = $"読み込み完了: {Path.GetFileName(e.FilePath)} ({fileTypeName})";
-                ShowMessage($"読み込み完了: {Path.GetFileName(e.FilePath)}");
+                var fileTypeName = FileOperationsViewModel.GetFileTypeName(message.FilePath);
+                StatusMessage = $"読み込み完了: {Path.GetFileName(message.FilePath)} ({fileTypeName})";
+                ShowMessage($"読み込み完了: {Path.GetFileName(message.FilePath)}");
             }
             else
             {
-                ShowMessage($"読み込みエラー: {e.ErrorMessage}", isError: true);
+                ShowMessage($"読み込みエラー: {message.ErrorMessage}", isError: true);
                 StatusMessage = "読み込みエラー";
             }
         }), System.Windows.Threading.DispatcherPriority.ContextIdle);
     }
 
-    private void OnAudioPlaybackStateChanged(object? sender, AudioPreviewService.PlaybackStateChangedEventArgs e)
+    public void Receive(AudioPlaybackStateChangedMessage message)
     {
-        if (e.IsLoading)
+        if (message.IsLoading)
         {
             StatusMessage = "音声読み込み中...";
         }
-        else if (e.IsPlaying && e.FileName != null)
+        else if (message.IsPlaying && message.FileName != null)
         {
-            StatusMessage = $"再生: {e.FileName}";
+            StatusMessage = $"再生: {message.FileName}";
         }
     }
 
-    private void OnDefinitionReductionCompleted(object? sender, OptimizationViewModel.ReductionResultEventArgs e)
+    public void Receive(DefinitionReductionCompletedMessage message)
     {
-        if (e.Result != null)
+        if (message.Result != null)
         {
-            dynamic result = e.Result;
+            dynamic result = message.Result;
 
-            int displayThreshold = (int)Math.Round(e.Threshold * 100);
+            int displayThreshold = (int)Math.Round(message.Threshold * 100);
 
             Notification.ShowResultCard(
                 thresholdValues: $"{displayThreshold}%",
@@ -498,23 +443,23 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
                 memoryInfo: "-",
                 isOptimization: false);
 
-            ShowMessage($"処理完了: {Path.GetFileName(e.OutputPath)}");
+            ShowMessage($"処理完了: {Path.GetFileName(message.OutputPath)}");
         }
     }
 
-    private void OnOptimizationError(object? sender, string errorMessage)
+    public void Receive(OptimizationErrorMessage message)
     {
-        ShowMessage(errorMessage, isError: true);
+        ShowMessage(message.ErrorMessage, isError: true);
     }
 
-    private void OnInputValidationError(object? sender, InputValidationViewModel.ValidationErrorEventArgs e)
+    public void Receive(ValidationErrorMessage message)
     {
-        ShowMessage($"{e.PropertyName}: {e.ErrorMessage}", isError: true);
+        ShowMessage($"{message.PropertyName}: {message.ErrorMessage}", isError: true);
     }
 
-    private void OnMediaPlaybackError(object? sender, string message)
+    public void Receive(MediaPlaybackErrorMessage message)
     {
-        ShowMessage(message, isError: true);
+        ShowMessage(message.Message, isError: true);
     }
 
     private void OnFileOperationsPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -524,14 +469,14 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
         if (e.PropertyName == nameof(FileOperations.InputPath))
         {
             Notification.HideResultCard();
-            ProgressValue = 0;
+            Optimization.ProgressValue = 0;
             StatusMessage = "準備完了";
         }
 
         if (e.PropertyName == nameof(FileOperations.InputPath) ||
             e.PropertyName == nameof(FileOperations.OutputPath))
         {
-            if (IsSlideConfirmationVisible)
+            if (Notification.IsSlideConfirmationVisible)
             {
                 HideSlideConfirmation();
             }
@@ -548,9 +493,7 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
         ForwardPropertyChanged(e.PropertyName);
         if (e.PropertyName == nameof(Optimization.IsPhysicalDeletionEnabled))
         {
-            OnPropertyChanged(nameof(IsPhysicalDeletionEnabled));
-            OnPropertyChanged(nameof(SlideDirection));
-            OnPropertyChanged(nameof(SlideInstruction));
+            // プロパティ変更通知は不要になったため削除
         }
     }
 
@@ -561,8 +504,8 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
 
     private bool ValidateInputs()
     {
-        var inputToUse = _workingBmsPath ?? InputPath;
-        return InputValidation.ValidateAll(inputToUse, OutputPath);
+        var inputToUse = _workingBmsPath ?? FileOperations.InputPath;
+        return InputValidation.ValidateAll(inputToUse, FileOperations.OutputPath);
     }
 
     private static string GetSupportedExtensionsPattern()
@@ -588,19 +531,19 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
     public async Task ExecuteDefinitionReductionAfterConfirmationAsync()
     {
         var selectedKeywords = BmsDefinitionManager.GetSelectedKeywords();
-        var inputToUse = _workingBmsPath ?? InputPath;
+        var inputToUse = _workingBmsPath ?? FileOperations.InputPath;
 
         await Optimization.ExecuteDefinitionReductionAsync(
             BmsDefinitionManager.BmsFileList,
             inputToUse,
-            OutputPath,
+            FileOperations.OutputPath,
             _workingBmsContent,
             selectedKeywords);
 
         // 処理完了後、出力先のファイルでリストを再読み込み
-        if (string.Equals(inputToUse, OutputPath, StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(inputToUse, FileOperations.OutputPath, StringComparison.OrdinalIgnoreCase))
         {
-            if (File.Exists(inputToUse))
+            if (_fileSystemService.FileExists(inputToUse))
             {
                 BmsDefinitionManager.LoadBmsFile(inputToUse);
             }
@@ -608,7 +551,7 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
         else
         {
             // 別名保存の場合は入力パスを切り替えて読み込み
-            InputPath = OutputPath;
+            FileOperations.InputPath = FileOperations.OutputPath;
         }
     }
 
@@ -652,10 +595,10 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
         {
             return columnName switch
             {
-                nameof(R2Threshold) or nameof(DefinitionStart) or nameof(DefinitionEnd)
+                "R2Threshold" or "DefinitionStart" or "DefinitionEnd"
                     => Optimization[columnName],
-                nameof(InputPath) => ValidateInputPathError(),
-                nameof(OutputPath) => ValidateOutputPathError(),
+                "InputPath" => ValidateInputPathError(),
+                "OutputPath" => ValidateOutputPathError(),
                 _ => string.Empty
             };
         }
@@ -664,14 +607,14 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
     private string ValidateInputPathError()
     {
         // ダウンコンバート済みのパスが存在する場合はそちらを検証ベースにする
-        var inputPath = (_workingBmsPath ?? InputPath)?.Trim('"') ?? string.Empty;
+        var inputPath = (_workingBmsPath ?? FileOperations.InputPath)?.Trim('"') ?? string.Empty;
 
         if (string.IsNullOrWhiteSpace(inputPath))
         {
             return string.Empty;
         }
 
-        if (!File.Exists(inputPath))
+        if (!_fileSystemService.FileExists(inputPath))
         {
             return "ファイルが見つかりません";
         }
@@ -686,7 +629,7 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
 
     private string ValidateOutputPathError()
     {
-        var outputPath = OutputPath?.Trim('"') ?? string.Empty;
+        var outputPath = FileOperations.OutputPath?.Trim('"') ?? string.Empty;
 
         if (string.IsNullOrWhiteSpace(outputPath))
         {
@@ -727,15 +670,7 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
         if (disposing)
         {
             // イベントの購読解除
-            FileOperations.InputPathChanged -= OnInputPathChanged;
-            FileOperations.AutoOutputPathRequested -= OnAutoOutputPathRequested;
-            BmsDefinitionManager.FileListLoaded -= OnFileListLoaded;
-            BmsDefinitionManager.AudioPlaybackStateChanged -= OnAudioPlaybackStateChanged;
-            Optimization.DefinitionReductionCompleted -= OnDefinitionReductionCompleted;
-            Optimization.ErrorOccurred -= OnOptimizationError;
-
-            InputValidation.ValidationErrorOccurred -= OnInputValidationError;
-            MediaPlayback.PlaybackError -= OnMediaPlaybackError;
+            WeakReferenceMessenger.Default.UnregisterAll(this);
 
             FileOperations.PropertyChanged -= OnFileOperationsPropertyChanged;
             BmsDefinitionManager.PropertyChanged -= OnBmsDefinitionManagerPropertyChanged;
@@ -762,113 +697,8 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
 
     #region XAMLバインディング用プロパティ（子ViewModel委譲）
 
-    public string ToastMessage
-    {
-        get => Notification.ToastMessage;
-        set => Notification.ToastMessage = value;
-    }
-
-    public string ToastIcon
-    {
-        get => Notification.ToastIcon;
-        set => Notification.ToastIcon = value;
-    }
-
-    public bool IsToastVisible
-    {
-        get => Notification.IsToastVisible;
-        set => Notification.IsToastVisible = value;
-    }
-
-    public bool IsToastError
-    {
-        get => Notification.IsToastError;
-        set => Notification.IsToastError = value;
-    }
-
-    public bool IsResultCardVisible
-    {
-        get => Notification.IsResultCardVisible;
-        set => Notification.IsResultCardVisible = value;
-    }
-
-    public string ResultThreshold
-    {
-        get => Notification.ResultThreshold;
-        set => Notification.ResultThreshold = value;
-    }
-
-    public string ResultSummary
-    {
-        get => Notification.ResultSummary;
-        set => Notification.ResultSummary = value;
-    }
-
-    public string ResultReduction
-    {
-        get => Notification.ResultReduction;
-        set => Notification.ResultReduction = value;
-    }
-
-    public string ResultTime
-    {
-        get => Notification.ResultTime;
-        set => Notification.ResultTime = value;
-    }
-
-    public string ResultMargin
-    {
-        get => Notification.ResultMargin;
-        set => Notification.ResultMargin = value;
-    }
-
-    public string ResultIcon
-    {
-        get => Notification.ResultIcon;
-        set => Notification.ResultIcon = value;
-    }
-
-    public bool IsResultOptimization
-    {
-        get => Notification.IsResultOptimization;
-        set => Notification.IsResultOptimization = value;
-    }
-
-    public bool IsSlideConfirmationVisible
-    {
-        get => Notification.IsSlideConfirmationVisible;
-        set => Notification.IsSlideConfirmationVisible = value;
-    }
-
-    public ObservableCollection<Models.BmsAudioFile> FileListItems
-    {
-        get => BmsDefinitionManager.FileListItems;
-        set => BmsDefinitionManager.FileListItems = value;
-    }
-
-    public Models.BmsAudioFile? SelectedFile
-    {
-        get => BmsDefinitionManager.SelectedFile;
-        set => BmsDefinitionManager.SelectedFile = value;
-    }
-
-    public string FilterText
-    {
-        get => BmsDefinitionManager.FilterText;
-        set => BmsDefinitionManager.FilterText = value;
-    }
-
-    public Visibility ClearFilterButtonVisibility
-    {
-        get => BmsDefinitionManager.ClearFilterButtonVisibility;
-        set => BmsDefinitionManager.ClearFilterButtonVisibility = value;
-    }
-
-    public ObservableCollection<InstrumentNameDetectionService.InstrumentGroup> InstrumentGroups
-    {
-        get => BmsDefinitionManager.InstrumentGroups;
-        set => BmsDefinitionManager.InstrumentGroups = value;
-    }
+    // 他ViewModelからの単純なプロパティ委譲は排除され、
+    // XAML側で直接 Notification.ToastMessage などをバインドする形に変更しました。
 
     #endregion
 }

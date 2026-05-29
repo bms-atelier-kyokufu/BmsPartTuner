@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace BmsAtelierKyokufu.BmsPartTuner.Services.UI;
 
 /// <summary>
@@ -5,6 +7,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Services.UI;
 /// サポートされる拡張子のフィルタリングと、ドラッグ時の視覚的フィードバック（半透明化）を提供し、
 /// ドロップ完了時にはイベントを通じてUIからロジック層へ通知を行います。
 /// </summary>
+[ExcludeFromCodeCoverage]
 public class DragDropService(string[] supportedExtensions) : IDragDropService
 {
     private readonly string[] _supportedExtensions = supportedExtensions ?? throw new ArgumentNullException(nameof(supportedExtensions));

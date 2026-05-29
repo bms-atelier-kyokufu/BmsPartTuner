@@ -1,3 +1,6 @@
+using BmsAtelierKyokufu.BmsPartTuner.Core.Messages;
+using CommunityToolkit.Mvvm.Messaging;
+
 namespace BmsAtelierKyokufu.BmsPartTuner.ViewModels;
 
 /// <summary>
@@ -59,6 +62,7 @@ public partial class InputValidationViewModel : ObservableObject
             InputPathErrorMessage = "ファイルが見つかりません";
             IsInputPathValid = false;
             ValidationErrorOccurred?.Invoke(this, new ValidationErrorEventArgs("InputPath", InputPathErrorMessage));
+            WeakReferenceMessenger.Default.Send(new ValidationErrorMessage("InputPath", InputPathErrorMessage));
             return false;
         }
 
@@ -68,6 +72,7 @@ public partial class InputValidationViewModel : ObservableObject
             InputPathErrorMessage = $"サポートされていない形式です ({GetSupportedExtensionsPattern()})";
             IsInputPathValid = false;
             ValidationErrorOccurred?.Invoke(this, new ValidationErrorEventArgs("InputPath", InputPathErrorMessage));
+            WeakReferenceMessenger.Default.Send(new ValidationErrorMessage("InputPath", InputPathErrorMessage));
             return false;
         }
 
@@ -98,6 +103,7 @@ public partial class InputValidationViewModel : ObservableObject
                 OutputPathErrorMessage = $"フォルダが見つかりません: {outputDir}";
                 IsOutputPathValid = false;
                 ValidationErrorOccurred?.Invoke(this, new ValidationErrorEventArgs("OutputPath", OutputPathErrorMessage));
+                WeakReferenceMessenger.Default.Send(new ValidationErrorMessage("OutputPath", OutputPathErrorMessage));
                 return false;
             }
         }
@@ -106,6 +112,7 @@ public partial class InputValidationViewModel : ObservableObject
             OutputPathErrorMessage = "パスが無効です";
             IsOutputPathValid = false;
             ValidationErrorOccurred?.Invoke(this, new ValidationErrorEventArgs("OutputPath", OutputPathErrorMessage));
+            WeakReferenceMessenger.Default.Send(new ValidationErrorMessage("OutputPath", OutputPathErrorMessage));
             return false;
         }
 
@@ -115,6 +122,7 @@ public partial class InputValidationViewModel : ObservableObject
             OutputPathErrorMessage = $"出力ファイルはBMS形式である必要があります ({GetSupportedOutputExtensionsPattern()})";
             IsOutputPathValid = false;
             ValidationErrorOccurred?.Invoke(this, new ValidationErrorEventArgs("OutputPath", OutputPathErrorMessage));
+            WeakReferenceMessenger.Default.Send(new ValidationErrorMessage("OutputPath", OutputPathErrorMessage));
             return false;
         }
 

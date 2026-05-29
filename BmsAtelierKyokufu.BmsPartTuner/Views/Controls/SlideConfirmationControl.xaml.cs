@@ -12,6 +12,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Views.Controls
     /// スライド確認UIコントロール
     /// M3準拠のプログレッシブ・フィル実装
     /// </summary>
+    [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     public partial class SlideConfirmationControl : UserControl
     {
         #region 依存関係プロパティ

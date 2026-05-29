@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Win32;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Services.UI;
@@ -5,6 +6,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Services.UI;
 /// <summary>
 /// アプリケーションのテーマ切り替えを管理するサービス。
 /// </summary>
+[ExcludeFromCodeCoverage]
 public class ThemeService
 {
     private const string LightThemePath = "/Themes/LightTheme.xaml";

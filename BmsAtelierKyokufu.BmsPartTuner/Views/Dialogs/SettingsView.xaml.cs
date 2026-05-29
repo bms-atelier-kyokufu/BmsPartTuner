@@ -1,8 +1,9 @@
-﻿namespace BmsAtelierKyokufu.BmsPartTuner.Views.Dialogs;
+namespace BmsAtelierKyokufu.BmsPartTuner.Views.Dialogs;
 
 /// <summary>
 /// SettingsView.xaml の相互作用ロジック
 /// </summary>
+[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 public partial class SettingsView : UserControl
 {
     /// <summary>

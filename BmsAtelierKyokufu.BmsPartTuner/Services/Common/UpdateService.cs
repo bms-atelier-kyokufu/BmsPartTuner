@@ -11,7 +11,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Services.Common;
 /// バックグラウンドで新しいリリースを確認し、ダウンロード後、アプリ終了時にインストールを実行します。
 /// これにより、ユーザーの作業を中断させることなく最新版への更新を実現します。
 /// </summary>
-public class UpdateService : IDisposable
+public class UpdateService : IUpdateService, IDisposable
 {
     private const string GitHubApiUrl = "https://api.github.com/repos/bms-atelier-kyokufu/BmsPartTuner/releases/latest";
     private const string UserAgent = "BmsPartTuner-UpdateChecker";

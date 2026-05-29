@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Windows.Media.Animation;
 using BmsAtelierKyokufu.BmsPartTuner.ViewModels;
 using BmsAtelierKyokufu.BmsPartTuner.Views.Controls;
@@ -8,6 +9,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Services.UI;
 /// Material Design風のトースト通知を表示し、アニメーション（表示→維持→非表示）や
 /// エラー状態の視覚的区別を制御するサービス。
 /// </summary>
+[ExcludeFromCodeCoverage]
 public class ToastNotificationService : IUiElementService<ToastViewModel>
 {
     private Border? _container;

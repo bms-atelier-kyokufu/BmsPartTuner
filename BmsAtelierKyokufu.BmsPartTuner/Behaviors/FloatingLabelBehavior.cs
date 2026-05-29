@@ -1,4 +1,4 @@
-﻿using System.Windows.Media.Animation;
+using System.Windows.Media.Animation;
 using BmsAtelierKyokufu.BmsPartTuner.Infrastructure.UI;
 using Microsoft.Xaml.Behaviors;
 
@@ -9,6 +9,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Behaviors
     /// M3 Outlined Text Field仕様に準拠
     /// 初期位置Y=18（中央）、Floating時Y=8（上部に適度な距離）
     /// </summary>
+    [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     public class FloatingLabelBehavior : Behavior<TextBox>
     {
         private Border? _labelContainer;

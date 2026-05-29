@@ -1,4 +1,4 @@
-﻿using System.Windows.Media.Animation;
+using System.Windows.Media.Animation;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Views.Dialogs;
 
@@ -6,6 +6,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Views.Dialogs;
 /// Material 3準拠のモーダル・サイドシートコントロール。
 /// 右側からスライドインするパネルを提供します。
 /// </summary>
+[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 public partial class SideSheet : UserControl
 {
     private static readonly Duration AnimationDuration = TimeSpan.FromMilliseconds(300);

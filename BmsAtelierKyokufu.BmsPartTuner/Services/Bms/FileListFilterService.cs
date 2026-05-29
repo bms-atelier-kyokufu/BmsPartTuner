@@ -6,10 +6,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Services.Bms;
 /// </summary>
 public partial class FileListFilterService
 {
-    private ICollectionView? _collectionView;
     private readonly InstrumentNameDetectionService _instrumentDetectionService;
-    private string _textFilter = string.Empty;
-    private HashSet<string> _selectedInstruments = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
     /// FilterChip データモデル（読み取り専用、UI表示用の楽器候補情報を保持）。
@@ -36,7 +33,6 @@ public partial class FileListFilterService
 
     /// <summary>
     /// FileListFilterServiceを初期化します。
-    /// 楽器名の検出には緩めの基準（出現回数2回以上）を使用します。
     /// </summary>
     public FileListFilterService()
     {
@@ -44,130 +40,81 @@ public partial class FileListFilterService
     }
 
     /// <summary>
-    /// フィルタリングの対象となるCollectionViewを設定します。
+    /// 指定されたテキスト条件および楽器種別条件に基づいてフィルター用Predicateを生成します。
     /// </summary>
-    public void SetCollectionView(ICollectionView collectionView)
+    public static Predicate<object> CreateFilterPredicate(string textFilter, HashSet<string>? selectedInstruments)
     {
-        _collectionView = collectionView;
-    }
-
-    /// <summary>
-    /// テキストベースのフィルターを適用します（ファイル名に指定文字列が含まれるかを判定、大文字小文字を区別しない）。
-    /// </summary>
-    public void ApplyFilter(string filterText)
-    {
-        _textFilter = filterText ?? string.Empty;
-        UpdateFilter();
-    }
-
-    /// <summary>
-    /// 指定された楽器種別のセットに基づいてファイルリストをフィルタリングします（AND条件）。
-    /// </summary>
-    public void ApplyInstrumentFilter(HashSet<string> selectedInstruments)
-    {
-        _selectedInstruments = selectedInstruments != null
-            ? new HashSet<string>(selectedInstruments, StringComparer.OrdinalIgnoreCase)
-            : new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-        UpdateFilter();
-    }
-
-    /// <summary>
-    /// 現在設定されているテキストフィルターと楽器フィルターの条件を結合し、CollectionViewに適用します。
-    /// スレッドセーフ性を確保するため、フィルター実行時には条件のローカルコピーを使用します。
-    /// </summary>
-    private void UpdateFilter()
-    {
-        if (_collectionView == null) return;
-
-        bool hasTextFilter = !string.IsNullOrWhiteSpace(_textFilter);
-        bool hasInstrumentFilter = _selectedInstruments.Count > 0;
+        bool hasTextFilter = !string.IsNullOrWhiteSpace(textFilter);
+        bool hasInstrumentFilter = selectedInstruments?.Count > 0;
 
         if (!hasTextFilter && !hasInstrumentFilter)
         {
-            // フィルターなし: 全項目を表示
-            _collectionView.Filter = null;
+            return static _ => true;
         }
-        else
-        {
-            // スレッドセーフのためローカル変数にキャプチャ
-            var selectedSet = _selectedInstruments;
 
-            _collectionView.Filter = (obj) =>
+        // スレッドセーフのためローカル変数にキャプチャ
+        var selectedSet = hasInstrumentFilter ? new HashSet<string>(selectedInstruments!, StringComparer.OrdinalIgnoreCase) : null;
+        var text = textFilter ?? string.Empty;
+
+        return (obj) =>
+        {
+            if (obj is BmsAudioFile item)
             {
-                if (obj is BmsAudioFile item)
+                // AND条件1: テキストフィルター
+                if (hasTextFilter && !item.Name.Contains(text, StringComparison.OrdinalIgnoreCase))
                 {
-                    // AND条件1: テキストフィルター
-                    if (hasTextFilter && !item.Name.Contains(_textFilter, StringComparison.OrdinalIgnoreCase))
+                    return false;
+                }
+
+                // AND条件2: 楽器フィルター
+                if (hasInstrumentFilter && selectedSet != null)
+                {
+                    var instrument = item.InstrumentName ?? string.Empty;
+                    if (!selectedSet.Contains(instrument))
                     {
                         return false;
                     }
-
-                    // AND条件2: 楽器フィルター
-                    if (hasInstrumentFilter)
-                    {
-                        var instrument = item.InstrumentName ?? string.Empty;
-                        if (!selectedSet.Contains(instrument))
-                        {
-                            return false;
-                        }
-                    }
-
-                    return true;
                 }
-                return false;
-            };
-        }
 
-        _collectionView.Refresh();
+                return true;
+            }
+            return false;
+        };
     }
 
     /// <summary>
-    /// 選択されたキーワードのリストに基づいて、いずれかに一致するファイルを抽出します（OR条件）。
-    /// 統計的推定による楽器名との完全一致を優先し、フォールバックとしてファイル名の部分一致を使用します。
+    /// 選択されたキーワードのリストに基づいて、いずれかに一致するファイルを抽出するPredicateを生成します（OR条件）。
     /// </summary>
-    public void ApplyChipFilter(IEnumerable<string> selectedKeywords)
+    public static Predicate<object> CreateChipFilterPredicate(IEnumerable<string>? selectedKeywords)
     {
-        if (_collectionView == null) return;
-
         var keywordList = selectedKeywords?.ToList();
 
         if (keywordList == null || keywordList.Count == 0)
         {
-            _collectionView.Filter = null;
+            return static _ => true;
         }
-        else
+
+        return (obj) =>
         {
-            _collectionView.Filter = (obj) =>
+            if (obj is BmsAudioFile item)
             {
-                if (obj is BmsAudioFile item)
+                // 優先戦略: InstrumentName（統計的に信頼性が高い）
+                if (!string.IsNullOrEmpty(item.InstrumentName))
                 {
-                    // 優先戦略: InstrumentName（統計的に信頼性が高い）
-                    if (!string.IsNullOrEmpty(item.InstrumentName))
-                    {
-                        // InstrumentNameが割り当てられている場合は、それを優先して完全一致で評価します。
-                        if (!string.IsNullOrEmpty(item.InstrumentName))
-                        {
-                            return keywordList.Any(keyword =>
-                                item.InstrumentName.Equals(keyword, StringComparison.OrdinalIgnoreCase));
-                        }
-
-                        // InstrumentNameがない場合のみ、フォールバックとしてファイル名で部分一致を評価します。
-                        return keywordList.Any(keyword =>
-                            Path.GetFileNameWithoutExtension(item.Name)
-                                .Contains(keyword, StringComparison.OrdinalIgnoreCase));
-                    }
-
-                    // フォールバック: ファイル名での部分一致
-                    var fileName = Path.GetFileNameWithoutExtension(item.Name);
                     return keywordList.Any(keyword =>
-                        fileName.Contains(keyword, StringComparison.OrdinalIgnoreCase));
+                        item.InstrumentName.Equals(keyword, StringComparison.OrdinalIgnoreCase))
+                        || keywordList.Any(keyword =>
+                        Path.GetFileNameWithoutExtension(item.Name)
+                            .Contains(keyword, StringComparison.OrdinalIgnoreCase));
                 }
-                return false;
-            };
-        }
 
-        _collectionView.Refresh();
+                // フォールバック: ファイル名での部分一致
+                var fileName = Path.GetFileNameWithoutExtension(item.Name);
+                return keywordList.Any(keyword =>
+                    fileName.Contains(keyword, StringComparison.OrdinalIgnoreCase));
+            }
+            return false;
+        };
     }
 
     /// <summary>

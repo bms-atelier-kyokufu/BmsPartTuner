@@ -12,14 +12,14 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Services.UI
         /// <summary>
         /// 結果カードの表示状態
         /// </summary>
-        public bool IsVisible => _viewModel.IsResultCardVisible;
+        public bool IsVisible => _viewModel.Notification.IsResultCardVisible;
 
         /// <summary>
         /// 結果カードを表示する
         /// </summary>
         public void Show()
         {
-            _viewModel.IsResultCardVisible = true;
+            _viewModel.Notification.IsResultCardVisible = true;
         }
 
         /// <summary>

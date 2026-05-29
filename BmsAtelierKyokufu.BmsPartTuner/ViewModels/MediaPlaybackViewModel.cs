@@ -1,3 +1,6 @@
+using BmsAtelierKyokufu.BmsPartTuner.Core.Messages;
+using CommunityToolkit.Mvvm.Messaging;
+
 namespace BmsAtelierKyokufu.BmsPartTuner.ViewModels;
 
 /// <summary>
@@ -68,18 +71,21 @@ public partial class MediaPlaybackViewModel : ObservableObject
         if (!IsPlayerConfigured)
         {
             PlaybackError?.Invoke(this, "外部プレイヤーが設定されていません。");
+            WeakReferenceMessenger.Default.Send(new MediaPlaybackErrorMessage("外部プレイヤーが設定されていません。"));
             return;
         }
 
         if (!File.Exists(playerPath))
         {
             PlaybackError?.Invoke(this, $"プレイヤーが見つかりません: {playerPath}");
+            WeakReferenceMessenger.Default.Send(new MediaPlaybackErrorMessage($"プレイヤーが見つかりません: {playerPath}"));
             return;
         }
 
         if (!File.Exists(targetFile))
         {
             PlaybackError?.Invoke(this, $"再生ファイルが見つかりません: {targetFile}");
+            WeakReferenceMessenger.Default.Send(new MediaPlaybackErrorMessage($"再生ファイルが見つかりません: {targetFile}"));
             return;
         }
 
@@ -99,10 +105,12 @@ public partial class MediaPlaybackViewModel : ObservableObject
                 FileName = Path.GetFileName(targetFile),
                 FileType = fileType
             });
+            WeakReferenceMessenger.Default.Send(new AudioPlaybackStateChangedMessage(false, true, Path.GetFileName(targetFile)));
         }
         catch (Exception ex)
         {
             PlaybackError?.Invoke(this, $"プレイヤーの起動に失敗しました: {ex.Message}");
+            WeakReferenceMessenger.Default.Send(new MediaPlaybackErrorMessage($"プレイヤーの起動に失敗しました: {ex.Message}"));
         }
     }
 

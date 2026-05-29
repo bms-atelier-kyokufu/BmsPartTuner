@@ -64,7 +64,7 @@
                     <StackPanel>
                         <TextBox
                             x:Name="InputFilePathTextBox"
-                            ui:TextBoxHelper.BrowseCommand="{Binding BrowseInputFileCommand}"
+                            ui:TextBoxHelper.BrowseCommand="{Binding FileOperations.BrowseInputFileCommand}"
                             ui:TextBoxHelper.Label="入力BMS/BMSONファイル (.bms/.bme/.bml/.pms/.bmson)"
                             IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}"
                             Style="{StaticResource Material.Styles.TextBox.FilePath}">
@@ -72,7 +72,7 @@
                                 <Binding
                                     Mode="TwoWay"
                                     NotifyOnValidationError="True"
-                                    Path="InputPath"
+                                    Path="FileOperations.InputPath"
                                     UpdateSourceTrigger="PropertyChanged"
                                     ValidatesOnDataErrors="True">
                                     <Binding.ValidationRules>
@@ -91,7 +91,7 @@
                     <StackPanel>
                         <TextBox
                             x:Name="OutputFilePathTextBox"
-                            ui:TextBoxHelper.BrowseCommand="{Binding BrowseOutputFileCommand}"
+                            ui:TextBoxHelper.BrowseCommand="{Binding FileOperations.BrowseOutputFileCommand}"
                             ui:TextBoxHelper.Label="出力BMSファイル"
                             IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}"
                             Style="{StaticResource Material.Styles.TextBox.FilePath}">
@@ -99,7 +99,7 @@
                                 <Binding
                                     Mode="TwoWay"
                                     NotifyOnValidationError="True"
-                                    Path="OutputPath"
+                                    Path="FileOperations.OutputPath"
                                     UpdateSourceTrigger="PropertyChanged"
                                     ValidatesOnDataErrors="True">
                                     <Binding.ValidationRules>
@@ -131,9 +131,9 @@
                                 ui:TextBoxHelper.AiOptimizationCommand="{Binding ExecuteThresholdOptimizationCommand}"
                                 ui:TextBoxHelper.HasAiOptimization="True"
                                 ui:TextBoxHelper.Label="マッチ許容度 (1-100)"
-                                IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}"
+                                IsEnabled="{Binding Optimization.IsBusy, Converter={StaticResource InverseBooleanConverter}}"
                                 Style="{StaticResource R2TextBox}"
-                                Text="{Binding R2Threshold, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                                Text="{Binding Optimization.R2Threshold, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
                                 <i:Interaction.Behaviors>
                                     <behaviors:ImeOffBehavior />
                                     <behaviors:NumericInputBehavior AllowDecimal="False" AllowNegative="False" />
@@ -159,10 +159,10 @@
                                 <TextBox
                                     x:Name="Definition_Start"
                                     Width="50"
-                                    IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}"
+                                    IsEnabled="{Binding Optimization.IsBusy, Converter={StaticResource InverseBooleanConverter}}"
                                     MaxLength="2"
                                     Style="{StaticResource NumericTextBox}"
-                                    Text="{Binding DefinitionStart, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                                    Text="{Binding Optimization.DefinitionStart, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
                                     <i:Interaction.Behaviors>
                                         <behaviors:ImeOffBehavior />
                                         <behaviors:Base62InputBehavior />
@@ -177,10 +177,10 @@
                                 <TextBox
                                     x:Name="Definition_End"
                                     Width="50"
-                                    IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}"
+                                    IsEnabled="{Binding Optimization.IsBusy, Converter={StaticResource InverseBooleanConverter}}"
                                     MaxLength="2"
                                     Style="{StaticResource NumericTextBox}"
-                                    Text="{Binding DefinitionEnd, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                                    Text="{Binding Optimization.DefinitionEnd, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
                                     <i:Interaction.Behaviors>
                                         <behaviors:ImeOffBehavior />
                                         <behaviors:Base62InputBehavior />
@@ -195,7 +195,7 @@
                             <Label Content="物理削除" Foreground="{DynamicResource M3OnSurfaceVariantBrush}" HorizontalAlignment="Center" />
                             <ToggleButton
                                 IsChecked="{Binding Optimization.IsPhysicalDeletionEnabled}"
-                                IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}"
+                                IsEnabled="{Binding Optimization.IsBusy, Converter={StaticResource InverseBooleanConverter}}"
                                 Style="{StaticResource M3ToggleSwitch}"
                                 ToolTip="未使用の音源ファイルを物理削除する (危険)" />
                         </StackPanel>
@@ -211,18 +211,18 @@
                             Height="44"
                             Command="{Binding ExecuteReductionCommand}"
                             Content="処理を開始"
-                            IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}"
+                            IsEnabled="{Binding Optimization.IsBusy, Converter={StaticResource InverseBooleanConverter}}"
                             Style="{StaticResource M3PrimaryButton}"
-                            Visibility="{Binding IsSlideConfirmationVisible, Converter={StaticResource InverseBooleanConverter}}" />
+                            Visibility="{Binding Notification.IsSlideConfirmationVisible, Converter={StaticResource InverseBooleanConverter}}" />
 
                         <!--  スライド確認UI (上書き時のみ表示)  -->
                         <controls:SlideConfirmationControl
                             x:Name="SlideConfirmation"
-                            Direction="{Binding SlideDirection}"
+                            Direction="{Binding Optimization.SlideDirection}"
                             SlideCancelled="SlideConfirmation_Cancelled"
                             SlideCompleted="SlideConfirmation_Completed"
                             SlideInstructionText="{Binding Optimization.SlideInstructionText}"
-                            Visibility="{Binding IsSlideConfirmationVisible, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                            Visibility="{Binding Notification.IsSlideConfirmationVisible, Converter={StaticResource BooleanToVisibilityConverter}}" />
                     </Grid>
                 </StackPanel>
                 <!--  #endregion  -->
@@ -245,7 +245,7 @@
                                 x:Name="FilterTextBox"
                                 ui:TextBoxHelper.Label="ファイル名で検索"
                                 Style="{StaticResource Material.Styles.TextBox.Search}"
-                                Text="{Binding FilterText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                Text="{Binding BmsDefinitionManager.FilterText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                 TextChanged="FilterTextBox_TextChanged">
                                 <i:Interaction.Behaviors>
                                     <behaviors:FloatingLabelBehavior LabelText="ファイル名で検索" />
@@ -283,7 +283,7 @@
                     <ListView
                         x:Name="FilesListView"
                         ItemsSource="{Binding BmsDefinitionManager.FileListItems}"
-                        SelectedItem="{Binding SelectedFile}">
+                        SelectedItem="{Binding BmsDefinitionManager.SelectedFile}">
                         <ListView.View>
                             <GridView>
                                 <GridViewColumn
@@ -316,7 +316,7 @@
                                 Text="解析結果" />
 
                             <!--  結果カード  -->
-                            <Border Style="{DynamicResource ResultCard}" Visibility="{Binding IsResultCardVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <Border Style="{DynamicResource ResultCard}" Visibility="{Binding Notification.IsResultCardVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
                                 <StackPanel>
                                     <!--  ヘッダー  -->
                                     <StackPanel Margin="0,0,0,16" Orientation="Horizontal">
@@ -324,7 +324,7 @@
                                             VerticalAlignment="Center"
                                             FontSize="24"
                                             Foreground="{DynamicResource M3PrimaryBrush}"
-                                            Text="{Binding ResultIcon}" />
+                                            Text="{Binding Notification.ResultIcon}" />
                                         <TextBlock
                                             Margin="12,0,0,0"
                                             VerticalAlignment="Center"
@@ -340,7 +340,7 @@
                                         FontSize="32"
                                         FontWeight="Bold"
                                         Foreground="{DynamicResource M3PrimaryBrush}"
-                                        Text="{Binding ResultThreshold}"
+                                        Text="{Binding Notification.ResultThreshold}"
                                         TextAlignment="Center" />
                                     <TextBlock
                                         Margin="0,0,0,16"
@@ -357,7 +357,7 @@
                                         FontSize="24"
                                         FontWeight="SemiBold"
                                         Foreground="{DynamicResource M3OnSurfaceBrush}"
-                                        Text="{Binding ResultSummary}"
+                                        Text="{Binding Notification.ResultSummary}"
                                         TextAlignment="Center" />
                                     <TextBlock
                                         Margin="0,0,0,16"
@@ -373,7 +373,7 @@
                                         Margin="0,0,0,20"
                                         FontSize="14"
                                         Foreground="{DynamicResource M3OnSurfaceVariantBrush}"
-                                        Text="{Binding ResultReduction}"
+                                        Text="{Binding Notification.ResultReduction}"
                                         TextAlignment="Center" />
 
                                     <!--  詳細情報 (Memory/Time)  -->
@@ -388,7 +388,7 @@
                                             HorizontalAlignment="Right"
                                             FontSize="12"
                                             Foreground="{DynamicResource M3OnSurfaceVariantBrush}"
-                                            Text="{Binding ResultMargin}" />
+                                            Text="{Binding Notification.ResultMargin}" />
                                     </Grid>
 
                                     <Grid>
@@ -400,7 +400,7 @@
                                             HorizontalAlignment="Right"
                                             FontSize="12"
                                             Foreground="{DynamicResource M3OnSurfaceVariantBrush}"
-                                            Text="{Binding ResultTime}" />
+                                            Text="{Binding Notification.ResultTime}" />
                                     </Grid>
                                 </StackPanel>
                             </Border>
@@ -414,7 +414,7 @@
                                     <Style TargetType="Border">
                                         <Setter Property="Visibility" Value="Collapsed" />
                                         <Style.Triggers>
-                                            <DataTrigger Binding="{Binding IsResultCardVisible}" Value="False">
+                                            <DataTrigger Binding="{Binding Notification.IsResultCardVisible}" Value="False">
                                                 <Setter Property="Visibility" Value="Visible" />
                                             </DataTrigger>
                                         </Style.Triggers>
@@ -442,7 +442,7 @@
                                 Margin="0,20,0,12"
                                 FontSize="12"
                                 Foreground="{DynamicResource M3OnSurfaceVariantBrush}"
-                                Text="{Binding StatusMessage}"
+                                Text="{Binding Optimization.StatusMessage}"
                                 TextWrapping="Wrap" />
                             <ProgressBar
                                 x:Name="DefinitionReductProgressBar"
@@ -450,10 +450,10 @@
                                 Background="{DynamicResource M3PrimaryContainerBrush}"
                                 BorderThickness="0"
                                 Foreground="{DynamicResource M3PrimaryBrush}"
-                                IsIndeterminate="{Binding IsProgressIndeterminate}"
+                                IsIndeterminate="{Binding Optimization.IsProgressIndeterminate}"
                                 Maximum="100"
                                 Minimum="0"
-                                Value="{Binding ProgressValue}" />
+                                Value="{Binding Optimization.ProgressValue}" />
                         </StackPanel>
                     </ScrollViewer>
                 </Grid>
@@ -464,10 +464,10 @@
         <!--  ========== トースト通知 (右下) ==========  -->
         <controls:ToastControl
             x:Name="AppToastControl"
-            IsError="{Binding IsToastError}"
-            IsToastVisible="{Binding IsToastVisible}"
-            ToastIcon="{Binding ToastIcon}"
-            ToastMessage="{Binding ToastMessage}" />
+            IsError="{Binding Notification.IsToastError}"
+            IsToastVisible="{Binding Notification.IsToastVisible}"
+            ToastIcon="{Binding Notification.ToastIcon}"
+            ToastMessage="{Binding Notification.ToastMessage}" />
 
         <!--  ========== 設定サイドシート ==========  -->
         <dialogs:SideSheet

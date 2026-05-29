@@ -12,7 +12,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner
     {
         private readonly IHost _host;
         private ThemeService? _themeService;
-        private UpdateService? _updateService;
+        private IUpdateService? _updateService;
 
         /// <summary>
         /// テーマサービスを取得します。DIコンテナからの安全なアクセスを提供します。
@@ -59,7 +59,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner
             SystemEvents.UserPreferenceChanged += OnUserPreferenceChanged;
 
             // UpdateServiceを取得してバックグラウンドで更新チェック
-            _updateService = _host.Services.GetRequiredService<UpdateService>();
+            _updateService = _host.Services.GetRequiredService<IUpdateService>();
             _ = Task.Run(async () => await _updateService.CheckForUpdatesAsync());
 
             // DIコンテナからMainWindowを取り出す（依存関係は全て解決済み）

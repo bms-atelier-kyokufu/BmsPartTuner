@@ -1,6 +1,8 @@
 using BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
+using BmsAtelierKyokufu.BmsPartTuner.Core.Messages;
 using BmsAtelierKyokufu.BmsPartTuner.Services.Audio;
 using BmsAtelierKyokufu.BmsPartTuner.Services.Bms;
+using CommunityToolkit.Mvvm.Messaging;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.ViewModels;
 
@@ -130,6 +132,7 @@ public partial class FileListViewModel : ObservableObject, IDisposable
                     FileCount = fileList.Count,
                     IsSuccess = true
                 });
+                WeakReferenceMessenger.Default.Send(new FileListLoadedMessage(true, bmsFilePath, string.Empty));
             }
             PerformanceDebugLogger.WriteDebug(nameof(FileListViewModel), $"=== FileListViewModel.LoadBmsFile Finished: {timerTotal.Lap("Total")} ms ===");
         }
@@ -141,6 +144,7 @@ public partial class FileListViewModel : ObservableObject, IDisposable
                 IsSuccess = false,
                 ErrorMessage = ex.Message
             });
+            WeakReferenceMessenger.Default.Send(new FileListLoadedMessage(false, bmsFilePath, ex.Message));
         }
     }
 
@@ -207,15 +211,11 @@ public partial class FileListViewModel : ObservableObject, IDisposable
         }
     }
 
+    public event EventHandler? InstrumentFilterChanged;
+
     private void ApplyInstrumentFilter()
     {
-        if (_filterService == null) return;
-
-        var selectedInstruments = new HashSet<string>(
-            InstrumentGroups.Where(static g => g.IsSelected).Select(static g => g.Name),
-            StringComparer.OrdinalIgnoreCase);
-
-        _filterService.ApplyInstrumentFilter(selectedInstruments);
+        InstrumentFilterChanged?.Invoke(this, EventArgs.Empty);
     }
 
     /// <summary>
@@ -248,6 +248,7 @@ public partial class FileListViewModel : ObservableObject, IDisposable
     private void OnAudioPlaybackStateChanged(object? sender, AudioPreviewService.PlaybackStateChangedEventArgs e)
     {
         AudioPlaybackStateChanged?.Invoke(sender, e);
+        WeakReferenceMessenger.Default.Send(new AudioPlaybackStateChangedMessage(e.IsLoading, e.IsPlaying, e.FileName));
     }
 
     /// <summary>

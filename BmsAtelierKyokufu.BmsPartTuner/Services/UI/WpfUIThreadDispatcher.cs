@@ -1,11 +1,14 @@
-﻿namespace BmsAtelierKyokufu.BmsPartTuner.Services.UI;
+using System.Diagnostics.CodeAnalysis;
 
+namespace BmsAtelierKyokufu.BmsPartTuner.Services.UI;
+
+[ExcludeFromCodeCoverage]
 public class WpfUIThreadDispatcher(Dispatcher dispatcher) : IUIThreadDispatcher
 {
     private readonly Dispatcher _dispatcher = dispatcher;
 
-    public async Task InvokeAsync(Action action)
+    public Task InvokeAsync(Action action)
     {
-        await _dispatcher.InvokeAsync(action);
+        return _dispatcher.InvokeAsync(action).Task;
     }
 }

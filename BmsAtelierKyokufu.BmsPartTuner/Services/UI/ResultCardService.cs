@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Windows.Media.Animation;
 using BmsAtelierKyokufu.BmsPartTuner.ViewModels;
 
@@ -7,6 +8,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Services.UI;
 /// 最適化結果やパフォーマンス統計（Tech Stats）を視覚的に表示するカードUIを制御するサービス。
 /// プレースホルダーと結果カードの切り替えや、フェードインアニメーションを管理します。
 /// </summary>
+[ExcludeFromCodeCoverage]
 public class ResultCardService : IUiElementService<ResultCardData>
 {
     private FrameworkElement? _card;

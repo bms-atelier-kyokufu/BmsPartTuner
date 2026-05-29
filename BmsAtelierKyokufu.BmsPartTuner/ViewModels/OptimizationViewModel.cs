@@ -1,6 +1,9 @@
 using BmsAtelierKyokufu.BmsPartTuner.Core.Attributes;
+using BmsAtelierKyokufu.BmsPartTuner.Core.Messages;
 using BmsAtelierKyokufu.BmsPartTuner.Services.Bms;
+using BmsAtelierKyokufu.BmsPartTuner.Services.UseCases;
 using BmsAtelierKyokufu.BmsPartTuner.Views.Controls;
+using CommunityToolkit.Mvvm.Messaging;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.ViewModels;
 
@@ -10,6 +13,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.ViewModels;
 [ADRAnchor("OPT-07", nameof(OptimizationViewModel))]
 public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
 {
+    private readonly IBmsOptimizationUseCase _optimizationUseCase;
     private readonly IBmsOptimizationService _optimizationService;
     private readonly Progress<int> _progress;
 
@@ -141,6 +145,7 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
     {
         HasFormLevelError = true;
         ErrorOccurred?.Invoke(this, message);
+        WeakReferenceMessenger.Default.Send(new OptimizationErrorMessage(message));
     }
 
     private void ClearFormError()
@@ -178,9 +183,10 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
     /// </summary>
     public event EventHandler<string>? WarningOccurred;
 
-    public OptimizationViewModel(IBmsOptimizationService optimizationService)
+    public OptimizationViewModel(IBmsOptimizationService optimizationService, IBmsOptimizationUseCase optimizationUseCase)
     {
         _optimizationService = optimizationService ?? throw new ArgumentNullException(nameof(optimizationService));
+        _optimizationUseCase = optimizationUseCase ?? throw new ArgumentNullException(nameof(optimizationUseCase));
         UpdateSlideConfirmationState();
 
         _progress = new Progress<int>(percent =>
@@ -253,52 +259,52 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
         int startDefinition,
         int endDefinition)
     {
-        if (files == null || files.Count == 0)
-        {
-            ErrorOccurred?.Invoke(this, "ファイルリストが空です");
-            return null;
-        }
-
         var loaderCts = BeginBusyState("🎵 波形データを解析中...");
         StatusMessage = "🔬 しきい値最適化シミュレーション実行中...";
 
         try
         {
-            var result = await _optimizationService.FindOptimalThresholdsAsync(
-                files,
-                startDefinition,
-                endDefinition,
-                _progress);
+            var request = new ThresholdOptimizationRequest
+            {
+                BmsFileList = files,
+                StartDefinition = startDefinition,
+                EndDefinition = endDefinition,
+                Progress = _progress
+            };
+
+            var result = await _optimizationUseCase.ExecuteThresholdOptimizationAsync(request);
 
             await Application.Current.Dispatcher.InvokeAsync(() =>
             {
                 IsProgressIndeterminate = false;
                 ProgressValue = 100;
 
-                if (result != null)
+                if (result.IsSuccess && result.Data != null)
                 {
-                    LastOptimizationResult = result;
+                    LastOptimizationResult = result.Data;
 
-                    var execTime = result.ExecutionTime.TotalSeconds;
-                    var memoryMb = result.MemoryUsedBytes / 1024.0 / 1024.0;
+                    var execTime = result.Data.ExecutionTime.TotalSeconds;
+                    var memoryMb = result.Data.MemoryUsedBytes / 1024.0 / 1024.0;
 
-                    StatusMessage = $"✨ 最適化完了 | Base36: {result.Base36Result.Threshold:P0}, " +
-                                   $"Base62: {result.Base62Result.Threshold:P0} " +
+                    StatusMessage = $"✨ 最適化完了 | Base36: {result.Data.Base36Result.Threshold:P0}, " +
+                                   $"Base62: {result.Data.Base62Result.Threshold:P0} " +
                                    $"({execTime:F1}s, {memoryMb:F1}MB)";
 
-                    if (result.HasWarnings)
+                    if (result.Data.HasWarnings)
                     {
-                        var warningMessage = string.Join("\n", result.Warnings);
+                        var warningMessage = string.Join("\n", result.Data.Warnings);
                         WarningOccurred?.Invoke(this, warningMessage);
                     }
                 }
                 else
                 {
                     StatusMessage = "最適化に失敗しました";
+                    ErrorOccurred?.Invoke(this, result.ErrorMessage ?? "最適化エラー");
+                    WeakReferenceMessenger.Default.Send(new OptimizationErrorMessage(result.ErrorMessage ?? "最適化エラー"));
                 }
             });
 
-            return result;
+            return result.Data;
         }
         catch (Exception ex)
         {
@@ -306,10 +312,11 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
             {
                 IsProgressIndeterminate = false;
                 ErrorOccurred?.Invoke(this, $"最適化エラー: {ex.Message}");
+                WeakReferenceMessenger.Default.Send(new OptimizationErrorMessage($"最適化エラー: {ex.Message}"));
                 StatusMessage = "最適化エラー";
             });
 
-            PerformanceDebugLogger.WriteDebug(nameof(OptimizationViewModel), $"=== ExecuteThresholdOptimizationAsync Exception ===");
+            PerformanceDebugLogger.WriteDebug(nameof(OptimizationViewModel), "=== ExecuteThresholdOptimizationAsync Exception ===");
             PerformanceDebugLogger.WriteDebug(nameof(OptimizationViewModel), $"Exception Type: {ex.GetType().FullName}");
             PerformanceDebugLogger.WriteDebug(nameof(OptimizationViewModel), $"Message: {ex.Message}");
             PerformanceDebugLogger.WriteDebug(nameof(OptimizationViewModel), $"StackTrace: {ex.StackTrace}");
@@ -342,18 +349,21 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
         if (bmsFileList == null)
         {
             ErrorOccurred?.Invoke(this, "BMS/BMSONファイルが読み込まれていません");
+            WeakReferenceMessenger.Default.Send(new OptimizationErrorMessage("BMS/BMSONファイルが読み込まれていません"));
             return;
         }
 
         if (string.IsNullOrWhiteSpace(inputPath))
         {
             ErrorOccurred?.Invoke(this, "入力BMS/BMSONファイルを指定してください");
+            WeakReferenceMessenger.Default.Send(new OptimizationErrorMessage("入力BMS/BMSONファイルを指定してください"));
             return;
         }
 
         if (string.IsNullOrWhiteSpace(outputPath))
         {
             ErrorOccurred?.Invoke(this, "出力先を指定してください");
+            WeakReferenceMessenger.Default.Send(new OptimizationErrorMessage("出力先を指定してください"));
             return;
         }
 
@@ -361,6 +371,7 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
         if (!r2Result.IsValid)
         {
             ErrorOccurred?.Invoke(this, r2Result.GetFirstError());
+            WeakReferenceMessenger.Default.Send(new OptimizationErrorMessage(r2Result.GetFirstError()));
             return;
         }
 
@@ -379,42 +390,48 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
 
         try
         {
-            var result = await _optimizationService.ExecuteDefinitionReductionAsync(
-                bmsFileList.GetFileList(),
-                inputPath.Trim('"'),
-                outputPath.Trim('"'),
-                new DefinitionReductionOptions
-                {
-                    R2Threshold = r2Val,
-                    StartDefinition = RadixConvert.ZZToInt(DefinitionStart),
-                    EndDefinition = RadixConvert.ZZToInt(DefinitionEnd),
-                    IsPhysicalDeletionEnabled = IsPhysicalDeletionEnabled,
-                    InputBmsContent = inputBmsContent,
-                    Progress = _progress,
-                    SelectedKeywords = selectedKeywords
-                });
-
-            if (result.IsSuccess)
+            var request = new DefinitionReductionRequest
             {
-                var deletedMsg = result.DeletedFilesCount > 0 ? $" (削除: {result.DeletedFilesCount}ファイル)" : "";
-                StatusMessage = $"完了: {Path.GetFileName(outputPath)} ({result.OriginalCount}→{result.OptimizedCount}ファイル){deletedMsg}";
+                BmsFileList = bmsFileList,
+                InputPath = inputPath,
+                OutputPath = outputPath,
+                R2Threshold = r2Val,
+                StartDefinition = RadixConvert.ZZToInt(DefinitionStart),
+                EndDefinition = RadixConvert.ZZToInt(DefinitionEnd),
+                IsPhysicalDeletionEnabled = IsPhysicalDeletionEnabled,
+                InputBmsContent = inputBmsContent,
+                Progress = _progress,
+                SelectedKeywords = selectedKeywords
+            };
 
-                DefinitionReductionCompleted?.Invoke(this, new ReductionResultEventArgs
+            var result = await _optimizationUseCase.ExecuteDefinitionReductionAsync(request);
+
+            if (result.IsSuccess && result.Data != null)
+            {
+                var data = result.Data;
+                var deletedMsg = data.DeletedFilesCount > 0 ? $" (削除: {data.DeletedFilesCount}ファイル)" : "";
+                StatusMessage = $"完了: {Path.GetFileName(outputPath)} ({data.OriginalCount}→{data.OptimizedCount}ファイル){deletedMsg}";
+
+                var args = new ReductionResultEventArgs
                 {
-                    Result = result,
+                    Result = data,
                     OutputPath = outputPath,
                     Threshold = r2Val
-                });
+                };
+                DefinitionReductionCompleted?.Invoke(this, args);
+                WeakReferenceMessenger.Default.Send(new DefinitionReductionCompletedMessage(args.Result, args.OutputPath, args.Threshold));
             }
             else
             {
-                ErrorOccurred?.Invoke(this, $"処理エラー: {result.ErrorMessage}");
+                ErrorOccurred?.Invoke(this, result.ErrorMessage ?? "処理エラー");
+                WeakReferenceMessenger.Default.Send(new OptimizationErrorMessage(result.ErrorMessage ?? "処理エラー"));
                 StatusMessage = "処理エラー";
             }
         }
         catch (Exception ex)
         {
             ErrorOccurred?.Invoke(this, $"処理エラー: {ex.Message}");
+            WeakReferenceMessenger.Default.Send(new OptimizationErrorMessage($"処理エラー: {ex.Message}"));
             StatusMessage = "処理エラー";
             PerformanceDebugLogger.WriteDebug(nameof(OptimizationViewModel), $"ExecuteDefinitionReductionInternalAsync Exception: {ex}");
         }
@@ -423,10 +440,7 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
             EndBusyState(loaderCts);
             IsBusy = false;
 
-            await Task.Run(() =>
-            {
-                PerformanceDebugLogger.WriteDebug(nameof(OptimizationViewModel), "=== OptimizationViewModel: Clearing caches ===");
-            });
+            await Task.Run(() => PerformanceDebugLogger.WriteDebug(nameof(OptimizationViewModel), "=== OptimizationViewModel: Clearing caches ==="));
         }
     }
 

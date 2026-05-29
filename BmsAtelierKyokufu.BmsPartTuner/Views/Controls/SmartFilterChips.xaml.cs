@@ -1,4 +1,4 @@
-﻿using BmsAtelierKyokufu.BmsPartTuner.Services.Bms;
+using BmsAtelierKyokufu.BmsPartTuner.Services.Bms;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Views.Controls
 {
@@ -6,6 +6,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Views.Controls
     /// Smart Filter Chips コントロール
     /// パート別フィルタリング用の選択可能なチップを表示
     /// </summary>
+    [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     public partial class SmartFilterChips : UserControl
     {
         #region 依存関係プロパティ
@@ -90,6 +91,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Views.Controls
         /// <summary>
         /// チップクリックイベント引数
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
         public class ChipClickEventArgs(RoutedEvent routedEvent, FileListFilterService.SelectableFilterChip chip) : RoutedEventArgs(routedEvent)
         {
             public FileListFilterService.SelectableFilterChip Chip { get; } = chip;

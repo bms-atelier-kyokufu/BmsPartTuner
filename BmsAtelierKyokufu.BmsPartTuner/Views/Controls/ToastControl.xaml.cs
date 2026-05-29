@@ -1,9 +1,10 @@
-﻿namespace BmsAtelierKyokufu.BmsPartTuner.Views.Controls
+namespace BmsAtelierKyokufu.BmsPartTuner.Views.Controls
 {
     /// <summary>
     /// ToastControl.xaml の相互作用ロジック
     /// Why: アニメーションのトリガーと、バインディング用のプロパティを提供します。
     /// </summary>
+    [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     public partial class ToastControl : UserControl
     {
         public ToastControl()

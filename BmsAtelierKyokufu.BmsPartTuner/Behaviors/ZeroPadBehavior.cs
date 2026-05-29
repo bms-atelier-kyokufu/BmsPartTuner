@@ -1,4 +1,4 @@
-﻿using Microsoft.Xaml.Behaviors;
+using Microsoft.Xaml.Behaviors;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Behaviors;
 
@@ -6,6 +6,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Behaviors;
 /// 指定桁数の0埋めを行うBehavior（例: PadLength=2の場合、"1" → "01"）。
 /// フォーカスアウト時に適用されます。
 /// </summary>
+[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 public class ZeroPadBehavior : Behavior<TextBox>
 {
     /// <summary>

@@ -1,4 +1,4 @@
-﻿using Microsoft.Xaml.Behaviors;
+using Microsoft.Xaml.Behaviors;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Behaviors;
 
@@ -6,6 +6,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Behaviors;
 /// IMEを無効化して非ASCII入力を抑止するBehavior。
 /// 数字/英字のみを想定するテキストボックスに適用します。
 /// </summary>
+[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 public class ImeOffBehavior : Behavior<TextBox>
 {
     private bool? _originalImeEnabled;

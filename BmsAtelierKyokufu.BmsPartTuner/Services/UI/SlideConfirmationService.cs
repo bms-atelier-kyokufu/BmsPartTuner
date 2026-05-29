@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Windows.Media.Animation;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Services.UI
@@ -6,6 +7,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Services.UI
     /// ファイルの上書きなど危険な操作の前にユーザーに確認を求めるスライドUIを制御するサービス。
     /// Material Design 3に準拠したプログレッシブ・フィルやバウンスアニメーションを提供します。
     /// </summary>
+    [ExcludeFromCodeCoverage]
     public class SlideConfirmationService
     {
         private FrameworkElement? _panel;
