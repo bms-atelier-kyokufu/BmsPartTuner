@@ -1,4 +1,4 @@
-﻿using BmsAtelierKyokufu.BmsPartTuner.Core.Helpers;
+using BmsAtelierKyokufu.BmsPartTuner.Core.Helpers;
 using BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers;
 using BmsAtelierKyokufu.BmsPartTuner.Models;
 
@@ -6,16 +6,18 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Helpers;
 
 /// <summary>
 /// <see cref="AudioFileGroupingStrategy"/> のテストクラス。
-///
+/// <para>
 /// 【テスト対象】
 /// - ファイルサイズとRMSによるグループ化
 /// - キーワードフィルタによるパート分離
 /// - 巨大グループの自動分割
-///
+/// </para>
+/// <para>
 /// 【テスト設計方針】
 /// - グループ化の正確性を検証
 /// - エッジケース（null、空リスト、巨大グループ）
 /// - キーワードマッチングの大文字小文字区別なし
+/// </para>
 /// </summary>
 public class AudioFileGroupingStrategyTests
 {
@@ -169,7 +171,7 @@ public class AudioFileGroupingStrategyTests
         var groups = AudioFileGroupingStrategy.GroupFiles(audioCache, files, 1, 3);
 
         // Assert
-        var totalFiles = groups.SelectMany(g => g).Count();
+        var totalFiles = groups.Sum(g => g.Count);
         Assert.Equal(2, totalFiles); // file2は除外される
     }
 
@@ -213,7 +215,7 @@ public class AudioFileGroupingStrategyTests
         var groups = AudioFileGroupingStrategy.GroupFiles(audioCache, files, 1, 3, keywords);
 
         // Assert
-        var totalFiles = groups.SelectMany(g => g).Count();
+        var totalFiles = groups.Sum(g => g.Count);
         Assert.Equal(3, totalFiles); // 大文字小文字関係なく全てマッチ
     }
 
@@ -233,7 +235,7 @@ public class AudioFileGroupingStrategyTests
         var groups = AudioFileGroupingStrategy.GroupFiles(audioCache, files, 1, 3, keywords);
 
         // Assert
-        var totalFiles = groups.SelectMany(g => g).Count();
+        var totalFiles = groups.Sum(g => g.Count);
         Assert.Equal(2, totalFiles); // cymbalは除外される
     }
 

@@ -1,4 +1,4 @@
-﻿namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
+namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
 {
     /// <summary>
     /// xUnit の <see cref="TheoryData"/> に対する拡張メソッド群。
@@ -10,9 +10,9 @@
         /// DefinitionStatisticsTests 用のテストケースを追加。
         /// </summary>
         public static void AddCase(
-            this TheoryData<int[], Dictionary<int, int>, int, int, int> data,
+            this TheoryData<int[], int[][], int, int, int> data,
             int[] fileListNumbers,
-            Dictionary<int, int> replacesMap,
+            int[][] replacesMap,
             int start,
             int end,
             int expectedCount)

@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Text;
 using System.Text.Json;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
@@ -281,7 +281,7 @@ public class BmsonOptimizationIntegrationTests
         {
             var data = kvp.Value;
             var vec = new float[16];
-            if (data.FftSpectrum != null && data.FftSpectrum.Length > 0 && data.FftSpectrum[0] != null)
+            if (data.FftSpectrum?[0] != null)
             {
                 var spec = data.FftSpectrum[0];
                 double sumSq = 0;
@@ -355,7 +355,7 @@ public class BmsonOptimizationIntegrationTests
             }
         }
 
-        _output.WriteLine($"---");
+        _output.WriteLine("---");
         _output.WriteLine($"Matches with R2 >= 0.40 : {matchCount}");
         _output.WriteLine($"Max Euclidean Distance for these matches: {maxEuclideanForR2Match:F4}");
 
@@ -439,7 +439,7 @@ public class BmsonOptimizationIntegrationTests
             }
         }
 
-        _output.WriteLine($"---");
+        _output.WriteLine("---");
         _output.WriteLine($"Matches with R2 >= 0.40 : {matchCount}");
         _output.WriteLine($"Max Hamming Distance for these matches: {maxHammingForR2Match}");
 

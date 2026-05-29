@@ -1,4 +1,4 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 using System.IO;
 using Microsoft.CodeAnalysis;
 
@@ -43,7 +43,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.RoslynMutation.Framework;
 ///     .RunAll();
 /// </code>
 /// </example>
-public class MutationTestRunner
+public sealed class MutationTestRunner
 {
     private MutationTestConfiguration _config;
     private readonly MutantTestCaseRegistry _testCaseRegistry;
@@ -342,7 +342,7 @@ public class MutationTestRunner
 
         if (!File.Exists(filePath))
         {
-            _logger?.Invoke($"[ERROR] File not found");
+            _logger?.Invoke("[ERROR] File not found");
             return MutationTestReporter.CreateEmptyReport(stopwatch.Elapsed, _config);
         }
 

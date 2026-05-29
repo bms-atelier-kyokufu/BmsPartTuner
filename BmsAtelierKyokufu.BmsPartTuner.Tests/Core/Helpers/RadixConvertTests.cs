@@ -1,14 +1,15 @@
-﻿using BmsAtelierKyokufu.BmsPartTuner.Core;
+using BmsAtelierKyokufu.BmsPartTuner.Core;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Helpers;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Helpers
 {
     /// <summary>
     /// <see cref="RadixConvert"/> のテストクラス。
-    ///
+    /// <para>
     /// BMSの定義番号（#WAV01 ～ #WAVzz）は、基本的に36進数（0-9, A-Z）ですが、
     /// 拡張仕様として62進数（0-9, A-Z, a-z）をサポートする場合があります。
     /// ここではそれぞれの基数変換が正しく行われるか検証します。
+    /// </para>
     /// </summary>
     public class RadixConvertTests
     {

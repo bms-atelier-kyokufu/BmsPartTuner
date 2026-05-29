@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using BmsAtelierKyokufu.BmsPartTuner.Models;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Optimization;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Interfaces.Bms;
@@ -130,7 +130,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Services.Bms
             var progressValues = new List<int>();
             return RunOptimalThresholdsTestAsync(
                 dir => { _context.CreateBuilder().WithWav(1, "test1.wav"); return [Path.Combine(dir, "test1.wav")]; },
-                res => Assert.NotEmpty(progressValues),
+                _ => Assert.NotEmpty(progressValues),
                 progress: new Progress<int>(p => progressValues.Add(p))
             );
         }

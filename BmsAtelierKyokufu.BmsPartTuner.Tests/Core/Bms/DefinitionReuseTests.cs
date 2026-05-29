@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 using BmsAtelierKyokufu.BmsPartTuner.Models;
 using BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers;
@@ -7,11 +7,12 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
 {
     /// <summary>
     /// <see cref="DefinitionReuse"/> のテストクラス。
-    ///
+    /// <para>
     /// 【テスト対象】
     /// - 境界値: ZZ(1295), zz(3843) 付近での挙動
     /// - 大文字小文字の混在: #WAV01 と #wav01
     /// - 重複定義の処理
+    /// </para>
     /// </summary>
     public partial class DefinitionReuseTests : IDisposable
     {

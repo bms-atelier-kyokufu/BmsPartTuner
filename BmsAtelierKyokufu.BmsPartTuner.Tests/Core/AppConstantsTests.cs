@@ -1,19 +1,21 @@
-﻿using BmsAtelierKyokufu.BmsPartTuner.Core;
+using BmsAtelierKyokufu.BmsPartTuner.Core;
 
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core;
 
 /// <summary>
 /// <see cref="AppConstants"/> のテストクラス。
-///
+/// <para>
 /// 【テスト対象】
 /// - 定数値の妥当性検証
 /// - ヘルパーメソッドの動作確認
 /// - 定数間の整合性チェック
-///
+/// </para>
+/// <para>
 /// 【テスト設計方針】
 /// - 定数が期待される範囲内にあることを確認
 /// - ヘルパーメソッドのエッジケース対応
+/// </para>
 /// </summary>
 
 public class AppConstantsTests

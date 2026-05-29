@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Text;
 using BmsAtelierKyokufu.BmsPartTuner.Models;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Optimization;
@@ -165,7 +165,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Services.Bms
                     new() { Name = Path.Combine(dir, "similar.wav"), NumInteger = 2, Num = "02", FileSize = new FileInfo(Path.Combine(dir, "similar.wav")).Length }
                 ],
                 options: new DefinitionReductionOptions { R2Threshold = 0.5f, StartDefinition = 1, EndDefinition = 2, IsPhysicalDeletionEnabled = true },
-                assertResult: (result, dir) =>
+                assertResult: (result, _) =>
                 {
                     Assert.True(result.IsSuccess);
                     Assert.Equal(1, result.OptimizedCount);

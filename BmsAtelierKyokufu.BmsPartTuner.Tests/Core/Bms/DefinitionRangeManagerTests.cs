@@ -1,4 +1,4 @@
-﻿using BmsAtelierKyokufu.BmsPartTuner.Core;
+using BmsAtelierKyokufu.BmsPartTuner.Core;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 using BmsAtelierKyokufu.BmsPartTuner.Models;
 using BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers;
@@ -7,17 +7,16 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
 {
     /// <summary>
     /// <see cref="DefinitionRangeManager"/> のテストクラス。
-    ///
+    /// <para>
     /// 【テスト対象】
     /// - 処理範囲の決定（自動検出、明示指定）
     /// - 範囲の妥当性検証
     /// - 境界値処理
+    /// </para>
     /// </summary>
     public class DefinitionRangeManagerTests
     {
-        #region Helper Methods
 
-        #endregion
 
         #region Constructor Tests
 
