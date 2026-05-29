@@ -1,16 +1,19 @@
+﻿using BmsAtelierKyokufu.BmsPartTuner.Core.Attributes;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace BmsAtelierKyokufu.BmsPartTuner.Services.Common;
+using BmsAtelierKyokufu.BmsPartTuner.Core.Interfaces.Common;
+namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Common;
 
 /// <summary>
 /// アプリケーションの自動アップデート機能（Chromeスタイル）を提供するサービス。
 /// バックグラウンドで新しいリリースを確認し、ダウンロード後、アプリ終了時にインストールを実行します。
 /// これにより、ユーザーの作業を中断させることなく最新版への更新を実現します。
 /// </summary>
+[ADRAnchor("OPT-08", nameof(UpdateService))]
 public class UpdateService : IUpdateService, IDisposable
 {
     private const string GitHubApiUrl = "https://api.github.com/repos/bms-atelier-kyokufu/BmsPartTuner/releases/latest";

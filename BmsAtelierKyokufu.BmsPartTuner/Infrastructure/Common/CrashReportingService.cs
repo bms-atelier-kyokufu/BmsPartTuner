@@ -1,6 +1,6 @@
 ﻿using System.Reflection;
 
-namespace BmsAtelierKyokufu.BmsPartTuner.Services.Common
+namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Common
 {
     /// <summary>
     /// 未処理例外の記録とユーザーへの通知を担当するサービス。
