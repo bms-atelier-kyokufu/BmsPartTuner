@@ -1,5 +1,5 @@
-using System.Globalization;
-using BmsAtelierKyokufu.BmsPartTuner.Converters;
+﻿using System.Globalization;
+using BmsAtelierKyokufu.BmsPartTuner.UI.Converters;
 using BmsAtelierKyokufu.BmsPartTuner.Core;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Converters;

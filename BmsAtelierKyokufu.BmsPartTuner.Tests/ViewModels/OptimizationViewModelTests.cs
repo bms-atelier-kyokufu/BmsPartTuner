@@ -1,9 +1,12 @@
-using BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
+﻿using BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Validation;
 using BmsAtelierKyokufu.BmsPartTuner.Models;
-using BmsAtelierKyokufu.BmsPartTuner.Services.Bms;
+using BmsAtelierKyokufu.BmsPartTuner.Core.Optimization;
+using BmsAtelierKyokufu.BmsPartTuner.Core.Interfaces.Bms;
+using BmsAtelierKyokufu.BmsPartTuner.UseCases;
+using BmsAtelierKyokufu.BmsPartTuner.UseCases.Dto;
 using BmsAtelierKyokufu.BmsPartTuner.Tests.Infrastructure;
-using BmsAtelierKyokufu.BmsPartTuner.ViewModels;
+using BmsAtelierKyokufu.BmsPartTuner.UI.ViewModels;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Tests.ViewModels
 {
@@ -63,14 +66,14 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.ViewModels
         }
     }
 
-    internal class FakeOptimizationUseCase : BmsAtelierKyokufu.BmsPartTuner.Services.UseCases.IBmsOptimizationUseCase
+    internal class FakeOptimizationUseCase : BmsAtelierKyokufu.BmsPartTuner.UseCases.IBmsOptimizationUseCase
     {
-        public Task<BmsAtelierKyokufu.BmsPartTuner.Services.UseCases.OptimizationUseCaseResult<OptimizationResult>> ExecuteThresholdOptimizationAsync(BmsAtelierKyokufu.BmsPartTuner.Services.UseCases.ThresholdOptimizationRequest request)
+        public Task<OptimizationUseCaseResult<OptimizationResult>> ExecuteThresholdOptimizationAsync(ThresholdOptimizationRequest request)
         {
             if (request.BmsFileList == null || request.BmsFileList.Count == 0)
-                return Task.FromResult(BmsAtelierKyokufu.BmsPartTuner.Services.UseCases.OptimizationUseCaseResult<OptimizationResult>.Failure("ファイルリストが空です"));
+                return Task.FromResult(OptimizationUseCaseResult<OptimizationResult>.Failure("ファイルリストが空です"));
 
-            return Task.FromResult(BmsAtelierKyokufu.BmsPartTuner.Services.UseCases.OptimizationUseCaseResult<OptimizationResult>.Success(new OptimizationResult
+            return Task.FromResult(OptimizationUseCaseResult<OptimizationResult>.Success(new OptimizationResult
             {
                 Base36Result = (0.85f, 100),
                 Base62Result = (0.90f, 200),
@@ -79,12 +82,12 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.ViewModels
             }));
         }
 
-        public Task<BmsAtelierKyokufu.BmsPartTuner.Services.UseCases.OptimizationUseCaseResult<BmsOptimizationService.ReductionResult>> ExecuteDefinitionReductionAsync(BmsAtelierKyokufu.BmsPartTuner.Services.UseCases.DefinitionReductionRequest request)
+        public Task<OptimizationUseCaseResult<BmsOptimizationService.ReductionResult>> ExecuteDefinitionReductionAsync(DefinitionReductionRequest request)
         {
             if (request.R2Threshold < 0)
-                return Task.FromResult(BmsAtelierKyokufu.BmsPartTuner.Services.UseCases.OptimizationUseCaseResult<BmsOptimizationService.ReductionResult>.Failure("invalid"));
+                return Task.FromResult(OptimizationUseCaseResult<BmsOptimizationService.ReductionResult>.Failure("invalid"));
 
-            return Task.FromResult(BmsAtelierKyokufu.BmsPartTuner.Services.UseCases.OptimizationUseCaseResult<BmsOptimizationService.ReductionResult>.Success(new BmsOptimizationService.ReductionResult
+            return Task.FromResult(OptimizationUseCaseResult<BmsOptimizationService.ReductionResult>.Success(new BmsOptimizationService.ReductionResult
             {
                 IsSuccess = true,
                 OriginalCount = 10,
@@ -103,7 +106,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.ViewModels
     {
         private static Task RunViewModelTestAsync(
             IBmsOptimizationService service,
-            BmsAtelierKyokufu.BmsPartTuner.Services.UseCases.IBmsOptimizationUseCase useCase,
+            BmsAtelierKyokufu.BmsPartTuner.UseCases.IBmsOptimizationUseCase useCase,
             Action<OptimizationViewModel>? setup,
             Func<OptimizationViewModel, Task> act,
             Action<OptimizationViewModel> assert)
@@ -313,22 +316,22 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.ViewModels
         }
     }
 
-    internal class ThrowingOptimizationUseCase : BmsAtelierKyokufu.BmsPartTuner.Services.UseCases.IBmsOptimizationUseCase
+    internal class ThrowingOptimizationUseCase : BmsAtelierKyokufu.BmsPartTuner.UseCases.IBmsOptimizationUseCase
     {
-        public Task<BmsAtelierKyokufu.BmsPartTuner.Services.UseCases.OptimizationUseCaseResult<OptimizationResult>> ExecuteThresholdOptimizationAsync(BmsAtelierKyokufu.BmsPartTuner.Services.UseCases.ThresholdOptimizationRequest request)
-            => Task.FromResult(BmsAtelierKyokufu.BmsPartTuner.Services.UseCases.OptimizationUseCaseResult<OptimizationResult>.Failure("Test exception"));
+        public Task<OptimizationUseCaseResult<OptimizationResult>> ExecuteThresholdOptimizationAsync(ThresholdOptimizationRequest request)
+            => Task.FromResult(OptimizationUseCaseResult<OptimizationResult>.Failure("Test exception"));
 
-        public Task<BmsAtelierKyokufu.BmsPartTuner.Services.UseCases.OptimizationUseCaseResult<BmsOptimizationService.ReductionResult>> ExecuteDefinitionReductionAsync(BmsAtelierKyokufu.BmsPartTuner.Services.UseCases.DefinitionReductionRequest request)
-            => Task.FromResult(BmsAtelierKyokufu.BmsPartTuner.Services.UseCases.OptimizationUseCaseResult<BmsOptimizationService.ReductionResult>.Failure("Test exception"));
+        public Task<OptimizationUseCaseResult<BmsOptimizationService.ReductionResult>> ExecuteDefinitionReductionAsync(DefinitionReductionRequest request)
+            => Task.FromResult(OptimizationUseCaseResult<BmsOptimizationService.ReductionResult>.Failure("Test exception"));
     }
 
-    internal class NullReturningOptimizationUseCase : BmsAtelierKyokufu.BmsPartTuner.Services.UseCases.IBmsOptimizationUseCase
+    internal class NullReturningOptimizationUseCase : BmsAtelierKyokufu.BmsPartTuner.UseCases.IBmsOptimizationUseCase
     {
-        public Task<BmsAtelierKyokufu.BmsPartTuner.Services.UseCases.OptimizationUseCaseResult<OptimizationResult>> ExecuteThresholdOptimizationAsync(BmsAtelierKyokufu.BmsPartTuner.Services.UseCases.ThresholdOptimizationRequest request)
-            => Task.FromResult(BmsAtelierKyokufu.BmsPartTuner.Services.UseCases.OptimizationUseCaseResult<OptimizationResult>.Failure("Service returned null"));
+        public Task<OptimizationUseCaseResult<OptimizationResult>> ExecuteThresholdOptimizationAsync(ThresholdOptimizationRequest request)
+            => Task.FromResult(OptimizationUseCaseResult<OptimizationResult>.Failure("Service returned null"));
 
-        public Task<BmsAtelierKyokufu.BmsPartTuner.Services.UseCases.OptimizationUseCaseResult<BmsOptimizationService.ReductionResult>> ExecuteDefinitionReductionAsync(BmsAtelierKyokufu.BmsPartTuner.Services.UseCases.DefinitionReductionRequest request)
-            => Task.FromResult(BmsAtelierKyokufu.BmsPartTuner.Services.UseCases.OptimizationUseCaseResult<BmsOptimizationService.ReductionResult>.Failure("Service returned null"));
+        public Task<OptimizationUseCaseResult<BmsOptimizationService.ReductionResult>> ExecuteDefinitionReductionAsync(DefinitionReductionRequest request)
+            => Task.FromResult(OptimizationUseCaseResult<BmsOptimizationService.ReductionResult>.Failure("Service returned null"));
     }
 
     #endregion

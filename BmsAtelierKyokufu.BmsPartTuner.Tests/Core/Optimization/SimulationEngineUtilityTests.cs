@@ -1,4 +1,4 @@
-using BmsAtelierKyokufu.BmsPartTuner.Core.Optimization;
+﻿using BmsAtelierKyokufu.BmsPartTuner.Core.Optimization;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
 {

@@ -1,5 +1,6 @@
-using BmsAtelierKyokufu.BmsPartTuner.Services.Audio;
-using BmsAtelierKyokufu.BmsPartTuner.Services.Audio.AudioPlayer;
+﻿using BmsAtelierKyokufu.BmsPartTuner.Core.Interfaces.Audio;
+using BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Audio;
+using BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Audio.AudioPlayer;
 using Moq;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Services.Audio;
@@ -9,7 +10,7 @@ public class AudioPreviewServiceTests
     private readonly Mock<IAudioPlayerFactory> _factoryMock;
     private readonly Mock<IAudioPlayer> _playerMock1;
     private readonly Mock<IAudioPlayer> _playerMock2;
-    private readonly Mock<BmsAtelierKyokufu.BmsPartTuner.Services.UI.IUIThreadDispatcher> _dispatcherMock;
+    private readonly Mock<BmsAtelierKyokufu.BmsPartTuner.UI.Services.IUIThreadDispatcher> _dispatcherMock;
     private readonly AudioPreviewService _service;
 
     public AudioPreviewServiceTests()
@@ -23,7 +24,7 @@ public class AudioPreviewServiceTests
             .Returns(_playerMock1.Object)
             .Returns(_playerMock2.Object);
 
-        _dispatcherMock = new Mock<BmsAtelierKyokufu.BmsPartTuner.Services.UI.IUIThreadDispatcher>();
+        _dispatcherMock = new Mock<BmsAtelierKyokufu.BmsPartTuner.UI.Services.IUIThreadDispatcher>();
         // Make dispatcher execute action immediately
         _dispatcherMock.Setup(d => d.InvokeAsync(It.IsAny<Action>()))
             .Callback<Action>(a => a.Invoke())

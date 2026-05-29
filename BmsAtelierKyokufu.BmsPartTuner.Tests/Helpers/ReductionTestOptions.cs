@@ -1,5 +1,7 @@
 ﻿using BmsAtelierKyokufu.BmsPartTuner.Models;
-using BmsAtelierKyokufu.BmsPartTuner.Services.Bms;
+using BmsAtelierKyokufu.BmsPartTuner.Core.Optimization;
+using BmsAtelierKyokufu.BmsPartTuner.Core.Interfaces.Bms;
+using BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
 {

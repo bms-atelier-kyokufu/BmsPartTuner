@@ -1,6 +1,8 @@
 ﻿using System.IO;
 using BmsAtelierKyokufu.BmsPartTuner.Models;
-using BmsAtelierKyokufu.BmsPartTuner.Services.Bms;
+using BmsAtelierKyokufu.BmsPartTuner.Core.Optimization;
+using BmsAtelierKyokufu.BmsPartTuner.Core.Interfaces.Bms;
+using BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms;
 using BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Services.Bms

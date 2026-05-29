@@ -1,12 +1,16 @@
-using System.IO;
-using BmsAtelierKyokufu.BmsPartTuner.Services.Audio;
-using BmsAtelierKyokufu.BmsPartTuner.Services.Audio.AudioPlayer;
-using BmsAtelierKyokufu.BmsPartTuner.Services.Bms;
-using BmsAtelierKyokufu.BmsPartTuner.Services.Common;
-using BmsAtelierKyokufu.BmsPartTuner.Services.UI;
+﻿using System.IO;
+using BmsAtelierKyokufu.BmsPartTuner.Core.Interfaces.Audio;
+using BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Audio;
+using BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Audio.AudioPlayer;
+using BmsAtelierKyokufu.BmsPartTuner.Core.Optimization;
+using BmsAtelierKyokufu.BmsPartTuner.Core.Interfaces.Bms;
+using BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms;
+using BmsAtelierKyokufu.BmsPartTuner.Core.Interfaces.Common;
+using BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Common;
+using BmsAtelierKyokufu.BmsPartTuner.UI.Services;
 using BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers;
 using BmsAtelierKyokufu.BmsPartTuner.Tests.Infrastructure;
-using BmsAtelierKyokufu.BmsPartTuner.ViewModels;
+using BmsAtelierKyokufu.BmsPartTuner.UI.ViewModels;
 using Moq;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Tests.ViewModels
@@ -36,11 +40,11 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.ViewModels
                 File.WriteAllText(bmsonPath, bmsonContent);
 
                 var optimizationServiceMock = new Mock<IBmsOptimizationService>();
-                var optimizationUseCaseMock = new Mock<BmsAtelierKyokufu.BmsPartTuner.Services.UseCases.IBmsOptimizationUseCase>();
+                var optimizationUseCaseMock = new Mock<BmsAtelierKyokufu.BmsPartTuner.UseCases.IBmsOptimizationUseCase>();
                 var bmsonConversionServiceMock = new Mock<IBmsonConversionService>();
-                var fileSystemServiceMock = new Mock<BmsAtelierKyokufu.BmsPartTuner.Services.Common.IFileSystemService>();
+                var fileSystemServiceMock = new Mock<BmsAtelierKyokufu.BmsPartTuner.Core.Interfaces.Common.IFileSystemService>();
                 fileSystemServiceMock.Setup(f => f.FileExists(It.IsAny<string>())).Returns(true);
-                var dispatcherMock = new Mock<BmsAtelierKyokufu.BmsPartTuner.Services.UI.IUIThreadDispatcher>();
+                var dispatcherMock = new Mock<BmsAtelierKyokufu.BmsPartTuner.UI.Services.IUIThreadDispatcher>();
                 var audioPlayerFactoryMock = new Mock<IAudioPlayerFactory>();
 
                 // Execute UI Dispatcher immediately
@@ -115,11 +119,11 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.ViewModels
                 File.WriteAllText(bmsonPath, bmsonContent);
 
                 var optimizationServiceMock = new Mock<IBmsOptimizationService>();
-                var optimizationUseCaseMock = new Mock<BmsAtelierKyokufu.BmsPartTuner.Services.UseCases.IBmsOptimizationUseCase>();
+                var optimizationUseCaseMock = new Mock<BmsAtelierKyokufu.BmsPartTuner.UseCases.IBmsOptimizationUseCase>();
                 var bmsonConversionServiceMock = new Mock<IBmsonConversionService>();
-                var fileSystemServiceMock = new Mock<BmsAtelierKyokufu.BmsPartTuner.Services.Common.IFileSystemService>();
+                var fileSystemServiceMock = new Mock<BmsAtelierKyokufu.BmsPartTuner.Core.Interfaces.Common.IFileSystemService>();
                 fileSystemServiceMock.Setup(f => f.FileExists(It.IsAny<string>())).Returns(true);
-                var dispatcherMock = new Mock<BmsAtelierKyokufu.BmsPartTuner.Services.UI.IUIThreadDispatcher>();
+                var dispatcherMock = new Mock<BmsAtelierKyokufu.BmsPartTuner.UI.Services.IUIThreadDispatcher>();
                 var audioPlayerFactoryMock = new Mock<IAudioPlayerFactory>();
 
                 // Execute UI Dispatcher immediately

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
 using Xunit;
 

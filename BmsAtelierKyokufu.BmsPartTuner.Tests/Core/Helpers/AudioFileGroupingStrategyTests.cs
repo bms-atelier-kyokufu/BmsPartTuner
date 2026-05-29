@@ -1,4 +1,4 @@
-using BmsAtelierKyokufu.BmsPartTuner.Core.Helpers;
+﻿using BmsAtelierKyokufu.BmsPartTuner.Core.Helpers;
 using BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers;
 using BmsAtelierKyokufu.BmsPartTuner.Models;
 

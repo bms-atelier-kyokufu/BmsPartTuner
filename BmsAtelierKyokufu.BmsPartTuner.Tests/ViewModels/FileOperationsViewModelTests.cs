@@ -1,6 +1,6 @@
-using System.IO;
+﻿using System.IO;
 using BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers;
-using BmsAtelierKyokufu.BmsPartTuner.ViewModels;
+using BmsAtelierKyokufu.BmsPartTuner.UI.ViewModels;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Tests.ViewModels;
 
