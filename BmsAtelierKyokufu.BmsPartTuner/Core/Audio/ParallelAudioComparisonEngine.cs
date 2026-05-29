@@ -1,4 +1,4 @@
-﻿namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
+namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
 /// <summary>
 /// 並列オーディオ比較エンジンの実行パラメーター。
 /// </summary>
@@ -28,14 +28,10 @@ internal class ParallelAudioComparisonEngine(AudioComparisonParameters parameter
     #region フィールド
 
     private readonly IReadOnlyList<BmsAudioFile> _fileList = parameters.FileList ?? throw new ArgumentNullException(nameof(parameters.FileList));
-    private readonly int[] _replaceTable = parameters.ReplaceTable ?? throw new ArgumentNullException(nameof(parameters.ReplaceTable));
     private readonly int _startPoint = parameters.StartPoint;
     private readonly int _endPoint = parameters.EndPoint;
     private readonly IReadOnlyDictionary<string, ICachedSoundData> _audioCache = parameters.AudioCache ?? throw new ArgumentNullException(nameof(parameters.AudioCache));
-    private readonly long[] _fileSizes = BuildFileSizeArray(parameters.FileList);
-
-    private const int MaxBmsDefNum = 3844; // ZZ is 3843. Use 3844 to include 0-3843 safely.
-    private readonly long[] _antiSet = new long[((MaxBmsDefNum * MaxBmsDefNum) / 64) + 1];
+    private readonly ThreadSafeReplaceTable _tableManager = new(parameters.ReplaceTable, BuildFileSizeArray(parameters.FileList));
 
     private static long[] BuildFileSizeArray(IReadOnlyList<BmsAudioFile> fileList)
     {
@@ -177,7 +173,7 @@ internal class ParallelAudioComparisonEngine(AudioComparisonParameters parameter
         int fileNum = _fileList[idx].NumInteger;
         if (fileNum >= _startPoint && fileNum <= _endPoint)
         {
-            Interlocked.CompareExchange(ref _replaceTable[fileNum], fileNum, 0);
+            _tableManager.MarkSelf(fileNum);
         }
         Interlocked.Increment(ref processedCount);
         ReportProgress(ref processedCount, totalFiles, progress);
@@ -276,9 +272,9 @@ internal class ParallelAudioComparisonEngine(AudioComparisonParameters parameter
         for (int i = 0; i < entries.Length; i++)
         {
             int iVal = _fileList[entries[i].OriginalIndex].NumInteger;
-            if (iVal >= _startPoint && iVal <= _endPoint && _replaceTable[iVal] == 0)
+            if (iVal >= _startPoint && iVal <= _endPoint)
             {
-                Interlocked.CompareExchange(ref _replaceTable[iVal], iVal, 0);
+                _tableManager.MarkSelf(iVal);
             }
             Interlocked.Increment(ref processedCount);
             ReportProgress(ref processedCount, totalFiles, progress);
@@ -336,14 +332,14 @@ internal class ParallelAudioComparisonEngine(AudioComparisonParameters parameter
         int iVal = _fileList[iIdx].NumInteger;
         int jVal = _fileList[jIdx].NumInteger;
 
-        if (_replaceTable[jVal] != 0 && _replaceTable[jVal] != jVal) return;
+        if (_tableManager.IsMapped(jVal)) return;
 
         // Anti-Set check
-        int rootI = FindRead(iVal);
-        int rootJ = FindRead(jVal);
+        int rootI = _tableManager.FindRead(iVal);
+        int rootJ = _tableManager.FindRead(jVal);
 
         if (rootI == rootJ) return;
-        if (IsKnownMismatch(rootI, rootJ))
+        if (_tableManager.IsKnownMismatch(rootI, rootJ))
         {
             Interlocked.Increment(ref skipped);
             return;
@@ -352,7 +348,7 @@ internal class ParallelAudioComparisonEngine(AudioComparisonParameters parameter
         if (_fileList[iIdx].Name.Equals(_fileList[jIdx].Name) ||
             (!string.IsNullOrEmpty(_fileList[iIdx].AudioFingerprint) && _fileList[iIdx].AudioFingerprint.Equals(_fileList[jIdx].AudioFingerprint)))
         {
-            UpdateReplaceTable(iIdx, jIdx);
+            _tableManager.UpdateReplaceTable(iVal, jVal);
             Interlocked.Increment(ref matches);
             return;
         }
@@ -366,104 +362,18 @@ internal class ParallelAudioComparisonEngine(AudioComparisonParameters parameter
 
         if (isMatch)
         {
-            UpdateReplaceTable(iIdx, jIdx);
+            _tableManager.UpdateReplaceTable(iVal, jVal);
             Interlocked.Increment(ref matches);
         }
         else
         {
-            rootI = FindRead(iVal);
-            rootJ = FindRead(jVal);
-            MarkAsMismatch(rootI, rootJ);
+            rootI = _tableManager.FindRead(iVal);
+            rootJ = _tableManager.FindRead(jVal);
+            _tableManager.MarkAsMismatch(rootI, rootJ);
         }
     }
 
-    /// <summary>
-    /// 置換テーブルを更新します（Union-Find 方式）。
-    /// 経路圧縮により推移的なマッチングを効率的に管理し、CompareExchangeによるCAS操作でスレッドセーフな更新を実現します。
-    /// </summary>
-    private void UpdateReplaceTable(int i, int j)
-    {
-        int rootI = FindRoot(_fileList[i].NumInteger);
-        int rootJ = FindRoot(_fileList[j].NumInteger);
 
-        if (rootI == rootJ) return;
-
-        long sizeI = rootI >= 0 && rootI < _fileSizes.Length ? _fileSizes[rootI] : 0;
-        long sizeJ = rootJ >= 0 && rootJ < _fileSizes.Length ? _fileSizes[rootJ] : 0;
-
-        int newRoot, newChild;
-        if (sizeI > sizeJ)
-        {
-            newRoot = rootI;
-            newChild = rootJ;
-        }
-        else if (sizeJ > sizeI)
-        {
-            newRoot = rootJ;
-            newChild = rootI;
-        }
-        else
-        {
-            newRoot = Math.Min(rootI, rootJ);
-            newChild = Math.Max(rootI, rootJ);
-        }
-
-        Interlocked.CompareExchange(ref _replaceTable[newChild], newRoot, 0);
-        Interlocked.CompareExchange(ref _replaceTable[newChild], newRoot, newChild);
-    }
-
-    /// <summary>
-    /// Union-Findのルート検索を行います。経路圧縮により2回目以降の検索が高速化されます。
-    /// </summary>
-    private int FindRoot(int fileNum)
-    {
-        int current = fileNum;
-        int parent = _replaceTable[current];
-
-        if (parent == 0 || parent == current) return current;
-
-        int root = FindRoot(parent);
-        if (root != parent) Interlocked.CompareExchange(ref _replaceTable[current], root, parent);
-        return root;
-    }
-
-    /// <summary>
-    /// 副作用なしでルートを検索します。Anti-Setの参照など、並列競合（書き込み）を避けるために使用します。
-    /// </summary>
-    private int FindRead(int fileNum)
-    {
-        int current = fileNum;
-        while (true)
-        {
-            int parent = _replaceTable[current];
-            if (parent == 0 || parent == current) return current;
-            current = parent;
-        }
-    }
-
-    private bool IsKnownMismatch(int rootA, int rootB)
-    {
-        if (rootA == rootB) return false;
-        if (rootA < 0 || rootA >= MaxBmsDefNum || rootB < 0 || rootB >= MaxBmsDefNum) return false;
-        int min = Math.Min(rootA, rootB);
-        int max = Math.Max(rootA, rootB);
-        long bitIndex = ((long)min * MaxBmsDefNum) + max;
-        int arrayIndex = (int)(bitIndex / 64);
-        int bitOffset = (int)(bitIndex % 64);
-        return (Interlocked.Read(ref _antiSet[arrayIndex]) & (1L << bitOffset)) != 0;
-    }
-
-    private void MarkAsMismatch(int rootA, int rootB)
-    {
-        if (rootA == rootB) return;
-        if (rootA < 0 || rootA >= MaxBmsDefNum || rootB < 0 || rootB >= MaxBmsDefNum) return;
-        int min = Math.Min(rootA, rootB);
-        int max = Math.Max(rootA, rootB);
-        long bitIndex = ((long)min * MaxBmsDefNum) + max;
-        int arrayIndex = (int)(bitIndex / 64);
-        int bitOffset = (int)(bitIndex % 64);
-        Interlocked.Or(ref _antiSet[arrayIndex], 1L << bitOffset);
-    }
 
     /// <summary>
     /// 100ファイルごと、または完了時に進捗を報告し、オーバーヘッドを削減します。

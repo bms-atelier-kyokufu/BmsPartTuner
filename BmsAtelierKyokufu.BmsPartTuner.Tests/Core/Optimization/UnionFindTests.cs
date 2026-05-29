@@ -1,4 +1,4 @@
-﻿using BmsAtelierKyokufu.BmsPartTuner.Core.Optimization;
+using BmsAtelierKyokufu.BmsPartTuner.Core.Optimization;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
 {
@@ -12,9 +12,8 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
         public void FindRoot_DirectParent_ReturnsParent()
         {
             var uf = new UnionFind(10);
-            int[] table = uf.GetRawTable();
-            table[2] = 1;
-            table[1] = 1; // 1がルート
+            uf.SetParent(2, 1);
+            uf.SetParent(1, 1); // 1がルート
 
             int root = uf.Find(2);
 
@@ -25,10 +24,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
         public void FindRoot_TransitiveParent_ReturnsRoot()
         {
             var uf = new UnionFind(10);
-            int[] table = uf.GetRawTable();
-            table[3] = 2;
-            table[2] = 1;
-            table[1] = 1;
+            uf.SetParent(3, 2);
+            uf.SetParent(2, 1);
+            uf.SetParent(1, 1);
 
             int root = uf.Find(3);
 
@@ -125,7 +123,6 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
             const int iterations = 1000;
             const int maxIndex = 100;
             var uf = new UnionFind(maxIndex + 1);
-            int[] table = uf.GetRawTable();
 
             // 実行: 複数スレッドから同時にマージ操作を実行
             Parallel.For(0, iterations, i =>
@@ -142,7 +139,8 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
                 Assert.InRange(root, 1, maxIndex);
 
                 // ルート要素の値が 0 (初期値=自分自身) であることも許容する
-                Assert.True(table[root] == root || table[root] == 0 || table[root] > 0);
+                int parent = uf.GetParent(root);
+                Assert.True(parent == root || parent == 0 || parent > 0);
             }
         }
 
@@ -153,7 +151,6 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
             const int threadCount = 10;
             const int operationsPerThread = 100;
             var uf = new UnionFind(1000);
-            int[] table = uf.GetRawTable();
             var tasks = new List<Task>();
 
             // 実行: 複数スレッドから同じペアをマージ
@@ -200,14 +197,13 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
         public void FindRoot_PathCompression_CompressesDeepChain()
         {
             var uf = new UnionFind(10);
-            int[] table = uf.GetRawTable();
 
             // 深いチェーンを作成: 1 <- 2 <- 3 <- 4 <- 5
-            table[5] = 4;
-            table[4] = 3;
-            table[3] = 2;
-            table[2] = 1;
-            table[1] = 1; // ルート
+            uf.SetParent(5, 4);
+            uf.SetParent(4, 3);
+            uf.SetParent(3, 2);
+            uf.SetParent(2, 1);
+            uf.SetParent(1, 1); // ルート
 
             // 初回のFindRootでパス圧縮が行われる
             int root = uf.Find(5);
@@ -215,7 +211,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
             Assert.Equal(1, root);
 
             // パス圧縮後、5は直接1を指すようになるはず
-            Assert.Equal(1, table[5]);
+            Assert.Equal(1, uf.GetParent(5));
         }
 
         /// <summary>
@@ -232,6 +228,23 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
             // ルートは自分自身のまま
             int root = uf.Find(3);
             Assert.Equal(3, root);
+        }
+    }
+
+    internal static class UnionFindTestExtensions
+    {
+        public static void SetParent(this UnionFind uf, int child, int parent)
+        {
+            var field = typeof(UnionFind).GetField("_parent", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            var array = (int[])field!.GetValue(uf)!;
+            array[child] = parent;
+        }
+
+        public static int GetParent(this UnionFind uf, int child)
+        {
+            var field = typeof(UnionFind).GetField("_parent", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            var array = (int[])field!.GetValue(uf)!;
+            return array[child];
         }
     }
 }
