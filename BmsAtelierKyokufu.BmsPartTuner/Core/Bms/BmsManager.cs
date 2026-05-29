@@ -45,42 +45,26 @@ internal partial class BmsManager(string bmsFilePath, string? bmsContent = null)
     public string GetBmsDirectory() => _bmsDirectory ?? string.Empty;
 
     /// <summary>
-    /// BMSファイルから#WAV定義をShift_JISエンコーディングで解析し、抽出します。
-    /// 解析エラーが発生した場合はログに記録し、部分的な抽出結果を返します。
+    /// BMSファイルの行コレクションから#WAV定義を解析し、抽出します。
     /// </summary>
+    /// <param name="lines">BMSファイルの行コレクション。</param>
     /// <returns>定義番号とファイルパスのタプルリスト。</returns>
-    public List<(string def, string path)> ParseWavDefinitions()
+    public static List<(string def, string path)> ParseWavDefinitions(IEnumerable<string> lines)
     {
         var definitions = new List<(string def, string path)>();
 
-        if (_bmsContent == null && !File.Exists(_bmsFilePath))
+        if (lines == null)
             return definitions;
 
-        try
+        foreach (var line in lines)
         {
-            using TextReader sr = _bmsContent != null
-                ? new StringReader(_bmsContent)
-                : new StreamReader(_bmsFilePath, Encoding.GetEncoding("shift_jis"));
-            string? line;
-            while ((line = sr.ReadLine()) != null)
+            var match = WavDefinitionRegex().Match(line);
+            if (match.Success && match.Groups.Count >= 3)
             {
-                var match = WavDefinitionRegex().Match(line);
-                if (match.Success && match.Groups.Count >= 3)
-                {
-                    var def = match.Groups[1].Value;
-                    var path = match.Groups[2].Value.Trim();
-                    definitions.Add((def, path));
-                }
+                var def = match.Groups[1].Value;
+                var path = match.Groups[2].Value.Trim();
+                definitions.Add((def, path));
             }
-        }
-        catch (ArgumentException ex)
-        {
-            PerformanceDebugLogger.WriteDebug(nameof(BmsManager), $"Encoding Error: {ex.Message}");
-            throw;
-        }
-        catch (Exception ex)
-        {
-            PerformanceDebugLogger.WriteDebug(nameof(BmsManager), $"[BmsManager] Parse Error in file '{Path.GetFileName(_bmsFilePath)}': {ex.Message}");
         }
 
         return definitions;

@@ -1,3 +1,4 @@
+﻿using BmsAtelierKyokufu.BmsPartTuner.Core.Attributes;
 using System.Collections.Concurrent;
 using MathNet.Numerics;
 using MathNet.Numerics.IntegralTransforms;
@@ -8,6 +9,8 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
 /// FFT畳み込み定理を用いたサブミリ秒アライメントのズレ量推定エンジン。
 /// 呼び出しホットパスにおけるメモリアロケーションを完全に排除するよう設計されています。
 /// </summary>
+[ADRAnchor("M-03", nameof(FftAlignmentEngine))]
+[ADRAnchor("OPT-11", nameof(FftAlignmentEngine))]
 public static class FftAlignmentEngine
 {
     private const int FftLength = 4096; // 2048 + 2048 - 1 <= 4096 (Radix-2)

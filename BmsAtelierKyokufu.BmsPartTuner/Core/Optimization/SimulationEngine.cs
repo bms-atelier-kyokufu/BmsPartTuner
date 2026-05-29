@@ -1,3 +1,4 @@
+﻿using BmsAtelierKyokufu.BmsPartTuner.Core.Attributes;
 using System.Collections.Concurrent;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
 
@@ -9,6 +10,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Core.Optimization;
 /// 計算量を最小化しつつ、最適な削減率のシミュレーションを行います。
 /// </summary>
 /// <exception cref="ArgumentNullException">fileListがnullの場合。</exception>
+[ADRAnchor("M-04", nameof(SimulationEngine))]
 internal class SimulationEngine(
     IReadOnlyList<BmsAudioFile> fileList,
     IReadOnlyDictionary<string, ICachedSoundData> audioCache,

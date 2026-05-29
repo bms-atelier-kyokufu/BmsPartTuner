@@ -1,4 +1,4 @@
-namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
+﻿namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
 /// <summary>
 /// 並列オーディオ比較エンジンの実行パラメーター。
 /// </summary>
@@ -14,6 +14,8 @@ internal record AudioComparisonParameters(
 /// グループ単位での並列音声比較やスレッドセーフな置換テーブルの更新を行うオーディオ比較エンジンです。
 /// RMS値による事前ソート（Sort &amp; Sweep）やUnion-Findを用いたマッチング管理により、効率的な比較を実現します。
 /// </summary>
+[ADRAnchor("OPT-11", nameof(ParallelAudioComparisonEngine))]
+[ADRAnchor("OPT-01", nameof(ParallelAudioComparisonEngine))]
 internal class ParallelAudioComparisonEngine(AudioComparisonParameters parameters)
 {
     #region 定数定義

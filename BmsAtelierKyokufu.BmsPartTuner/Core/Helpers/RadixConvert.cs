@@ -1,9 +1,10 @@
-namespace BmsAtelierKyokufu.BmsPartTuner.Core.Helpers;
+﻿namespace BmsAtelierKyokufu.BmsPartTuner.Core.Helpers;
 
 /// <summary>
 /// 10進数 ⇔ 62進数（ZZ形式）の相互変換を行うヘルパークラス。
 /// BMS定義番号の文字列表現をサポートし、配列ベースのルックアップテーブルを用いてO(1)で高速に変換します。
 /// </summary>
+[ADRAnchor("OPT-04", nameof(RadixConvert))]
 public static class RadixConvert
 {
 

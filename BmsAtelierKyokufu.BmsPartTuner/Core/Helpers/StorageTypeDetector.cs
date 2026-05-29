@@ -1,3 +1,4 @@
+﻿using BmsAtelierKyokufu.BmsPartTuner.Core.Attributes;
 using System.Collections.Concurrent;
 using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
@@ -7,6 +8,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Core.Helpers;
 /// <summary>
 /// ドライブがSSD等のシークペナルティの無いストレージかどうかを判定するユーティリティ。
 /// </summary>
+[ADRAnchor("OPT-02", nameof(StorageTypeDetector))]
 internal static partial class StorageTypeDetector
 {
     private static readonly ConcurrentDictionary<string, bool> _ssdCache = new(StringComparer.OrdinalIgnoreCase);

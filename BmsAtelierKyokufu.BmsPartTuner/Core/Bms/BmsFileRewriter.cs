@@ -1,3 +1,4 @@
+﻿using BmsAtelierKyokufu.BmsPartTuner.Core.Attributes;
 using System.Text.RegularExpressions;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
@@ -7,6 +8,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 /// 削減後の定義リストを抽出してファイル名順に整列し、新しいIDを割り当てた上で
 /// BMSファイル内の#WAV定義と譜面データの置換を行います。
 /// </summary>
+[ADRAnchor("OPT-06", nameof(BmsFileRewriter))]
 internal partial class BmsFileRewriter(
     IReadOnlyList<BmsAudioFile> fileList,
     int[] replaces,

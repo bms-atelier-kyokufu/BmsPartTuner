@@ -10,20 +10,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Models
     /// PreNormalizedSoundDataの初期化パラメータ
     /// </summary>
     public record PreNormalizedSoundDataParameters(
-        string FilePath,
-        int SampleRate,
-        int Channels,
-        int BitsPerSample,
-        int TotalSamples,
-        long FileSize,
-        List<ActiveRegion>[]? NormalizedRegions,
-        float TotalRms,
-        int StartSilenceSamples,
-        ulong[][]? SignLsh,
-        ulong[][]? SignLshMask,
-        Complex32[][]? FftSpectrum,
-        float[]? SpectralFeatures,
-        ulong[]? SimHash256
+        AudioFileInfo FileInfo,
+        AudioMetrics Metrics,
+        AudioFeatures Features
     );
 
     /// <summary>
@@ -145,20 +134,20 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Models
         /// </summary>
         public PreNormalizedSoundData(PreNormalizedSoundDataParameters p)
         {
-            FilePath = p.FilePath;
-            SampleRate = p.SampleRate;
-            Channels = p.Channels;
-            BitsPerSample = p.BitsPerSample;
-            TotalSamples = p.TotalSamples;
-            FileSize = p.FileSize;
-            NormalizedRegions = p.NormalizedRegions;
-            TotalRms = p.TotalRms;
-            StartSilenceSamples = p.StartSilenceSamples;
-            _signLsh = p.SignLsh;
-            _signLshMask = p.SignLshMask;
-            FftSpectrum = p.FftSpectrum;
-            SpectralFeatures = p.SpectralFeatures;
-            SimHash256 = p.SimHash256;
+            FilePath = p.FileInfo.FilePath;
+            SampleRate = p.FileInfo.SampleRate;
+            Channels = p.FileInfo.Channels;
+            BitsPerSample = p.FileInfo.BitsPerSample;
+            TotalSamples = p.FileInfo.TotalSamples;
+            FileSize = p.FileInfo.FileSize;
+            NormalizedRegions = p.Metrics.Regions;
+            TotalRms = p.Metrics.TotalRms;
+            StartSilenceSamples = p.Metrics.StartSilenceSamples;
+            _signLsh = p.Features.SignLsh;
+            _signLshMask = p.Features.SignLshMask;
+            FftSpectrum = p.Features.FftSpectrum;
+            SpectralFeatures = p.Features.SpectralFeatures;
+            SimHash256 = p.Features.SimHash256;
         }
 
         /// <inheritdoc />

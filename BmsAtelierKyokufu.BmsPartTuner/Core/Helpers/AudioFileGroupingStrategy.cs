@@ -1,10 +1,11 @@
-namespace BmsAtelierKyokufu.BmsPartTuner.Core.Helpers;
+﻿namespace BmsAtelierKyokufu.BmsPartTuner.Core.Helpers;
 
 /// <summary>
 /// 音声ファイルの効率的なグループ化戦略を提供するクラスです。
 /// 全ファイル総当たり比較（$O(N^2)$）を避け、類似ファイルのみを比較（$O(\sum m^2)$）することで計算量を大幅に削減します。
 /// キーワードフィルタ（楽器種別など）や、ファイルサイズとRMS値による分類を利用してグループ化を行い、巨大なグループは自動的に分割します。
 /// </summary>
+[ADRAnchor("OPT-09", nameof(AudioFileGroupingStrategy))]
 public static class AudioFileGroupingStrategy
 {
     /// <summary>

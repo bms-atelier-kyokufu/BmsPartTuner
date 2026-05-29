@@ -1,5 +1,7 @@
-using BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
-using BmsAtelierKyokufu.BmsPartTuner.Services.Bms;
+﻿using BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
+using BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms;
+using BmsAtelierKyokufu.BmsPartTuner.Core.Interfaces.Bms;
+using BmsAtelierKyokufu.BmsPartTuner.Core.Optimization;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 
@@ -42,8 +44,28 @@ public partial class BmsDefinitionManager(string bmsFilePath, string? bmsContent
         var timer = PerformanceDebugLogger.StartTimer();
         MissingFiles.Clear();
 
-        var manager = new BmsManager(_bmsFilePath, _bmsContent);
-        var definitions = manager.ParseWavDefinitions();
+        var lines = new List<string>();
+        if (_bmsContent != null)
+        {
+            using var sr = new StringReader(_bmsContent);
+            string? line;
+            while ((line = sr.ReadLine()) != null) lines.Add(line);
+        }
+        else if (File.Exists(_bmsFilePath))
+        {
+            try
+            {
+                using var sr = new StreamReader(_bmsFilePath, System.Text.Encoding.GetEncoding("shift_jis"));
+                string? line;
+                while ((line = sr.ReadLine()) != null) lines.Add(line);
+            }
+            catch (Exception ex)
+            {
+                PerformanceDebugLogger.WriteDebug(nameof(BmsDefinitionManager), $"Encoding/IO Error: {ex.Message}");
+            }
+        }
+
+        var definitions = BmsManager.ParseWavDefinitions(lines);
         PerformanceDebugLogger.WriteDebug(nameof(BmsDefinitionManager), $"  [CreateFileList] ParseWavDefinitions (count={definitions.Count}): {timer.Lap("ParseWavDefinitions")} ms");
 
         bool isBase62 = definitions.Any(static d => LowerCaseRegex().IsMatch(d.def));

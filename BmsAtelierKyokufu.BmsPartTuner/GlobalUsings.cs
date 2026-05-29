@@ -15,6 +15,8 @@ global using System.Windows.Media;
 global using System.Windows.Threading;
 global using BmsAtelierKyokufu.BmsPartTuner.Core;
 global using BmsAtelierKyokufu.BmsPartTuner.Core.Helpers;
+global using BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Diagnostics;
+global using BmsAtelierKyokufu.BmsPartTuner.Core.Attributes;
 global using BmsAtelierKyokufu.BmsPartTuner.Models;
 global using CommunityToolkit.Mvvm.ComponentModel;
 global using CommunityToolkit.Mvvm.Input;

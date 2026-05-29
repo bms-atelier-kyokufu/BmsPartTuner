@@ -1,3 +1,4 @@
+﻿using BmsAtelierKyokufu.BmsPartTuner.Core.Attributes;
 using System.Numerics;
 using static System.Numerics.BitOperations;
 
@@ -8,6 +9,8 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
 /// ピアソン相関係数による波形の形状比較を採用し、音量差やDCオフセットに影響されず波形の相似性のみを評価します。
 /// ロード時に正規化された波形（平均0、ノルム1）を事前計算することで、比較時はドット積のみで相関係数を算出し高速に処理します。
 /// </summary>
+[ADRAnchor("OPT-11", nameof(FastWaveCompare))]
+[ADRAnchor("M-01", nameof(FastWaveCompare))]
 internal static class FastWaveCompare
 {
     /// <summary>

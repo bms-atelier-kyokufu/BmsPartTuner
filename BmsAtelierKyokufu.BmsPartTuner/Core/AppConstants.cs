@@ -1,4 +1,4 @@
-namespace BmsAtelierKyokufu.BmsPartTuner.Core;
+﻿namespace BmsAtelierKyokufu.BmsPartTuner.Core;
 
 /// <summary>
 /// アプリケーション全体で使用される定数を一元管理します。

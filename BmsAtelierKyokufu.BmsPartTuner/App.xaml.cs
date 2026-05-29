@@ -1,7 +1,8 @@
-using BmsAtelierKyokufu.BmsPartTuner.Extensions;
-using BmsAtelierKyokufu.BmsPartTuner.Services.Common;
-using BmsAtelierKyokufu.BmsPartTuner.Services.UI;
-using BmsAtelierKyokufu.BmsPartTuner.Views.Windows;
+﻿using BmsAtelierKyokufu.BmsPartTuner.Extensions;
+using BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Common;
+using BmsAtelierKyokufu.BmsPartTuner.Core.Interfaces.Common;
+using BmsAtelierKyokufu.BmsPartTuner.UI.Services;
+using BmsAtelierKyokufu.BmsPartTuner.UI.Views.Windows;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Win32;
