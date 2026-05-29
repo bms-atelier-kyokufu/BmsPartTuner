@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+using System.Buffers;
+using System.Text.RegularExpressions;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms;
 
@@ -120,6 +121,8 @@ public partial class InstrumentNameDetectionService(
         }
     }
 
+    private static readonly SearchValues<char> WordSeparatorSearchValues = SearchValues.Create("_- .()[]{}");
+
     /// <summary>
     /// ファイル名から区切り文字や数字を除外し、楽器名の候補となる英数字単語を抽出します。
     /// </summary>
@@ -132,11 +135,28 @@ public partial class InstrumentNameDetectionService(
         if (string.IsNullOrWhiteSpace(fileName))
             return words;
 
-        char[] separators = ['_', '-', ' ', '.', '(', ')', '[', ']', '{', '}'];
-        var parts = fileName.Split(separators, StringSplitOptions.RemoveEmptyEntries);
+        var span = fileName.AsSpan();
 
-        foreach (var part in parts)
+        while (span.Length > 0)
         {
+            // 区切り文字をスキップ
+            int nextNonSeparator = span.IndexOfAnyExcept(WordSeparatorSearchValues);
+            if (nextNonSeparator < 0) break;
+
+            span = span[nextNonSeparator..];
+
+            // 次の区切り文字までの単語を取得
+            int nextSeparator = span.IndexOfAny(WordSeparatorSearchValues);
+            var partSpan = nextSeparator >= 0 ? span[..nextSeparator] : span;
+
+            // スパンを進める
+            span = nextSeparator >= 0 ? span[(nextSeparator + 1)..] : default;
+
+            // 正規表現でチェック（ReadOnlySpan対応の IsMatch等を使用、今回は.ToString()で対応可能か確認）
+            // IsDigitsOnlyRegex / ExtractAlphabetPrefixRegex は string用なので文字列化する
+            // 将来的にはRegexをSpan対応に変更することで更なる最適化が可能
+            var part = partSpan.ToString();
+
             if (IsDigitsOnlyRegex().IsMatch(part))
                 continue;
 

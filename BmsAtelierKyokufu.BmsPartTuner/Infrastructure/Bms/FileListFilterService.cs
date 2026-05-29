@@ -1,4 +1,4 @@
-﻿using BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms;
+using BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms;
 namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms;
 
 /// <summary>
@@ -126,6 +126,8 @@ public partial class FileListFilterService
     /// <param name="maxChips">生成するチップの最大数。</param>
     /// <param name="minKeywordLength">キーワードとして抽出される最小の文字列長。</param>
     /// <returns>選択可能なフィルターチップのコレクション。</returns>
+    private static readonly System.Buffers.SearchValues<char> SeparatorSearchValues = System.Buffers.SearchValues.Create("_ -");
+
     public static ObservableCollection<SelectableFilterChip> GenerateSelectableFilterChips(
         ObservableCollection<BmsAudioFile> files,
         int minOccurrences = 2,
@@ -137,19 +139,19 @@ public partial class FileListFilterService
         foreach (var file in files)
         {
             var fileName = Path.GetFileNameWithoutExtension(file.Name);
-            var parts = fileName.Split(['_', '-', ' '], StringSplitOptions.RemoveEmptyEntries);
+            var span = fileName.AsSpan().TrimStart("_ -");
+            int index = span.IndexOfAny(SeparatorSearchValues);
+            
+            var prefixSpan = index >= 0 ? span[..index] : span;
 
-            if (parts.Length > 0)
+            if (prefixSpan.Length >= minKeywordLength)
             {
-                var prefix = parts[0];
-
-                if (prefix.Length >= minKeywordLength)
-                {
-                    if (keywordCounts.TryGetValue(prefix, out int value))
-                        keywordCounts[prefix] = ++value;
-                    else
-                        keywordCounts[prefix] = 1;
-                }
+                var prefix = prefixSpan.ToString();
+                
+                if (keywordCounts.TryGetValue(prefix, out int value))
+                    keywordCounts[prefix] = value + 1;
+                else
+                    keywordCounts[prefix] = 1;
             }
         }
 
