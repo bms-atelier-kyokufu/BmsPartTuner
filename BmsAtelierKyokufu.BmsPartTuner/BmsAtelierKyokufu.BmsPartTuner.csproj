@@ -8,6 +8,7 @@
         <RootNamespace>BmsAtelierKyokufu.BmsPartTuner</RootNamespace>
         <ApplicationManifest>Properties\app.manifest</ApplicationManifest>
         <Nullable>enable</Nullable>
+        <LangVersion>14.0</LangVersion>
         <ImplicitUsings>disable</ImplicitUsings>
         <Version>1.0.0</Version>
         <Product>BMS Part Tuner</Product>
