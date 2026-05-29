@@ -1,11 +1,7 @@
-﻿using BmsAtelierKyokufu.BmsPartTuner.Services.Audio;
-using BmsAtelierKyokufu.BmsPartTuner.Services.Audio.AudioPlayer;
-using BmsAtelierKyokufu.BmsPartTuner.Services.Bms;
-using BmsAtelierKyokufu.BmsPartTuner.Services.Common;
 using BmsAtelierKyokufu.BmsPartTuner.Services.UI;
-using BmsAtelierKyokufu.BmsPartTuner.ViewModels;
 using BmsAtelierKyokufu.BmsPartTuner.Views.Windows;
 using Microsoft.Extensions.DependencyInjection;
+using Scrutor;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Extensions
 {
@@ -19,33 +15,30 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Extensions
         /// </summary>
         public static IServiceCollection ConfigureAppServices(this IServiceCollection services)
         {
-            // Settings Services
-            services.AddSingleton<SettingsService>();
-            services.AddSingleton<ThemeService>();
-            services.AddSingleton<LicenseLoaderService>();
-            services.AddSingleton<UpdateService>();
+            var baseNamespace = typeof(App).Namespace ?? "BmsAtelierKyokufu.BmsPartTuner";
 
-            // Core Services (Phase 5: ISP 適用)
-            services.AddSingleton<IInputValidationService, InputValidationService>();
-            services.AddSingleton<IBmsOptimizationService, BmsOptimizationService>();
-            services.AddSingleton<IAudioPlayerFactory, NAudioPlayerFactory>();
+            // Scrutorによるアセンブリスキャン自動登録
+            services.Scan(scan => scan
+                .FromAssemblyOf<App>()
+                    // Services配下のクラスをSingletonとして登録（自身および実装するインターフェースとして）
+                    // InNamespaces は前方一致のため、サブ名前空間（Common, Audio等）も全て含まれます。
+                    .AddClasses(classes => classes.InNamespaces($"{baseNamespace}.Services")
+                        // 特殊な初期化が必要なクラスは除外
+                        .Where(type => type != typeof(DragDropService) && type != typeof(WpfUIThreadDispatcher)))
+                    .AsSelfWithInterfaces()
+                    .WithSingletonLifetime()
+                    // ViewModels配下のクラスをTransientとして登録
+                    .AddClasses(classes => classes.InNamespaces($"{baseNamespace}.ViewModels"))
+                    .AsSelf()
+                    .WithTransientLifetime()
+            );
+
+            // スキャンで解決できない、特殊な初期化が必要なサービスの手動登録
             services.AddSingleton<IUIThreadDispatcher>(static _ =>
                 new WpfUIThreadDispatcher(Application.Current.Dispatcher));
-            services.AddSingleton(static provider =>
-                new AudioPreviewService(
-                    provider.GetRequiredService<IUIThreadDispatcher>(),
-                    provider.GetRequiredService<IAudioPlayerFactory>()));
-            services.AddSingleton<InstrumentNameDetectionService>();
 
-            // UI Services (Initializeパターン)
-            services.AddSingleton<IUiElementService<ToastViewModel>, ToastNotificationService>();
-            services.AddSingleton<IUiElementService<ResultCardData>, ResultCardService>();
             services.AddSingleton<IDragDropService>(static _ =>
                 new DragDropService(AppConstants.Files.SupportedBmsExtensions));
-            services.AddSingleton<FileListFilterService>();
-
-            // ViewModels
-            services.AddTransient<MainViewModel>();
 
             // Windows
             services.AddTransient<MainWindow>();

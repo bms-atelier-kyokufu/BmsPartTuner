@@ -14,10 +14,26 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.gitignore = .gitignore
 		GENERAL_CONCEPT_GUID.md = GENERAL_CONCEPT_GUID.md
 		LICENSE.md = LICENSE.md
+		package.json = package.json
 		README.md = README.md
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BmsAtelierKyokufu.BmsPartTuner.Generators", "BmsAtelierKyokufu.BmsPartTuner.Generators\BmsAtelierKyokufu.BmsPartTuner.Generators.csproj", "{2835496B-2638-4808-9A38-651C622CB2EA}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Agent", "Agent", "{EFED7D75-623A-428C-9AE4-B30188249723}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{397BF336-22F4-490C-83CF-10C1F69F147D}"
+	ProjectSection(SolutionItems) = preProject
+		.agent\workflows\add-comment.md = .agent\workflows\add-comment.md
+		.agent\workflows\code-review.md = .agent\workflows\code-review.md
+		.agent\workflows\gen-commit.prompt.md = .agent\workflows\gen-commit.prompt.md
+		.agent\workflows\gen-pull-request.prompt.md = .agent\workflows\gen-pull-request.prompt.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "rules", "rules", "{949F78AA-308F-417C-B604-C515A3E7C0FE}"
+	ProjectSection(SolutionItems) = preProject
+		.agent\rules\instructions.md = .agent\rules\instructions.md
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{0C5E049D-70BF-42A4-9870-5A8BCEB43DEC}"
 	ProjectSection(SolutionItems) = preProject
@@ -116,6 +132,8 @@ Global
 		{815BE85F-822C-45A9-9189-1E12B25BCD5B} = {0C5E049D-70BF-42A4-9870-5A8BCEB43DEC}
 		{8997F72E-9094-4A4D-9116-2F079C8DE03D} = {815BE85F-822C-45A9-9189-1E12B25BCD5B}
 		{54CB78BE-CD11-4087-9564-25F790D622C4} = {815BE85F-822C-45A9-9189-1E12B25BCD5B}
+		{397BF336-22F4-490C-83CF-10C1F69F147D} = {EFED7D75-623A-428C-9AE4-B30188249723}
+		{949F78AA-308F-417C-B604-C515A3E7C0FE} = {EFED7D75-623A-428C-9AE4-B30188249723}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {98006178-2BC7-4073-A982-D86BCE76B4A3}

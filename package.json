@@ -5,6 +5,9 @@
   "scripts": {
     "format:style": "dotnet format style --severity info --exclude-diagnostics IDE0060 IDE0130",
     "format:analyzers": "dotnet format analyzers --severity info --exclude-diagnostics IDE0060 IDE0130",
-    "format": "npm run format:style && npm run format:analyzers"
+    "format": "npm run format:style && npm run format:analyzers",
+    "test": "dotnet test",
+    "test:coverage": "dotnet test --collect:\"XPlat Code Coverage\"",
+    "test:report": "powershell -ExecutionPolicy Bypass -File BmsAtelierKyokufu.BmsPartTuner.Tests/gen-test-results-json.ps1"
   }
 }
