@@ -1,4 +1,4 @@
-﻿---
+---
 adr-id: OPT-01
 target-class: ParallelAudioComparisonEngine
 status: accepted
@@ -32,4 +32,8 @@ N個の音声ファイル群に対して総当り比較を行うと $O(N^2)$ の
 **非採用としたアプローチ (Rejected Alternatives / Anti-patterns)**
 
 - **単純な二重ループ（$O(N^2)$）**: 計算量が爆発するため廃止しました。
-- **ロック（`lock` ステートメント）による同期**: 並列処理時のコンテキストスイッチがボトルネックとなるため廃止しました。代わりに `Interlocked.CompareExchange` を用いたCAS（Compare-And-Swap）によるロックフリー（Lock-Free）アルゴリズムを採用し、複数のスレッドから同時にUnion-Findツリーを更新できるようにしています。
+- **ロック（`lock` ステートメント）による同期**: 並列処理時のコンテキストスイッチがボトルネックとなるため廃止しました。
+- **God Class（全状態の抱え込み）による並列制御**: かつて `ParallelAudioComparisonEngine` は比較ロジックとUnion-Findの全状態を内部に抱え込んでいましたが、責務過多（God Class）を避けるため解体されました。現在は状態管理を `UnionFind` などの専用クラスに委譲し、エンジン自体は純粋なオーケストレーションに特化しています。
+
+**アーキテクチャの進化 (Evolution)**
+- **Union-Findのスレッドセーフ化**: 複数のスレッドから同時にツリーを更新できるよう、`Interlocked.CompareExchange` を `while` ループで囲む「スピンロック型CAS」を採用し、更新のロストを完全に防ぐセーフティネットを構築しました。

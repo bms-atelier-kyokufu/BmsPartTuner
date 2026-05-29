@@ -80,6 +80,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "perf", "perf", "{54CB78BE-C
 		docs\adr\perf\view_model.md = docs\adr\perf\view_model.md
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "arch", "arch", "{D1097E82-557E-415C-B786-F19767EEA9D3}"
+	ProjectSection(SolutionItems) = preProject
+		docs\adr\arch\immutable_domain_models.md = docs\adr\arch\immutable_domain_models.md
+		docs\adr\arch\pipeline_architecture.md = docs\adr\arch\pipeline_architecture.md
+	EndProjectSection
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "img", "img", "{2CD22421-E81D-49CC-9003-8B35EB0D3B0E}"
 	ProjectSection(SolutionItems) = preProject
 		docs\img\00_Archtecture.svg = docs\img\00_Archtecture.svg
@@ -150,6 +156,7 @@ Global
 		{815BE85F-822C-45A9-9189-1E12B25BCD5B} = {0C5E049D-70BF-42A4-9870-5A8BCEB43DEC}
 		{8997F72E-9094-4A4D-9116-2F079C8DE03D} = {815BE85F-822C-45A9-9189-1E12B25BCD5B}
 		{54CB78BE-CD11-4087-9564-25F790D622C4} = {815BE85F-822C-45A9-9189-1E12B25BCD5B}
+		{D1097E82-557E-415C-B786-F19767EEA9D3} = {815BE85F-822C-45A9-9189-1E12B25BCD5B}
 		{397BF336-22F4-490C-83CF-10C1F69F147D} = {EFED7D75-623A-428C-9AE4-B30188249723}
 		{949F78AA-308F-417C-B604-C515A3E7C0FE} = {EFED7D75-623A-428C-9AE4-B30188249723}
 		{2CD22421-E81D-49CC-9003-8B35EB0D3B0E} = {0C5E049D-70BF-42A4-9870-5A8BCEB43DEC}
