@@ -19,7 +19,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio
             var regions = ExtractActiveRegions(samplesPerChannel, channels);
             var startSilence = DetectStartSilence(samplesPerChannel, lengthSamples, channels);
             var totalRms = CalculateTotalRms(samplesPerChannel, lengthSamples, channels);
-            
+
             return new AudioMetrics(regions, startSilence, totalRms);
         }
 

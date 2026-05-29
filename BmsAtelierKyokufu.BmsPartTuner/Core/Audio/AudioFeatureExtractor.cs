@@ -29,7 +29,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio
             var fftSpectrum = GenerateFftSpectrum(samplesPerChannel, regions, channels);
             var spectralFeatures = GenerateSpectralFeatures(fftSpectrum);
             var simHash256 = GenerateSimHash256(fftSpectrum);
-            
+
             return new AudioFeatures(signLsh, signLshMask, fftSpectrum, spectralFeatures, simHash256);
         }
 

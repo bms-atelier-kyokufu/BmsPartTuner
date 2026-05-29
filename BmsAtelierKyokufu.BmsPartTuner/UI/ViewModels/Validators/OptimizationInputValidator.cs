@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using BmsAtelierKyokufu.BmsPartTuner.Core;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Attributes;
@@ -34,7 +34,7 @@ public static class OptimizationInputValidator
         {
             return "有効な数値を入力してください";
         }
-        
+
         if (displayValue < AppConstants.Threshold.MinDisplay || displayValue > AppConstants.Threshold.MaxDisplay)
         {
             return $"マッチ許容度は{AppConstants.Threshold.MinDisplay}～{AppConstants.Threshold.MaxDisplay}の範囲で入力してください";
