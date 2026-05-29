@@ -186,32 +186,35 @@ public static partial class WaveValidation
     static public float CalculatePearsonForCachedDataSIMD(BmsAtelierKyokufu.BmsPartTuner.Models.ICachedSoundData data1, BmsAtelierKyokufu.BmsPartTuner.Models.ICachedSoundData data2, int channel = 0)
     {
         // 1. 符号ビットLSHによる O(1) 事前棄却（Early Pruning）
-        var lsh1 = data1.GetLsh(channel);
-        var lsh2 = data2.GetLsh(channel);
-        var mask1 = data1.GetLshMask(channel);
-        var mask2 = data2.GetLshMask(channel);
-
-        if (!lsh1.IsEmpty && !lsh2.IsEmpty)
+        if (data1 is IAudioStatisticalData statData1 && data2 is IAudioStatisticalData statData2)
         {
-            int checkLen = Math.Min(lsh1.Length, lsh2.Length);
-            int diffCount = 0;
-            int validCount = 0;
+            var lsh1 = statData1.GetLsh(channel);
+            var lsh2 = statData2.GetLsh(channel);
+            var mask1 = statData1.GetLshMask(channel);
+            var mask2 = statData2.GetLshMask(channel);
 
-            for (int k = 0; k < checkLen; k++)
+            if (!lsh1.IsEmpty && !lsh2.IsEmpty)
             {
-                ulong validMask = mask1[k] & mask2[k]; // 両方とも有効な波形であるビットのみ
-                if (validMask != 0)
+                int checkLen = Math.Min(lsh1.Length, lsh2.Length);
+                int diffCount = 0;
+                int validCount = 0;
+
+                for (int k = 0; k < checkLen; k++)
                 {
-                    ulong xor = (lsh1[k] ^ lsh2[k]) & validMask;
-                    diffCount += System.Numerics.BitOperations.PopCount(xor);
-                    validCount += System.Numerics.BitOperations.PopCount(validMask);
+                    ulong validMask = mask1[k] & mask2[k]; // 両方とも有効な波形であるビットのみ
+                    if (validMask != 0)
+                    {
+                        ulong xor = (lsh1[k] ^ lsh2[k]) & validMask;
+                        diffCount += System.Numerics.BitOperations.PopCount(xor);
+                        validCount += System.Numerics.BitOperations.PopCount(validMask);
+                    }
                 }
-            }
 
-            // 有効なビット数が十分にあり、かつ30%以上符号が異なっていれば明らかに別物として棄却
-            if (validCount > 64 && diffCount > validCount * 0.3)
-            {
-                return 0.0f;
+                // 有効なビット数が十分にあり、かつ30%以上符号が異なっていれば明らかに別物として棄却
+                if (validCount > 64 && diffCount > validCount * 0.3)
+                {
+                    return 0.0f;
+                }
             }
         }
 
@@ -247,15 +250,15 @@ public static partial class WaveValidation
                 int offset2 = overlapStart - r2.Offset;
 
                 // 累積和の加算 (O(1)で交差範囲のみ取得)
-                if (!data1.IsPreNormalized)
+                if (!data1.IsPreNormalized && data1 is IAudioStatisticalData stat1)
                 {
-                    totalSumX += data1.GetRangeSum(channel, r1.Offset + offset1, len);
-                    totalSumX2 += data1.GetRangeSumSq(channel, r1.Offset + offset1, len);
+                    totalSumX += stat1.GetRangeSum(channel, r1.Offset + offset1, len);
+                    totalSumX2 += stat1.GetRangeSumSq(channel, r1.Offset + offset1, len);
                 }
-                if (!data2.IsPreNormalized)
+                if (!data2.IsPreNormalized && data2 is IAudioStatisticalData stat2)
                 {
-                    totalSumY += data2.GetRangeSum(channel, r2.Offset + offset2, len);
-                    totalSumY2 += data2.GetRangeSumSq(channel, r2.Offset + offset2, len);
+                    totalSumY += stat2.GetRangeSum(channel, r2.Offset + offset2, len);
+                    totalSumY2 += stat2.GetRangeSumSq(channel, r2.Offset + offset2, len);
                 }
                 totalN += len;
 
@@ -312,8 +315,18 @@ public static partial class WaveValidation
             int fileN = data1.IsPreNormalized ? (data2.TotalSamples / data2.Channels) : (data1.TotalSamples / data1.Channels);
             if (fileN == 0) return 0.0f;
 
-            double sumY = data1.IsPreNormalized ? data2.GetChannelSum(channel) : data1.GetChannelSum(channel);
-            double sumY2 = data1.IsPreNormalized ? data2.GetChannelSumSq(channel) : data1.GetChannelSumSq(channel);
+            double sumY = 0;
+            double sumY2 = 0;
+            if (data1.IsPreNormalized && data2 is IAudioStatisticalData s2)
+            {
+                sumY = s2.GetChannelSum(channel);
+                sumY2 = s2.GetChannelSumSq(channel);
+            }
+            else if (!data1.IsPreNormalized && data1 is IAudioStatisticalData s1)
+            {
+                sumY = s1.GetChannelSum(channel);
+                sumY2 = s1.GetChannelSumSq(channel);
+            }
 
             double varSumY = sumY2 - (sumY * sumY / fileN);
             if (varSumY <= 1e-10) return 0.0f;
@@ -327,10 +340,10 @@ public static partial class WaveValidation
             int fileN = data1.TotalSamples / data1.Channels;
             if (fileN == 0) return 0.0f;
 
-            double fullSumX = data1.GetChannelSum(channel);
-            double fullSumY = data2.GetChannelSum(channel);
-            double fullSumX2 = data1.GetChannelSumSq(channel);
-            double fullSumY2 = data2.GetChannelSumSq(channel);
+            double fullSumX = data1 is IAudioStatisticalData fs1 ? fs1.GetChannelSum(channel) : 0;
+            double fullSumY = data2 is IAudioStatisticalData fs2 ? fs2.GetChannelSum(channel) : 0;
+            double fullSumX2 = data1 is IAudioStatisticalData fs3 ? fs3.GetChannelSumSq(channel) : 0;
+            double fullSumY2 = data2 is IAudioStatisticalData fs4 ? fs4.GetChannelSumSq(channel) : 0;
 
             double meanX = fullSumX / fileN;
             double meanY = fullSumY / fileN;

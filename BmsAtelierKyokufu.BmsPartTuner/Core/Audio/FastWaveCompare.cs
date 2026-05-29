@@ -1,4 +1,4 @@
-﻿using BmsAtelierKyokufu.BmsPartTuner.Core.Attributes;
+using BmsAtelierKyokufu.BmsPartTuner.Core.Attributes;
 using System.Numerics;
 using static System.Numerics.BitOperations;
 
@@ -76,10 +76,11 @@ internal static class FastWaveCompare
         }
 
         // SimHash256 Cascade Classifier (Heuristic Hamming Distance Threshold: 64)
-        if (data1.SimHash256 != null && data2.SimHash256 != null)
+        if (data1 is IAudioStatisticalData stat1 && data2 is IAudioStatisticalData stat2 &&
+            stat1.SimHash256 != null && stat2.SimHash256 != null)
         {
-            var s1 = data1.SimHash256;
-            var s2 = data2.SimHash256;
+            var s1 = stat1.SimHash256;
+            var s2 = stat2.SimHash256;
 
             // ループアンローリング（展開）による分岐命令の排除とパイプラインの最適化
             int hammingDistance =
@@ -95,11 +96,12 @@ internal static class FastWaveCompare
         }
 
         // Spectral Features Cascade Classifier (Heuristic Threshold: 0.88f)
-        if (data1.SpectralFeatures != null && data2.SpectralFeatures != null)
+        if (data1 is IAudioStatisticalData sStat1 && data2 is IAudioStatisticalData sStat2 &&
+            sStat1.SpectralFeatures != null && sStat2.SpectralFeatures != null)
         {
             float distSq = 0;
-            var v1 = data1.SpectralFeatures;
-            var v2 = data2.SpectralFeatures;
+            var v1 = sStat1.SpectralFeatures;
+            var v2 = sStat2.SpectralFeatures;
             for (int i = 0; i < 16; i++)
             {
                 float diff = v1[i] - v2[i];
@@ -175,10 +177,11 @@ internal static class FastWaveCompare
         out int offset)
     {
         offset = 0;
-        if (shorter.FftSpectrum != null && longer.FftSpectrum != null &&
-            shorter.FftSpectrum[targetChannel] != null && longer.FftSpectrum[targetChannel] != null)
+        if (shorter is IAudioStatisticalData sFft && longer is IAudioStatisticalData lFft &&
+            sFft.FftSpectrum != null && lFft.FftSpectrum != null &&
+            sFft.FftSpectrum[targetChannel] != null && lFft.FftSpectrum[targetChannel] != null)
         {
-            offset = WaveValidation.CalculateAlignmentOffset(shorter.FftSpectrum[targetChannel], longer.FftSpectrum[targetChannel]);
+            offset = WaveValidation.CalculateAlignmentOffset(sFft.FftSpectrum[targetChannel], lFft.FftSpectrum[targetChannel]);
         }
         else
         {

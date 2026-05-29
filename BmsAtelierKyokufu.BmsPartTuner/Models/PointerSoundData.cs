@@ -8,12 +8,16 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Models;
 /// 自身のメモリを確保せず、ベースWAVの配列を <see cref="Span{T}"/> として返すFlyweightパターンを採用しており、
 /// 多数生成してもメモリを消費しません。
 /// </summary>
+/// <summary>
+/// 音声ファイルのオフセットと長さを保持する、軽量なサウンドデータ参照クラス (bmson用)。
+/// 実際の波形データはキャッシュされた大元の <see cref="CachedAudioSource"/> からオンデマンドで切り出します。
+/// </summary>
 [ADRAnchor("OPT-05", nameof(PointerSoundData))]
 public class PointerSoundData(
     string filePath,
     BaseAudioOptimizationData baseData,
     int startSample,
-    int lengthSamples) : ICachedSoundData
+    int lengthSamples) : ICachedSoundData, IAudioStatisticalData
 {
     /// <inheritdoc />
     public string FilePath { get; } = filePath;

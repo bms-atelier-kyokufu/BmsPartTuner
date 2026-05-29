@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
 using BmsAtelierKyokufu.BmsPartTuner.Models;
@@ -11,7 +11,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
     /// テスト用のICachedSoundData実装。
     /// 波形データから動的に特徴量を生成します。
     /// </summary>
-    public class MockCachedSoundData : ICachedSoundData
+    public class MockCachedSoundData : ICachedSoundData, IAudioStatisticalData
     {
         public string FilePath { get; }
         public int SampleRate { get; }

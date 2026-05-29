@@ -169,18 +169,6 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Models
         }
 
         /// <inheritdoc />
-        public double GetChannelSum(int channel) => throw new NotSupportedException();
-
-        /// <inheritdoc />
-        public double GetChannelSumSq(int channel) => throw new NotSupportedException();
-
-        /// <inheritdoc />
-        public double GetRangeSum(int channel, int offset, int length) => throw new NotSupportedException();
-
-        /// <inheritdoc />
-        public double GetRangeSumSq(int channel, int offset, int length) => throw new NotSupportedException();
-
-        /// <inheritdoc />
         public ReadOnlySpan<ulong> GetLsh(int channel)
         {
             if (channel < 0 || channel >= Channels) throw new ArgumentOutOfRangeException(nameof(channel));
