@@ -17,8 +17,10 @@ public static class PipelineStepHelper
             return string.Empty;
         }
 
-        return nameofStepClass.EndsWith("Step") 
-            ? nameofStepClass[..^4] 
+        return nameofStepClass.EndsWith("Step")
+
+            ? nameofStepClass[..^4]
+
             : nameofStepClass;
     }
 }

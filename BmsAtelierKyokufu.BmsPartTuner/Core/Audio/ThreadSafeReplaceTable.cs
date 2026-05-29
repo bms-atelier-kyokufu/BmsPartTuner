@@ -132,7 +132,8 @@ internal class ThreadSafeReplaceTable
         int bitOffset = (int)(bitIndex % 64);
         System.Threading.Interlocked.Or(ref _antiSet[arrayIndex], 1L << bitOffset);
     }
-    
+
+
     public bool IsMapped(int fileNum)
     {
         int val = _replaceTable[fileNum];

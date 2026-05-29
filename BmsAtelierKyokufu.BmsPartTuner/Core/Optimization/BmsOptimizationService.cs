@@ -1,4 +1,4 @@
-﻿using BmsAtelierKyokufu.BmsPartTuner.Core.Validation;
+using BmsAtelierKyokufu.BmsPartTuner.Core.Validation;
 using ValidationResult = BmsAtelierKyokufu.BmsPartTuner.Core.Validation.ValidationResult;
 namespace BmsAtelierKyokufu.BmsPartTuner.Core.Optimization;
 
@@ -83,52 +83,6 @@ public class BmsOptimizationService : IBmsOptimizationService
         return result;
     }
 
-    /// <summary>
-    /// 指定されたファイル数制限を超えない範囲で、最も高いしきい値（品質が最高となる値）を探索します。
-    /// </summary>
-    /// <param name="simulationData">シミュレーションデータのリスト。</param>
-    /// <param name="fileLimit">許容される最大ファイル数。</param>
-    /// <returns>最適なしきい値とそのときのファイル数のタプル。</returns>
-    private static (float Threshold, int Count) FindOptimalThreshold(
-        List<(double Threshold, int Count)> simulationData,
-        int fileLimit)
-    {
-        if (simulationData == null || simulationData.Count == 0)
-        {
-            PerformanceDebugLogger.WriteDebug(nameof(BmsOptimizationService), "FindOptimalThreshold: No simulation data, returning default");
-            return (0.60f, 0);
-        }
-
-        // ファイル数がfileLimit以下のエントリを抽出
-        List<(double Threshold, int Count)> validEntries = [.. simulationData.Where(d => d.Count > 0 && d.Count <= fileLimit)];
-
-        PerformanceDebugLogger.WriteDebug(nameof(BmsOptimizationService), $"FindOptimalThreshold: {validEntries.Count} valid entries for limit {fileLimit}");
-
-        if (validEntries.Count == 0)
-        {
-            // 全てのエントリがfileLimit超えまたは0件の場合
-            // ファイル数が最も少ない（0以外の）ものを選択
-            List<(double Threshold, int Count)> nonZeroEntries = [.. simulationData.Where(d => d.Count > 0)];
-
-            if (nonZeroEntries.Count == 0)
-            {
-                PerformanceDebugLogger.WriteDebug(nameof(BmsOptimizationService), "FindOptimalThreshold: All entries have 0 count, returning default");
-                return (0.60f, 0);
-            }
-
-            (double Threshold, int Count) = nonZeroEntries.OrderBy(d => d.Count).First();
-            PerformanceDebugLogger.WriteDebug(nameof(BmsOptimizationService), $"FindOptimalThreshold: Using min count entry: Threshold={Threshold:F2}, Count={Count}");
-            return ((float)Threshold, Count);
-        }
-
-        // 制限を満たす中で、しきい値が最も高い（=品質が最大）ものを選択
-        (double Threshold, int Count) optimalEntry = validEntries
-            .OrderByDescending(d => d.Threshold)
-            .First();
-
-        PerformanceDebugLogger.WriteDebug(nameof(BmsOptimizationService), $"FindOptimalThreshold: Optimal entry: Threshold={optimalEntry.Threshold:F2}, Count={optimalEntry.Count}");
-        return ((float)optimalEntry.Threshold, optimalEntry.Count);
-    }
 
     /// <summary>
     /// 定義削減処理結果。

@@ -140,13 +140,13 @@ public partial class FileListFilterService
             var fileName = Path.GetFileNameWithoutExtension(file.Name);
             var span = fileName.AsSpan().TrimStart("_ -");
             int index = span.IndexOfAny(SeparatorSearchValues);
-            
+
             var prefixSpan = index >= 0 ? span[..index] : span;
 
             if (prefixSpan.Length >= minKeywordLength)
             {
                 var prefix = prefixSpan.ToString();
-                
+
                 if (keywordCounts.TryGetValue(prefix, out int value))
                     keywordCounts[prefix] = value + 1;
                 else

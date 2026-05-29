@@ -26,7 +26,7 @@ public sealed class BmsonParseStep : IBmsonConversionStep
     public void Execute(BmsonConversionContext context)
     {
         using var stream = File.OpenRead(context.BmsonFilePath);
-        
+
         // アセンブリ内で定義されている BmsonJsonContext を使用して高速にデシリアライズ
         context.Bmson = JsonSerializer.Deserialize(stream, BmsonJsonContext.Default.BmsonFormat)
             ?? throw new InvalidOperationException("Failed to parse the bmson file (returned null).");
@@ -74,7 +74,7 @@ public sealed class BmsonPrepareAudioSlicerStep : IBmsonConversionStep
     public void Execute(BmsonConversionContext context)
     {
         string bmsonDir = Path.GetDirectoryName(context.BmsonFilePath) ?? string.Empty;
-        
+
         // コンテキストが管理する IDisposable なリソースとして AudioSliceManager を生成
         context.AudioSlicer = new AudioSliceManager(bmsonDir);
 
