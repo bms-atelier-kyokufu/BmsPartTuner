@@ -12,6 +12,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.editorconfig = .editorconfig
 		.gitattributes = .gitattributes
 		.gitignore = .gitignore
+		BmsPartTuner.code-workspace = BmsPartTuner.code-workspace
 		GENERAL_CONCEPT_GUID.md = GENERAL_CONCEPT_GUID.md
 		LICENSE.md = LICENSE.md
 		package.json = package.json
@@ -24,10 +25,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Agent", "Agent", "{EFED7D75
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{397BF336-22F4-490C-83CF-10C1F69F147D}"
 	ProjectSection(SolutionItems) = preProject
-		.agent\workflows\add-comment.md = .agent\workflows\add-comment.md
-		.agent\workflows\code-review.md = .agent\workflows\code-review.md
-		.agent\workflows\gen-commit.prompt.md = .agent\workflows\gen-commit.prompt.md
-		.agent\workflows\gen-pull-request.prompt.md = .agent\workflows\gen-pull-request.prompt.md
+		.agent\workflows\add-comment.prompt.md = .agent\workflows\add-comment.prompt.md
+		.agent\workflows\code-review.prompt.md = .agent\workflows\code-review.prompt.md
+		.agent\workflows\commit.prompt.md = .agent\workflows\commit.prompt.md
+		.agent\workflows\phased-code-review.prompt.md = .agent\workflows\phased-code-review.prompt.md
+		.agent\workflows\pull-request.prompt.md = .agent\workflows\pull-request.prompt.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "rules", "rules", "{949F78AA-308F-417C-B604-C515A3E7C0FE}"
@@ -76,6 +78,17 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "perf", "perf", "{54CB78BE-C
 		docs\adr\perf\storage_detect.md = docs\adr\perf\storage_detect.md
 		docs\adr\perf\update_service.md = docs\adr\perf\update_service.md
 		docs\adr\perf\view_model.md = docs\adr\perf\view_model.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "img", "img", "{2CD22421-E81D-49CC-9003-8B35EB0D3B0E}"
+	ProjectSection(SolutionItems) = preProject
+		docs\img\00_Archtecture.svg = docs\img\00_Archtecture.svg
+		docs\img\02_Optimization-Implementation-Guide-Process-Flow_EN.svg = docs\img\02_Optimization-Implementation-Guide-Process-Flow_EN.svg
+		docs\img\02_Optimization-Implementation-Guide-Process-Flow_JP.svg = docs\img\02_Optimization-Implementation-Guide-Process-Flow_JP.svg
+		docs\img\02_Optimization-Implementation-Guide_EN.svg = docs\img\02_Optimization-Implementation-Guide_EN.svg
+		docs\img\02_Optimization-Implementation-Guide_JP.svg = docs\img\02_Optimization-Implementation-Guide_JP.svg
+		docs\img\Document-Hierarchy_EN.svg = docs\img\Document-Hierarchy_EN.svg
+		docs\img\Document-Hierarchy_JP.svg = docs\img\Document-Hierarchy_JP.svg
 	EndProjectSection
 EndProject
 Global
@@ -134,6 +147,7 @@ Global
 		{54CB78BE-CD11-4087-9564-25F790D622C4} = {815BE85F-822C-45A9-9189-1E12B25BCD5B}
 		{397BF336-22F4-490C-83CF-10C1F69F147D} = {EFED7D75-623A-428C-9AE4-B30188249723}
 		{949F78AA-308F-417C-B604-C515A3E7C0FE} = {EFED7D75-623A-428C-9AE4-B30188249723}
+		{2CD22421-E81D-49CC-9003-8B35EB0D3B0E} = {0C5E049D-70BF-42A4-9870-5A8BCEB43DEC}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {98006178-2BC7-4073-A982-D86BCE76B4A3}

@@ -21,14 +21,17 @@ description: 対象範囲のファイルをアトミックなフェーズに分�
 
 特定したファイルを、以下の「依存関係の深い層（下流）」から「浅い層（上流）」の順に分類し、レビューフェーズを設計します。
 
-1. **Phase 1: コア・ドメイン層 (Core / Domain / Types)**: 型、インターフェース、定数など
-2. **Phase 2: インフラストラクチャ層 (Infrastructure / I/O)**: DB、API通信など
-3. **Phase 3: アプリケーション層 (Application / Services)**: ビジネスロジック、状態管理など
-4. **Phase 4: プレゼンテーション層 (UI / Routing)**: コンポーネント、ビューなど
-5. **Phase 5: テスト層 (Tests / QA)**: 単体テスト、結合テスト、E2Eテストなど
+1. **Phase 1: ドメイン＆モデル層 (Domain / Models)**: アプリケーション全体のデータ構造（例: `BmsonFormat`）、共有定数（`AppConstants`）、カスタム属性定義など
+2. **Phase 2: コア・アルゴリズム・シグナル処理層 (Core / Helpers)**: 進数変換 (`RadixConvert`) や波形データ類似度比較 (`FastWaveCompare`、特徴量抽出など) の純粋なロジック・アルゴリズム
+3. **Phase 3: インフラストラクチャ・I/O・パーサー層 (Infrastructure / I/O / Parsers)**: 音声デコード、BMS/BMSONパーサー・相互変換 (`BmsScoreGenerator` 等)、ファイルシステム操作といったI/Oやシリアライズ処理
+4. **Phase 4: ユースケース・コアロジックサービス層 (Application / UseCases / Services)**: 重複定義削減処理 (`DefinitionReuse`) や最適化処理などのアプリケーション固有サービス・ビジネスロジック
+5. **Phase 5: プレゼンテーション・コントローラー・状態管理層 (Presentation / Controllers / ViewModels)**: アプリ全体のフローを調停するコントローラー (`AppController`) や状態バインディングを担う ViewModel、入力検証ロジック
+6. **Phase 6: ビュー・UI UI描画・ビヘイビア層 (UI / Views / Behaviors)**: XAMLによるビュー定義や、添付プロパティ・ビヘイビアなどのWPF描画・制御層
+7. **Phase 7: 単体テスト層 (Unit Tests / Core & Helpers)**: 個別のアルゴリズム、ユーティリティ、コア機能に対するモックなしの単体テスト
+8. **Phase 8: 結合・インテグレーションテスト層 (Integration Tests / Services)**: 複数モジュール、サービス、ユースケース、あるいは簡易I/Oが結合した状態での処理フローの検証テスト
 
 - ※依存関係上、テストは対象プロダクトコードの仕様が確定した後にレビューされるべきため、最終フェーズとして扱います。
-- ※コンテキストウィンドウ溢れを防ぐため、1フェーズあたり3〜5ファイル程度に分割してください。巨大な場合は機能ごとにサブフェーズ（例: Phase 3-1, 3-2、Phase 5-1: Unit Tests 等）を切ってください。
+- ※コンテキストウィンドウ溢れを防ぐため、1フェーズあたり3〜5ファイル程度に分割してください。巨大な場合は機能ごとにサブフェーズ（例: Phase 3-1, 3-2、Phase 7-1: Unit Tests 等）を切ってください。
 
 ### STEP 3: セッションIDの採番とフェーズ別プラン・レビューの個別出力（サイクル実行）
 
