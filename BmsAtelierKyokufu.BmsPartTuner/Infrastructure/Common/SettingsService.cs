@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Common;
 
@@ -66,7 +66,12 @@ public class SettingsService
         try
         {
             var json = JsonSerializer.Serialize(settings, JsonOptions);
-            File.WriteAllText(_settingsFilePath, json);
+            string tempPath = _settingsFilePath + ".tmp";
+            
+            // 一時ファイルに書き込んでからアトミックにリネーム（置換）する
+            File.WriteAllText(tempPath, json);
+            File.Move(tempPath, _settingsFilePath, overwrite: true);
+            
             _cachedSettings = settings;
         }
         catch (Exception ex)
