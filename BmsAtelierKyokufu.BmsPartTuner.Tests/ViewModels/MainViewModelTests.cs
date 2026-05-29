@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using BmsAtelierKyokufu.BmsPartTuner.Services.Audio;
 using BmsAtelierKyokufu.BmsPartTuner.Services.Audio.AudioPlayer;
 using BmsAtelierKyokufu.BmsPartTuner.Services.Bms;
@@ -36,6 +36,10 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.ViewModels
                 File.WriteAllText(bmsonPath, bmsonContent);
 
                 var optimizationServiceMock = new Mock<IBmsOptimizationService>();
+                var optimizationUseCaseMock = new Mock<BmsAtelierKyokufu.BmsPartTuner.Services.UseCases.IBmsOptimizationUseCase>();
+                var bmsonConversionServiceMock = new Mock<IBmsonConversionService>();
+                var fileSystemServiceMock = new Mock<BmsAtelierKyokufu.BmsPartTuner.Services.Common.IFileSystemService>();
+                fileSystemServiceMock.Setup(f => f.FileExists(It.IsAny<string>())).Returns(true);
                 var dispatcherMock = new Mock<BmsAtelierKyokufu.BmsPartTuner.Services.UI.IUIThreadDispatcher>();
                 var audioPlayerFactoryMock = new Mock<IAudioPlayerFactory>();
 
@@ -46,6 +50,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.ViewModels
 
                 var audioPreviewService = new AudioPreviewService(dispatcherMock.Object, audioPlayerFactoryMock.Object);
                 var instrumentDetectionService = new InstrumentNameDetectionService();
+                var fileListViewModel = new FileListViewModel(audioPreviewService, instrumentDetectionService);
                 var filterService = new FileListFilterService();
 
                 var settingsPath = Path.Combine(context.TempDirectory, "setting.json");
@@ -55,15 +60,18 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.ViewModels
 
                 using var viewModel = new MainViewModel(
                     optimizationServiceMock.Object,
+                    optimizationUseCaseMock.Object,
+                    bmsonConversionServiceMock.Object,
+                    fileSystemServiceMock.Object,
+                    fileListViewModel,
                     audioPreviewService,
-                    instrumentDetectionService,
                     filterService,
                     settingsService,
                     themeServiceMock.Object,
                     licenseLoaderService);
 
                 // Act
-                viewModel.InputPath = bmsonPath;
+                viewModel.FileOperations.InputPath = bmsonPath;
 
                 // Wait for downconversion task to run and finish
                 // Downconvert runs on Task.Run inside OnInputPathChanged. Since it's async void, we can check _isDownconverting state or wait briefly.
@@ -76,7 +84,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.ViewModels
 
                 // Assert
                 // Under Strategy B, InputPath remains showing the original .bmson file path
-                Assert.Equal(bmsonPath, viewModel.InputPath);
+                Assert.Equal(bmsonPath, viewModel.FileOperations.InputPath);
 
                 // Instead of checking for a physical file (which is no longer created),
                 // we assert that the downconversion completed successfully.
@@ -107,6 +115,10 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.ViewModels
                 File.WriteAllText(bmsonPath, bmsonContent);
 
                 var optimizationServiceMock = new Mock<IBmsOptimizationService>();
+                var optimizationUseCaseMock = new Mock<BmsAtelierKyokufu.BmsPartTuner.Services.UseCases.IBmsOptimizationUseCase>();
+                var bmsonConversionServiceMock = new Mock<IBmsonConversionService>();
+                var fileSystemServiceMock = new Mock<BmsAtelierKyokufu.BmsPartTuner.Services.Common.IFileSystemService>();
+                fileSystemServiceMock.Setup(f => f.FileExists(It.IsAny<string>())).Returns(true);
                 var dispatcherMock = new Mock<BmsAtelierKyokufu.BmsPartTuner.Services.UI.IUIThreadDispatcher>();
                 var audioPlayerFactoryMock = new Mock<IAudioPlayerFactory>();
 
@@ -117,6 +129,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.ViewModels
 
                 var audioPreviewService = new AudioPreviewService(dispatcherMock.Object, audioPlayerFactoryMock.Object);
                 var instrumentDetectionService = new InstrumentNameDetectionService();
+                var fileListViewModel = new FileListViewModel(audioPreviewService, instrumentDetectionService);
                 var filterService = new FileListFilterService();
 
                 var settingsPath = Path.Combine(context.TempDirectory, "setting.json");
@@ -126,15 +139,18 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.ViewModels
 
                 using var viewModel = new MainViewModel(
                     optimizationServiceMock.Object,
+                    optimizationUseCaseMock.Object,
+                    bmsonConversionServiceMock.Object,
+                    fileSystemServiceMock.Object,
+                    fileListViewModel,
                     audioPreviewService,
-                    instrumentDetectionService,
                     filterService,
                     settingsService,
                     themeServiceMock.Object,
                     licenseLoaderService);
 
                 // Act
-                viewModel.InputPath = bmsonPath;
+                viewModel.FileOperations.InputPath = bmsonPath;
 
                 // Wait for downconversion task to run and finish
                 int elapsed = 0;

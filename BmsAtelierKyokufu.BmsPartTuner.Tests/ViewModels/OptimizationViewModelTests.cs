@@ -1,4 +1,4 @@
-﻿using BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
+using BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Validation;
 using BmsAtelierKyokufu.BmsPartTuner.Models;
 using BmsAtelierKyokufu.BmsPartTuner.Services.Bms;
@@ -63,6 +63,38 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.ViewModels
         }
     }
 
+    internal class FakeOptimizationUseCase : BmsAtelierKyokufu.BmsPartTuner.Services.UseCases.IBmsOptimizationUseCase
+    {
+        public Task<BmsAtelierKyokufu.BmsPartTuner.Services.UseCases.OptimizationUseCaseResult<OptimizationResult>> ExecuteThresholdOptimizationAsync(BmsAtelierKyokufu.BmsPartTuner.Services.UseCases.ThresholdOptimizationRequest request)
+        {
+            if (request.BmsFileList == null || request.BmsFileList.Count == 0)
+                return Task.FromResult(BmsAtelierKyokufu.BmsPartTuner.Services.UseCases.OptimizationUseCaseResult<OptimizationResult>.Failure("ファイルリストが空です"));
+
+            return Task.FromResult(BmsAtelierKyokufu.BmsPartTuner.Services.UseCases.OptimizationUseCaseResult<OptimizationResult>.Success(new OptimizationResult
+            {
+                Base36Result = (0.85f, 100),
+                Base62Result = (0.90f, 200),
+                ExecutionTime = TimeSpan.FromSeconds(0.5),
+                MemoryUsedBytes = 10 * 1024 * 1024
+            }));
+        }
+
+        public Task<BmsAtelierKyokufu.BmsPartTuner.Services.UseCases.OptimizationUseCaseResult<BmsOptimizationService.ReductionResult>> ExecuteDefinitionReductionAsync(BmsAtelierKyokufu.BmsPartTuner.Services.UseCases.DefinitionReductionRequest request)
+        {
+            if (request.R2Threshold < 0)
+                return Task.FromResult(BmsAtelierKyokufu.BmsPartTuner.Services.UseCases.OptimizationUseCaseResult<BmsOptimizationService.ReductionResult>.Failure("invalid"));
+
+            return Task.FromResult(BmsAtelierKyokufu.BmsPartTuner.Services.UseCases.OptimizationUseCaseResult<BmsOptimizationService.ReductionResult>.Success(new BmsOptimizationService.ReductionResult
+            {
+                IsSuccess = true,
+                OriginalCount = 10,
+                OptimizedCount = 7,
+                ErrorMessage = null,
+                DeletedFilesCount = 0
+            }));
+        }
+    }
+
     /// <summary>
     /// OptimizationViewModel の動作検証テスト。
     /// 閾値最適化・定義削減の実行フロー、状態管理、エラーハンドリングを確認します。
@@ -71,13 +103,14 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.ViewModels
     {
         private static Task RunViewModelTestAsync(
             IBmsOptimizationService service,
+            BmsAtelierKyokufu.BmsPartTuner.Services.UseCases.IBmsOptimizationUseCase useCase,
             Action<OptimizationViewModel>? setup,
             Func<OptimizationViewModel, Task> act,
             Action<OptimizationViewModel> assert)
         {
             return WpfTestHelper.RunStaAsync(async () =>
             {
-                var vm = new OptimizationViewModel(service);
+                var vm = new OptimizationViewModel(service, useCase);
                 setup?.Invoke(vm);
                 await act(vm);
                 assert?.Invoke(vm);
@@ -88,6 +121,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.ViewModels
         public Task ExecuteThresholdOptimizationAsync_UpdatesBusyStateAndProgress() =>
             RunViewModelTestAsync(
                 new FakeOptimizationService(),
+                new FakeOptimizationUseCase(),
                 null,
                 vm => vm.ExecuteThresholdOptimizationAsync(["a.wav", "b.wav"], 0, 10),
                 vm =>
@@ -106,6 +140,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.ViewModels
             string? error = null;
             return RunViewModelTestAsync(
                 new FakeOptimizationService(),
+                new FakeOptimizationUseCase(),
                 vm => vm.ErrorOccurred += (_, msg) => error = msg,
                 vm => vm.ExecuteThresholdOptimizationAsync([], 0, 10),
                 vm =>
@@ -122,6 +157,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.ViewModels
             string? completedOutput = null;
             return RunViewModelTestAsync(
                 new FakeOptimizationService(),
+                new FakeOptimizationUseCase(),
                 vm => { vm.R2Threshold = "80"; vm.DefinitionReductionCompleted += (_, e) => completedOutput = e.OutputPath; },
                 vm => vm.ExecuteDefinitionReductionAsync(new BmsDefinitionManager("dummy.bms"), "in.bms", "out.bms"),
                 vm => { Assert.False(vm.IsBusy); Assert.Equal("out.bms", completedOutput); }
@@ -134,6 +170,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.ViewModels
             string? error = null;
             return RunViewModelTestAsync(
                 new FakeOptimizationService(),
+                new FakeOptimizationUseCase(),
                 vm => { vm.R2Threshold = "-1"; vm.ErrorOccurred += (_, msg) => error = msg; },
                 vm => vm.ExecuteDefinitionReductionAsync(new BmsDefinitionManager("dummy.bms"), "in.bms", "out.bms"),
                 vm => { Assert.Equal("invalid", error); Assert.False(vm.IsBusy); }
@@ -148,6 +185,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.ViewModels
             string? error = null;
             return RunViewModelTestAsync(
                 new ThrowingOptimizationService(),
+                new ThrowingOptimizationUseCase(),
                 vm => vm.ErrorOccurred += (_, msg) => error = msg,
                 vm => vm.ExecuteThresholdOptimizationAsync(["a.wav"], 0, 10),
                 vm => { Assert.False(vm.IsBusy); Assert.NotNull(error); }
@@ -160,6 +198,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.ViewModels
             var busyStates = new List<bool>();
             return RunViewModelTestAsync(
                 new FakeOptimizationService(),
+                new FakeOptimizationUseCase(),
                 vm => vm.PropertyChanged += (s, e) => { if (e.PropertyName == nameof(vm.IsBusy)) busyStates.Add(vm.IsBusy); },
                 vm => vm.ExecuteThresholdOptimizationAsync(["a.wav"], 0, 10),
                 vm => { Assert.Contains(true, busyStates); Assert.False(vm.IsBusy); }
@@ -172,6 +211,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.ViewModels
             var progressValues = new List<int>();
             return RunViewModelTestAsync(
                 new FakeOptimizationService(),
+                new FakeOptimizationUseCase(),
                 vm => vm.PropertyChanged += (s, e) => { if (e.PropertyName == nameof(vm.ProgressValue)) progressValues.Add(vm.ProgressValue); },
                 vm => vm.ExecuteThresholdOptimizationAsync(["a.wav"], 0, 10),
                 vm => { Assert.NotEmpty(progressValues); Assert.Equal(100, vm.ProgressValue); }
@@ -184,6 +224,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.ViewModels
             var busyStates = new List<bool>();
             return RunViewModelTestAsync(
                 new FakeOptimizationService(),
+                new FakeOptimizationUseCase(),
                 vm => { vm.R2Threshold = "80"; vm.PropertyChanged += (s, e) => { if (e.PropertyName == nameof(vm.IsBusy)) busyStates.Add(vm.IsBusy); }; },
                 vm => vm.ExecuteDefinitionReductionAsync(new BmsDefinitionManager("dummy.bms"), "in.bms", "out.bms"),
                 vm => Assert.False(vm.IsBusy)
@@ -194,6 +235,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.ViewModels
         public Task ExecuteThresholdOptimizationAsync_ServiceReturnsNull_HandlesGracefully() =>
             RunViewModelTestAsync(
                 new NullReturningOptimizationService(),
+                new NullReturningOptimizationUseCase(),
                 null,
                 vm => vm.ExecuteThresholdOptimizationAsync(["a.wav"], 0, 10),
                 vm => Assert.False(vm.IsBusy)
@@ -269,6 +311,24 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.ViewModels
         {
             return ValidationResult.Success();
         }
+    }
+
+    internal class ThrowingOptimizationUseCase : BmsAtelierKyokufu.BmsPartTuner.Services.UseCases.IBmsOptimizationUseCase
+    {
+        public Task<BmsAtelierKyokufu.BmsPartTuner.Services.UseCases.OptimizationUseCaseResult<OptimizationResult>> ExecuteThresholdOptimizationAsync(BmsAtelierKyokufu.BmsPartTuner.Services.UseCases.ThresholdOptimizationRequest request)
+            => Task.FromResult(BmsAtelierKyokufu.BmsPartTuner.Services.UseCases.OptimizationUseCaseResult<OptimizationResult>.Failure("Test exception"));
+
+        public Task<BmsAtelierKyokufu.BmsPartTuner.Services.UseCases.OptimizationUseCaseResult<BmsOptimizationService.ReductionResult>> ExecuteDefinitionReductionAsync(BmsAtelierKyokufu.BmsPartTuner.Services.UseCases.DefinitionReductionRequest request)
+            => Task.FromResult(BmsAtelierKyokufu.BmsPartTuner.Services.UseCases.OptimizationUseCaseResult<BmsOptimizationService.ReductionResult>.Failure("Test exception"));
+    }
+
+    internal class NullReturningOptimizationUseCase : BmsAtelierKyokufu.BmsPartTuner.Services.UseCases.IBmsOptimizationUseCase
+    {
+        public Task<BmsAtelierKyokufu.BmsPartTuner.Services.UseCases.OptimizationUseCaseResult<OptimizationResult>> ExecuteThresholdOptimizationAsync(BmsAtelierKyokufu.BmsPartTuner.Services.UseCases.ThresholdOptimizationRequest request)
+            => Task.FromResult(BmsAtelierKyokufu.BmsPartTuner.Services.UseCases.OptimizationUseCaseResult<OptimizationResult>.Failure("Service returned null"));
+
+        public Task<BmsAtelierKyokufu.BmsPartTuner.Services.UseCases.OptimizationUseCaseResult<BmsOptimizationService.ReductionResult>> ExecuteDefinitionReductionAsync(BmsAtelierKyokufu.BmsPartTuner.Services.UseCases.DefinitionReductionRequest request)
+            => Task.FromResult(BmsAtelierKyokufu.BmsPartTuner.Services.UseCases.OptimizationUseCaseResult<BmsOptimizationService.ReductionResult>.Failure("Service returned null"));
     }
 
     #endregion
