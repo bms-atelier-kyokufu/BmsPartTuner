@@ -1,6 +1,4 @@
 ﻿using BmsAtelierKyokufu.BmsPartTuner.Extensions;
-using BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Common;
-using BmsAtelierKyokufu.BmsPartTuner.Core.Interfaces.Common;
 using BmsAtelierKyokufu.BmsPartTuner.UI.Services;
 using BmsAtelierKyokufu.BmsPartTuner.UI.Views.Windows;
 using Microsoft.Extensions.DependencyInjection;

@@ -1,8 +1,4 @@
-using System;
-using System.Collections.Generic;
-using BmsAtelierKyokufu.BmsPartTuner.Models;
-using BmsAtelierKyokufu.BmsPartTuner.Core.Attributes;
-using MathNet.Numerics;
+﻿using MathNet.Numerics;
 using MathNet.Numerics.IntegralTransforms;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio

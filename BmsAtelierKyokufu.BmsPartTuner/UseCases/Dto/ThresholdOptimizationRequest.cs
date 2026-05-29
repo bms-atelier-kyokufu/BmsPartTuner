@@ -1,7 +1,4 @@
-using System;
-using System.Collections.Generic;
-
-namespace BmsAtelierKyokufu.BmsPartTuner.UseCases.Dto;
+﻿namespace BmsAtelierKyokufu.BmsPartTuner.UseCases.Dto;
 
 public class ThresholdOptimizationRequest
 {

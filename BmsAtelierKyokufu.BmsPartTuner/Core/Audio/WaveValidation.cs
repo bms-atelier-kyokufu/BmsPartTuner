@@ -1,6 +1,5 @@
-using System;
+﻿using MathNet.Numerics;
 using System.Numerics;
-using MathNet.Numerics;
 using MathNet.Numerics.IntegralTransforms;
 using GenerateSimdBatchUnrollAttribute = BmsAtelierKyokufu.BmsPartTuner.Core.Attributes.GenerateSimdBatchUnrollAttribute;
 using Vector = System.Numerics.Vector;
@@ -176,8 +175,6 @@ public static partial class WaveValidation
     /// <returns>相関係数（-1.0〜1.0）。</returns>
     [GenerateSimdBatchUnroll(UnrollFactor = 4, LogicType = "PearsonNormalized")]
     public static partial float CalculatePearsonFromNormalizedSIMD(ReadOnlySpan<float> normalizedWav1, ReadOnlySpan<float> normalizedWav2);
-
-
 
     /// <summary>
     /// Phase 2: キャッシュされた波形（事前正規化または生データ）の有音区間（ActiveRegion）の重なりを用いてピアソン相関係数を計算します（SIMD最適化）。
@@ -435,7 +432,6 @@ public static partial class WaveValidation
         int vectorizedLength,
         int vectorSize,
         out float sumX, out float sumY, out float sumX2, out float sumY2, out float sumXY);
-
 
     /// <summary>
     /// 端数処理（ベクトル化できなかった残りの要素）（ピアソン相関係数計算用）。

@@ -1,6 +1,4 @@
-using System.Threading.Tasks;
-
-namespace BmsAtelierKyokufu.BmsPartTuner.Core.Optimization.Pipeline;
+﻿namespace BmsAtelierKyokufu.BmsPartTuner.Core.Optimization.Pipeline;
 
 /// <summary>
 /// 非同期最適化シミュレーションパイプラインの各ステップが実装するインターフェース。

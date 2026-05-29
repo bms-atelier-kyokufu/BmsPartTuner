@@ -1,8 +1,4 @@
-using System;
-using System.Collections.Generic;
-using BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
-
-namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms.Bmson.Pipeline;
+﻿namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms.Bmson.Pipeline;
 
 /// <summary>
 /// BMSON変換パイプライン。

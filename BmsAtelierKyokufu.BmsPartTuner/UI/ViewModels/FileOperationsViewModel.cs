@@ -1,7 +1,4 @@
 ﻿using Microsoft.Win32;
-using BmsAtelierKyokufu.BmsPartTuner.Core.Messages;
-using CommunityToolkit.Mvvm.Messaging;
-
 namespace BmsAtelierKyokufu.BmsPartTuner.UI.ViewModels;
 
 /// <summary>

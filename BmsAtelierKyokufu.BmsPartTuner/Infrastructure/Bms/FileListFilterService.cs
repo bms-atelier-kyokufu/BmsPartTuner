@@ -1,5 +1,4 @@
-using BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms;
-namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms;
+﻿namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms;
 
 /// <summary>
 /// BMSファイルリストに対するフィルタリング（テキスト検索、楽器種別、キーワードチップ）機能を提供するサービス。

@@ -1,6 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace BmsAtelierKyokufu.BmsPartTuner.UI.Services;
+﻿namespace BmsAtelierKyokufu.BmsPartTuner.UI.Services;
 
 /// <summary>
 /// BMSファイルなどのドラッグ&amp;ドロップ機能を管理するサービス。

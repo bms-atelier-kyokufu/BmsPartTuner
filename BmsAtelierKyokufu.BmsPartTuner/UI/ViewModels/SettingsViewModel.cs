@@ -1,6 +1,4 @@
-using System.Reflection;
-using BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Common;
-using BmsAtelierKyokufu.BmsPartTuner.Core.Interfaces.Common;
+﻿using System.Reflection;
 using BmsAtelierKyokufu.BmsPartTuner.UI.Services;
 using Microsoft.Win32;
 

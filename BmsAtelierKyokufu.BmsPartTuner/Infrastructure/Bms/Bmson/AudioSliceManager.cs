@@ -1,7 +1,4 @@
-﻿using BmsAtelierKyokufu.BmsPartTuner.Core.Attributes;
-using System.Collections.Concurrent;
-using BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
-using NAudio.Wave;
+﻿using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms.Bmson;
@@ -210,8 +207,6 @@ public class AudioSliceManager(string bmsonDir, bool throwOnMissingFile = true) 
         return ((int)startByte, (int)(endByte - startByte));
     }
 
-
-
     /// <summary>
     /// 指定された音声ファイルを先行してロード・デコードしキャッシュします（投機的プリロード）。
     /// </summary>
@@ -220,7 +215,6 @@ public class AudioSliceManager(string bmsonDir, bool throwOnMissingFile = true) 
         if (string.IsNullOrWhiteSpace(sourceFileName)) return;
         GetOrLoadAudioSource(sourceFileName);
     }
-
 
 }
 

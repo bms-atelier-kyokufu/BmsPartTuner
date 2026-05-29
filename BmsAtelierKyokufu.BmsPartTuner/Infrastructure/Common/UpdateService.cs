@@ -1,11 +1,8 @@
-﻿using BmsAtelierKyokufu.BmsPartTuner.Core.Attributes;
-using System.Net.Http;
+﻿using System.Net.Http;
 using System.Net.Http.Json;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-
-using BmsAtelierKyokufu.BmsPartTuner.Core.Interfaces.Common;
 namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Common;
 
 /// <summary>

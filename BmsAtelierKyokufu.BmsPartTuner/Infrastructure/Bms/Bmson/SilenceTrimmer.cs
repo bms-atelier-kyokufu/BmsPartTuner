@@ -1,10 +1,7 @@
-﻿using System;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
-using BmsAtelierKyokufu.BmsPartTuner.Core.Attributes;
-
 namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms.Bmson;
 
 public static class SilenceTrimmer

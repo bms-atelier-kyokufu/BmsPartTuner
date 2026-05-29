@@ -1,6 +1,4 @@
-﻿using System.Collections.Concurrent;
-
-namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
+﻿namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
 
 /// <summary>
 /// BMSON変換時に生成された音声スライスなどをメモリ上に保持するための仮想オーディオレジストリ。

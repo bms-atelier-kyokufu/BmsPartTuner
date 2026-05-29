@@ -1,8 +1,4 @@
-﻿using BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms;
-using BmsAtelierKyokufu.BmsPartTuner.Core.Interfaces.Bms;
-using BmsAtelierKyokufu.BmsPartTuner.Core.Optimization;
-
-namespace BmsAtelierKyokufu.BmsPartTuner.UI.Views.Controls
+﻿namespace BmsAtelierKyokufu.BmsPartTuner.UI.Views.Controls
 {
     /// <summary>
     /// Smart Filter Chips コントロール

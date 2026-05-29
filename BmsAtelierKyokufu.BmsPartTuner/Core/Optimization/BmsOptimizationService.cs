@@ -1,10 +1,5 @@
-using BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
-using BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
-using BmsAtelierKyokufu.BmsPartTuner.Core.Optimization;
-using BmsAtelierKyokufu.BmsPartTuner.Core.Validation;
+﻿using BmsAtelierKyokufu.BmsPartTuner.Core.Validation;
 using ValidationResult = BmsAtelierKyokufu.BmsPartTuner.Core.Validation.ValidationResult;
-
-using BmsAtelierKyokufu.BmsPartTuner.Core.Interfaces.Bms;
 namespace BmsAtelierKyokufu.BmsPartTuner.Core.Optimization;
 
 /// <summary>

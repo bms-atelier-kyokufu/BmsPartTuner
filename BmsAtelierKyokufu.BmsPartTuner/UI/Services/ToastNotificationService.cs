@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Windows.Media.Animation;
+﻿using System.Windows.Media.Animation;
 using BmsAtelierKyokufu.BmsPartTuner.UI.ViewModels;
 using BmsAtelierKyokufu.BmsPartTuner.UI.Views.Controls;
 

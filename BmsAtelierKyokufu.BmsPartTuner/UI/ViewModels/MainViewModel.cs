@@ -1,15 +1,6 @@
-using BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Audio;
-
-using BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms;
-using BmsAtelierKyokufu.BmsPartTuner.Core.Interfaces.Bms;
-using BmsAtelierKyokufu.BmsPartTuner.Core.Optimization;
-using BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Common;
-using BmsAtelierKyokufu.BmsPartTuner.Core.Interfaces.Common;
+﻿using BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Audio;
 using BmsAtelierKyokufu.BmsPartTuner.UI.Services;
-using BmsAtelierKyokufu.BmsPartTuner.Core.Messages;
 using BmsAtelierKyokufu.BmsPartTuner.UI.Controllers;
-using CommunityToolkit.Mvvm.Messaging;
-
 namespace BmsAtelierKyokufu.BmsPartTuner.UI.ViewModels;
 
 /// <summary>
@@ -401,8 +392,6 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
             };
         }
     }
-
-
 
     protected virtual void Dispose(bool disposing)
     {

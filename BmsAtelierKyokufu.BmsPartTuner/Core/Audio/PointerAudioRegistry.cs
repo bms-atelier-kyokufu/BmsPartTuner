@@ -1,6 +1,4 @@
-using System.Collections.Concurrent;
-
-namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
+﻿namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
 
 /// <summary>
 /// PointerSoundData をファイル名からルックアップするための中央レジストリ。

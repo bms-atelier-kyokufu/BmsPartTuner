@@ -1,7 +1,4 @@
-using System;
-using System.Collections.Generic;
-
-namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms.Pipeline;
+﻿namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms.Pipeline;
 
 /// <summary>
 /// BMS定義削減パイプライン。

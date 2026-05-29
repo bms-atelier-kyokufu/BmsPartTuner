@@ -1,11 +1,4 @@
-using System;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
-using BmsAtelierKyokufu.BmsPartTuner.Models;
-
-namespace BmsAtelierKyokufu.BmsPartTuner.Core.Optimization.Pipeline;
+﻿namespace BmsAtelierKyokufu.BmsPartTuner.Core.Optimization.Pipeline;
 
 /// <summary>
 /// 実際のファイル数を数え、有効なファイルのリストを作成するステップ。

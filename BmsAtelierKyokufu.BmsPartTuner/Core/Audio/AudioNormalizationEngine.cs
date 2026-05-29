@@ -1,9 +1,4 @@
-using System;
-using System.Collections.Generic;
-using BmsAtelierKyokufu.BmsPartTuner.Models;
-using BmsAtelierKyokufu.BmsPartTuner.Core.Attributes;
-
-namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio
+﻿namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio
 {
     /// <summary>
     /// 音声データの正規化と有音区間の抽出を担当する純粋なドメインサービス。

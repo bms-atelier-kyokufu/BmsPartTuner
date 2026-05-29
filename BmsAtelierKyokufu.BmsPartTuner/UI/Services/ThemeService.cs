@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using Microsoft.Win32;
+﻿using Microsoft.Win32;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.UI.Services;
 

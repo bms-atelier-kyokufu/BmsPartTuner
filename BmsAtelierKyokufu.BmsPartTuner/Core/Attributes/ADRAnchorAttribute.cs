@@ -1,6 +1,4 @@
-using System;
-
-namespace BmsAtelierKyokufu.BmsPartTuner.Core.Attributes;
+﻿namespace BmsAtelierKyokufu.BmsPartTuner.Core.Attributes;
 
 /// <summary>
 /// ADR (Architecture Decision Record) とコードを紐づけるための属性。

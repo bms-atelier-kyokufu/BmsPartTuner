@@ -1,6 +1,4 @@
-﻿using BmsAtelierKyokufu.BmsPartTuner.Models.Bmson;
-
-namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
+﻿namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 
 /// <summary>
 /// bmsonの絶対パルス(y)を実時間(秒)に変換する計算機。
@@ -85,7 +83,6 @@ public class PulseToRealTimeCalculator
             }
         }
     }
-
 
     /// <summary>
     /// 指定されたパルス数を現在のBPMでの秒数に変換します。

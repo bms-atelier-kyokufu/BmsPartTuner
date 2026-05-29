@@ -1,8 +1,4 @@
-using BmsAtelierKyokufu.BmsPartTuner.Core.Attributes;
-using System.Collections.Concurrent;
-using BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
-
-namespace BmsAtelierKyokufu.BmsPartTuner.Core.Optimization;
+﻿namespace BmsAtelierKyokufu.BmsPartTuner.Core.Optimization;
 
 /// <summary>
 /// 複数のしきい値で並列シミュレーションを実行するエンジンです。

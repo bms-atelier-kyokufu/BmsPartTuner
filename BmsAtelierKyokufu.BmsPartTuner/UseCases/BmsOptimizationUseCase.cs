@@ -1,12 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading.Tasks;
-using BmsAtelierKyokufu.BmsPartTuner.Models;
-using BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms;
-using BmsAtelierKyokufu.BmsPartTuner.Core.Interfaces.Bms;
-using BmsAtelierKyokufu.BmsPartTuner.Core.Optimization;
-using BmsAtelierKyokufu.BmsPartTuner.UseCases.Dto;
+﻿using BmsAtelierKyokufu.BmsPartTuner.UseCases.Dto;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.UseCases;
 

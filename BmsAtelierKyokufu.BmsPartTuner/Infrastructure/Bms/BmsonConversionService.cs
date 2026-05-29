@@ -1,7 +1,4 @@
-﻿using System.Threading.Tasks;
-using BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms.Bmson;
-using BmsAtelierKyokufu.BmsPartTuner.Core.Interfaces.Bms;
-
+﻿using BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms.Bmson;
 namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms
 {
     public class BmsonConversionService : IBmsonConversionService

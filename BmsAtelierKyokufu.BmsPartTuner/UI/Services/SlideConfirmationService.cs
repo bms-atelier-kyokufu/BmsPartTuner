@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Windows.Media.Animation;
+﻿using System.Windows.Media.Animation;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.UI.Services
 {

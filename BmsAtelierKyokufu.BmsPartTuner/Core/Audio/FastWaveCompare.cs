@@ -1,5 +1,4 @@
-using BmsAtelierKyokufu.BmsPartTuner.Core.Attributes;
-using System.Numerics;
+﻿using System.Numerics;
 using static System.Numerics.BitOperations;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
@@ -38,7 +37,6 @@ internal static class FastWaveCompare
 
             return false;
         }
-
 
         // Check both channels for total silence
         bool isData1Silent = true;

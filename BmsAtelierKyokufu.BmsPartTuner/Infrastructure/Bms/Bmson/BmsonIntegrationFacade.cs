@@ -1,8 +1,5 @@
-using System.IO;
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 using BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms.Bmson.Pipeline;
-using BmsAtelierKyokufu.BmsPartTuner.Models.Bmson;
-
 namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms.Bmson;
 
 [JsonSourceGenerationOptions(WriteIndented = false)]

@@ -1,16 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading.Tasks;
-using BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms;
-using BmsAtelierKyokufu.BmsPartTuner.Core.Interfaces.Bms;
-using BmsAtelierKyokufu.BmsPartTuner.Core.Optimization;
-using BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Common;
-using BmsAtelierKyokufu.BmsPartTuner.Core.Interfaces.Common;
-using BmsAtelierKyokufu.BmsPartTuner.UseCases;
-using BmsAtelierKyokufu.BmsPartTuner.Core;
-using BmsAtelierKyokufu.BmsPartTuner.Core.Helpers;
-using BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Diagnostics;
+﻿using BmsAtelierKyokufu.BmsPartTuner.UseCases;
 using BmsAtelierKyokufu.BmsPartTuner.UI.ViewModels;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.UI.Controllers;

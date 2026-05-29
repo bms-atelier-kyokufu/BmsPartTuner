@@ -1,12 +1,4 @@
-using BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
-using BmsAtelierKyokufu.BmsPartTuner.Core.Messages;
-using BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Audio;
-
-using BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms;
-using BmsAtelierKyokufu.BmsPartTuner.Core.Interfaces.Bms;
-using BmsAtelierKyokufu.BmsPartTuner.Core.Optimization;
-using CommunityToolkit.Mvvm.Messaging;
-
+﻿using BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Audio;
 namespace BmsAtelierKyokufu.BmsPartTuner.UI.ViewModels;
 
 /// <summary>

@@ -1,7 +1,4 @@
-using BmsAtelierKyokufu.BmsPartTuner.Core.Messages;
-using CommunityToolkit.Mvvm.Messaging;
-
-namespace BmsAtelierKyokufu.BmsPartTuner.UI.ViewModels;
+﻿namespace BmsAtelierKyokufu.BmsPartTuner.UI.ViewModels;
 
 /// <summary>
 /// 外部メディアプレイヤーの制御を担当するViewModel。

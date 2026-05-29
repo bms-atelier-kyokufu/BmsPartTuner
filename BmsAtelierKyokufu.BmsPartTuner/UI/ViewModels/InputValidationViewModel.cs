@@ -1,7 +1,4 @@
-﻿using BmsAtelierKyokufu.BmsPartTuner.Core.Messages;
-using CommunityToolkit.Mvvm.Messaging;
-
-namespace BmsAtelierKyokufu.BmsPartTuner.UI.ViewModels;
+﻿namespace BmsAtelierKyokufu.BmsPartTuner.UI.ViewModels;
 
 /// <summary>
 /// ユーザー入力（ファイルパス等）の検証を担当するViewModel。

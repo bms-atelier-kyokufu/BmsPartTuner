@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks;
-
-namespace BmsAtelierKyokufu.BmsPartTuner.Core.Interfaces.Bms
+﻿namespace BmsAtelierKyokufu.BmsPartTuner.Core.Interfaces.Bms
 {
     public interface IBmsonConversionService
     {

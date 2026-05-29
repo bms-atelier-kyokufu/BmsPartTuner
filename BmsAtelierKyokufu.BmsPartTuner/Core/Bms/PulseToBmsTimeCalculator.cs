@@ -1,6 +1,4 @@
-﻿using BmsAtelierKyokufu.BmsPartTuner.Models.Bmson;
-
-namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
+﻿namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 
 /// <summary>
 /// bmsonの絶対パルス(y)をBMSの小節(Measure)・相対位置・ステップインデックスに変換する計算機。

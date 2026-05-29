@@ -1,6 +1,4 @@
-using MathNet.Numerics;
-
-namespace BmsAtelierKyokufu.BmsPartTuner.Models;
+﻿namespace BmsAtelierKyokufu.BmsPartTuner.Models;
 
 /// <summary>
 /// 音声キャッシュデータの共通インターフェース。

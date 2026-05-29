@@ -1,13 +1,6 @@
-using BmsAtelierKyokufu.BmsPartTuner.Core.Attributes;
-using BmsAtelierKyokufu.BmsPartTuner.Core.Interfaces.Bms;
-using BmsAtelierKyokufu.BmsPartTuner.Core.Messages;
-using BmsAtelierKyokufu.BmsPartTuner.Core.Optimization;
-using BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms;
-using BmsAtelierKyokufu.BmsPartTuner.UI.Views.Controls;
+﻿using BmsAtelierKyokufu.BmsPartTuner.UI.Views.Controls;
 using BmsAtelierKyokufu.BmsPartTuner.UseCases;
 using BmsAtelierKyokufu.BmsPartTuner.UseCases.Dto;
-using CommunityToolkit.Mvvm.Messaging;
-
 namespace BmsAtelierKyokufu.BmsPartTuner.UI.ViewModels;
 
 /// <summary>

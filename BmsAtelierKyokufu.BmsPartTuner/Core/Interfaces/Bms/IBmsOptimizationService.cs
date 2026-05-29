@@ -1,7 +1,4 @@
-using BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Common;
-using BmsAtelierKyokufu.BmsPartTuner.Core.Interfaces.Common;
-using BmsAtelierKyokufu.BmsPartTuner.Core.Optimization;
-namespace BmsAtelierKyokufu.BmsPartTuner.Core.Interfaces.Bms
+﻿namespace BmsAtelierKyokufu.BmsPartTuner.Core.Interfaces.Bms
 {
     /// <summary>
     /// BMSファイルの定義最適化やしきい値シミュレーションなどの機能を提供するサービスのインターフェース。

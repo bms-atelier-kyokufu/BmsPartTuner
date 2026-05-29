@@ -1,5 +1,4 @@
-﻿using BmsAtelierKyokufu.BmsPartTuner.Core.Attributes;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 
@@ -59,8 +58,6 @@ internal partial class BmsFileRewriter(
 
         return RewriteBmsContent(bmsFileName, finalMap, newDefinitions);
     }
-
-
 
     /// <summary>
     /// 削減マップと保持ファイルリストを構築します。

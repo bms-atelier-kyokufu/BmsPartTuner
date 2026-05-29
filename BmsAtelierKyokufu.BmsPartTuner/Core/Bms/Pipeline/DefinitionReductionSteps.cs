@@ -1,9 +1,4 @@
-using System;
-using System.IO;
-using System.Linq;
-using BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
-
-namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms.Pipeline;
+﻿namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms.Pipeline;
 
 /// <summary>
 /// 処理範囲を決定し、統計用クラスを初期化するステップ。

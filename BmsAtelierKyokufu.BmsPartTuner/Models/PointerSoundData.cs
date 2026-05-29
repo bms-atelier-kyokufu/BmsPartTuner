@@ -1,6 +1,4 @@
-using BmsAtelierKyokufu.BmsPartTuner.Core.Attributes;
-using MathNet.Numerics;
-
+﻿using MathNet.Numerics;
 namespace BmsAtelierKyokufu.BmsPartTuner.Models;
 
 /// <summary>

@@ -1,9 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using BmsAtelierKyokufu.BmsPartTuner.Models;
-using BmsAtelierKyokufu.BmsPartTuner.Core.Attributes;
-using BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Audio;
+﻿using BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Audio;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio
 {

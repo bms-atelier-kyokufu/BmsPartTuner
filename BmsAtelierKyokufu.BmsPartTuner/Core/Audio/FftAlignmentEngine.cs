@@ -1,6 +1,4 @@
-﻿using BmsAtelierKyokufu.BmsPartTuner.Core.Attributes;
-using System.Collections.Concurrent;
-using MathNet.Numerics;
+﻿using MathNet.Numerics;
 using MathNet.Numerics.IntegralTransforms;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
@@ -108,8 +106,6 @@ public static class FftAlignmentEngine
 
         return maxIndex;
     }
-
-
 
     /// <summary>
     /// 事前計算されたFFTスペクトルを使用して、最も相関が高くなるズレ量（サンプル数）を算出します

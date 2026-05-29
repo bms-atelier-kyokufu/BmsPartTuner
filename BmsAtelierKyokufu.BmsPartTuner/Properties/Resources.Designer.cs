@@ -10,9 +10,6 @@
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Properties
 {
-    using System;
-
-
     /// <summary>
     ///   ローカライズされた文字列などを検索するための、厳密に型指定されたリソース クラスです。
     /// </summary>

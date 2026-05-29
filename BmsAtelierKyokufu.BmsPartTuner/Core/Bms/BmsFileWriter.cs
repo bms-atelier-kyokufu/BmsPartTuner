@@ -1,7 +1,4 @@
-using System.IO;
-using System.Text;
-
-namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
+﻿namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 
 /// <summary>
 /// BMSファイルの書き出し操作を担当する静的クラス。

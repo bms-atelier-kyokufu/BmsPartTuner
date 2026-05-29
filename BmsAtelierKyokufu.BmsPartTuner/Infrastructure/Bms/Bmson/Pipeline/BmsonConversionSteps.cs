@@ -1,9 +1,4 @@
-using System;
-using System.IO;
-using System.Text.Json;
-using BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
-using BmsAtelierKyokufu.BmsPartTuner.Models.Bmson;
-
+﻿using System.Text.Json;
 namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms.Bmson.Pipeline;
 
 /// <summary>

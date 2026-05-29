@@ -1,5 +1,4 @@
-﻿using BmsAtelierKyokufu.BmsPartTuner.Core.Attributes;
-using NAudio.Wave;
+﻿using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms.Bmson;

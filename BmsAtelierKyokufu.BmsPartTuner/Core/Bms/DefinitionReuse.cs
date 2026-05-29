@@ -1,10 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.IO;
-using System.Linq;
-using BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
-using BmsAtelierKyokufu.BmsPartTuner.Core.Bms.Pipeline;
+﻿using BmsAtelierKyokufu.BmsPartTuner.Core.Bms.Pipeline;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 

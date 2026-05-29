@@ -1,9 +1,4 @@
-using BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
-using BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms;
-using BmsAtelierKyokufu.BmsPartTuner.Core.Interfaces.Bms;
-using BmsAtelierKyokufu.BmsPartTuner.Core.Optimization;
-
-namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
+﻿namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 
 /// <summary>
 /// BMSファイルに関連付けられたオーディオファイルリストの管理および解析を行います。
@@ -30,7 +25,6 @@ public partial class BmsDefinitionManager(string bmsFilePath, string? bmsContent
     public string GetBmsDirectory() => _bmsDirectory;
 
     public ObservableCollection<BmsAudioFile> GetFileList() => _fileList;
-
 
     /// <summary>
     /// BMSファイルからファイルリストを作成します。
@@ -146,7 +140,6 @@ public partial class BmsDefinitionManager(string bmsFilePath, string? bmsContent
             PerformanceDebugLogger.WriteDebug(nameof(BmsDefinitionManager), $"ERROR: {ex.Message}");
         }
     }
-
 
 }
 

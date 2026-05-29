@@ -1,6 +1,4 @@
-﻿using BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
-
-namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms.Bmson;
+﻿namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms.Bmson;
 
 public static class WavHeaderGenerator
 {

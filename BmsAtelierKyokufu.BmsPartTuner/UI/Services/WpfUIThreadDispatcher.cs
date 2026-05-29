@@ -1,6 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace BmsAtelierKyokufu.BmsPartTuner.UI.Services;
+﻿namespace BmsAtelierKyokufu.BmsPartTuner.UI.Services;
 
 [ExcludeFromCodeCoverage]
 public class WpfUIThreadDispatcher(Dispatcher dispatcher) : IUIThreadDispatcher

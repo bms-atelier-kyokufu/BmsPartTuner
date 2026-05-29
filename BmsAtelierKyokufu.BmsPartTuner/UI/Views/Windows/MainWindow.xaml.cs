@@ -1,6 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using BmsAtelierKyokufu.BmsPartTuner.Infrastructure;
-using BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms;
+﻿using BmsAtelierKyokufu.BmsPartTuner.Infrastructure;
 using BmsAtelierKyokufu.BmsPartTuner.UI.Services;
 using BmsAtelierKyokufu.BmsPartTuner.UI.ViewModels;
 using BmsAtelierKyokufu.BmsPartTuner.UI.Views.Controls;
@@ -100,8 +98,6 @@ namespace BmsAtelierKyokufu.BmsPartTuner.UI.Views.Windows
             // スライド確認要求イベントのハンドラ登録
             _viewModel.SlideConfirmationRequested += OnSlideConfirmationRequested;
         }
-
-
 
         private void InitializeUIBindings()
         {

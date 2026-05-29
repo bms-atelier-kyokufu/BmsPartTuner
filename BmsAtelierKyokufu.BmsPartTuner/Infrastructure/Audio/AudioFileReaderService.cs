@@ -1,10 +1,4 @@
-using System;
-using System.IO;
-using NAudio.Wave;
-using BmsAtelierKyokufu.BmsPartTuner.Core.Attributes;
-using BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
-using BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Diagnostics;
-
+﻿using NAudio.Wave;
 namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Audio
 {
     /// <summary>

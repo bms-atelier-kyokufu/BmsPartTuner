@@ -1,7 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-
-namespace BmsAtelierKyokufu.BmsPartTuner.Core.Interfaces.Common;
+﻿namespace BmsAtelierKyokufu.BmsPartTuner.Core.Interfaces.Common;
 
 public interface IUpdateService : IDisposable
 {

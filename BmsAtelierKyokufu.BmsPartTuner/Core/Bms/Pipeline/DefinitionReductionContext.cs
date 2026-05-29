@@ -1,7 +1,4 @@
-using System.Collections.Generic;
-using BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
-
-namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms.Pipeline;
+﻿namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms.Pipeline;
 
 /// <summary>
 /// BMS定義削減パイプラインの実行コンテキスト。
