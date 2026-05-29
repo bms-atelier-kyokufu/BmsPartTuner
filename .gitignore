@@ -56,6 +56,7 @@ Desktop.ini
 # --- Miscellaneous / Temp files ---
 *.log
 *.tmp
+tmp/
 
 # --- Local temporary test folders ---
 /wav_a/
