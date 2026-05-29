@@ -3,6 +3,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Core.Optimization;
 /// <summary>
 /// スレッドセーフな Union-Find (Disjoint-Set) アルゴリズムの実装。
 /// </summary>
+[ADRAnchor("OPT-01", nameof(UnionFind))]
 internal class UnionFind(int size)
 {
     private readonly int[] _parent = new int[size];
@@ -28,7 +29,7 @@ internal class UnionFind(int size)
             int p = _parent[current];
             if (p == 0 || p == current)
                 break;
-            
+
             _parent[current] = root;
             current = p;
         }
@@ -84,7 +85,7 @@ internal class UnionFind(int size)
     {
         return System.Threading.Interlocked.CompareExchange(ref _parent[child], newParent, 0) == 0;
     }
-    
+
     /// <summary>
     /// 指定された要素がマークされているか（親が設定されているか）を確認します。
     /// </summary>

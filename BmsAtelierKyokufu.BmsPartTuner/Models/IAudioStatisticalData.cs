@@ -1,9 +1,10 @@
-﻿using MathNet.Numerics;
+using MathNet.Numerics;
 namespace BmsAtelierKyokufu.BmsPartTuner.Models;
 
 /// <summary>
 /// 音声データの高度な統計情報および特徴量（FFT, LSH, 累積和など）を提供するインターフェースです。
 /// </summary>
+[ADRAnchor("OPT-05", nameof(IAudioStatisticalData))]
 public interface IAudioStatisticalData
 {
     /// <summary>

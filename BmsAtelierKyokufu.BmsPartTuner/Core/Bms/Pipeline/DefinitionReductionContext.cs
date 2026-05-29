@@ -1,9 +1,10 @@
-﻿namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms.Pipeline;
+namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms.Pipeline;
 
 /// <summary>
 /// BMS定義削減パイプラインの実行コンテキスト。
 /// 各処理ステップ間で共有すべき状態や中間データを保持します。
 /// </summary>
+[ADRAnchor("ARCH-01", nameof(DefinitionReductionContext))]
 internal sealed class DefinitionReductionContext
 {
     // 入力・設定パラメータ
@@ -18,7 +19,7 @@ internal sealed class DefinitionReductionContext
     public DefinitionRangeManager RangeManager { get; }
     public IReadOnlyDictionary<string, ICachedSoundData> AudioCache { get; set; }
     public int[] Replaces { get; }
-    
+
     // 中間生成物
     public DefinitionStatistics? Statistics { get; set; }
     public BmsFileRewriter? Rewriter { get; set; }

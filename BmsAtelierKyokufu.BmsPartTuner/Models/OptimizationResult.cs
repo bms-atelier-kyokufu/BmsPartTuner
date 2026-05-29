@@ -3,6 +3,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Models;
 /// <summary>
 /// しきい値最適化のシミュレーション結果を提供します。
 /// </summary>
+[ADRAnchor("ARCH-02", nameof(OptimizationResult))]
 public class OptimizationResult
 {
     /// <summary>

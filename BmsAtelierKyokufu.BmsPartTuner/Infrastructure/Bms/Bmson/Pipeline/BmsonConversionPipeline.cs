@@ -1,9 +1,10 @@
-﻿namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms.Bmson.Pipeline;
+namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms.Bmson.Pipeline;
 
 /// <summary>
 /// BMSON変換パイプライン。
 /// 登録された複数の変換ステップを順次実行し、時間・メモリなどの計測を自動化します。
 /// </summary>
+[ADRAnchor("ARCH-01", nameof(BmsonConversionPipeline))]
 public sealed class BmsonConversionPipeline
 {
     private readonly List<IBmsonConversionStep> _steps = new();
@@ -35,9 +36,9 @@ public sealed class BmsonConversionPipeline
         {
             // 各ステップ実行前にタイマーをリセットし、計測を開始
             timerStep.Lap(step.Name);
-            
+
             step.Execute(context);
-            
+
             PerformanceDebugLogger.WriteDebug(nameof(BmsonConversionPipeline), $"{step.Name}: {timerStep.Lap(step.Name)} ms");
         }
 

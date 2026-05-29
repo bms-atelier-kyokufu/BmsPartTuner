@@ -1,9 +1,10 @@
-﻿namespace BmsAtelierKyokufu.BmsPartTuner.Core.Optimization.Pipeline;
+namespace BmsAtelierKyokufu.BmsPartTuner.Core.Optimization.Pipeline;
 
 /// <summary>
 /// 非同期最適化シミュレーションパイプライン。
 /// 登録された複数の非同期ステップを順次実行します。
 /// </summary>
+[ADRAnchor("ARCH-01", nameof(OptimizationSimulationPipeline))]
 internal sealed class OptimizationSimulationPipeline
 {
     private readonly List<IAsyncOptimizationStep> _steps = new();

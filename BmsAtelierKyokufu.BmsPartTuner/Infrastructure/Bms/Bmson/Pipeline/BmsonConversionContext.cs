@@ -1,9 +1,10 @@
-﻿namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms.Bmson.Pipeline;
+namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms.Bmson.Pipeline;
 
 /// <summary>
 /// BMSON変換パイプラインの実行コンテキスト。
 /// 入力値、中間生成オブジェクト、最終結果を保持し、使い終わったリソースの破棄（IDisposable）を管理します。
 /// </summary>
+[ADRAnchor("ARCH-01", nameof(BmsonConversionContext))]
 public sealed class BmsonConversionContext : IDisposable
 {
     /// <summary>

@@ -6,6 +6,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Models;
 /// アプリケーションの設定情報を保持します。
 /// 実行ファイルと同一ディレクトリの setting.json に永続化されます。
 /// </summary>
+[ADRAnchor("ARCH-02", nameof(AppSettings))]
 public record AppSettings
 {
     /// <summary>

@@ -1,9 +1,10 @@
-﻿namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms.Pipeline;
+namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms.Pipeline;
 
 /// <summary>
 /// BMS定義削減パイプライン。
 /// 登録された複数の処理ステップを順次実行し、時間計測や進捗報告を自動化します。
 /// </summary>
+[ADRAnchor("ARCH-01", nameof(DefinitionReductionPipeline))]
 internal sealed class DefinitionReductionPipeline
 {
     private readonly List<IDefinitionReductionStep> _steps = new();
@@ -32,9 +33,9 @@ internal sealed class DefinitionReductionPipeline
         foreach (var step in _steps)
         {
             timerStep.Lap(step.Name);
-            
+
             step.Execute(context);
-            
+
             PerformanceDebugLogger.WriteDebug(nameof(DefinitionReductionPipeline), $"{step.Name}: {timerStep.Lap(step.Name)} ms");
         }
 

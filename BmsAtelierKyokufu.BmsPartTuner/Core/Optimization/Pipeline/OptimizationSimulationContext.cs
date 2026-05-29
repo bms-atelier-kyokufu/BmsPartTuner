@@ -1,8 +1,9 @@
-﻿namespace BmsAtelierKyokufu.BmsPartTuner.Core.Optimization.Pipeline;
+namespace BmsAtelierKyokufu.BmsPartTuner.Core.Optimization.Pipeline;
 
 /// <summary>
 /// しきい値最適化シミュレーション用のパイプライン実行コンテキスト。
 /// </summary>
+[ADRAnchor("ARCH-01", nameof(OptimizationSimulationContext))]
 internal sealed class OptimizationSimulationContext
 {
     // 入力
@@ -15,7 +16,7 @@ internal sealed class OptimizationSimulationContext
     public List<BmsAudioFile> FileListItems { get; } = new();
     public System.Collections.Concurrent.ConcurrentDictionary<string, ICachedSoundData>? AudioCache { get; set; }
     public List<string> FailedFiles { get; set; } = new();
-    
+
     // シミュレーション結果
     public IReadOnlyList<SimulationPoint>? SimulationResults { get; set; }
     public List<(double Threshold, int FileCount)> SimulationData { get; set; } = new();

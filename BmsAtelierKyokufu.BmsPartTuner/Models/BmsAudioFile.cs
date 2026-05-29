@@ -3,6 +3,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Models;
 /// <summary>
 /// BMSファイル内で定義された単一のオーディオファイル情報を表します。
 /// </summary>
+[ADRAnchor("ARCH-02", nameof(BmsAudioFile))]
 public record BmsAudioFile
 {
     /// <summary>

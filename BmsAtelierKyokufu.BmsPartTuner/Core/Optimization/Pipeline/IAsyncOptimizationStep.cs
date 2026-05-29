@@ -1,8 +1,9 @@
-﻿namespace BmsAtelierKyokufu.BmsPartTuner.Core.Optimization.Pipeline;
+namespace BmsAtelierKyokufu.BmsPartTuner.Core.Optimization.Pipeline;
 
 /// <summary>
 /// 非同期最適化シミュレーションパイプラインの各ステップが実装するインターフェース。
 /// </summary>
+[ADRAnchor("ARCH-01", nameof(IAsyncOptimizationStep))]
 internal interface IAsyncOptimizationStep
 {
     /// <summary>

@@ -5,6 +5,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Models.Bmson;
 /// <summary>
 /// bmsonフォーマットのルート要素。
 /// </summary>
+[ADRAnchor("ARCH-02", nameof(BmsonFormat))]
 public record BmsonFormat
 {
     [JsonPropertyName("version")]
