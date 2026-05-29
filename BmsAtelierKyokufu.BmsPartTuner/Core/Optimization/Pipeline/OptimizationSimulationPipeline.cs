@@ -1,4 +1,4 @@
-﻿namespace BmsAtelierKyokufu.BmsPartTuner.Core.Optimization.Pipeline;
+namespace BmsAtelierKyokufu.BmsPartTuner.Core.Optimization.Pipeline;
 
 /// <summary>
 /// 非同期最適化シミュレーションパイプライン。
@@ -7,6 +7,7 @@
 [ADRAnchor("ARCH-01", nameof(OptimizationSimulationPipeline))]
 internal sealed class OptimizationSimulationPipeline
 {
+    private static readonly IPerformanceLogger s_logger = new TypedLogger(typeof(OptimizationSimulationPipeline));
     private readonly List<IAsyncOptimizationStep> _steps = [];
 
     public OptimizationSimulationPipeline AddStep(IAsyncOptimizationStep step)
@@ -17,7 +18,7 @@ internal sealed class OptimizationSimulationPipeline
 
     public async Task<OptimizationResult?> ExecuteAsync(OptimizationSimulationContext context)
     {
-        PerformanceDebugLogger<OptimizationSimulationPipeline>.WriteDebug("=== Async Pipeline Starting ===");
+        s_logger.WriteDebug("=== Async Pipeline Starting ===");
         var timerTotal = PerformanceDebugLogger.StartTimer();
         var timerStep = PerformanceDebugLogger.StartTimer();
 
@@ -25,16 +26,16 @@ internal sealed class OptimizationSimulationPipeline
         {
             foreach (var step in _steps)
             {
-                PerformanceDebugLogger<OptimizationSimulationPipeline>.WriteDebug($"--- Step: {step.Name} ---");
+                s_logger.WriteDebug($"--- Step: {step.Name} ---");
                 timerStep.Lap(step.Name);
                 await step.ExecuteAsync(context);
-                PerformanceDebugLogger<OptimizationSimulationPipeline>.WriteDebug($"{step.Name} completed in {timerStep.Lap(step.Name)} ms");
+                s_logger.WriteDebug($"{step.Name} completed in {timerStep.Lap(step.Name)} ms");
             }
         }
         catch (Exception ex)
         {
-            PerformanceDebugLogger<OptimizationSimulationPipeline>.WriteDebug($"ERROR in pipeline execution: {ex.Message}");
-            PerformanceDebugLogger<OptimizationSimulationPipeline>.WriteDebug($"StackTrace: {ex.StackTrace}");
+            s_logger.WriteDebug($"ERROR in pipeline execution: {ex.Message}");
+            s_logger.WriteDebug($"StackTrace: {ex.StackTrace}");
             return null;
         }
         finally
@@ -42,7 +43,7 @@ internal sealed class OptimizationSimulationPipeline
             // 音声キャッシュなどのクリーンアップは別ステップで行うか、ここで行うことも可能
             // 今回はクリーンアップステップをパイプラインの最後に登録する想定
             long totalElapsed = timerTotal.Lap("Total");
-            PerformanceDebugLogger<OptimizationSimulationPipeline>.WriteDebug($"=== Async Pipeline Complete ({totalElapsed}ms) ===");
+            s_logger.WriteDebug($"=== Async Pipeline Complete ({totalElapsed}ms) ===");
         }
 
         return context.Result;

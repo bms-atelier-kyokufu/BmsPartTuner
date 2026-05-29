@@ -1,4 +1,4 @@
-﻿using System.Text.RegularExpressions;
+using System.Text.RegularExpressions;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 
@@ -15,6 +15,7 @@ internal partial class BmsFileRewriter(
     int endPoint,
     string? inputBmsContent = null)
 {
+    private static readonly IPerformanceLogger s_logger = new TypedLogger(typeof(BmsFileRewriter));
     private readonly IReadOnlyList<BmsAudioFile> _fileList = fileList ?? throw new ArgumentNullException(nameof(fileList));
     private readonly int[] _replaces = replaces ?? throw new ArgumentNullException(nameof(replaces));
     private readonly int _startPoint = startPoint;
@@ -245,8 +246,8 @@ internal partial class BmsFileRewriter(
         // 未定義参照があればワーニングログを出力
         if (undefinedReferences.Count > 0)
         {
-            PerformanceDebugLogger<BmsFileRewriter>.WriteDebug( $"[BmsFileRewriter] WARNING: Found undefined WAV references in {Path.GetFileName(bmsFileName)}: {string.Join(", ", undefinedReferences)}");
-            PerformanceDebugLogger<BmsFileRewriter>.WriteDebug( "[BmsFileRewriter] These references were preserved as-is (non-destructive policy)");
+            s_logger.WriteDebug( $"[BmsFileRewriter] WARNING: Found undefined WAV references in {Path.GetFileName(bmsFileName)}: {string.Join(", ", undefinedReferences)}");
+            s_logger.WriteDebug( "[BmsFileRewriter] These references were preserved as-is (non-destructive policy)");
         }
         return sb.ToString();
     }

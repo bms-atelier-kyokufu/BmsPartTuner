@@ -1,4 +1,4 @@
-﻿namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms.Pipeline;
+namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms.Pipeline;
 
 /// <summary>
 /// 処理範囲を決定し、統計用クラスを初期化するステップ。
@@ -138,13 +138,14 @@ internal sealed class WriteAndFlushToDiskStep : IDefinitionReductionStep
 /// </summary>
 internal sealed class PhysicalDeletionStep : IDefinitionReductionStep
 {
+    private static readonly IPerformanceLogger s_logger = new TypedLogger(typeof(PhysicalDeletionStep));
     public string Name => PipelineStepHelper.GetStepName(nameof(PhysicalDeletionStep));
     public void Execute(DefinitionReductionContext context)
     {
         if (!context.Options.IsPhysicalDeletionEnabled || context.Rewriter == null) return;
 
         var unusedFiles = context.FileList.Except(context.Rewriter.KeptFiles).ToList();
-        PerformanceDebugLogger.WriteDebug(Name, $"=== Physical Deletion: {unusedFiles.Count} files to delete ===");
+        s_logger.WriteDebug($"=== Physical Deletion: {unusedFiles.Count} files to delete ===");
 
         int deletedCount = 0;
         foreach (var file in unusedFiles)
@@ -155,15 +156,15 @@ internal sealed class PhysicalDeletionStep : IDefinitionReductionStep
                 {
                     File.Delete(file.Name);
                     deletedCount++;
-                    PerformanceDebugLogger.WriteDebug(Name, $"Deleted: {file.Name}");
+                    s_logger.WriteDebug($"Deleted: {file.Name}");
                 }
             }
             catch (Exception ex)
             {
-                PerformanceDebugLogger.WriteDebug(Name, $"Failed to delete {file.Name}: {ex.Message}");
+                s_logger.WriteDebug($"Failed to delete {file.Name}: {ex.Message}");
             }
         }
-        PerformanceDebugLogger.WriteDebug(Name, $"=== Physical Deletion Complete: {deletedCount}/{unusedFiles.Count} files deleted ===");
+        s_logger.WriteDebug($"=== Physical Deletion Complete: {deletedCount}/{unusedFiles.Count} files deleted ===");
     }
 }
 

@@ -1,4 +1,4 @@
-﻿namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
+namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 
 /// <summary>
 /// 定義削減の統計情報を管理するクラスです。
@@ -11,6 +11,7 @@ internal class DefinitionStatistics(
     int startPoint,
     int endPoint)
 {
+    private static readonly IPerformanceLogger s_logger = new TypedLogger(typeof(DefinitionStatistics));
     private readonly IReadOnlyList<BmsAudioFile> _fileList = fileList ?? throw new ArgumentNullException(nameof(fileList));
     private readonly int[] _replaces = replaces ?? throw new ArgumentNullException(nameof(replaces));
     private readonly int _startPoint = startPoint;
@@ -23,7 +24,7 @@ internal class DefinitionStatistics(
     {
         var stats = CalculateStatistics();
 
-        PerformanceDebugLogger<DefinitionStatistics>.WriteDebug( $$"""
+        s_logger.WriteDebug( $$"""
             === Statistics ===
             Processing range: {{_startPoint}} - {{_endPoint}}
             Total definitions: {{stats.TotalDefinitions}}
@@ -42,7 +43,7 @@ internal class DefinitionStatistics(
     {
         var stats = CalculateStatistics();
 
-        PerformanceDebugLogger<DefinitionStatistics>.WriteDebug( $$"""
+        s_logger.WriteDebug( $$"""
             === GetUniqueFileCount Detail ===
               Total in range: {{stats.TotalInRange}}
               Unique (self-ref): {{stats.UniqueFiles}}

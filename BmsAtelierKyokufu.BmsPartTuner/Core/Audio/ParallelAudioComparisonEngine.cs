@@ -18,6 +18,7 @@ internal record AudioComparisonParameters(
 [ADRAnchor("OPT-01", nameof(ParallelAudioComparisonEngine))]
 internal class ParallelAudioComparisonEngine(AudioComparisonParameters parameters)
 {
+    private static readonly IPerformanceLogger s_logger = new TypedLogger(typeof(ParallelAudioComparisonEngine));
     #region 定数定義
 
     /// <summary>進捗レポートの範囲（Phase 2 の幅）。</summary>
@@ -153,11 +154,11 @@ internal class ParallelAudioComparisonEngine(AudioComparisonParameters parameter
         }
         catch (OperationCanceledException)
         {
-            PerformanceDebugLogger<ParallelAudioComparisonEngine>.WriteDebug( "=== CompareGroups Cancelled ===");
+            s_logger.WriteDebug( "=== CompareGroups Cancelled ===");
             throw;
         }
 
-        PerformanceDebugLogger<ParallelAudioComparisonEngine>.WriteDebug( $"=== CompareGroups Complete: {totalComparisons} comparisons, {timer.Lap("CompareGroups")}ms ===");
+        s_logger.WriteDebug( $"=== CompareGroups Complete: {totalComparisons} comparisons, {timer.Lap("CompareGroups")}ms ===");
     }
 
     #endregion

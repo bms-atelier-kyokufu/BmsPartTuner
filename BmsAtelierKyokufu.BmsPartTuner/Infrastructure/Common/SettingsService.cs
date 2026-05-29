@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Common;
 
@@ -8,6 +8,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Common;
 /// </summary>
 public class SettingsService
 {
+    private static readonly IPerformanceLogger s_logger = new TypedLogger(typeof(SettingsService));
     private readonly string _settingsFilePath;
 
     private static readonly JsonSerializerOptions JsonOptions = new()
@@ -51,7 +52,7 @@ public class SettingsService
         }
         catch (Exception ex)
         {
-            PerformanceDebugLogger<SettingsService>.WriteDebug( $"設定ファイルの読み込みに失敗しました: {ex.Message}");
+            s_logger.WriteDebug( $"設定ファイルの読み込みに失敗しました: {ex.Message}");
             _cachedSettings = new AppSettings();
         }
 
@@ -76,7 +77,7 @@ public class SettingsService
         }
         catch (Exception ex)
         {
-            PerformanceDebugLogger<SettingsService>.WriteDebug( $"設定ファイルの保存に失敗しました: {ex.Message}");
+            s_logger.WriteDebug( $"設定ファイルの保存に失敗しました: {ex.Message}");
         }
     }
 

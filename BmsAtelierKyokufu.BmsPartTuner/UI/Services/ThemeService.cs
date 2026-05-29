@@ -1,4 +1,4 @@
-﻿using Microsoft.Win32;
+using Microsoft.Win32;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.UI.Services;
 
@@ -8,6 +8,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.UI.Services;
 [ExcludeFromCodeCoverage]
 public class ThemeService
 {
+    private static readonly IPerformanceLogger s_logger = new TypedLogger(typeof(ThemeService));
     private const string LightThemePath = "/Themes/LightTheme.xaml";
     private const string DarkThemePath = "/Themes/DarkTheme.xaml";
     private const string RegistryKeyPath = @"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize";
@@ -36,7 +37,7 @@ public class ThemeService
         {
             var mergedDictionaries = Application.Current.Resources.MergedDictionaries;
 
-            PerformanceDebugLogger<ThemeService>.WriteDebug( $"テーマ切り替え開始: {(isDark ? "Dark" : "Light")}");
+            s_logger.WriteDebug( $"テーマ切り替え開始: {(isDark ? "Dark" : "Light")}");
 
             // 新しいテーマを読み込む
             var newTheme = new ResourceDictionary { Source = new Uri(themePath, UriKind.Relative) };
@@ -72,12 +73,12 @@ public class ThemeService
 
             ThemeChanged?.Invoke(this, isDark);
 
-            PerformanceDebugLogger<ThemeService>.WriteDebug( $"テーマを適用しました: {(isDark ? "Dark" : "Light")}");
+            s_logger.WriteDebug( $"テーマを適用しました: {(isDark ? "Dark" : "Light")}");
         }
         catch (Exception ex)
         {
-            PerformanceDebugLogger<ThemeService>.WriteDebug( $"テーマの適用に失敗しました: {ex.Message}");
-            PerformanceDebugLogger<ThemeService>.WriteDebug( ex.StackTrace ?? string.Empty);
+            s_logger.WriteDebug( $"テーマの適用に失敗しました: {ex.Message}");
+            s_logger.WriteDebug( ex.StackTrace ?? string.Empty);
         }
     }
 
@@ -94,7 +95,7 @@ public class ThemeService
         }
         catch (Exception ex)
         {
-            PerformanceDebugLogger<ThemeService>.WriteDebug( $"システムテーマの読み取りエラー: {ex}");
+            s_logger.WriteDebug( $"システムテーマの読み取りエラー: {ex}");
             return false;
         }
     }

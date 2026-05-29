@@ -1,4 +1,4 @@
-﻿using BmsAtelierKyokufu.BmsPartTuner.UI.Views.Controls;
+using BmsAtelierKyokufu.BmsPartTuner.UI.Views.Controls;
 using BmsAtelierKyokufu.BmsPartTuner.UseCases;
 using BmsAtelierKyokufu.BmsPartTuner.UseCases.Dto;
 namespace BmsAtelierKyokufu.BmsPartTuner.UI.ViewModels;
@@ -9,6 +9,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.UI.ViewModels;
 [ADRAnchor("OPT-07", nameof(OptimizationViewModel))]
 public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
 {
+    private static readonly IPerformanceLogger s_logger = new TypedLogger(typeof(OptimizationViewModel));
     private readonly IBmsOptimizationUseCase _optimizationUseCase;
     private readonly IBmsOptimizationService _optimizationService;
     private readonly Progress<int> _progress;
@@ -312,10 +313,10 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
                 StatusMessage = "最適化エラー";
             });
 
-            PerformanceDebugLogger<OptimizationViewModel>.WriteDebug("=== ExecuteThresholdOptimizationAsync Exception ===");
-            PerformanceDebugLogger<OptimizationViewModel>.WriteDebug($"Exception Type: {ex.GetType().FullName}");
-            PerformanceDebugLogger<OptimizationViewModel>.WriteDebug($"Message: {ex.Message}");
-            PerformanceDebugLogger<OptimizationViewModel>.WriteDebug($"StackTrace: {ex.StackTrace}");
+            s_logger.WriteDebug("=== ExecuteThresholdOptimizationAsync Exception ===");
+            s_logger.WriteDebug($"Exception Type: {ex.GetType().FullName}");
+            s_logger.WriteDebug($"Message: {ex.Message}");
+            s_logger.WriteDebug($"StackTrace: {ex.StackTrace}");
 
             return null;
         }
@@ -429,14 +430,14 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
             ErrorOccurred?.Invoke(this, $"処理エラー: {ex.Message}");
             WeakReferenceMessenger.Default.Send(new OptimizationErrorMessage($"処理エラー: {ex.Message}"));
             StatusMessage = "処理エラー";
-            PerformanceDebugLogger<OptimizationViewModel>.WriteDebug($"ExecuteDefinitionReductionInternalAsync Exception: {ex}");
+            s_logger.WriteDebug($"ExecuteDefinitionReductionInternalAsync Exception: {ex}");
         }
         finally
         {
             EndBusyState(loaderCts);
             IsBusy = false;
 
-            await Task.Run(() => PerformanceDebugLogger<OptimizationViewModel>.WriteDebug("=== OptimizationViewModel: Clearing caches ==="));
+            await Task.Run(() => s_logger.WriteDebug("=== OptimizationViewModel: Clearing caches ==="));
         }
     }
 

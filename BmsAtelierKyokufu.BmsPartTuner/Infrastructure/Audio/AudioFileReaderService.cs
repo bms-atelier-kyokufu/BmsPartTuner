@@ -1,4 +1,4 @@
-﻿using NAudio.Wave;
+using NAudio.Wave;
 namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Audio
 {
     /// <summary>
@@ -8,6 +8,8 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Audio
     [ADRAnchor("OPT-05", nameof(AudioFileReaderService))]
     internal static class AudioFileReaderService
     {
+        private static readonly IPerformanceLogger s_logger = new TypedLogger(typeof(AudioFileReaderService));
+
         public static (float[][] samplesPerChannel, AudioFileInfo fileInfo) LoadAndDeinterleave(string path)
 
         {
@@ -46,7 +48,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Audio
 
                     if (read == 0)
                     {
-                        PerformanceDebugLogger.WriteDebug(nameof(AudioFileReaderService), $"[CachedSoundData] WARNING: Read returned 0 at {totalRead}/{totalSamples} for {Path.GetFileName(path)}");
+                        s_logger.WriteDebug($"[CachedSoundData] WARNING: Read returned 0 at {totalRead}/{totalSamples} for {Path.GetFileName(path)}");
                         break;
                     }
 

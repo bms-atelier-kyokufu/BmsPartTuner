@@ -1,4 +1,4 @@
-﻿using NAudio.Wave;
+using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms.Bmson;
@@ -10,6 +10,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms.Bmson;
 [ADRAnchor("OPT-10", nameof(AudioSliceManager))]
 public class AudioSliceManager(string bmsonDir, bool throwOnMissingFile = true) : IDisposable
 {
+    private static readonly IPerformanceLogger s_logger = new TypedLogger(typeof(AudioSliceManager));
     private readonly string _bmsonDir = bmsonDir;
 
     private static readonly byte[] WavHeaderTemplate = WavHeaderGenerator.CreateWavHeaderTemplate();
@@ -64,7 +65,7 @@ public class AudioSliceManager(string bmsonDir, bool throwOnMissingFile = true) 
 
         if (trimmedLengthBytes < lengthBytes)
         {
-            PerformanceDebugLogger<AudioSliceManager>.WriteTrace( $"Trimmed silence: {sourceFileName} (offset={offsetSec:F2}s, duration={durationSec:F2}s) from {lengthBytes / 1024.0:F1}KB to {trimmedLengthBytes / 1024.0:F1}KB");
+            s_logger.WriteTrace( $"Trimmed silence: {sourceFileName} (offset={offsetSec:F2}s, duration={durationSec:F2}s) from {lengthBytes / 1024.0:F1}KB to {trimmedLengthBytes / 1024.0:F1}KB");
         }
 
         // 4. トリミング後の真の長さを用いてキャッシュキーを作成
@@ -99,7 +100,7 @@ public class AudioSliceManager(string bmsonDir, bool throwOnMissingFile = true) 
                 }
                 catch (Exception ex)
                 {
-                    PerformanceDebugLogger<AudioSliceManager>.WriteError( $"スライス失敗: {sourceFileName}", ex);
+                    s_logger.WriteError( $"スライス失敗: {sourceFileName}", ex);
                     return string.Empty;
                 }
             });

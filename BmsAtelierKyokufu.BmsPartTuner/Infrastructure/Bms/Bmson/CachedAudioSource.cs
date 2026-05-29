@@ -1,4 +1,4 @@
-﻿using NAudio.Wave;
+using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms.Bmson;
@@ -15,6 +15,7 @@ public class CachedAudioSource
 
     private BaseAudioOptimizationData? _decodedData;
     private readonly Lock _lock = new();
+    private static readonly IPerformanceLogger s_logger = new TypedLogger(typeof(CachedAudioSource));
 
     public BaseAudioOptimizationData DecodedData
     {
@@ -144,7 +145,7 @@ public class CachedAudioSource
                                 PcmLength = dataLength;
 
                                 long fastElapsed = timer.Lap($"{Path.GetFileName(path)}|CachedAudioSource Load FastPath");
-                                PerformanceDebugLogger<CachedAudioSource>.WriteDebug($"[CachedAudioSource Load] {Path.GetFileName(path)} (FastPath Direct Load) loaded in {fastElapsed} ms");
+                                s_logger.WriteDebug($"[CachedAudioSource Load] {Path.GetFileName(path)} (FastPath Direct Load) loaded in {fastElapsed} ms");
                                 return;
                             }
                         }
@@ -153,7 +154,7 @@ public class CachedAudioSource
             }
             catch (Exception ex)
             {
-                PerformanceDebugLogger<CachedAudioSource>.WriteError($"[CachedAudioSource] Custom WAV parser failed, falling back to NAudio: {path}", ex);
+                s_logger.WriteError($"[CachedAudioSource] Custom WAV parser failed, falling back to NAudio: {path}", ex);
             }
         }
 
@@ -215,7 +216,7 @@ public class CachedAudioSource
 
                 if (totalBytesWritten + neededBytes > maxAllowedBytes)
                 {
-                    PerformanceDebugLogger<CachedAudioSource>.WriteDebug($"[AudioSliceManager] Reached length limit ({maxAllowedBytes} bytes) for {Path.GetFileName(path)}. Stopping decode.");
+                    s_logger.WriteDebug($"[AudioSliceManager] Reached length limit ({maxAllowedBytes} bytes) for {Path.GetFileName(path)}. Stopping decode.");
                     break;
                 }
 
@@ -246,8 +247,8 @@ public class CachedAudioSource
         }
 
         long elapsed = timer.Lap($"{Path.GetFileName(path)}|CachedAudioSource Load");
-        PerformanceDebugLogger<CachedAudioSource>.WriteTrace($"[{path}] WaveFormat: {WaveFormat.SampleRate}Hz, {WaveFormat.Channels}ch, {WaveFormat.BitsPerSample}bit");
-        PerformanceDebugLogger<CachedAudioSource>.WriteDebug($"[CachedAudioSource Load] {Path.GetFileName(path)} (Format: {WaveFormat.SampleRate}Hz, {WaveFormat.Channels}ch, Size: {PcmLength} bytes) loaded in {elapsed} ms");
+        s_logger.WriteTrace($"[{path}] WaveFormat: {WaveFormat.SampleRate}Hz, {WaveFormat.Channels}ch, {WaveFormat.BitsPerSample}bit");
+        s_logger.WriteDebug($"[CachedAudioSource Load] {Path.GetFileName(path)} (Format: {WaveFormat.SampleRate}Hz, {WaveFormat.Channels}ch, Size: {PcmLength} bytes) loaded in {elapsed} ms");
     }
 
     /// <summary>

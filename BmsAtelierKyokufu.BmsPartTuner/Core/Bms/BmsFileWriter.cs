@@ -1,4 +1,4 @@
-﻿namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
+namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 
 /// <summary>
 /// BMSファイルの書き出し操作を担当する静的クラス。
@@ -6,6 +6,8 @@
 /// </summary>
 internal static class BmsFileWriter
 {
+    private static readonly IPerformanceLogger s_logger = new TypedLogger(typeof(BmsFileWriter));
+
     static BmsFileWriter()
     {
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
@@ -45,7 +47,7 @@ internal static class BmsFileWriter
             }
             File.Move(tempFileName, saveFileName);
 
-            PerformanceDebugLogger.WriteDebug(nameof(BmsFileWriter), $"BMS file written atomically: {saveFileName}");
+            s_logger.WriteDebug($"BMS file written atomically: {saveFileName}");
         }
         catch (IOException)
         {
@@ -58,11 +60,11 @@ internal static class BmsFileWriter
                     if (originalExists)
                     {
                         File.Delete(tempFileName);
-                        PerformanceDebugLogger.WriteDebug(nameof(BmsFileWriter), $"Cleanup: Incomplete temp file deleted: {tempFileName}");
+                        s_logger.WriteDebug($"Cleanup: Incomplete temp file deleted: {tempFileName}");
                     }
                     else
                     {
-                        PerformanceDebugLogger.WriteDebug(nameof(BmsFileWriter), $"CRITICAL WARNING: Original file lost, keeping temp file for recovery: {tempFileName}");
+                        s_logger.WriteDebug($"CRITICAL WARNING: Original file lost, keeping temp file for recovery: {tempFileName}");
                     }
                 }
             }
@@ -80,7 +82,7 @@ internal static class BmsFileWriter
                 if (File.Exists(tempFileName))
                 {
                     File.Delete(tempFileName);
-                    PerformanceDebugLogger.WriteDebug(nameof(BmsFileWriter), $"Cleanup: Temp file deleted due to access denied: {tempFileName}");
+                    s_logger.WriteDebug($"Cleanup: Temp file deleted due to access denied: {tempFileName}");
                 }
             }
             catch

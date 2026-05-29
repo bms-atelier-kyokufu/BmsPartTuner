@@ -1,4 +1,4 @@
-﻿namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
+namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 
 /// <summary>
 /// BMSファイルの定義番号の処理範囲を管理するクラスです。
@@ -8,6 +8,7 @@
 /// </summary>
 internal class DefinitionRangeManager(IReadOnlyList<BmsAudioFile> fileList)
 {
+    private static readonly IPerformanceLogger s_logger = new TypedLogger(typeof(DefinitionRangeManager));
     private readonly IReadOnlyList<BmsAudioFile> _fileList = fileList ?? throw new ArgumentNullException(nameof(fileList));
 
     /// <summary>処理範囲の開始定義番号。</summary>
@@ -54,6 +55,6 @@ internal class DefinitionRangeManager(IReadOnlyList<BmsAudioFile> fileList)
         StartPoint = Math.Max(firstNum, defStart);
         EndPoint = Math.Min(maxDefined, defEnd);
 
-        PerformanceDebugLogger<DefinitionRangeManager>.WriteDebug( $"Processing range: {StartPoint} - {EndPoint} ({EndPoint - StartPoint + 1} definitions)");
+        s_logger.WriteDebug( $"Processing range: {StartPoint} - {EndPoint} ({EndPoint - StartPoint + 1} definitions)");
     }
 }

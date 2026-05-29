@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using BmsAtelierKyokufu.BmsPartTuner.UI.Services;
 using Microsoft.Win32;
 
@@ -10,6 +10,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.UI.ViewModels;
 /// </summary>
 public partial class SettingsViewModel : ObservableObject
 {
+    private static readonly IPerformanceLogger s_logger = new TypedLogger(typeof(SettingsViewModel));
 
     private readonly SettingsService _settingsService;
     private readonly ThemeService _themeService;
@@ -253,7 +254,7 @@ public partial class SettingsViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            PerformanceDebugLogger<SettingsViewModel>.WriteDebug($"URLを開けませんでした: {ex.Message}");
+            s_logger.WriteDebug($"URLを開けませんでした: {ex.Message}");
         }
     }
 

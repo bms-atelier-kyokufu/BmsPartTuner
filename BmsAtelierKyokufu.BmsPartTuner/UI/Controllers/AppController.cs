@@ -1,4 +1,4 @@
-﻿using BmsAtelierKyokufu.BmsPartTuner.UseCases;
+using BmsAtelierKyokufu.BmsPartTuner.UseCases;
 using BmsAtelierKyokufu.BmsPartTuner.UI.ViewModels;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.UI.Controllers;
@@ -15,6 +15,7 @@ public class AppController(
     private readonly IBmsonConversionService _bmsonConversionService = bmsonConversionService ?? throw new ArgumentNullException(nameof(bmsonConversionService));
     private readonly IFileSystemService _fileSystemService = fileSystemService ?? throw new ArgumentNullException(nameof(fileSystemService));
     private readonly MainViewModel _mainViewModel = mainViewModel ?? throw new ArgumentNullException(nameof(mainViewModel));
+    private static readonly IPerformanceLogger s_logger = new TypedLogger(typeof(AppController));
 
     public string? WorkingBmsPath { get; private set; }
     public string? WorkingBmsContent { get; private set; }
@@ -207,7 +208,7 @@ public class AppController(
         _mainViewModel.StatusMessage = "bmsonをダウンコンバート中...";
         try
         {
-            using (PerformanceDebugLogger.MeasureTime("MainViewModel", "Total Flow (Downconvert + LoadBmsFile)"))
+            using (s_logger.MeasureTime("Total Flow (Downconvert + LoadBmsFile)"))
             {
                 Core.Audio.VirtualAudioRegistry.Clear();
                 Core.Audio.PointerAudioRegistry.Clear();

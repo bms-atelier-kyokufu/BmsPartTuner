@@ -1,4 +1,4 @@
-﻿namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
+namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 
 /// <summary>
 /// BMSファイルに関連付けられたオーディオファイルリストの管理および解析を行います。
@@ -8,6 +8,7 @@
 /// </summary>
 public partial class BmsDefinitionManager(string bmsFilePath, string? bmsContent = null)
 {
+    private static readonly IPerformanceLogger s_logger = new TypedLogger(typeof(BmsDefinitionManager));
     [System.Text.RegularExpressions.GeneratedRegex("[a-z]")]
     private static partial System.Text.RegularExpressions.Regex LowerCaseRegex();
     private readonly string _bmsFilePath = bmsFilePath ?? throw new ArgumentNullException(nameof(bmsFilePath));
@@ -33,7 +34,7 @@ public partial class BmsDefinitionManager(string bmsFilePath, string? bmsContent
     /// </summary>
     public ObservableCollection<BmsAudioFile> CreateFileList()
     {
-        PerformanceDebugLogger<BmsDefinitionManager>.WriteDebug( $"=== BmsDefinitionManager.CreateFileList Started for {Path.GetFileName(_bmsFilePath)} ===");
+        s_logger.WriteDebug( $"=== BmsDefinitionManager.CreateFileList Started for {Path.GetFileName(_bmsFilePath)} ===");
         var timerTotal = PerformanceDebugLogger.StartTimer();
         var timer = PerformanceDebugLogger.StartTimer();
         MissingFiles.Clear();
@@ -55,12 +56,12 @@ public partial class BmsDefinitionManager(string bmsFilePath, string? bmsContent
             }
             catch (Exception ex)
             {
-                PerformanceDebugLogger<BmsDefinitionManager>.WriteDebug( $"Encoding/IO Error: {ex.Message}");
+                s_logger.WriteDebug( $"Encoding/IO Error: {ex.Message}");
             }
         }
 
         var definitions = BmsManager.ParseWavDefinitions(lines);
-        PerformanceDebugLogger<BmsDefinitionManager>.WriteDebug( $"  [CreateFileList] ParseWavDefinitions (count={definitions.Count}): {timer.Lap("ParseWavDefinitions")} ms");
+        s_logger.WriteDebug( $"  [CreateFileList] ParseWavDefinitions (count={definitions.Count}): {timer.Lap("ParseWavDefinitions")} ms");
 
         bool isBase62 = definitions.Any(static d => LowerCaseRegex().IsMatch(d.def));
         int inputRadix = isBase62 ? AppConstants.Definition.RadixBase62 : AppConstants.Definition.RadixBase36;
@@ -75,7 +76,7 @@ public partial class BmsDefinitionManager(string bmsFilePath, string? bmsContent
 
             if (!VirtualAudioRegistry.TryGetFileSize(path, out _) && !File.Exists(fullPath))
             {
-                PerformanceDebugLogger<BmsDefinitionManager>.WriteDebug( $"Missing file: {path}");
+                s_logger.WriteDebug( $"Missing file: {path}");
                 MissingFiles.Add(path);
                 continue;
             }
@@ -101,18 +102,18 @@ public partial class BmsDefinitionManager(string bmsFilePath, string? bmsContent
                 InstrumentName = string.Empty
             });
         }
-        PerformanceDebugLogger<BmsDefinitionManager>.WriteDebug( $"File resolution and existence checks: {timer.Lap("File resolution and existence checks")} ms");
+        s_logger.WriteDebug( $"File resolution and existence checks: {timer.Lap("File resolution and existence checks")} ms");
 
         AssignInstrumentNames(tempList);
-        PerformanceDebugLogger<BmsDefinitionManager>.WriteDebug( $"AssignInstrumentNames: {timer.Lap("AssignInstrumentNames")} ms");
+        s_logger.WriteDebug( $"AssignInstrumentNames: {timer.Lap("AssignInstrumentNames")} ms");
 
         foreach (var file in tempList)
         {
             _fileList.Add(file);
         }
-        PerformanceDebugLogger<BmsDefinitionManager>.WriteDebug( $"ObservableCollection.Add total: {timer.Lap("ObservableCollection.Add total")} ms");
+        s_logger.WriteDebug( $"ObservableCollection.Add total: {timer.Lap("ObservableCollection.Add total")} ms");
 
-        PerformanceDebugLogger<BmsDefinitionManager>.WriteDebug( $"=== BmsDefinitionManager.CreateFileList Finished: {timerTotal.Lap("Total")} ms ===");
+        s_logger.WriteDebug( $"=== BmsDefinitionManager.CreateFileList Finished: {timerTotal.Lap("Total")} ms ===");
         return _fileList;
     }
 
@@ -137,7 +138,7 @@ public partial class BmsDefinitionManager(string bmsFilePath, string? bmsContent
         }
         catch (Exception ex)
         {
-            PerformanceDebugLogger<BmsDefinitionManager>.WriteDebug( $"ERROR: {ex.Message}");
+            s_logger.WriteDebug( $"ERROR: {ex.Message}");
         }
     }
 

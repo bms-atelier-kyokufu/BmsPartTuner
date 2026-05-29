@@ -1,4 +1,4 @@
-﻿namespace BmsAtelierKyokufu.BmsPartTuner.Core.Helpers;
+namespace BmsAtelierKyokufu.BmsPartTuner.Core.Helpers;
 
 /// <summary>
 /// 音声ファイルの効率的なグループ化戦略を提供するクラスです。
@@ -8,6 +8,8 @@
 [ADRAnchor("OPT-09", nameof(AudioFileGroupingStrategy))]
 public static class AudioFileGroupingStrategy
 {
+    private static readonly IPerformanceLogger s_logger = new TypedLogger(typeof(AudioFileGroupingStrategy));
+
     /// <summary>
     /// ファイルリストをグループ化します。
     /// 指定されたキーワードフィルタがある場合はキーワードベースのパート分離を、
@@ -31,14 +33,14 @@ public static class AudioFileGroupingStrategy
 
         if (hasKeywordFilter)
         {
-            PerformanceDebugLogger.WriteDebug(nameof(AudioFileGroupingStrategy), "=== GroupFiles with Keyword Filter ===");
-            PerformanceDebugLogger.WriteDebug(nameof(AudioFileGroupingStrategy), $"Selected Keywords: {string.Join(", ", keywordList!)}");
+            s_logger.WriteDebug("=== GroupFiles with Keyword Filter ===");
+            s_logger.WriteDebug($"Selected Keywords: {string.Join(", ", keywordList!)}");
 
             return GroupFilesByKeywords(audioCache, fileList, startPoint, endPoint, keywordList!);
         }
         else
         {
-            PerformanceDebugLogger.WriteDebug(nameof(AudioFileGroupingStrategy), "=== GroupFiles without Keyword Filter ===");
+            s_logger.WriteDebug("=== GroupFiles without Keyword Filter ===");
 
             return GroupFilesTraditional(audioCache, fileList, startPoint, endPoint);
         }
@@ -148,20 +150,20 @@ public static class AudioFileGroupingStrategy
             keywordStats[keyword] = filesInKeyword;
         }
 
-        PerformanceDebugLogger.WriteDebug(nameof(AudioFileGroupingStrategy), "=== GroupFilesByKeywords Complete ===");
-        PerformanceDebugLogger.WriteDebug(nameof(AudioFileGroupingStrategy), $"Total in range: {totalFiles}");
-        PerformanceDebugLogger.WriteDebug(nameof(AudioFileGroupingStrategy), $"Out of range: {outOfRange}");
-        PerformanceDebugLogger.WriteDebug(nameof(AudioFileGroupingStrategy), $"No cache: {noCache}");
-        PerformanceDebugLogger.WriteDebug(nameof(AudioFileGroupingStrategy), $"Not matching keywords: {notMatchingKeywords}");
-        PerformanceDebugLogger.WriteDebug(nameof(AudioFileGroupingStrategy), $"Grouped files: {totalFiles - noCache - notMatchingKeywords}");
+        s_logger.WriteDebug("=== GroupFilesByKeywords Complete ===");
+        s_logger.WriteDebug($"Total in range: {totalFiles}");
+        s_logger.WriteDebug($"Out of range: {outOfRange}");
+        s_logger.WriteDebug($"No cache: {noCache}");
+        s_logger.WriteDebug($"Not matching keywords: {notMatchingKeywords}");
+        s_logger.WriteDebug($"Grouped files: {totalFiles - noCache - notMatchingKeywords}");
 
         foreach (var (keyword, count) in keywordStats)
         {
-            PerformanceDebugLogger.WriteDebug(nameof(AudioFileGroupingStrategy), $"  Keyword '{keyword}': {count} files");
+            s_logger.WriteDebug($"  Keyword '{keyword}': {count} files");
         }
 
-        PerformanceDebugLogger.WriteDebug(nameof(AudioFileGroupingStrategy), $"Final groups: {finalGroups.Count}");
-        PerformanceDebugLogger.WriteDebug(nameof(AudioFileGroupingStrategy), $"Time: {timer.Lap("GroupFilesByKeywords")}ms");
+        s_logger.WriteDebug($"Final groups: {finalGroups.Count}");
+        s_logger.WriteDebug($"Time: {timer.Lap("GroupFilesByKeywords")}ms");
 
         return finalGroups;
     }
@@ -244,14 +246,14 @@ public static class AudioFileGroupingStrategy
             }
         }
 
-        PerformanceDebugLogger.WriteDebug(nameof(AudioFileGroupingStrategy), "=== GroupFilesTraditional Complete ===");
-        PerformanceDebugLogger.WriteDebug(nameof(AudioFileGroupingStrategy), $"Total in range: {totalFiles}");
-        PerformanceDebugLogger.WriteDebug(nameof(AudioFileGroupingStrategy), $"Out of range: {outOfRange}");
-        PerformanceDebugLogger.WriteDebug(nameof(AudioFileGroupingStrategy), $"No cache: {noCache}");
-        PerformanceDebugLogger.WriteDebug(nameof(AudioFileGroupingStrategy), $"Grouped files: {totalFiles - noCache}");
-        PerformanceDebugLogger.WriteDebug(nameof(AudioFileGroupingStrategy), $"Initial groups: {groups.Count}");
-        PerformanceDebugLogger.WriteDebug(nameof(AudioFileGroupingStrategy), $"Final groups (after split): {finalGroups.Count}");
-        PerformanceDebugLogger.WriteDebug(nameof(AudioFileGroupingStrategy), $"Time: {timer.Lap("GroupFilesTraditional")}ms");
+        s_logger.WriteDebug("=== GroupFilesTraditional Complete ===");
+        s_logger.WriteDebug($"Total in range: {totalFiles}");
+        s_logger.WriteDebug($"Out of range: {outOfRange}");
+        s_logger.WriteDebug($"No cache: {noCache}");
+        s_logger.WriteDebug($"Grouped files: {totalFiles - noCache}");
+        s_logger.WriteDebug($"Initial groups: {groups.Count}");
+        s_logger.WriteDebug($"Final groups (after split): {finalGroups.Count}");
+        s_logger.WriteDebug($"Time: {timer.Lap("GroupFilesTraditional")}ms");
 
         return finalGroups;
     }

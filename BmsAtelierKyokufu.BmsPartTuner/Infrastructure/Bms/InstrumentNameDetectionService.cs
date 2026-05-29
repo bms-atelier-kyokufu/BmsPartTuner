@@ -1,4 +1,4 @@
-﻿using System.Text.RegularExpressions;
+using System.Text.RegularExpressions;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms;
 
@@ -11,6 +11,7 @@ public partial class InstrumentNameDetectionService(
     int minimumWordLength = 3,
     int maximumWordLength = 20)
 {
+    private static readonly IPerformanceLogger s_logger = new TypedLogger(typeof(InstrumentNameDetectionService));
     /// <summary>
     /// 楽器名検出の結果データ。
     /// </summary>
@@ -115,7 +116,7 @@ public partial class InstrumentNameDetectionService(
         }
         catch (Exception ex)
         {
-            PerformanceDebugLogger<InstrumentNameDetectionService>.WriteDebug( $"ERROR: {ex.Message}");
+            s_logger.WriteDebug( $"ERROR: {ex.Message}");
             return new InstrumentDetectionResult();
         }
     }
@@ -234,7 +235,7 @@ public partial class InstrumentNameDetectionService(
         }
         catch (Exception ex)
         {
-            PerformanceDebugLogger<InstrumentNameDetectionService>.WriteDebug( $"ERROR: {ex.Message}");
+            s_logger.WriteDebug( $"ERROR: {ex.Message}");
         }
 
         return string.Empty;
@@ -276,7 +277,7 @@ public partial class InstrumentNameDetectionService(
         }
         catch (Exception ex)
         {
-            PerformanceDebugLogger<InstrumentNameDetectionService>.WriteDebug( $"ERROR: {ex.Message}");
+            s_logger.WriteDebug( $"ERROR: {ex.Message}");
             return new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
         }
     }
