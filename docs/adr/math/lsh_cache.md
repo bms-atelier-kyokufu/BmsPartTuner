@@ -1,7 +1,7 @@
----
+﻿---
 adr-id: M-05
 target-class: CachedAudioSource
-status: open
+status: accepted
 ---
 
 # 累積和(Prefix Sum)と SimHash256 による超高速スクリーニング

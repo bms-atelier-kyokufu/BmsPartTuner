@@ -1,7 +1,7 @@
----
+﻿---
 adr-id: M-01
 target-class: Unknown
-status: open
+status: accepted
 ---
 
 # 波形比較（SIMD）の数理モデル・設計判断

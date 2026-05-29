@@ -1,7 +1,7 @@
----
+﻿---
 adr-id: OPT-10
 target-class: AudioSliceManager
-status: open
+status: accepted
 ---
 
 # 音声スライス切り出しの 2-Level Cache 戦略

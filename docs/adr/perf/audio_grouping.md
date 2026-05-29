@@ -1,7 +1,7 @@
----
+﻿---
 adr-id: OPT-09
 target-class: AudioFileGroupingStrategy
-status: open
+status: accepted
 ---
 
 # 音声ファイル比較のO(N^2)回避とグループ化戦略

@@ -1,7 +1,7 @@
----
+﻿---
 adr-id: OPT-01
 target-class: ParallelAudioComparisonEngine
-status: open
+status: accepted
 ---
 
 # $O(N^2)$回避のための並列比較アルゴリズムと枝刈り

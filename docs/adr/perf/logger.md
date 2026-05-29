@@ -1,7 +1,7 @@
----
+﻿---
 adr-id: OPT-03
 target-class: PerformanceDebugLogger
-status: open
+status: accepted
 ---
 
 # 非同期バッチロギングと構造化ログのアーキテクチャ

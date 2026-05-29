@@ -1,7 +1,7 @@
----
+﻿---
 adr-id: M-07
 target-class: BmsScoreGenerator
-status: open
+status: accepted
 ---
 
 # Bmsonスコア計算における数理モデル・設計判断

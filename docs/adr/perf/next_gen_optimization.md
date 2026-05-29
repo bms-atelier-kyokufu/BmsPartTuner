@@ -1,7 +1,7 @@
----
+﻿---
 adr-id: OPT-11
 target-class: ParallelAudioComparisonEngine, FastWaveCompare, SilenceTrimmer, FftAlignmentEngine
-status: implemented
+status: accepted
 ---
 
 # BMSPartTuner 次世代数理最適化戦略 (限界突破の数理モデル)

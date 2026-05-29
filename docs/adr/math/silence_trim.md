@@ -1,7 +1,7 @@
----
+﻿---
 adr-id: M-06
 target-class: SilenceTrimmer
-status: open
+status: accepted
 ---
 
 # 無音トリミングにおけるノイズフロア閾値の数理モデル

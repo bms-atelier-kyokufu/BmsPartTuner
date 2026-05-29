@@ -1,7 +1,7 @@
----
+﻿---
 adr-id: OPT-02
 target-class: StorageTypeDetector
-status: open
+status: accepted
 ---
 
 # Win32 APIによる高速なSSD判定と非同期I/O最適化

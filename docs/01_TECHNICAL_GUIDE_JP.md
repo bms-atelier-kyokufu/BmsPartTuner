@@ -1,4 +1,4 @@
-﻿# BMS Part Tuner テクニカルガイド
+# BMS Part Tuner テクニカルガイド
 
 <div style="display: flex; justify-content: center; margin:1em">
        <img src="img/Document-Hierarchy_JP.svg" alt="ドキュメント階層" width="40%" >
@@ -83,5 +83,7 @@ $$r = \frac{\sum_{i=1}^{n} x_i y_i}{E_x \cdot E_y}$$
   開発に参加する際のコミット規約。
 * [TEST\_DESIGN.md](./04_TEST_DESIGN_JP.md)
   ユニットテストおよびミューテーションテストの設計方針。  
+* **ADR（Architecture Decision Records）とコードの紐付け**:
+  `docs/adr/` 配下に設計上の重要な意思決定が保存されています。コードの該当箇所には `[ADRAnchor("ADR-ID", nameof(TypeName))]` 属性が付与されており、コードと設計ドキュメントの双方向のトレーサビリティを確保しています。変更時には ADR の確認と更新を意識してください。
 
 BMS Part Tunerは、技術の力でクリエイターの創造性を支えるためのクリエイター向けツールです。このエンジニアリングの成果が、より洗練されたBMS作品の誕生に寄与することを願っています。

@@ -1,7 +1,7 @@
----
+﻿---
 adr-id: M-04
 target-class: SimulationEngine
-status: open
+status: accepted
 ---
 
 # アニーリング手法等を用いたスコア計算の数理モデル

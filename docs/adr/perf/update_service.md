@@ -1,7 +1,7 @@
----
+﻿---
 adr-id: OPT-08
 target-class: UpdateService
-status: open
+status: accepted
 ---
 
 # Chrome-style サイレントアップデートアーキテクチャ

@@ -1,7 +1,7 @@
----
+﻿---
 adr-id: OPT-06
 target-class: BmsFileRewriter
-status: open
+status: accepted
 ---
 
 # BMSファイルの置換アルゴリズムと未定義参照の非破壊処理

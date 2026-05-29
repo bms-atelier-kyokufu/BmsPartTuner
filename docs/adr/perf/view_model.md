@@ -1,7 +1,7 @@
----
+﻿---
 adr-id: OPT-07
 target-class: OptimizationViewModel
-status: open
+status: accepted
 ---
 
 # UI最適化：遅延ローダーパターンと意図的GC

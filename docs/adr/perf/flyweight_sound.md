@@ -1,7 +1,7 @@
----
+﻿---
 adr-id: OPT-05
 target-class: PreNormalizedSoundData
-status: open
+status: accepted
 ---
 
 # Anemic Domain ModelとFlyweightパターンによるメモリ最適化

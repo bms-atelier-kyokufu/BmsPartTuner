@@ -1,7 +1,7 @@
----
+﻿---
 adr-id: OPT-04
 target-class: RadixConvert
-status: open
+status: accepted
 ---
 
 # O(1)ルックアップテーブルによる基数変換最適化

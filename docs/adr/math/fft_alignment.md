@@ -1,7 +1,7 @@
----
+﻿---
 adr-id: M-03
 target-class: FftAlignmentEngine
-status: open
+status: accepted
 ---
 
 # FFT（高速フーリエ変換）を用いた位相アライメントの数理モデル
