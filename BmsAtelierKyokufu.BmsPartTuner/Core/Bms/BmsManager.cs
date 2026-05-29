@@ -8,9 +8,6 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 /// およびBGM・キー音・不可視・ロングノート・地雷などのWAVチャンネルの識別を行います。
 /// Shift_JISエンコーディングによる標準的なファイル読み書きをサポートします。
 /// </summary>
-/// <param name="bmsFilePath">BMSファイルのフルパス。</param>
-/// <param name="bmsContent">BMSファイル内容（省略時はパスから読み込み）。</param>
-/// <exception cref="ArgumentNullException">bmsFilePathがnullの場合。</exception>
 internal partial class BmsManager(string bmsFilePath, string? bmsContent = null)
 {
     /// <summary>
@@ -140,7 +137,7 @@ internal partial class BmsManager(string bmsFilePath, string? bmsContent = null)
             }
         }
 
-        return prefix + sb.ToString();
+        return prefix + sb;
     }
 
     /// <summary>

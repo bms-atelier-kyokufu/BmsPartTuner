@@ -177,9 +177,9 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
     }
 
     [RelayCommand(CanExecute = nameof(CanExecuteThresholdOptimization))]
-    private async Task ExecuteThresholdOptimizationAsync()
+    private Task ExecuteThresholdOptimizationAsync()
     {
-        await _appController.ExecuteThresholdOptimizationAsync();
+        return _appController.ExecuteThresholdOptimizationAsync();
     }
 
     private bool CanExecuteThresholdOptimization() => !Optimization.IsBusy;
@@ -348,9 +348,9 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
         OnPropertyChanged(nameof(CanExecuteReduction));
     }
 
-    public async Task ExecuteDefinitionReductionAfterConfirmationAsync()
+    public Task ExecuteDefinitionReductionAfterConfirmationAsync()
     {
-        await _appController.ExecuteDefinitionReductionAfterConfirmationAsync();
+        return _appController.ExecuteDefinitionReductionAfterConfirmationAsync();
     }
 
     public void ShowToast(string message, string icon = "✓", bool isError = false)

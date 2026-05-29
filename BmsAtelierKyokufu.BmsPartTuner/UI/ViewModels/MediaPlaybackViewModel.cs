@@ -1,4 +1,4 @@
-﻿using BmsAtelierKyokufu.BmsPartTuner.Core.Messages;
+using BmsAtelierKyokufu.BmsPartTuner.Core.Messages;
 using CommunityToolkit.Mvvm.Messaging;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.UI.ViewModels;
@@ -117,9 +117,7 @@ public partial class MediaPlaybackViewModel : ObservableObject
     /// <summary>
     /// テスト再生リクエストのイベント引数を提供します。
     /// </summary>
-    public class PlaybackRequestEventArgs : EventArgs
-    {
-    }
+    public class PlaybackRequestEventArgs : EventArgs;
 
     /// <summary>
     /// 再生状態変化のイベント引数を提供します。

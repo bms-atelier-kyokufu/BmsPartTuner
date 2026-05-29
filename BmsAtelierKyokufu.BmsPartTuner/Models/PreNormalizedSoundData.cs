@@ -50,57 +50,57 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Models
     /// 処理されたデータのみを保持する純粋なデータモデルであり、I/Oロジックは持ちません。
     /// </summary>
     [ADRAnchor("OPT-05", nameof(PreNormalizedSoundData))]
-    public class PreNormalizedSoundData : ICachedSoundData, IDisposable
+    public class PreNormalizedSoundData(PreNormalizedSoundDataParameters p) : ICachedSoundData, IDisposable
     {
         /// <inheritdoc />
-        public string FilePath { get; }
+        public string FilePath { get; } = p.FileInfo.FilePath;
 
         /// <inheritdoc />
-        public int SampleRate { get; }
+        public int SampleRate { get; } = p.FileInfo.SampleRate;
 
         /// <inheritdoc />
-        public int Channels { get; }
+        public int Channels { get; } = p.FileInfo.Channels;
 
         /// <inheritdoc />
-        public int BitsPerSample { get; }
+        public int BitsPerSample { get; } = p.FileInfo.BitsPerSample;
 
         /// <summary>事前正規化モードのため、元のサンプル配列への直接アクセスは非サポートです。</summary>
         public static float[]? Samples => null;
 
         /// <summary>チャンネルごとのサンプル配列。</summary>
-        public float[][]? SamplesPerChannel { get; private set; }
+        public float[][]? SamplesPerChannel { get; }
 
         /// <summary>チャンネルごとの有音区間リスト。</summary>
-        public List<ActiveRegion>[]? NormalizedRegions { get; private set; }
+        public List<ActiveRegion>[]? NormalizedRegions { get; private set; } = p.Metrics.Regions;
 
         /// <inheritdoc />
-        public int TotalSamples { get; }
+        public int TotalSamples { get; } = p.FileInfo.TotalSamples;
 
         /// <inheritdoc />
-        public float TotalRms { get; }
+        public float TotalRms { get; } = p.Metrics.TotalRms;
 
         /// <inheritdoc />
-        public long FileSize { get; }
+        public long FileSize { get; } = p.FileInfo.FileSize;
 
         /// <inheritdoc />
-        public int StartSilenceSamples { get; }
+        public int StartSilenceSamples { get; } = p.Metrics.StartSilenceSamples;
 
         /// <inheritdoc />
         public int EffectiveLength => TotalSamples > StartSilenceSamples * Channels
             ? TotalSamples - (StartSilenceSamples * Channels)
             : 0;
 
-        private readonly ulong[][]? _signLsh;
-        private readonly ulong[][]? _signLshMask;
+        private readonly ulong[][]? _signLsh = p.Features.SignLsh;
+        private readonly ulong[][]? _signLshMask = p.Features.SignLshMask;
 
         /// <inheritdoc />
-        public Complex32[][]? FftSpectrum { get; }
+        public Complex32[][]? FftSpectrum { get; } = p.Features.FftSpectrum;
 
         /// <inheritdoc />
-        public float[]? SpectralFeatures { get; }
+        public float[]? SpectralFeatures { get; } = p.Features.SpectralFeatures;
 
         /// <inheritdoc />
-        public ulong[]? SimHash256 { get; }
+        public ulong[]? SimHash256 { get; } = p.Features.SimHash256;
 
         /// <inheritdoc />
         public double EstimatedMemoryMB
@@ -128,27 +128,6 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Models
 
         /// <inheritdoc />
         public bool IsPreNormalized => true;
-
-        /// <summary>
-        /// 全データを注入してインスタンスを初期化します。
-        /// </summary>
-        public PreNormalizedSoundData(PreNormalizedSoundDataParameters p)
-        {
-            FilePath = p.FileInfo.FilePath;
-            SampleRate = p.FileInfo.SampleRate;
-            Channels = p.FileInfo.Channels;
-            BitsPerSample = p.FileInfo.BitsPerSample;
-            TotalSamples = p.FileInfo.TotalSamples;
-            FileSize = p.FileInfo.FileSize;
-            NormalizedRegions = p.Metrics.Regions;
-            TotalRms = p.Metrics.TotalRms;
-            StartSilenceSamples = p.Metrics.StartSilenceSamples;
-            _signLsh = p.Features.SignLsh;
-            _signLshMask = p.Features.SignLshMask;
-            FftSpectrum = p.Features.FftSpectrum;
-            SpectralFeatures = p.Features.SpectralFeatures;
-            SimHash256 = p.Features.SimHash256;
-        }
 
         /// <inheritdoc />
         public IReadOnlyList<ActiveRegion>[] GetActiveRegions()

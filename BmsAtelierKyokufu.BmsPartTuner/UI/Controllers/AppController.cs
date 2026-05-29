@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
@@ -19,26 +19,19 @@ namespace BmsAtelierKyokufu.BmsPartTuner.UI.Controllers;
 /// アプリケーション全体のユースケース実行フローを制御するコントローラークラス。
 /// 肥大化した MainViewModel からフロー制御ロジックを分離するために導入されました。
 /// </summary>
-public class AppController
+public class AppController(
+    MainViewModel mainViewModel,
+    IBmsonConversionService bmsonConversionService,
+    IFileSystemService fileSystemService)
 {
-    private readonly IBmsonConversionService _bmsonConversionService;
-    private readonly IFileSystemService _fileSystemService;
-    private readonly MainViewModel _mainViewModel;
+    private readonly IBmsonConversionService _bmsonConversionService = bmsonConversionService ?? throw new ArgumentNullException(nameof(bmsonConversionService));
+    private readonly IFileSystemService _fileSystemService = fileSystemService ?? throw new ArgumentNullException(nameof(fileSystemService));
+    private readonly MainViewModel _mainViewModel = mainViewModel ?? throw new ArgumentNullException(nameof(mainViewModel));
 
     public string? WorkingBmsPath { get; private set; }
     public string? WorkingBmsContent { get; private set; }
     public string? LastDownconvertedBmsonPath { get; private set; }
     public bool IsDownconverting { get; private set; }
-
-    public AppController(
-        MainViewModel mainViewModel,
-        IBmsonConversionService bmsonConversionService,
-        IFileSystemService fileSystemService)
-    {
-        _mainViewModel = mainViewModel ?? throw new ArgumentNullException(nameof(mainViewModel));
-        _bmsonConversionService = bmsonConversionService ?? throw new ArgumentNullException(nameof(bmsonConversionService));
-        _fileSystemService = fileSystemService ?? throw new ArgumentNullException(nameof(fileSystemService));
-    }
 
     public async Task ExecuteThresholdOptimizationAsync()
     {
@@ -161,7 +154,7 @@ public class AppController
         // 処理完了後、出力先のファイルでリストを再読み込み
         if (string.Equals(inputToUse, _mainViewModel.FileOperations.OutputPath, StringComparison.OrdinalIgnoreCase))
         {
-            if (_fileSystemService.FileExists(inputToUse))
+            if (inputToUse != null && _fileSystemService.FileExists(inputToUse))
             {
                 _mainViewModel.BmsDefinitionManager.LoadBmsFile(inputToUse);
             }
@@ -175,7 +168,7 @@ public class AppController
 
     public void HandleInputPathChanged(string? path)
     {
-        if (_fileSystemService.FileExists(path))
+        if (path != null && _fileSystemService.FileExists(path))
         {
             var extension = Path.GetExtension(path);
             if (string.Equals(extension, ".bmson", StringComparison.OrdinalIgnoreCase))

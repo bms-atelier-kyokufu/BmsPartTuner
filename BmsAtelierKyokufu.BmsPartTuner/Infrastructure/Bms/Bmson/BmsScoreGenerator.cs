@@ -1,4 +1,4 @@
-﻿using BmsAtelierKyokufu.BmsPartTuner.Core.Attributes;
+using BmsAtelierKyokufu.BmsPartTuner.Core.Attributes;
 using System.Collections.Concurrent;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 using BmsAtelierKyokufu.BmsPartTuner.Models.Bmson;
@@ -170,20 +170,12 @@ public class BmsScoreGenerator(
     private readonly Dictionary<int, Dictionary<string, List<ChannelLayer>>> _measures = [];
 
     // Y座標の事前計算データ
-    private readonly struct YPositionData
+    private readonly struct YPositionData(double timeSec, int measure, int measureLength, int stepIndex)
     {
-        public readonly double TimeSec;
-        public readonly int Measure;
-        public readonly int MeasureLength;
-        public readonly int StepIndex;
-
-        public YPositionData(double timeSec, int measure, int measureLength, int stepIndex)
-        {
-            TimeSec = timeSec;
-            Measure = measure;
-            MeasureLength = measureLength;
-            StepIndex = stepIndex;
-        }
+        public readonly double TimeSec = timeSec;
+        public readonly int Measure = measure;
+        public readonly int MeasureLength = measureLength;
+        public readonly int StepIndex = stepIndex;
     }
     private Dictionary<long, YPositionData> _yDataMap = [];
 
@@ -420,7 +412,7 @@ public class BmsScoreGenerator(
         public readonly int Count = count;
     }
 
-    private static List<NoteBlock> SplitNotesIntoBlocks(IReadOnlyList<BmsonNote> notes)
+    private static List<NoteBlock> SplitNotesIntoBlocks(List<BmsonNote> notes)
     {
         var blocks = new List<NoteBlock>();
         if (notes.Count == 0) return blocks;
@@ -504,7 +496,7 @@ public class BmsScoreGenerator(
         });
     }
 
-    private void ProcessBlock(string channelName, IReadOnlyList<BmsonNote> allNotes, NoteBlock block, double blockStartSec, double nextBlockStartSec, PendingNote[] pendingNotes, int[] sharedNoteIndex)
+    private void ProcessBlock(string channelName, List<BmsonNote> allNotes, NoteBlock block, double blockStartSec, double nextBlockStartSec, PendingNote[] pendingNotes, int[] sharedNoteIndex)
     {
         // depth は「ブロック内でのインデックス」に代数的に等価
         for (int depth = 0; depth < block.Count; depth++)
