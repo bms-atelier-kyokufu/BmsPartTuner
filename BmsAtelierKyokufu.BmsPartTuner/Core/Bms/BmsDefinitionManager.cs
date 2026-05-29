@@ -33,7 +33,7 @@ public partial class BmsDefinitionManager(string bmsFilePath, string? bmsContent
     /// </summary>
     public ObservableCollection<BmsAudioFile> CreateFileList()
     {
-        PerformanceDebugLogger.WriteDebug(nameof(BmsDefinitionManager), $"=== BmsDefinitionManager.CreateFileList Started for {Path.GetFileName(_bmsFilePath)} ===");
+        PerformanceDebugLogger<BmsDefinitionManager>.WriteDebug( $"=== BmsDefinitionManager.CreateFileList Started for {Path.GetFileName(_bmsFilePath)} ===");
         var timerTotal = PerformanceDebugLogger.StartTimer();
         var timer = PerformanceDebugLogger.StartTimer();
         MissingFiles.Clear();
@@ -55,12 +55,12 @@ public partial class BmsDefinitionManager(string bmsFilePath, string? bmsContent
             }
             catch (Exception ex)
             {
-                PerformanceDebugLogger.WriteDebug(nameof(BmsDefinitionManager), $"Encoding/IO Error: {ex.Message}");
+                PerformanceDebugLogger<BmsDefinitionManager>.WriteDebug( $"Encoding/IO Error: {ex.Message}");
             }
         }
 
         var definitions = BmsManager.ParseWavDefinitions(lines);
-        PerformanceDebugLogger.WriteDebug(nameof(BmsDefinitionManager), $"  [CreateFileList] ParseWavDefinitions (count={definitions.Count}): {timer.Lap("ParseWavDefinitions")} ms");
+        PerformanceDebugLogger<BmsDefinitionManager>.WriteDebug( $"  [CreateFileList] ParseWavDefinitions (count={definitions.Count}): {timer.Lap("ParseWavDefinitions")} ms");
 
         bool isBase62 = definitions.Any(static d => LowerCaseRegex().IsMatch(d.def));
         int inputRadix = isBase62 ? AppConstants.Definition.RadixBase62 : AppConstants.Definition.RadixBase36;
@@ -75,7 +75,7 @@ public partial class BmsDefinitionManager(string bmsFilePath, string? bmsContent
 
             if (!VirtualAudioRegistry.TryGetFileSize(path, out _) && !File.Exists(fullPath))
             {
-                PerformanceDebugLogger.WriteDebug(nameof(BmsDefinitionManager), $"Missing file: {path}");
+                PerformanceDebugLogger<BmsDefinitionManager>.WriteDebug( $"Missing file: {path}");
                 MissingFiles.Add(path);
                 continue;
             }
@@ -101,18 +101,18 @@ public partial class BmsDefinitionManager(string bmsFilePath, string? bmsContent
                 InstrumentName = string.Empty
             });
         }
-        PerformanceDebugLogger.WriteDebug(nameof(BmsDefinitionManager), $"File resolution and existence checks: {timer.Lap("File resolution and existence checks")} ms");
+        PerformanceDebugLogger<BmsDefinitionManager>.WriteDebug( $"File resolution and existence checks: {timer.Lap("File resolution and existence checks")} ms");
 
         AssignInstrumentNames(tempList);
-        PerformanceDebugLogger.WriteDebug(nameof(BmsDefinitionManager), $"AssignInstrumentNames: {timer.Lap("AssignInstrumentNames")} ms");
+        PerformanceDebugLogger<BmsDefinitionManager>.WriteDebug( $"AssignInstrumentNames: {timer.Lap("AssignInstrumentNames")} ms");
 
         foreach (var file in tempList)
         {
             _fileList.Add(file);
         }
-        PerformanceDebugLogger.WriteDebug(nameof(BmsDefinitionManager), $"ObservableCollection.Add total: {timer.Lap("ObservableCollection.Add total")} ms");
+        PerformanceDebugLogger<BmsDefinitionManager>.WriteDebug( $"ObservableCollection.Add total: {timer.Lap("ObservableCollection.Add total")} ms");
 
-        PerformanceDebugLogger.WriteDebug(nameof(BmsDefinitionManager), $"=== BmsDefinitionManager.CreateFileList Finished: {timerTotal.Lap("Total")} ms ===");
+        PerformanceDebugLogger<BmsDefinitionManager>.WriteDebug( $"=== BmsDefinitionManager.CreateFileList Finished: {timerTotal.Lap("Total")} ms ===");
         return _fileList;
     }
 
@@ -137,7 +137,7 @@ public partial class BmsDefinitionManager(string bmsFilePath, string? bmsContent
         }
         catch (Exception ex)
         {
-            PerformanceDebugLogger.WriteDebug(nameof(BmsDefinitionManager), $"ERROR: {ex.Message}");
+            PerformanceDebugLogger<BmsDefinitionManager>.WriteDebug( $"ERROR: {ex.Message}");
         }
     }
 

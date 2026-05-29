@@ -5,7 +5,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.UI.Behaviors;
 /// <summary>
 /// テキストボックスでEscapeキーを押すとテキストをクリアするBehavior。
 /// </summary>
-[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
+[ExcludeFromCodeCoverage]
 public class EscapeToClearBehavior : Behavior<TextBox>
 {
     protected override void OnAttached()

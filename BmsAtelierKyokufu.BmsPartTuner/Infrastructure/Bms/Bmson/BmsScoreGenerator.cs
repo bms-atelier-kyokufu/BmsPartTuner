@@ -177,30 +177,30 @@ public class BmsScoreGenerator(
     public string GenerateBmsText()
     {
         PerformanceDebugLogger.ClearAccumulated();
-        PerformanceDebugLogger.WriteDebug(nameof(BmsScoreGenerator), "Start GenerateBmsText");
+        PerformanceDebugLogger<BmsScoreGenerator>.WriteDebug( "Start GenerateBmsText");
         var timer = PerformanceDebugLogger.StartTimer();
 
         // 0. Y座標データの事前計算 (次元 of 分離)
         PrecalculateYPositions();
-        PerformanceDebugLogger.WriteDebug(nameof(BmsScoreGenerator), $"PrecalculateYPositions: {timer.Lap("PrecalculateYPositions")} ms");
+        PerformanceDebugLogger<BmsScoreGenerator>.WriteDebug( $"PrecalculateYPositions: {timer.Lap("PrecalculateYPositions")} ms");
 
         // 音声ソースの投機的並列プリロード
         PreloadAudioSources();
-        PerformanceDebugLogger.WriteDebug(nameof(BmsScoreGenerator), $"  [BmsScoreGenerator] PreloadAudioSources (Parallel): {timer.Lap("PreloadAudioSources")} ms");
+        PerformanceDebugLogger<BmsScoreGenerator>.WriteDebug( $"  [BmsScoreGenerator] PreloadAudioSources (Parallel): {timer.Lap("PreloadAudioSources")} ms");
 
         // 1. Choose optimal radix based on total upper bound notes
         int totalNotesUpperBound = _bmson.SoundChannels?.Sum(static c => c.Notes?.Count ?? 0) ?? 0;
         _radix = totalNotesUpperBound <= MaxNumberBase36 ? RadixBase36 : RadixBase62;
 
         ProcessSoundChannels();
-        PerformanceDebugLogger.WriteDebug(nameof(BmsScoreGenerator), $"ProcessSoundChannels: {timer.Lap("ProcessSoundChannels")} ms");
+        PerformanceDebugLogger<BmsScoreGenerator>.WriteDebug( $"ProcessSoundChannels: {timer.Lap("ProcessSoundChannels")} ms");
         PerformanceDebugLogger.PrintAccumulatedGrouped("BmsScoreGenerator", "AudioSliceManager Metrics (Grouped by Channel)", LogLevel.Debug);
 
         ProcessBpmEvents();
         ProcessStopEvents();
         ProcessBgaEvents();
         ProcessMeasureLengths();
-        PerformanceDebugLogger.WriteDebug(nameof(BmsScoreGenerator), $"Other events processing: {timer.Lap("OtherEventsProcessing")} ms");
+        PerformanceDebugLogger<BmsScoreGenerator>.WriteDebug( $"Other events processing: {timer.Lap("OtherEventsProcessing")} ms");
 
         var sb = new StringBuilder(262144);
 
@@ -213,7 +213,7 @@ public class BmsScoreGenerator(
         // 3. データブロック出力
         WriteDataBlocks(sb);
 
-        PerformanceDebugLogger.WriteDebug(nameof(BmsScoreGenerator), $"StringBuilder formatting: {timer.Lap("StringBuilderFormatting")} ms");
+        PerformanceDebugLogger<BmsScoreGenerator>.WriteDebug( $"StringBuilder formatting: {timer.Lap("StringBuilderFormatting")} ms");
         return sb.ToString();
     }
 

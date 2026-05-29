@@ -7,7 +7,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.UI.Behaviors;
 /// - フォーカス時: 単位を一時的に除去
 /// - フォーカスアウト/初期表示: 単位を付加
 /// </summary>
-[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
+[ExcludeFromCodeCoverage]
 public class UnitSuffixBehavior : Behavior<TextBox>
 {
     public static readonly DependencyProperty UnitProperty = DependencyProperty.Register(

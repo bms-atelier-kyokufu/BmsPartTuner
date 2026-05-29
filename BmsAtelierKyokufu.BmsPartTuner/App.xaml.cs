@@ -85,7 +85,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner
             }
             catch (Exception ex)
             {
-                PerformanceDebugLogger.WriteDebug(nameof(App), $"ホストの停止中にエラーが発生しました: {ex}");
+                PerformanceDebugLogger<App>.WriteDebug($"ホストの停止中にエラーが発生しました: {ex}");
             }
             finally
             {
@@ -98,7 +98,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner
         /// <summary>
         /// システム設定の変更を検知
         /// </summary>
-        private void OnUserPreferenceChanged(object sender, Microsoft.Win32.UserPreferenceChangedEventArgs e)
+        private void OnUserPreferenceChanged(object sender, UserPreferenceChangedEventArgs e)
         {
             if (e.Category == Microsoft.Win32.UserPreferenceCategory.General)
             {

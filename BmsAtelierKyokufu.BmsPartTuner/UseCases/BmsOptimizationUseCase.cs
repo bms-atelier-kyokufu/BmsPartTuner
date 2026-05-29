@@ -1,6 +1,8 @@
-﻿using BmsAtelierKyokufu.BmsPartTuner.UseCases.Dto;
+using BmsAtelierKyokufu.BmsPartTuner.Models;
+using BmsAtelierKyokufu.BmsPartTuner.UseCases.Dto;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.UseCases;
+
 
 public class BmsOptimizationUseCase(IBmsOptimizationService optimizationService) : IBmsOptimizationUseCase
 {

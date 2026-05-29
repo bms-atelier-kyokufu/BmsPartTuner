@@ -3,19 +3,12 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
 /// <summary>
 /// 音声比較における置換テーブル（Union-Find）と非マッチテーブル（Anti-Set）のスレッドセーフな状態管理を提供します。
 /// </summary>
-internal class ThreadSafeReplaceTable
+internal class ThreadSafeReplaceTable(int[] replaceTable, long[] fileSizes)
 {
-    private readonly int[] _replaceTable;
-    private readonly long[] _fileSizes;
-    private readonly long[] _antiSet;
+    private readonly int[] _replaceTable = replaceTable ?? throw new ArgumentNullException(nameof(replaceTable));
+    private readonly long[] _fileSizes = fileSizes ?? throw new ArgumentNullException(nameof(fileSizes));
+    private readonly long[] _antiSet = new long[((MaxBmsDefNum * MaxBmsDefNum) / 64) + 1];
     private const int MaxBmsDefNum = 3844;
-
-    public ThreadSafeReplaceTable(int[] replaceTable, long[] fileSizes)
-    {
-        _replaceTable = replaceTable ?? throw new ArgumentNullException(nameof(replaceTable));
-        _fileSizes = fileSizes ?? throw new ArgumentNullException(nameof(fileSizes));
-        _antiSet = new long[((MaxBmsDefNum * MaxBmsDefNum) / 64) + 1];
-    }
 
     /// <summary>
     /// 自分自身を置換テーブルにマークします。

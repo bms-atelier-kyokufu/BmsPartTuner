@@ -7,7 +7,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.UI.ViewModels;
 /// <para>【用途】</para>
 /// 処理完了や警告を一時的に表示する通知UIのデータを保持します。
 /// Material Design風のトースト通知を実現します。
-/// 
+///
 /// <para>【表示例】</para>
 /// <list type="bullet">
 /// <item>成功: "✓ 最適化が完了しました"（Icon="✓", IsError=false）</item>
@@ -37,7 +37,7 @@ public class ToastViewModel
 /// <para>【用途】</para>
 /// 最適化完了後に表示される詳細結果カードのデータを保持します。
 /// 推奨しきい値、削減率、処理時間などの統計情報を提示します。
-/// 
+///
 /// <para>【表示優先度】</para>
 /// <list type="number">
 /// <item>Threshold（大見出し）: 推奨しきい値 - ユーザーが最も知りたい情報</item>
@@ -46,7 +46,7 @@ public class ToastViewModel
 /// <item>Time（処理時間）: パフォーマンス指標</item>
 /// <item>Margin（メモリ情報）: メモリ使用量</item>
 /// </list>
-/// 
+///
 /// <para>【表示例（最適化結果）】</para>
 /// <code>
 /// ┌─────────────────────────────────────┐

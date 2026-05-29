@@ -1,4 +1,4 @@
-using BmsAtelierKyokufu.BmsPartTuner.Core.Validation;
+﻿using BmsAtelierKyokufu.BmsPartTuner.Core.Validation;
 using ValidationResult = BmsAtelierKyokufu.BmsPartTuner.Core.Validation.ValidationResult;
 namespace BmsAtelierKyokufu.BmsPartTuner.Core.Optimization;
 
@@ -30,7 +30,7 @@ public class BmsOptimizationService : IBmsOptimizationService
     /// <param name="endDefinition">最適化を終了する定義のインデックス。</param>
     /// <param name="progress">進捗を報告するためのオブジェクト。</param>
     /// <returns>最適化のシミュレーション結果。エラー時はnullを返します。</returns>
-    public async Task<Models.OptimizationResult?> FindOptimalThresholdsAsync(
+    public async Task<OptimizationResult?> FindOptimalThresholdsAsync(
         List<string> files,
         int startDefinition,
         int endDefinition,
@@ -66,14 +66,14 @@ public class BmsOptimizationService : IBmsOptimizationService
             result.ExecutionTime = TimeSpan.FromMilliseconds(totalElapsed);
             result.MemoryUsedBytes = memoryUsed;
 
-            PerformanceDebugLogger.WriteDebug(nameof(BmsOptimizationService), $"Base36 optimal: Threshold={result.Base36Result.Threshold:F2}, Count={result.Base36Result.Count}");
-            PerformanceDebugLogger.WriteDebug(nameof(BmsOptimizationService), $"Base62 optimal: Threshold={result.Base62Result.Threshold:F2}, Count={result.Base62Result.Count}");
-            PerformanceDebugLogger.WriteDebug(nameof(BmsOptimizationService), $"Memory used: {memoryUsed / 1024.0 / 1024.0:F2} MB");
+            PerformanceDebugLogger<BmsOptimizationService>.WriteDebug($"Base36 optimal: Threshold={result.Base36Result.Threshold:F2}, Count={result.Base36Result.Count}");
+            PerformanceDebugLogger<BmsOptimizationService>.WriteDebug($"Base62 optimal: Threshold={result.Base62Result.Threshold:F2}, Count={result.Base62Result.Count}");
+            PerformanceDebugLogger<BmsOptimizationService>.WriteDebug($"Memory used: {memoryUsed / 1024.0 / 1024.0:F2} MB");
         }
 
         context.Progress?.Report(100);
 
-        PerformanceDebugLogger.WriteDebug(nameof(BmsOptimizationService), "=== Clearing audio cache ===");
+        PerformanceDebugLogger<BmsOptimizationService>.WriteDebug("=== Clearing audio cache ===");
         if (context.AudioCache != null)
         {
             CleanupAudioCache(context.FileListItems, context.AudioCache);
@@ -158,19 +158,19 @@ public class BmsOptimizationService : IBmsOptimizationService
         // 音声データの事前ロード（キャッシュ構築）
         var (FailedFiles, Cache) = AudioCacheManager.PreloadAudioData(fileList, options.Progress);
         var audioCache = Cache;
-        PerformanceDebugLogger.WriteDebug(nameof(BmsOptimizationService), $"AudioCacheManager.PreloadAudioData: {timer.Lap("AudioCacheManager.PreloadAudioData")} ms");
+        PerformanceDebugLogger<BmsOptimizationService>.WriteDebug($"AudioCacheManager.PreloadAudioData: {timer.Lap("AudioCacheManager.PreloadAudioData")} ms");
 
         // DefinitionReuse expects an ObservableCollection, so we need to convert
         ObservableCollection<BmsAudioFile> observableCollection = new(fileList);
         DefinitionReuse dr = new(observableCollection, audioCache, options.InputBmsContent);
-        PerformanceDebugLogger.WriteDebug(nameof(BmsOptimizationService), $"DefinitionReuse constructor: {timer.Lap("DefinitionReuse constructor")} ms");
+        PerformanceDebugLogger<BmsOptimizationService>.WriteDebug($"DefinitionReuse constructor: {timer.Lap("DefinitionReuse constructor")} ms");
 
         var originalCount = fileList.Count;
         var optimizedCount = originalCount;
         var deletedFilesCount = 0;
         ReductionResult errorResult(string message)
         {
-            PerformanceDebugLogger.WriteDebug(nameof(BmsOptimizationService), $"ERROR in ExecuteDefinitionReductionAsync: {message}");
+            PerformanceDebugLogger<BmsOptimizationService>.WriteDebug($"ERROR in ExecuteDefinitionReductionAsync: {message}");
             return new ReductionResult
             {
                 OriginalCount = originalCount,
@@ -211,19 +211,19 @@ public class BmsOptimizationService : IBmsOptimizationService
                     var timerDelete = PerformanceDebugLogger.StartTimer();
                     List<string> unusedFiles = dr.GetUnusedFilePaths();
                     deletedFilesCount = DeleteUnusedFiles(unusedFiles);
-                    PerformanceDebugLogger.WriteDebug(nameof(BmsOptimizationService), $"DeleteUnusedFiles: {timerDelete.Lap("DeleteUnusedFiles")} ms");
+                    PerformanceDebugLogger<BmsOptimizationService>.WriteDebug($"DeleteUnusedFiles: {timerDelete.Lap("DeleteUnusedFiles")} ms");
                 }
             });
-            PerformanceDebugLogger.WriteDebug(nameof(BmsOptimizationService), $"dr.ReductDefinition Task.Run total: {timer.Lap("dr.ReductDefinition Task.Run total")} ms");
+            PerformanceDebugLogger<BmsOptimizationService>.WriteDebug($"dr.ReductDefinition Task.Run total: {timer.Lap("dr.ReductDefinition Task.Run total")} ms");
 
             var totalElapsed = timerTotal.Lap("Total");
-            PerformanceDebugLogger.WriteDebug(nameof(BmsOptimizationService), $"=== ExecuteDefinitionReductionAsync: Complete ({totalElapsed}ms) ===");
+            PerformanceDebugLogger<BmsOptimizationService>.WriteDebug($"=== ExecuteDefinitionReductionAsync: Complete ({totalElapsed}ms) ===");
 
             optimizedCount = dr.GetUniqueFileCount();
             var reductionRate = CalculateReductionRate(originalCount, optimizedCount);
 
             CleanupAudioCache(fileList, audioCache);
-            PerformanceDebugLogger.WriteDebug(nameof(BmsOptimizationService), $"CleanupAudioCache: {timer.Lap("CleanupAudioCache")} ms");
+            PerformanceDebugLogger<BmsOptimizationService>.WriteDebug($"CleanupAudioCache: {timer.Lap("CleanupAudioCache")} ms");
 
             return new ReductionResult
             {
@@ -257,8 +257,8 @@ public class BmsOptimizationService : IBmsOptimizationService
         }
         catch (Exception ex)
         {
-            PerformanceDebugLogger.WriteDebug(nameof(BmsOptimizationService), $"ERROR in ExecuteDefinitionReductionAsync: {ex.Message}");
-            PerformanceDebugLogger.WriteDebug(nameof(BmsOptimizationService), $"StackTrace: {ex.StackTrace}");
+            PerformanceDebugLogger<BmsOptimizationService>.WriteDebug($"ERROR in ExecuteDefinitionReductionAsync: {ex.Message}");
+            PerformanceDebugLogger<BmsOptimizationService>.WriteDebug($"StackTrace: {ex.StackTrace}");
             Trace.TraceError($"Unexpected error: {ex}");
             return errorResult($"予期しないエラーが発生しました: {ex.Message}\n{ex.StackTrace}");
         }
@@ -295,7 +295,7 @@ public class BmsOptimizationService : IBmsOptimizationService
     /// </summary>
     /// <param name="files">クリア対象のファイルリスト。</param>
     /// <param name="audioCache">音声キャッシュディクショナリ。</param>
-    private static void CleanupAudioCache(IEnumerable<BmsAudioFile>? files, System.Collections.Concurrent.ConcurrentDictionary<string, ICachedSoundData> audioCache)
+    private static void CleanupAudioCache(IEnumerable<BmsAudioFile>? files, ConcurrentDictionary<string, ICachedSoundData> audioCache)
     {
         if (files == null || audioCache == null) return;
 
@@ -308,7 +308,7 @@ public class BmsOptimizationService : IBmsOptimizationService
                 clearedCount++;
             }
         }
-        PerformanceDebugLogger.WriteDebug(nameof(BmsOptimizationService), $"Cleared {clearedCount} cached audio files");
+        PerformanceDebugLogger<BmsOptimizationService>.WriteDebug($"Cleared {clearedCount} cached audio files");
     }
 
     /// <summary>
@@ -327,16 +327,16 @@ public class BmsOptimizationService : IBmsOptimizationService
                 {
                     File.Delete(file);
                     deletedCount++;
-                    PerformanceDebugLogger.WriteDebug(nameof(BmsOptimizationService), $"Deleted unused file: {file}");
+                    PerformanceDebugLogger<BmsOptimizationService>.WriteDebug($"Deleted unused file: {file}");
                 }
                 else
                 {
-                    PerformanceDebugLogger.WriteDebug(nameof(BmsOptimizationService), $"File to delete not found: {file}");
+                    PerformanceDebugLogger<BmsOptimizationService>.WriteDebug($"File to delete not found: {file}");
                 }
             }
             catch (Exception ex)
             {
-                PerformanceDebugLogger.WriteDebug(nameof(BmsOptimizationService), $"Failed to delete unused file: {file}. Error: {ex.Message}");
+                PerformanceDebugLogger<BmsOptimizationService>.WriteDebug($"Failed to delete unused file: {file}. Error: {ex.Message}");
             }
         }
         return deletedCount;

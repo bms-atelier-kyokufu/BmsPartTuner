@@ -1,4 +1,4 @@
-namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
+﻿namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 
 /// <summary>
 /// 定義削減の統計情報を管理するクラスです。
@@ -23,7 +23,7 @@ internal class DefinitionStatistics(
     {
         var stats = CalculateStatistics();
 
-        PerformanceDebugLogger.WriteDebug(nameof(DefinitionStatistics), $$"""
+        PerformanceDebugLogger<DefinitionStatistics>.WriteDebug( $$"""
             === Statistics ===
             Processing range: {{_startPoint}} - {{_endPoint}}
             Total definitions: {{stats.TotalDefinitions}}
@@ -42,7 +42,7 @@ internal class DefinitionStatistics(
     {
         var stats = CalculateStatistics();
 
-        PerformanceDebugLogger.WriteDebug(nameof(DefinitionStatistics), $$"""
+        PerformanceDebugLogger<DefinitionStatistics>.WriteDebug( $$"""
             === GetUniqueFileCount Detail ===
               Total in range: {{stats.TotalInRange}}
               Unique (self-ref): {{stats.UniqueFiles}}

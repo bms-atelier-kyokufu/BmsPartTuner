@@ -64,7 +64,7 @@ public class AudioSliceManager(string bmsonDir, bool throwOnMissingFile = true) 
 
         if (trimmedLengthBytes < lengthBytes)
         {
-            PerformanceDebugLogger.WriteTrace(nameof(AudioSliceManager), $"Trimmed silence: {sourceFileName} (offset={offsetSec:F2}s, duration={durationSec:F2}s) from {lengthBytes / 1024.0:F1}KB to {trimmedLengthBytes / 1024.0:F1}KB");
+            PerformanceDebugLogger<AudioSliceManager>.WriteTrace( $"Trimmed silence: {sourceFileName} (offset={offsetSec:F2}s, duration={durationSec:F2}s) from {lengthBytes / 1024.0:F1}KB to {trimmedLengthBytes / 1024.0:F1}KB");
         }
 
         // 4. トリミング後の真の長さを用いてキャッシュキーを作成
@@ -99,7 +99,7 @@ public class AudioSliceManager(string bmsonDir, bool throwOnMissingFile = true) 
                 }
                 catch (Exception ex)
                 {
-                    PerformanceDebugLogger.WriteError(nameof(AudioSliceManager), $"スライス失敗: {sourceFileName}", ex);
+                    PerformanceDebugLogger<AudioSliceManager>.WriteError( $"スライス失敗: {sourceFileName}", ex);
                     return string.Empty;
                 }
             });

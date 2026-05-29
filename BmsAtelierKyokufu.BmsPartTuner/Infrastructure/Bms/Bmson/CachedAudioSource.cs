@@ -13,10 +13,10 @@ public class CachedAudioSource
     public int PcmOffset { get; }
     public int PcmLength { get; }
 
-    private BmsAtelierKyokufu.BmsPartTuner.Models.BaseAudioOptimizationData? _decodedData;
+    private BaseAudioOptimizationData? _decodedData;
     private readonly Lock _lock = new();
 
-    public BmsAtelierKyokufu.BmsPartTuner.Models.BaseAudioOptimizationData DecodedData
+    public BaseAudioOptimizationData DecodedData
     {
         get
         {
@@ -30,7 +30,7 @@ public class CachedAudioSource
         }
     }
 
-    private BmsAtelierKyokufu.BmsPartTuner.Models.BaseAudioOptimizationData DecodeAllData()
+    private BaseAudioOptimizationData DecodeAllData()
     {
         int frames = PcmLength / 4; // 16bit stereo = 4 bytes per frame
         float[][] samples = [new float[frames], new float[frames]];
@@ -80,7 +80,7 @@ public class CachedAudioSource
             if (Math.Abs(fr) >= silenceThreshold) signLshMask[1][lshIdx] |= 1UL << bitShift;
         }
 
-        return new BmsAtelierKyokufu.BmsPartTuner.Models.BaseAudioOptimizationData(samples, prefixSum, prefixSumSq, signLsh, signLshMask);
+        return new BaseAudioOptimizationData(samples, prefixSum, prefixSumSq, signLsh, signLshMask);
     }
 
     public WaveFormat WaveFormat { get; } = new WaveFormat(AppConstants.Audio.StandardSampleRate, 16, 2);
@@ -144,7 +144,7 @@ public class CachedAudioSource
                                 PcmLength = dataLength;
 
                                 long fastElapsed = timer.Lap($"{Path.GetFileName(path)}|CachedAudioSource Load FastPath");
-                                PerformanceDebugLogger.WriteDebug(nameof(CachedAudioSource), $"[CachedAudioSource Load] {Path.GetFileName(path)} (FastPath Direct Load) loaded in {fastElapsed} ms");
+                                PerformanceDebugLogger<CachedAudioSource>.WriteDebug($"[CachedAudioSource Load] {Path.GetFileName(path)} (FastPath Direct Load) loaded in {fastElapsed} ms");
                                 return;
                             }
                         }
@@ -153,7 +153,7 @@ public class CachedAudioSource
             }
             catch (Exception ex)
             {
-                PerformanceDebugLogger.WriteError(nameof(CachedAudioSource), $"[CachedAudioSource] Custom WAV parser failed, falling back to NAudio: {path}", ex);
+                PerformanceDebugLogger<CachedAudioSource>.WriteError($"[CachedAudioSource] Custom WAV parser failed, falling back to NAudio: {path}", ex);
             }
         }
 
@@ -215,7 +215,7 @@ public class CachedAudioSource
 
                 if (totalBytesWritten + neededBytes > maxAllowedBytes)
                 {
-                    PerformanceDebugLogger.WriteDebug(nameof(CachedAudioSource), $"[AudioSliceManager] Reached length limit ({maxAllowedBytes} bytes) for {Path.GetFileName(path)}. Stopping decode.");
+                    PerformanceDebugLogger<CachedAudioSource>.WriteDebug($"[AudioSliceManager] Reached length limit ({maxAllowedBytes} bytes) for {Path.GetFileName(path)}. Stopping decode.");
                     break;
                 }
 
@@ -246,8 +246,8 @@ public class CachedAudioSource
         }
 
         long elapsed = timer.Lap($"{Path.GetFileName(path)}|CachedAudioSource Load");
-        PerformanceDebugLogger.WriteTrace(nameof(CachedAudioSource), $"[{path}] WaveFormat: {WaveFormat.SampleRate}Hz, {WaveFormat.Channels}ch, {WaveFormat.BitsPerSample}bit");
-        PerformanceDebugLogger.WriteDebug(nameof(CachedAudioSource), $"[CachedAudioSource Load] {Path.GetFileName(path)} (Format: {WaveFormat.SampleRate}Hz, {WaveFormat.Channels}ch, Size: {PcmLength} bytes) loaded in {elapsed} ms");
+        PerformanceDebugLogger<CachedAudioSource>.WriteTrace($"[{path}] WaveFormat: {WaveFormat.SampleRate}Hz, {WaveFormat.Channels}ch, {WaveFormat.BitsPerSample}bit");
+        PerformanceDebugLogger<CachedAudioSource>.WriteDebug($"[CachedAudioSource Load] {Path.GetFileName(path)} (Format: {WaveFormat.SampleRate}Hz, {WaveFormat.Channels}ch, Size: {PcmLength} bytes) loaded in {elapsed} ms");
     }
 
     /// <summary>

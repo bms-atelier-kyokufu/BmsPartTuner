@@ -13,7 +13,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.UI.Views.Dialogs.Settings
     /// }
     /// </code>
     /// </summary>
-    [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
+    [ExcludeFromCodeCoverage]
     public partial class AboutTab : UserControl
     {
         // NOTE: This field is part of the example implementation for PR #118.

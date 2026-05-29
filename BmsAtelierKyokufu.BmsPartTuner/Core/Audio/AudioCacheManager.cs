@@ -16,10 +16,10 @@ internal static class AudioCacheManager
     /// <param name="progress">進捗報告用のIProgress。</param>
     /// <param name="normalizationMode">正規化モード（デフォルト: None）。</param>
     /// <returns>読み込みに失敗したファイルパスのリストと、オーディオキャッシュのタプル。</returns>
-    public static (List<string> FailedFiles, System.Collections.Concurrent.ConcurrentDictionary<string, ICachedSoundData> Cache) PreloadAudioData(
+    public static (List<string> FailedFiles, ConcurrentDictionary<string, ICachedSoundData> Cache) PreloadAudioData(
         IReadOnlyList<BmsAudioFile> fileList,
         IProgress<int>? progress,
-        Models.NormalizationMode normalizationMode = Models.NormalizationMode.None)
+        NormalizationMode normalizationMode = Models.NormalizationMode.None)
     {
         PerformanceDebugLogger.WriteDebug(nameof(AudioCacheManager), "=== PreloadAudioData Start ===");
         PerformanceDebugLogger.WriteDebug(nameof(AudioCacheManager), $"Total files to preload: {fileList.Count}");
@@ -29,8 +29,8 @@ internal static class AudioCacheManager
         int totalFiles = fileList.Count;
         int successCount = 0;
         int failCount = 0;
-        var failedFiles = new System.Collections.Concurrent.ConcurrentBag<string>();
-        var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, ICachedSoundData>();
+        var failedFiles = new ConcurrentBag<string>();
+        var audioCache = new ConcurrentDictionary<string, ICachedSoundData>();
 
         if (totalFiles == 0)
         {
@@ -161,9 +161,9 @@ internal static class AudioCacheManager
     /// </summary>
     private static (int SuccessCount, int FailCount) LoadBatch(
         IReadOnlyList<BmsAudioFile> batch,
-        Models.NormalizationMode normalizationMode,
-        System.Collections.Concurrent.ConcurrentBag<string> failedFiles,
-        System.Collections.Concurrent.ConcurrentDictionary<string, ICachedSoundData> audioCache)
+        NormalizationMode normalizationMode,
+        ConcurrentBag<string> failedFiles,
+        ConcurrentDictionary<string, ICachedSoundData> audioCache)
     {
         int success = 0;
         int fail = 0;
@@ -198,7 +198,7 @@ internal static class AudioCacheManager
     /// </summary>
     private static void LogCacheStatistics(
         IReadOnlyList<BmsAudioFile> fileList,
-        System.Collections.Concurrent.ConcurrentDictionary<string, ICachedSoundData> audioCache,
+        ConcurrentDictionary<string, ICachedSoundData> audioCache,
         int loaded,
         int totalFiles,
         int successCount,

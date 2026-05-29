@@ -228,7 +228,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.UI.Views.Windows
             _collectionView.Refresh();
         }
 
-        private void FilterTextBox_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        private void FilterTextBox_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == System.Windows.Input.Key.Enter)
             {
@@ -243,7 +243,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.UI.Views.Windows
                 _viewModel.BmsDefinitionManager.ToggleChipSelection(args.Chip);
             }
         }
-        private void ViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        private void ViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             // ViewModelの状態変化に応じたUI更新
             switch (e.PropertyName)
@@ -274,10 +274,10 @@ namespace BmsAtelierKyokufu.BmsPartTuner.UI.Views.Windows
         #endregion
 
         // Windowが閉じたらViewModelのリソースを解放
-        protected override void OnClosed(System.EventArgs e)
+        protected override void OnClosed(EventArgs e)
         {
             base.OnClosed(e);
-            (_viewModel as System.IDisposable)?.Dispose();
+            (_viewModel as IDisposable)?.Dispose();
         }
     }
 }

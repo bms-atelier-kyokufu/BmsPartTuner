@@ -6,7 +6,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.UI.Views.Dialogs;
 /// Material 3準拠のモーダル・サイドシートコントロール。
 /// 右側からスライドインするパネルを提供します。
 /// </summary>
-[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
+[ExcludeFromCodeCoverage]
 public partial class SideSheet : UserControl
 {
     private static readonly Duration AnimationDuration = TimeSpan.FromMilliseconds(300);

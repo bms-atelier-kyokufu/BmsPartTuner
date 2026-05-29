@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms.Bmson.Pipeline;
 
 /// <summary>
@@ -9,8 +9,10 @@ public sealed class BmsonValidationStep : IBmsonConversionStep
     public string Name => Core.Helpers.PipelineStepHelper.GetStepName(nameof(BmsonValidationStep));
     public void Execute(BmsonConversionContext context)
     {
+        ArgumentNullException.ThrowIfNull(context);
+
         if (string.IsNullOrWhiteSpace(context.BmsonFilePath))
-            throw new ArgumentException("Bmson file path cannot be empty.", nameof(context.BmsonFilePath));
+            throw new ArgumentException("Bmson file path cannot be empty.", nameof(context));
 
         if (!File.Exists(context.BmsonFilePath))
             throw new FileNotFoundException("Bmson file not found.", context.BmsonFilePath);

@@ -4,18 +4,21 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms.Bmson.Pipeline;
 /// BMSON変換パイプラインの実行コンテキスト。
 /// 入力値、中間生成オブジェクト、最終結果を保持し、使い終わったリソースの破棄（IDisposable）を管理します。
 /// </summary>
+/// <remarks>
+/// コンテキストを初期化します。
+/// </remarks>
 [ADRAnchor("ARCH-01", nameof(BmsonConversionContext))]
-public sealed class BmsonConversionContext : IDisposable
+public sealed class BmsonConversionContext(string bmsonFilePath, bool keyNotesOnly) : IDisposable
 {
     /// <summary>
     /// 入力bmsonファイルのフルパス。
     /// </summary>
-    public string BmsonFilePath { get; }
+    public string BmsonFilePath { get; } = bmsonFilePath;
 
     /// <summary>
     /// trueの場合、BGMレーンを無視して演奏ノーツのみを抽出する。
     /// </summary>
-    public bool KeyNotesOnly { get; }
+    public bool KeyNotesOnly { get; } = keyNotesOnly;
 
     /// <summary>
     /// パースされたBMSONデータ。
@@ -41,15 +44,6 @@ public sealed class BmsonConversionContext : IDisposable
     /// 生成されたBMSテキスト（出力）。
     /// </summary>
     public string? ResultBmsText { get; set; }
-
-    /// <summary>
-    /// コンテキストを初期化します。
-    /// </summary>
-    public BmsonConversionContext(string bmsonFilePath, bool keyNotesOnly)
-    {
-        BmsonFilePath = bmsonFilePath;
-        KeyNotesOnly = keyNotesOnly;
-    }
 
     /// <summary>
     /// IDisposableの実装。音声スライスマネージャなどのリソースを安全に解放します。

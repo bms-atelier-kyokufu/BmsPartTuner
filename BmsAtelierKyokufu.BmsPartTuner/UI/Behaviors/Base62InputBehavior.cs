@@ -7,7 +7,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.UI.Behaviors;
 /// 62進数入力（0-9, A-Z, a-z）を許可するBehavior。
 /// BMSの定義番号は62進数（0-9, A-Z, a-z）で表現されます。
 /// </summary>
-[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
+[ExcludeFromCodeCoverage]
 public partial class Base62InputBehavior : Behavior<TextBox>
 {
     [GeneratedRegex("^[0-9A-Za-z]*$")]

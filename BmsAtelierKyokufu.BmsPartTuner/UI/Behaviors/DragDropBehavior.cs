@@ -7,7 +7,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.UI.Behaviors;
 /// MVVMパターンに準拠するため、イベントハンドラーをコードビハインドから分離し、
 /// ドロップされたファイルのパスや、成功・失敗時のコマンドバインディングをXAMLから定義可能にします。
 /// </summary>
-[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
+[ExcludeFromCodeCoverage]
 public class DragDropBehavior : Behavior<UIElement>
 {
     #region 依存関係プロパティ

@@ -56,12 +56,37 @@ internal class ParallelAudioComparisonEngine(AudioComparisonParameters parameter
     /// RMSソート用の軽量構造体。ヒープ割り当てを避け、スタック上で高速に処理します。
     /// RMS値で昇順ソートし、同じRMSの場合はファイル番号でソートすることで決定性を保証します。
     /// </summary>
-    private readonly struct AudioEntry(int index, float rms, int fileNum, float[]? pivotDistances = null) : IComparable<AudioEntry>
+    private readonly struct AudioEntry : IComparable<AudioEntry>
     {
-        public readonly int OriginalIndex = index;
-        public readonly float Rms = rms;
-        public readonly int FileNum = fileNum;
-        public readonly float[]? PivotDistances = pivotDistances;
+        public readonly int OriginalIndex;
+        public readonly float Rms;
+        public readonly int FileNum;
+        public readonly float Dist0;
+        public readonly float Dist1;
+        public readonly float Dist2;
+        public readonly bool HasDistances;
+
+        public AudioEntry(int index, float rms, int fileNum)
+        {
+            OriginalIndex = index;
+            Rms = rms;
+            FileNum = fileNum;
+            Dist0 = 0f;
+            Dist1 = 0f;
+            Dist2 = 0f;
+            HasDistances = false;
+        }
+
+        public AudioEntry(int index, float rms, int fileNum, float dist0, float dist1, float dist2)
+        {
+            OriginalIndex = index;
+            Rms = rms;
+            FileNum = fileNum;
+            Dist0 = dist0;
+            Dist1 = dist1;
+            Dist2 = dist2;
+            HasDistances = true;
+        }
 
         /// <summary>
         /// RMS値で昇順比較、同じRMSの場合はファイル番号で比較（決定性の保証）。
@@ -128,11 +153,11 @@ internal class ParallelAudioComparisonEngine(AudioComparisonParameters parameter
         }
         catch (OperationCanceledException)
         {
-            PerformanceDebugLogger.WriteDebug(nameof(ParallelAudioComparisonEngine), "=== CompareGroups Cancelled ===");
+            PerformanceDebugLogger<ParallelAudioComparisonEngine>.WriteDebug( "=== CompareGroups Cancelled ===");
             throw;
         }
 
-        PerformanceDebugLogger.WriteDebug(nameof(ParallelAudioComparisonEngine), $"=== CompareGroups Complete: {totalComparisons} comparisons, {timer.Lap("CompareGroups")}ms ===");
+        PerformanceDebugLogger<ParallelAudioComparisonEngine>.WriteDebug( $"=== CompareGroups Complete: {totalComparisons} comparisons, {timer.Lap("CompareGroups")}ms ===");
     }
 
     #endregion
@@ -185,69 +210,77 @@ internal class ParallelAudioComparisonEngine(AudioComparisonParameters parameter
     private AudioEntry[] CreateSortedEntries(IReadOnlyList<int> group)
     {
         var entries = new AudioEntry[group.Count];
-
         bool usePruning = group.Count >= 10;
-        int numPivots = Math.Min(3, group.Count);
-
-        int[] pivotIndices = new int[numPivots];
-        ICachedSoundData[] pivotData = new ICachedSoundData[numPivots];
 
         if (usePruning)
         {
             // グループ内から3つのピボットを選定（先頭、中間、末尾）
-            pivotIndices[0] = group[0];
-            pivotIndices[1] = group[group.Count / 2];
-            pivotIndices[2] = group[group.Count - 1];
+            int pivotIdx0 = group[0];
+            int pivotIdx1 = group[group.Count / 2];
+            int pivotIdx2 = group[group.Count - 1];
 
-            for (int k = 0; k < numPivots; k++)
+            _audioCache.TryGetValue(_fileList[pivotIdx0].Name, out var pd0);
+            _audioCache.TryGetValue(_fileList[pivotIdx1].Name, out var pd1);
+            _audioCache.TryGetValue(_fileList[pivotIdx2].Name, out var pd2);
+
+            for (int i = 0; i < group.Count; i++)
             {
-                _audioCache.TryGetValue(_fileList[pivotIndices[k]].Name, out var pd);
-                pivotData[k] = pd!;
-            }
-        }
+                int idx = group[i];
+                _audioCache.TryGetValue(_fileList[idx].Name, out var cachedData);
+                float rms = (cachedData == null) ? float.MaxValue : cachedData.TotalRms;
 
-        for (int i = 0; i < group.Count; i++)
-        {
-            int idx = group[i];
-            _audioCache.TryGetValue(_fileList[idx].Name, out var cachedData);
-            float rms = (cachedData == null) ? float.MaxValue : cachedData.TotalRms;
-
-            float[]? distances = null;
-            if (usePruning && cachedData != null)
-            {
-                distances = new float[numPivots];
-                for (int k = 0; k < numPivots; k++)
+                if (cachedData != null && pd0 != null && pd1 != null && pd2 != null)
                 {
-                    var pd = pivotData[k];
-                    if (pd == null) continue;
-
-                    if (ReferenceEquals(cachedData, pd))
-                    {
-                        distances[k] = 0f;
-                        continue;
-                    }
-
-                    // ピボットとの相関係数（アライメント補正込み）を算出
-                    int ch = (cachedData.GetActiveRegions()[0] == null || cachedData.GetActiveRegions()[0].Count == 0) ? 1 : 0;
-                    var shorter = cachedData.TotalSamples < pd.TotalSamples ? cachedData : pd;
-                    var longer = cachedData.TotalSamples < pd.TotalSamples ? pd : cachedData;
-
-                    int shorterFrames = shorter.TotalSamples / shorter.Channels;
-                    int longerFrames = longer.TotalSamples / longer.Channels;
-                    var shorterSpan = shorter.GetRawSpan(ch, 0, shorterFrames);
-                    var longerFullSpan = longer.GetRawSpan(ch, 0, longerFrames);
-
-                    float r = FastWaveCompare.CalculateMaxCorrelation(shorter, longer, ch, shorterFrames, longerFrames, shorterSpan, longerFullSpan, out _);
-
-                    // 相関 r を距離 d に変換: d = sqrt(2 * max(0, 1 - r))
-                    distances[k] = (float)Math.Sqrt(2.0 * Math.Max(0.0, 1.0 - r));
+                    float d0 = CalculateDistance(cachedData, pd0);
+                    float d1 = CalculateDistance(cachedData, pd1);
+                    float d2 = CalculateDistance(cachedData, pd2);
+                    entries[i] = new AudioEntry(idx, rms, _fileList[idx].NumInteger, d0, d1, d2);
+                }
+                else
+                {
+                    entries[i] = new AudioEntry(idx, rms, _fileList[idx].NumInteger);
                 }
             }
-
-            entries[i] = new AudioEntry(idx, rms, _fileList[idx].NumInteger, distances);
         }
+        else
+        {
+            for (int i = 0; i < group.Count; i++)
+            {
+                int idx = group[i];
+                _audioCache.TryGetValue(_fileList[idx].Name, out var cachedData);
+                float rms = (cachedData == null) ? float.MaxValue : cachedData.TotalRms;
+                entries[i] = new AudioEntry(idx, rms, _fileList[idx].NumInteger);
+            }
+        }
+
         Array.Sort(entries);
         return entries;
+    }
+
+    /// <summary>
+    /// キャッシュされた音声データとピボット音声データとの間の距離を計算します。
+    /// </summary>
+    private static float CalculateDistance(ICachedSoundData cachedData, ICachedSoundData pd)
+    {
+        if (ReferenceEquals(cachedData, pd))
+        {
+            return 0f;
+        }
+
+        // ピボットとの相関係数（アライメント補正込み）を算出
+        int ch = (cachedData.GetActiveRegions()[0] == null || cachedData.GetActiveRegions()[0].Count == 0) ? 1 : 0;
+        var shorter = cachedData.TotalSamples < pd.TotalSamples ? cachedData : pd;
+        var longer = cachedData.TotalSamples < pd.TotalSamples ? pd : cachedData;
+
+        int shorterFrames = shorter.TotalSamples / shorter.Channels;
+        int longerFrames = longer.TotalSamples / longer.Channels;
+        var shorterSpan = shorter.GetRawSpan(ch, 0, shorterFrames);
+        var longerFullSpan = longer.GetRawSpan(ch, 0, longerFrames);
+
+        float r = FastWaveCompare.CalculateMaxCorrelation(shorter, longer, ch, shorterFrames, longerFrames, shorterSpan, longerFullSpan, out _);
+
+        // 相関 r を距離 d に変換: d = sqrt(2 * max(0, 1 - r))
+        return (float)Math.Sqrt(2.0 * Math.Max(0.0, 1.0 - r));
     }
 
     /// <summary>
@@ -298,20 +331,11 @@ internal class ParallelAudioComparisonEngine(AudioComparisonParameters parameter
                 if (iVal < _startPoint || iVal > _endPoint || jVal < _startPoint || jVal > _endPoint) continue;
 
                 // 枝刈り (三角不等式)
-                var pivotDistances1 = entries[i].PivotDistances;
-                var pivotDistances2 = entries[j].PivotDistances;
-                if (pivotDistances1 != null && pivotDistances2 != null)
+                if (entries[i].HasDistances && entries[j].HasDistances)
                 {
-                    bool skip = false;
-                    for (int k = 0; k < pivotDistances1.Length; k++)
-                    {
-                        if (Math.Abs(pivotDistances1[k] - pivotDistances2[k]) > dThreshold + epsilon)
-                        {
-                            skip = true;
-                            break;
-                        }
-                    }
-                    if (skip)
+                    if (Math.Abs(entries[i].Dist0 - entries[j].Dist0) > dThreshold + epsilon ||
+                        Math.Abs(entries[i].Dist1 - entries[j].Dist1) > dThreshold + epsilon ||
+                        Math.Abs(entries[i].Dist2 - entries[j].Dist2) > dThreshold + epsilon)
                     {
                         Interlocked.Increment(ref skipped);
                         continue;

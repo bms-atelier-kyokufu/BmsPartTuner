@@ -12,7 +12,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.UI.Views.Controls
     /// スライド確認UIコントロール
     /// M3準拠のプログレッシブ・フィル実装
     /// </summary>
-    [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
+    [ExcludeFromCodeCoverage]
     public partial class SlideConfirmationControl : UserControl
     {
         #region 依存関係プロパティ
@@ -179,7 +179,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.UI.Views.Controls
             // コントロールが小さすぎる場合の警告
             if (ActualWidth > 0 && ActualWidth < ThumbWidth + 20)
             {
-                PerformanceDebugLogger.WriteDebug(nameof(SlideConfirmationControl), $"Warning: SlideConfirmationControl is too small (ActualWidth={ActualWidth}, MinRequired={ThumbWidth + 20})");
+                PerformanceDebugLogger<SlideConfirmationControl>.WriteDebug($"Warning: SlideConfirmationControl is too small (ActualWidth={ActualWidth}, MinRequired={ThumbWidth + 20})");
             }
 
             // Windowレベルのマウスアップイベントを監視
@@ -269,24 +269,24 @@ namespace BmsAtelierKyokufu.BmsPartTuner.UI.Views.Controls
             {
                 // 最小値を0に制限（負の値にならないようにする）
                 _maxSlideDistance = Math.Max(0, ActualWidth - ThumbWidth - 10);
-                PerformanceDebugLogger.WriteDebug(nameof(SlideConfirmationControl), $"CalculateMaxSlideDistance: ActualWidth={ActualWidth}, ThumbWidth={ThumbWidth}, MaxSlideDistance={_maxSlideDistance}");
+                PerformanceDebugLogger<SlideConfirmationControl>.WriteDebug($"CalculateMaxSlideDistance: ActualWidth={ActualWidth}, ThumbWidth={ThumbWidth}, MaxSlideDistance={_maxSlideDistance}");
 
                 // スライド不可能な場合の警告
                 if (_maxSlideDistance <= 0)
                 {
-                    PerformanceDebugLogger.WriteDebug(nameof(SlideConfirmationControl), $"Warning: Not enough space to slide (need at least {ThumbWidth + 10}px, got {ActualWidth}px)");
+                    PerformanceDebugLogger<SlideConfirmationControl>.WriteDebug($"Warning: Not enough space to slide (need at least {ThumbWidth + 10}px, got {ActualWidth}px)");
                 }
             }
             else
             {
                 // ActualWidthがまだ0の場合、次のレンダリングサイクルで再計算
-                PerformanceDebugLogger.WriteDebug(nameof(SlideConfirmationControl), "CalculateMaxSlideDistance: ActualWidth is 0, will recalculate on next render");
+                PerformanceDebugLogger<SlideConfirmationControl>.WriteDebug("CalculateMaxSlideDistance: ActualWidth is 0, will recalculate on next render");
                 Dispatcher.BeginInvoke(new Action(() =>
                 {
                     if (ActualWidth > 0)
                     {
                         _maxSlideDistance = Math.Max(0, ActualWidth - ThumbWidth - 10);
-                        PerformanceDebugLogger.WriteDebug(nameof(SlideConfirmationControl), $"CalculateMaxSlideDistance (delayed): ActualWidth={ActualWidth}, MaxSlideDistance={_maxSlideDistance}");
+                        PerformanceDebugLogger<SlideConfirmationControl>.WriteDebug($"CalculateMaxSlideDistance (delayed): ActualWidth={ActualWidth}, MaxSlideDistance={_maxSlideDistance}");
                     }
                 }), System.Windows.Threading.DispatcherPriority.Loaded);
             }
@@ -309,7 +309,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.UI.Views.Controls
         {
             if (!_isDragging) return;
 
-            PerformanceDebugLogger.WriteDebug(nameof(SlideConfirmationControl), "CompleteSlide: Releasing mouse capture");
+            PerformanceDebugLogger<SlideConfirmationControl>.WriteDebug("CompleteSlide: Releasing mouse capture");
 
             // マウスキャプチャを解放（ただし_isDraggingはアニメーション完了後にリセット）
             SlideThumb.ReleaseMouseCapture();
@@ -317,7 +317,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.UI.Views.Controls
             var currentOffset = ThumbTransform.X;
             var progress = _maxSlideDistance > 0 ? Math.Abs(currentOffset) / _maxSlideDistance : 0;
 
-            PerformanceDebugLogger.WriteDebug(nameof(SlideConfirmationControl), $"CompleteSlide: progress={progress:F2}, threshold={CompletionThreshold}");
+            PerformanceDebugLogger<SlideConfirmationControl>.WriteDebug($"CompleteSlide: progress={progress:F2}, threshold={CompletionThreshold}");
 
             if (progress >= CompletionThreshold) // デフォルト80%以上でスライド完了
             {
@@ -367,7 +367,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.UI.Views.Controls
 
                 bounceAnimation.Completed += (bs, bargs) =>
                 {
-                    PerformanceDebugLogger.WriteDebug(nameof(SlideConfirmationControl), "AnimateCompletion: Bounce completed");
+                    PerformanceDebugLogger<SlideConfirmationControl>.WriteDebug("AnimateCompletion: Bounce completed");
 
                     // アニメーション完了後、状態をクリア
                     ThumbTransform.BeginAnimation(TranslateTransform.XProperty, null);
@@ -426,7 +426,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.UI.Views.Controls
 
             thumbAnimation.Completed += (s, args) =>
             {
-                PerformanceDebugLogger.WriteDebug(nameof(SlideConfirmationControl), "AnimateCancellation: Animation completed, resetting state");
+                PerformanceDebugLogger<SlideConfirmationControl>.WriteDebug("AnimateCancellation: Animation completed, resetting state");
 
                 // アニメーション完了後、アニメーションをクリアして状態をリセット
                 ThumbTransform.BeginAnimation(TranslateTransform.XProperty, null);

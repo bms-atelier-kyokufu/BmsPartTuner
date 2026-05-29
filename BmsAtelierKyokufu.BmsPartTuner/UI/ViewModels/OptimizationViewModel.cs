@@ -116,7 +116,7 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
     /// 最後に実行された最適化処理の結果データ。
     /// </summary>
     [ObservableProperty]
-    public partial Models.OptimizationResult? LastOptimizationResult { get; set; }
+    public partial OptimizationResult? LastOptimizationResult { get; set; }
 
     public SlideDirection SlideDirection =>
         IsPhysicalDeletionEnabled ? SlideDirection.RightToLeft : SlideDirection.LeftToRight;
@@ -250,7 +250,7 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
     /// <summary>
     /// しきい値の最適化シミュレーションを実行します。
     /// </summary>
-    public async Task<Models.OptimizationResult?> ExecuteThresholdOptimizationAsync(
+    public async Task<OptimizationResult?> ExecuteThresholdOptimizationAsync(
         List<string> files,
         int startDefinition,
         int endDefinition)
@@ -312,10 +312,10 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
                 StatusMessage = "最適化エラー";
             });
 
-            PerformanceDebugLogger.WriteDebug(nameof(OptimizationViewModel), "=== ExecuteThresholdOptimizationAsync Exception ===");
-            PerformanceDebugLogger.WriteDebug(nameof(OptimizationViewModel), $"Exception Type: {ex.GetType().FullName}");
-            PerformanceDebugLogger.WriteDebug(nameof(OptimizationViewModel), $"Message: {ex.Message}");
-            PerformanceDebugLogger.WriteDebug(nameof(OptimizationViewModel), $"StackTrace: {ex.StackTrace}");
+            PerformanceDebugLogger<OptimizationViewModel>.WriteDebug("=== ExecuteThresholdOptimizationAsync Exception ===");
+            PerformanceDebugLogger<OptimizationViewModel>.WriteDebug($"Exception Type: {ex.GetType().FullName}");
+            PerformanceDebugLogger<OptimizationViewModel>.WriteDebug($"Message: {ex.Message}");
+            PerformanceDebugLogger<OptimizationViewModel>.WriteDebug($"StackTrace: {ex.StackTrace}");
 
             return null;
         }
@@ -336,7 +336,7 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
     /// BMSの定義削減処理を実行します。
     /// </summary>
     public async Task ExecuteDefinitionReductionAsync(
-        BmsAtelierKyokufu.BmsPartTuner.Core.Bms.BmsDefinitionManager? bmsFileList,
+        BmsDefinitionManager? bmsFileList,
         string? inputPath,
         string? outputPath,
         string? inputBmsContent = null,
@@ -375,7 +375,7 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
     }
 
     private async Task ExecuteDefinitionReductionInternalAsync(
-        BmsAtelierKyokufu.BmsPartTuner.Core.Bms.BmsDefinitionManager bmsFileList,
+        BmsDefinitionManager bmsFileList,
         string inputPath,
         string outputPath,
         float r2Val,
@@ -429,14 +429,14 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
             ErrorOccurred?.Invoke(this, $"処理エラー: {ex.Message}");
             WeakReferenceMessenger.Default.Send(new OptimizationErrorMessage($"処理エラー: {ex.Message}"));
             StatusMessage = "処理エラー";
-            PerformanceDebugLogger.WriteDebug(nameof(OptimizationViewModel), $"ExecuteDefinitionReductionInternalAsync Exception: {ex}");
+            PerformanceDebugLogger<OptimizationViewModel>.WriteDebug($"ExecuteDefinitionReductionInternalAsync Exception: {ex}");
         }
         finally
         {
             EndBusyState(loaderCts);
             IsBusy = false;
 
-            await Task.Run(() => PerformanceDebugLogger.WriteDebug(nameof(OptimizationViewModel), "=== OptimizationViewModel: Clearing caches ==="));
+            await Task.Run(() => PerformanceDebugLogger<OptimizationViewModel>.WriteDebug("=== OptimizationViewModel: Clearing caches ==="));
         }
     }
 

@@ -7,11 +7,11 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Audio;
 /// 音声ファイルのバックグラウンド再生・プレビュー機能を提供するサービス。
 /// UIスレッドのブロック回避や連続再生要求のデバウンス処理を担います。
 /// </summary>
-public class AudioPreviewService(BmsAtelierKyokufu.BmsPartTuner.UI.Services.IUIThreadDispatcher dispatcher, IAudioPlayerFactory? playerFactory = null) : IDisposable
+public class AudioPreviewService(BmsPartTuner.UI.Services.IUIThreadDispatcher dispatcher, IAudioPlayerFactory? playerFactory = null) : IDisposable
 {
     private IAudioPlayer? _currentPlayer;
     private CancellationTokenSource? _cancellationTokenSource;
-    private readonly BmsAtelierKyokufu.BmsPartTuner.UI.Services.IUIThreadDispatcher _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
+    private readonly BmsPartTuner.UI.Services.IUIThreadDispatcher _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
     private readonly IAudioPlayerFactory _playerFactory = playerFactory ?? new NAudioPlayerFactory();
 
     /// <summary>

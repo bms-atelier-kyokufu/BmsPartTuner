@@ -4,35 +4,27 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Core.Optimization.Pipeline;
 /// しきい値最適化シミュレーション用のパイプライン実行コンテキスト。
 /// </summary>
 [ADRAnchor("ARCH-01", nameof(OptimizationSimulationContext))]
-internal sealed class OptimizationSimulationContext
+internal sealed class OptimizationSimulationContext(
+    List<string> filePaths,
+    int startDefinition,
+    int endDefinition,
+    IProgress<int>? progress)
 {
     // 入力
-    public List<string> FilePaths { get; }
-    public int StartDefinition { get; }
-    public int EndDefinition { get; set; }
-    public IProgress<int>? Progress { get; }
+    public List<string> FilePaths { get; } = filePaths ?? throw new ArgumentNullException(nameof(filePaths));
+    public int StartDefinition { get; } = startDefinition;
+    public int EndDefinition { get; set; } = endDefinition;
+    public IProgress<int>? Progress { get; } = progress;
 
     // 中間状態
-    public List<BmsAudioFile> FileListItems { get; } = new();
-    public System.Collections.Concurrent.ConcurrentDictionary<string, ICachedSoundData>? AudioCache { get; set; }
-    public List<string> FailedFiles { get; set; } = new();
+    public List<BmsAudioFile> FileListItems { get; } = [];
+    public ConcurrentDictionary<string, ICachedSoundData>? AudioCache { get; set; }
+    public List<string> FailedFiles { get; set; } = [];
 
     // シミュレーション結果
     public IReadOnlyList<SimulationPoint>? SimulationResults { get; set; }
-    public List<(double Threshold, int FileCount)> SimulationData { get; set; } = new();
+    public List<(double Threshold, int FileCount)> SimulationData { get; set; } = [];
 
     // 出力
     public OptimizationResult? Result { get; set; }
-
-    public OptimizationSimulationContext(
-        List<string> filePaths,
-        int startDefinition,
-        int endDefinition,
-        IProgress<int>? progress)
-    {
-        FilePaths = filePaths ?? throw new ArgumentNullException(nameof(filePaths));
-        StartDefinition = startDefinition;
-        EndDefinition = endDefinition;
-        Progress = progress;
-    }
 }

@@ -6,7 +6,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.UI.Behaviors;
 /// 指定桁数の0埋めを行うBehavior（例: PadLength=2の場合、"1" → "01"）。
 /// フォーカスアウト時に適用されます。
 /// </summary>
-[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
+[ExcludeFromCodeCoverage]
 public class ZeroPadBehavior : Behavior<TextBox>
 {
     /// <summary>

@@ -7,7 +7,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.UI.Behaviors
     /// 数値入力のみを許可するビヘイビア
     /// TextBoxに添付して使用し、継承なしで機能を拡張
     /// </summary>
-    [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
+    [ExcludeFromCodeCoverage]
     public partial class NumericInputBehavior : Behavior<TextBox>
     {
         private static readonly Regex _numericRegex = NumericRegex();

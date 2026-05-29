@@ -116,9 +116,7 @@ internal sealed class RunParallelSimulationStep : IAsyncOptimizationStep
 
         context.SimulationResults = simulationResults;
 
-        context.SimulationData = simulationResults
-            .Select(r => ((double)r.Threshold, r.FileCount))
-            .ToList();
+        context.SimulationData = [.. simulationResults.Select(r => ((double)r.Threshold, r.FileCount))];
 
         PerformanceDebugLogger.WriteDebug(Name, $"Simulation results: {context.SimulationData.Count} data points");
         if (context.SimulationData.Count > 0)

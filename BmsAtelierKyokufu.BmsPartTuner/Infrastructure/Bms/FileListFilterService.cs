@@ -1,4 +1,4 @@
-﻿namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms;
+namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms;
 
 /// <summary>
 /// BMSファイルリストに対するフィルタリング（テキスト検索、楽器種別、キーワードチップ）機能を提供するサービス。
@@ -117,6 +117,8 @@ public partial class FileListFilterService
         };
     }
 
+    private static readonly SearchValues<char> SeparatorSearchValues = SearchValues.Create("_ -");
+
     /// <summary>
     /// ファイルリストから頻出するプレフィックスを抽出し、選択可能なフィルターチップのリストを生成します。
     /// </summary>
@@ -125,8 +127,6 @@ public partial class FileListFilterService
     /// <param name="maxChips">生成するチップの最大数。</param>
     /// <param name="minKeywordLength">キーワードとして抽出される最小の文字列長。</param>
     /// <returns>選択可能なフィルターチップのコレクション。</returns>
-    private static readonly System.Buffers.SearchValues<char> SeparatorSearchValues = System.Buffers.SearchValues.Create("_ -");
-
     public static ObservableCollection<SelectableFilterChip> GenerateSelectableFilterChips(
         ObservableCollection<BmsAudioFile> files,
         int minOccurrences = 2,

@@ -106,7 +106,7 @@ public partial class FileListViewModel : ObservableObject, IDisposable
     /// </summary>
     public void LoadBmsFile(string bmsFilePath, string? bmsContent = null)
     {
-        PerformanceDebugLogger.WriteDebug(nameof(FileListViewModel), $"=== FileListViewModel.LoadBmsFile Started for {Path.GetFileName(bmsFilePath)} ===");
+        PerformanceDebugLogger<FileListViewModel>.WriteDebug( $"=== FileListViewModel.LoadBmsFile Started for {Path.GetFileName(bmsFilePath)} ===");
         var timerTotal = PerformanceDebugLogger.StartTimer();
         var timer = PerformanceDebugLogger.StartTimer();
         try
@@ -114,10 +114,10 @@ public partial class FileListViewModel : ObservableObject, IDisposable
             _bmsFileList = new BmsDefinitionManager(bmsFilePath, bmsContent);
             var fileList = _bmsFileList.CreateFileList();
             FileListItems = fileList;
-            PerformanceDebugLogger.WriteDebug(nameof(FileListViewModel), $"BmsDefinitionManager construction and CreateFileList: {timer.Lap("BmsDefinitionManager construction and CreateFileList")} ms");
+            PerformanceDebugLogger<FileListViewModel>.WriteDebug( $"BmsDefinitionManager construction and CreateFileList: {timer.Lap("BmsDefinitionManager construction and CreateFileList")} ms");
 
             InitializeInstrumentFilters(fileList);
-            PerformanceDebugLogger.WriteDebug(nameof(FileListViewModel), $"FilterChips and InstrumentGroups generation: {timer.Lap("FilterChips and InstrumentGroups generation")} ms");
+            PerformanceDebugLogger<FileListViewModel>.WriteDebug( $"FilterChips and InstrumentGroups generation: {timer.Lap("FilterChips and InstrumentGroups generation")} ms");
 
             if (_bmsFileList.MissingFiles.Count == 0 && fileList.Count > 0)
             {
@@ -129,7 +129,7 @@ public partial class FileListViewModel : ObservableObject, IDisposable
                 });
                 WeakReferenceMessenger.Default.Send(new FileListLoadedMessage(true, bmsFilePath, string.Empty));
             }
-            PerformanceDebugLogger.WriteDebug(nameof(FileListViewModel), $"=== FileListViewModel.LoadBmsFile Finished: {timerTotal.Lap("Total")} ms ===");
+            PerformanceDebugLogger<FileListViewModel>.WriteDebug( $"=== FileListViewModel.LoadBmsFile Finished: {timerTotal.Lap("Total")} ms ===");
         }
         catch (Exception ex)
         {

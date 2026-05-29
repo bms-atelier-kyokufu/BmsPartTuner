@@ -75,7 +75,7 @@ public static class SilenceTrimmer
         return (totalFrames - trimFrames) * frameSize;
     }
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    [MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private static long GetFrameEnergy(ReadOnlySpan<short> pcm, int frameIndex)
     {
         // 1 frame = 2 samples (Stereo: L and R)
@@ -85,7 +85,7 @@ public static class SilenceTrimmer
         return (l * l) + (r * r);
     }
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    [MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private static long CalculateEnergyAvx2(ReadOnlySpan<short> pcm)
     {
         int length = pcm.Length;

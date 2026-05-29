@@ -1,6 +1,6 @@
 ﻿using BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Audio;
-using BmsAtelierKyokufu.BmsPartTuner.UI.Services;
 using BmsAtelierKyokufu.BmsPartTuner.UI.Controllers;
+using BmsAtelierKyokufu.BmsPartTuner.UI.Services;
 namespace BmsAtelierKyokufu.BmsPartTuner.UI.ViewModels;
 
 /// <summary>
@@ -75,7 +75,7 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
     /// </summary>
     public MainViewModel(
         IBmsOptimizationService optimizationService,
-        BmsAtelierKyokufu.BmsPartTuner.UseCases.IBmsOptimizationUseCase optimizationUseCase,
+        UseCases.IBmsOptimizationUseCase optimizationUseCase,
         IBmsonConversionService bmsonConversionService,
         IFileSystemService fileSystemService,
         FileListViewModel fileListViewModel,
@@ -263,7 +263,7 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
         ShowMessage(message.Message, isError: true);
     }
 
-    private void OnFileOperationsPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    private void OnFileOperationsPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         ForwardPropertyChanged(e.PropertyName);
 
@@ -284,12 +284,12 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
         }
     }
 
-    private void OnBmsDefinitionManagerPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    private void OnBmsDefinitionManagerPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         ForwardPropertyChanged(e.PropertyName);
     }
 
-    private void OnOptimizationPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    private void OnOptimizationPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         ForwardPropertyChanged(e.PropertyName);
         if (e.PropertyName == nameof(Optimization.IsPhysicalDeletionEnabled))
@@ -298,7 +298,7 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
         }
     }
 
-    private void OnNotificationPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    private void OnNotificationPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         ForwardPropertyChanged(e.PropertyName);
     }

@@ -3,7 +3,7 @@
 /// <summary>
 /// SettingsView.xaml の相互作用ロジック
 /// </summary>
-[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
+[ExcludeFromCodeCoverage]
 public partial class SettingsView : UserControl
 {
     /// <summary>

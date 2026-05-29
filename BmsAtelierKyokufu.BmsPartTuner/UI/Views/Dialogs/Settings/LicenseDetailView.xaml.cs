@@ -3,7 +3,7 @@
     /// <summary>
     /// LicenseDetailView.xaml の相互作用ロジック
     /// </summary>
-    [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
+    [ExcludeFromCodeCoverage]
     public partial class LicenseDetailView : UserControl
     {
         public LicenseDetailView()

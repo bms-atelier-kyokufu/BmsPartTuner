@@ -1,4 +1,4 @@
-﻿using BmsAtelierKyokufu.BmsPartTuner.Core.Bms.Pipeline;
+using BmsAtelierKyokufu.BmsPartTuner.Core.Bms.Pipeline;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 
@@ -6,33 +6,33 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 /// BMS定義の重複削減を統括するメインオーケストレータ（Facade）です。
 /// パイプラインパターンを利用して、処理範囲の決定、音声データのプリロード、置換テーブルの作成、BMSファイルの書き換えなどの全体のフローを制御します。
 /// </summary>
-public class DefinitionReuse
+/// <remarks>
+/// DefinitionReuseのインスタンスを作成します。
+/// <para>引数:</para>
+/// <list type="bullet">
+/// <item><description><c>fileList</c>: 処理対象の音声ファイルリスト。</description></item>
+/// <item><description><c>audioCache</c>: 初期の音声データキャッシュ。</description></item>
+/// <item><description><c>inputBmsContent</c>: BMSファイル内容（省略時はパスから読み込み）。</description></item>
+/// </list>
+/// </remarks>
+public class DefinitionReuse(ObservableCollection<BmsAudioFile> fileList, IReadOnlyDictionary<string, ICachedSoundData> audioCache, string? inputBmsContent = null)
 {
-    private readonly IReadOnlyList<BmsAudioFile> _fileList;
-    private readonly IReadOnlyDictionary<string, ICachedSoundData> _initialAudioCache;
-    private readonly string? _inputBmsContent;
+    private readonly IReadOnlyList<BmsAudioFile> _fileList = fileList?.ToList() ?? throw new ArgumentNullException(nameof(fileList));
+    private readonly IReadOnlyDictionary<string, ICachedSoundData> _initialAudioCache = audioCache ?? throw new ArgumentNullException(nameof(audioCache));
+    private readonly string? _inputBmsContent = inputBmsContent;
 
     // パイプライン実行結果を保持して後続処理で利用するためのコンテキスト
     private DefinitionReductionContext? _context;
 
     /// <summary>
-    /// DefinitionReuseのインスタンスを作成します。
-    /// </summary>
-    /// <param name="fileList">処理対象の音声ファイルリスト。</param>
-    /// <param name="audioCache">初期の音声データキャッシュ。</param>
-    /// <param name="inputBmsContent">BMSファイル内容（省略時はパスから読み込み）。</param>
-    /// <exception cref="ArgumentNullException">fileListまたはaudioCacheがnullの場合。</exception>
-    public DefinitionReuse(ObservableCollection<BmsAudioFile> fileList, IReadOnlyDictionary<string, ICachedSoundData> audioCache, string? inputBmsContent = null)
-    {
-        _fileList = fileList?.ToList() ?? throw new ArgumentNullException(nameof(fileList));
-        _initialAudioCache = audioCache ?? throw new ArgumentNullException(nameof(audioCache));
-        _inputBmsContent = inputBmsContent;
-    }
-
-    /// <summary>
     /// BMS定義の重複削減処理を実行します。
     /// パイプラインパターンにより、各ステップを順次実行します。
     /// </summary>
+    /// <param name="bmsFileName">BMSファイル名。</param>
+    /// <param name="saveFileName">保存ファイル名。</param>
+    /// <param name="options">定義削減オプション。</param>
+    /// <param name="normalizationMode">正規化モード。</param>
+    /// <exception cref="ArgumentNullException">optionsがnullの場合。</exception>
     public void ReductDefinition(
         string bmsFileName,
         string saveFileName,

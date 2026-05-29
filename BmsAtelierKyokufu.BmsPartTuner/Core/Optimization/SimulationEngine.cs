@@ -38,12 +38,12 @@ internal class SimulationEngine(
         int completed = 0;
         int total = thresholds.Count;
 
-        PerformanceDebugLogger.WriteDebug(nameof(SimulationEngine), "=== RunParallelSimulationDetailed Start ===");
-        PerformanceDebugLogger.WriteDebug(nameof(SimulationEngine), $"Parallel simulation: {total} thresholds, {_parallelDegree} threads");
-        PerformanceDebugLogger.WriteDebug(nameof(SimulationEngine), $"Range: {rangeMin:F2} - {rangeMax:F2}, Step: {step:F2}");
+        PerformanceDebugLogger<SimulationEngine>.WriteDebug( "=== RunParallelSimulationDetailed Start ===");
+        PerformanceDebugLogger<SimulationEngine>.WriteDebug( $"Parallel simulation: {total} thresholds, {_parallelDegree} threads");
+        PerformanceDebugLogger<SimulationEngine>.WriteDebug( $"Range: {rangeMin:F2} - {rangeMax:F2}, Step: {step:F2}");
 
         int cachedCount = _audioCache.Count;
-        PerformanceDebugLogger.WriteDebug(nameof(SimulationEngine), $"Cached audio files: {cachedCount}/{_fileList.Count}");
+        PerformanceDebugLogger<SimulationEngine>.WriteDebug( $"Cached audio files: {cachedCount}/{_fileList.Count}");
 
         var groups = AudioFileGroupingStrategy.GroupFiles(_audioCache, _fileList, _startPoint, _endPoint, null);
 
@@ -65,13 +65,13 @@ internal class SimulationEngine(
             }
             catch (Exception ex)
             {
-                PerformanceDebugLogger.WriteDebug(nameof(SimulationEngine), $"ERROR: Simulation failed at threshold={threshold:F2}: {ex.Message}");
-                PerformanceDebugLogger.WriteDebug(nameof(SimulationEngine), $"  StackTrace: {ex.StackTrace}");
+                PerformanceDebugLogger<SimulationEngine>.WriteDebug( $"ERROR: Simulation failed at threshold={threshold:F2}: {ex.Message}");
+                PerformanceDebugLogger<SimulationEngine>.WriteDebug( $"  StackTrace: {ex.StackTrace}");
             }
         });
 
-        PerformanceDebugLogger.WriteDebug(nameof(SimulationEngine), "=== RunParallelSimulationDetailed Complete ===");
-        PerformanceDebugLogger.WriteDebug(nameof(SimulationEngine), $"Completed {results.Count} simulations in {timer.Lap("RunParallelSimulationDetailed")} ms");
+        PerformanceDebugLogger<SimulationEngine>.WriteDebug( "=== RunParallelSimulationDetailed Complete ===");
+        PerformanceDebugLogger<SimulationEngine>.WriteDebug( $"Completed {results.Count} simulations in {timer.Lap("RunParallelSimulationDetailed")} ms");
 
         return [.. results.OrderByDescending(r => r.Threshold)];
     }
@@ -103,20 +103,20 @@ internal class SimulationEngine(
         float base36Threshold = 0f;
         float base62Threshold = 0f;
 
-        PerformanceDebugLogger.WriteDebug(nameof(SimulationEngine), "=== RunParallelSimulation Start (with early termination) ===");
-        PerformanceDebugLogger.WriteDebug(nameof(SimulationEngine), $"Sequential simulation: {total} thresholds max");
-        PerformanceDebugLogger.WriteDebug(nameof(SimulationEngine), $"Range: {rangeMin:F2} - {rangeMax:F2}, Step: {step:F2}");
-        PerformanceDebugLogger.WriteDebug(nameof(SimulationEngine), $"File range: {_startPoint} - {_endPoint}");
-        PerformanceDebugLogger.WriteDebug(nameof(SimulationEngine), $"Base36 limit: {Base36Limit} files");
-        PerformanceDebugLogger.WriteDebug(nameof(SimulationEngine), $"Base62 limit: {Base62Limit} files");
+        PerformanceDebugLogger<SimulationEngine>.WriteDebug( "=== RunParallelSimulation Start (with early termination) ===");
+        PerformanceDebugLogger<SimulationEngine>.WriteDebug( $"Sequential simulation: {total} thresholds max");
+        PerformanceDebugLogger<SimulationEngine>.WriteDebug( $"Range: {rangeMin:F2} - {rangeMax:F2}, Step: {step:F2}");
+        PerformanceDebugLogger<SimulationEngine>.WriteDebug( $"File range: {_startPoint} - {_endPoint}");
+        PerformanceDebugLogger<SimulationEngine>.WriteDebug( $"Base36 limit: {Base36Limit} files");
+        PerformanceDebugLogger<SimulationEngine>.WriteDebug( $"Base62 limit: {Base62Limit} files");
 
         // 音声キャッシュの確認
         int cachedCount = _audioCache.Count;
-        PerformanceDebugLogger.WriteDebug(nameof(SimulationEngine), $"Cached audio files: {cachedCount}/{_fileList.Count}");
+        PerformanceDebugLogger<SimulationEngine>.WriteDebug( $"Cached audio files: {cachedCount}/{_fileList.Count}");
 
         if (cachedCount == 0)
         {
-            PerformanceDebugLogger.WriteDebug(nameof(SimulationEngine), "CRITICAL ERROR: No cached audio data! All simulations will return original count.");
+            PerformanceDebugLogger<SimulationEngine>.WriteDebug( "CRITICAL ERROR: No cached audio data! All simulations will return original count.");
         }
 
         var timer = PerformanceDebugLogger.StartTimer();
@@ -124,7 +124,7 @@ internal class SimulationEngine(
         // グループ分けを事前に1回だけ計算
         var timerGroup = PerformanceDebugLogger.StartTimer();
         var groups = AudioFileGroupingStrategy.GroupFiles(_audioCache, _fileList, _startPoint, _endPoint, null);
-        PerformanceDebugLogger.WriteDebug(nameof(SimulationEngine), $"AudioFileGroupingStrategy.GroupFiles: {timerGroup.Lap("AudioFileGroupingStrategy.GroupFiles")} ms");
+        PerformanceDebugLogger<SimulationEngine>.WriteDebug( $"AudioFileGroupingStrategy.GroupFiles: {timerGroup.Lap("AudioFileGroupingStrategy.GroupFiles")} ms");
 
         // 順次実行（しきい値降順）
         foreach (var threshold in thresholds)
@@ -141,8 +141,8 @@ internal class SimulationEngine(
                 {
                     base62Found = true;
                     base62Threshold = threshold;
-                    PerformanceDebugLogger.WriteDebug(nameof(SimulationEngine), $"=== Base62 condition met at threshold={threshold:F2} ===");
-                    PerformanceDebugLogger.WriteDebug(nameof(SimulationEngine), $"File count: {fileCount} <= {Base62Limit}");
+                    PerformanceDebugLogger<SimulationEngine>.WriteDebug( $"=== Base62 condition met at threshold={threshold:F2} ===");
+                    PerformanceDebugLogger<SimulationEngine>.WriteDebug( $"File count: {fileCount} <= {Base62Limit}");
                 }
 
                 // Base36条件チェック
@@ -150,9 +150,9 @@ internal class SimulationEngine(
                 {
                     base36Found = true;
                     base36Threshold = threshold;
-                    PerformanceDebugLogger.WriteDebug(nameof(SimulationEngine), $"=== Base36 condition met at threshold={threshold:F2} ===");
-                    PerformanceDebugLogger.WriteDebug(nameof(SimulationEngine), $"File count: {fileCount} <= {Base36Limit}");
-                    PerformanceDebugLogger.WriteDebug(nameof(SimulationEngine), $"Skipping remaining {total - completed} simulations");
+                    PerformanceDebugLogger<SimulationEngine>.WriteDebug( $"=== Base36 condition met at threshold={threshold:F2} ===");
+                    PerformanceDebugLogger<SimulationEngine>.WriteDebug( $"File count: {fileCount} <= {Base36Limit}");
+                    PerformanceDebugLogger<SimulationEngine>.WriteDebug( $"Skipping remaining {total - completed} simulations");
                     break;
                 }
 
@@ -164,32 +164,32 @@ internal class SimulationEngine(
             }
             catch (Exception ex)
             {
-                PerformanceDebugLogger.WriteDebug(nameof(SimulationEngine), $"ERROR: Simulation failed at threshold={threshold:F2}: {ex.Message}");
-                PerformanceDebugLogger.WriteDebug(nameof(SimulationEngine), $"  StackTrace: {ex.StackTrace}");
+                PerformanceDebugLogger<SimulationEngine>.WriteDebug( $"ERROR: Simulation failed at threshold={threshold:F2}: {ex.Message}");
+                PerformanceDebugLogger<SimulationEngine>.WriteDebug( $"  StackTrace: {ex.StackTrace}");
             }
         }
 
-        PerformanceDebugLogger.WriteDebug(nameof(SimulationEngine), "=== RunParallelSimulation Complete ===");
-        PerformanceDebugLogger.WriteDebug(nameof(SimulationEngine), $"Completed {results.Count}/{total} simulations in {timer.Lap("RunParallelSimulation")} ms");
-        PerformanceDebugLogger.WriteDebug(nameof(SimulationEngine), $"Saved {total - completed} simulations due to early termination");
+        PerformanceDebugLogger<SimulationEngine>.WriteDebug( "=== RunParallelSimulation Complete ===");
+        PerformanceDebugLogger<SimulationEngine>.WriteDebug( $"Completed {results.Count}/{total} simulations in {timer.Lap("RunParallelSimulation")} ms");
+        PerformanceDebugLogger<SimulationEngine>.WriteDebug( $"Saved {total - completed} simulations due to early termination");
 
         // Base36/Base62の結果を報告
         if (base62Found)
         {
-            PerformanceDebugLogger.WriteDebug(nameof(SimulationEngine), $"Base62 threshold: {base62Threshold:F2}");
+            PerformanceDebugLogger<SimulationEngine>.WriteDebug( $"Base62 threshold: {base62Threshold:F2}");
         }
         else
         {
-            PerformanceDebugLogger.WriteDebug(nameof(SimulationEngine), "Base62 condition not met in simulation range");
+            PerformanceDebugLogger<SimulationEngine>.WriteDebug( "Base62 condition not met in simulation range");
         }
 
         if (base36Found)
         {
-            PerformanceDebugLogger.WriteDebug(nameof(SimulationEngine), $"Base36 threshold: {base36Threshold:F2}");
+            PerformanceDebugLogger<SimulationEngine>.WriteDebug( $"Base36 threshold: {base36Threshold:F2}");
         }
         else
         {
-            PerformanceDebugLogger.WriteDebug(nameof(SimulationEngine), "Base36 condition not met in simulation range");
+            PerformanceDebugLogger<SimulationEngine>.WriteDebug( "Base36 condition not met in simulation range");
         }
 
         // 結果の統計
@@ -197,11 +197,11 @@ internal class SimulationEngine(
         {
             var minFiles = results.Min(static r => r.FileCount);
             var maxFiles = results.Max(static r => r.FileCount);
-            PerformanceDebugLogger.WriteDebug(nameof(SimulationEngine), $"File count range: {minFiles} - {maxFiles}");
+            PerformanceDebugLogger<SimulationEngine>.WriteDebug( $"File count range: {minFiles} - {maxFiles}");
 
             if (minFiles == maxFiles)
             {
-                PerformanceDebugLogger.WriteDebug(nameof(SimulationEngine), "WARNING: All simulations returned the same file count - no reduction detected!");
+                PerformanceDebugLogger<SimulationEngine>.WriteDebug( "WARNING: All simulations returned the same file count - no reduction detected!");
             }
         }
 
@@ -268,18 +268,18 @@ internal class SimulationEngine(
         // 詳細ログ（しきい値0.23の場合）
         if (Math.Abs(threshold - 0.23f) < 0.005f)
         {
-            PerformanceDebugLogger.WriteDebug(nameof(SimulationEngine), $"=== Simulation Threshold {threshold:F2} Detail ===");
-            PerformanceDebugLogger.WriteDebug(nameof(SimulationEngine), $"  Total in range: {totalInRange}");
-            PerformanceDebugLogger.WriteDebug(nameof(SimulationEngine), $"  Unique (self-ref): {uniqueCount}");
-            PerformanceDebugLogger.WriteDebug(nameof(SimulationEngine), $"  Not processed (==0): {notProcessed}");
-            PerformanceDebugLogger.WriteDebug(nameof(SimulationEngine), $"  Total comparisons: {totalComparisons}");
-            PerformanceDebugLogger.WriteDebug(nameof(SimulationEngine), $"  Total matches: {totalMatches}");
+            PerformanceDebugLogger<SimulationEngine>.WriteDebug( $"=== Simulation Threshold {threshold:F2} Detail ===");
+            PerformanceDebugLogger<SimulationEngine>.WriteDebug( $"  Total in range: {totalInRange}");
+            PerformanceDebugLogger<SimulationEngine>.WriteDebug( $"  Unique (self-ref): {uniqueCount}");
+            PerformanceDebugLogger<SimulationEngine>.WriteDebug( $"  Not processed (==0): {notProcessed}");
+            PerformanceDebugLogger<SimulationEngine>.WriteDebug( $"  Total comparisons: {totalComparisons}");
+            PerformanceDebugLogger<SimulationEngine>.WriteDebug( $"  Total matches: {totalMatches}");
         }
 
         // 最初の数回のシミュレーションで詳細ログ
         if (threshold >= 0.98f || threshold <= 0.07f || Math.Abs(threshold - 0.50f) < 0.01f)
         {
-            PerformanceDebugLogger.WriteDebug(nameof(SimulationEngine), $"  Threshold {threshold:F2}: Groups={groups.Count}, Comparisons={totalComparisons}, Matches={totalMatches}, Unique={uniqueCount}");
+            PerformanceDebugLogger<SimulationEngine>.WriteDebug( $"  Threshold {threshold:F2}: Groups={groups.Count}, Comparisons={totalComparisons}, Matches={totalMatches}, Unique={uniqueCount}");
         }
 
         return uniqueCount;
@@ -422,7 +422,7 @@ internal class SimulationEngine(
         }
         catch (Exception ex)
         {
-            PerformanceDebugLogger.WriteDebug(nameof(SimulationEngine), $"ERROR: Audio comparison failed [{iIdx}] vs [{jIdx}]: {ex.Message}");
+            PerformanceDebugLogger<SimulationEngine>.WriteDebug( $"ERROR: Audio comparison failed [{iIdx}] vs [{jIdx}]: {ex.Message}");
         }
     }
 

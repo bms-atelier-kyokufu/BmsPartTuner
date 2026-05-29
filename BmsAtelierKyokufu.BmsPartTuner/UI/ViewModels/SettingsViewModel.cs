@@ -244,7 +244,7 @@ public partial class SettingsViewModel : ObservableObject
     {
         try
         {
-            var psi = new System.Diagnostics.ProcessStartInfo
+            var psi = new ProcessStartInfo
             {
                 FileName = url,
                 UseShellExecute = true
@@ -253,7 +253,7 @@ public partial class SettingsViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            PerformanceDebugLogger.WriteDebug(nameof(SettingsViewModel), $"URLを開けませんでした: {ex.Message}");
+            PerformanceDebugLogger<SettingsViewModel>.WriteDebug($"URLを開けませんでした: {ex.Message}");
         }
     }
 

@@ -1,4 +1,4 @@
-namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms.Bmson.Pipeline;
+﻿namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms.Bmson.Pipeline;
 
 /// <summary>
 /// BMSON変換パイプライン。
@@ -7,7 +7,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms.Bmson.Pipeline;
 [ADRAnchor("ARCH-01", nameof(BmsonConversionPipeline))]
 public sealed class BmsonConversionPipeline
 {
-    private readonly List<IBmsonConversionStep> _steps = new();
+    private readonly List<IBmsonConversionStep> _steps = [];
 
     /// <summary>
     /// パイプラインに処理ステップを追加します。
@@ -28,7 +28,7 @@ public sealed class BmsonConversionPipeline
     public string Execute(BmsonConversionContext context)
     {
         PerformanceDebugLogger.Clear();
-        PerformanceDebugLogger.WriteDebug(nameof(BmsonConversionPipeline), "=== Downconvert started ===");
+        PerformanceDebugLogger<BmsonConversionPipeline>.WriteDebug("=== Downconvert started ===");
         var timerTotal = PerformanceDebugLogger.StartTimer();
         var timerStep = PerformanceDebugLogger.StartTimer();
 
@@ -39,10 +39,10 @@ public sealed class BmsonConversionPipeline
 
             step.Execute(context);
 
-            PerformanceDebugLogger.WriteDebug(nameof(BmsonConversionPipeline), $"{step.Name}: {timerStep.Lap(step.Name)} ms");
+            PerformanceDebugLogger<BmsonConversionPipeline>.WriteDebug($"{step.Name}: {timerStep.Lap(step.Name)} ms");
         }
 
-        PerformanceDebugLogger.WriteDebug(nameof(BmsonConversionPipeline), $"=== Downconvert finished. Total: {timerTotal.Lap("Total")} ms ===");
+        PerformanceDebugLogger<BmsonConversionPipeline>.WriteDebug($"=== Downconvert finished. Total: {timerTotal.Lap("Total")} ms ===");
 
         return context.ResultBmsText ?? throw new InvalidOperationException("Pipeline completed without producing a result.");
     }

@@ -1,4 +1,4 @@
-﻿using System.Threading.Channels;
+using System.Threading.Channels;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Diagnostics;
 
@@ -312,4 +312,97 @@ public static class PerformanceDebugLogger
             Log(LogLevel.Trace, tag, "Memory diagnosis halt triggered: 5 seconds elapsed.");
         }
     }
+}
+
+/// <summary>
+/// クラス名をタグとして自動付与するジェネリックなパフォーマンスロガー
+/// </summary>
+/// <typeparam name="T">ログを出力するクラスの型</typeparam>
+public static class PerformanceDebugLogger<T>
+{
+    private static readonly string Tag = typeof(T).Name;
+
+    [Conditional("DEBUG")]
+    public static void WriteTrace(string message) => PerformanceDebugLogger.WriteTrace(Tag, message);
+
+    [Conditional("DEBUG")]
+    public static void WriteVerbose(string message) => PerformanceDebugLogger.WriteVerbose(Tag, message);
+
+    [Conditional("DEBUG")]
+    public static void WriteDebug(string message) => PerformanceDebugLogger.WriteDebug(Tag, message);
+
+    [Conditional("DEBUG")]
+    public static void WriteInfo(string message) => PerformanceDebugLogger.WriteInfo(Tag, message);
+
+    [Conditional("DEBUG")]
+    public static void WriteWarning(string message) => PerformanceDebugLogger.WriteWarning(Tag, message);
+
+    [Conditional("DEBUG")]
+    public static void WriteError(string message) => PerformanceDebugLogger.WriteError(Tag, message);
+
+    [Conditional("DEBUG")]
+    public static void WriteError(string message, Exception ex) => PerformanceDebugLogger.WriteError(Tag, message, ex);
+
+    [Conditional("DEBUG")]
+    public static void LogMemoryUsage() => PerformanceDebugLogger.LogMemoryUsage(Tag);
+
+    public static IDisposable MeasureTime(string scopeName, LogLevel level = LogLevel.Debug)
+        => PerformanceDebugLogger.MeasureTime(Tag, scopeName, level);
+
+    [Conditional("DEBUG")]
+    public static void PrintAccumulated(string prefixMessage, LogLevel level = LogLevel.Debug)
+        => PerformanceDebugLogger.PrintAccumulated(Tag, prefixMessage, level);
+
+    [Conditional("DEBUG")]
+    public static void PrintAccumulatedGrouped(string title, LogLevel level = LogLevel.Debug)
+        => PerformanceDebugLogger.PrintAccumulatedGrouped(Tag, title, level);
+
+    [Conditional("DEBUG")]
+    public static void CheckAndHaltIfDiagnosisTriggered(string context, object? targetObject = null)
+        => PerformanceDebugLogger.CheckAndHaltIfDiagnosisTriggered(Tag, context, targetObject);
+}
+
+/// <summary>
+/// インスタンスとして保持可能な型安全ロガー
+/// </summary>
+public class TypedLogger
+{
+    private readonly string _tag;
+
+    public TypedLogger(Type type)
+    {
+        _tag = type.Name;
+    }
+
+    public TypedLogger(string tag)
+    {
+        _tag = tag;
+    }
+
+    [Conditional("DEBUG")]
+    public void WriteTrace(string message) => PerformanceDebugLogger.WriteTrace(_tag, message);
+
+    [Conditional("DEBUG")]
+    public void WriteVerbose(string message) => PerformanceDebugLogger.WriteVerbose(_tag, message);
+
+    [Conditional("DEBUG")]
+    public void WriteDebug(string message) => PerformanceDebugLogger.WriteDebug(_tag, message);
+
+    [Conditional("DEBUG")]
+    public void WriteInfo(string message) => PerformanceDebugLogger.WriteInfo(_tag, message);
+
+    [Conditional("DEBUG")]
+    public void WriteWarning(string message) => PerformanceDebugLogger.WriteWarning(_tag, message);
+
+    [Conditional("DEBUG")]
+    public void WriteError(string message) => PerformanceDebugLogger.WriteError(_tag, message);
+
+    [Conditional("DEBUG")]
+    public void WriteError(string message, Exception ex) => PerformanceDebugLogger.WriteError(_tag, message, ex);
+
+    [Conditional("DEBUG")]
+    public void LogMemoryUsage() => PerformanceDebugLogger.LogMemoryUsage(_tag);
+
+    public IDisposable MeasureTime(string scopeName, LogLevel level = LogLevel.Debug)
+        => PerformanceDebugLogger.MeasureTime(_tag, scopeName, level);
 }
