@@ -67,3 +67,6 @@ tmp/
 # --- Source Generator Outputs ---
 [Gg]enerated/
 
+# --- BenchmarkDotNet ---
+BenchmarkDotNet.Artifacts/
+docs/benchmarks/

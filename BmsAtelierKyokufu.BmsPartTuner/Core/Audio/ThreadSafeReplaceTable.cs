@@ -27,12 +27,25 @@ internal class ThreadSafeReplaceTable(int[] replaceTable, long[] fileSizes)
     public int FindRead(int fileNum)
     {
         int current = fileNum;
-        while (true)
+        int parent = _replaceTable[current];
+        if (parent == 0 || parent == current) return current;
+
+#if DEBUG
+        int depth = 0;
+#endif
+        do
         {
-            int parent = _replaceTable[current];
-            if (parent == 0 || parent == current) return current;
             current = parent;
-        }
+            parent = _replaceTable[current];
+#if DEBUG
+            if (depth++ > MaxBmsDefNum)
+            {
+                throw new InvalidOperationException("Union-Find cycle detected in FindRead.");
+            }
+#endif
+        } while (parent != 0 && parent != current);
+
+        return current;
     }
 
     /// <summary>
@@ -41,20 +54,44 @@ internal class ThreadSafeReplaceTable(int[] replaceTable, long[] fileSizes)
     public int FindRoot(int fileNum)
     {
         int root = fileNum;
-        while (true)
+        int p = _replaceTable[root];
+        if (p != 0 && p != root)
         {
-            int p = _replaceTable[root];
-            if (p == 0 || p == root) break;
-            root = p;
+#if DEBUG
+            int depth = 0;
+#endif
+            do
+            {
+                root = p;
+                p = _replaceTable[root];
+#if DEBUG
+                if (depth++ > MaxBmsDefNum)
+                {
+                    throw new InvalidOperationException("Union-Find cycle detected in FindRoot.");
+                }
+#endif
+            } while (p != 0 && p != root);
         }
 
         int current = fileNum;
-        while (current != root)
+        if (current != root)
         {
-            int p = _replaceTable[current];
-            if (p == 0 || p == current) break;
-            _replaceTable[current] = root;
-            current = p;
+#if DEBUG
+            int depth = 0;
+#endif
+            do
+            {
+                int next = _replaceTable[current];
+                if (next == 0 || next == current) break;
+                _replaceTable[current] = root;
+                current = next;
+#if DEBUG
+                if (depth++ > MaxBmsDefNum)
+                {
+                    throw new InvalidOperationException("Union-Find cycle detected in FindRoot compression.");
+                }
+#endif
+            } while (current != root);
         }
         return root;
     }

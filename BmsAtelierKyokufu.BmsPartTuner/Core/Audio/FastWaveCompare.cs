@@ -1,4 +1,5 @@
-﻿using System.Numerics;
+using System.Numerics;
+using System.Runtime.CompilerServices;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
 
@@ -22,64 +23,132 @@ internal static class FastWaveCompare
     /// <returns>類似している場合true。</returns>
     public static bool IsMatch(ICachedSoundData data1, ICachedSoundData data2, float threshold)
     {
-        if (data1.SampleRate != data2.SampleRate ||
-            data1.Channels != data2.Channels ||
-            data1.BitsPerSample != data2.BitsPerSample)
+        if (!HasCompatibleFormat(data1, data2))
         {
             return false;
         }
+
         var activeRegions1 = data1.GetActiveRegions();
         var activeRegions2 = data2.GetActiveRegions();
 
         if (activeRegions1 == null || activeRegions2 == null || activeRegions1.Length == 0 || activeRegions2.Length == 0)
         {
-
             return false;
         }
 
-        // Check both channels for total silence
+        if (TryCheckSilenceMatch(data1, data2, activeRegions1, activeRegions2, out bool isSilenceMatch))
+        {
+            return isSilenceMatch;
+        }
+
+        if (ExceedsLengthDifference(data1, data2))
+        {
+            return false;
+        }
+
+        if (IsMismatchedBySimHash(data1, data2))
+        {
+            return false;
+        }
+
+        if (IsMismatchedBySpectralFeatures(data1, data2))
+        {
+            return false;
+        }
+
+        // Find first active channel to compute Pearson on (usually 0, but could be 1 if left is silent)
+        int targetChannel = (activeRegions1[0] == null || activeRegions1[0].Count == 0) ? 1 : 0;
+
+        var shorter = data1.TotalSamples < data2.TotalSamples ? data1 : data2;
+        var longer = data1.TotalSamples < data2.TotalSamples ? data2 : data1;
+
+        var shorterFrames = shorter.TotalSamples / shorter.Channels;
+        var longerFrames = longer.TotalSamples / longer.Channels;
+
+        var shorterSpan = shorter.GetRawSpan(targetChannel, 0, shorterFrames);
+        var longerFullSpan = longer.GetRawSpan(targetChannel, 0, longerFrames);
+
+        var parameters = new WaveComparisonParameters(shorter, longer, targetChannel, shorterFrames, longerFrames, shorterSpan, longerFullSpan);
+        var (correlation, offset) = CalculateMaxCorrelation(parameters);
+
+        if (correlation >= threshold && shorterFrames < longerFrames)
+        {
+            if (HasSignificantNonOverlapEnergy(longerFullSpan, shorterFrames, longerFrames, offset))
+            {
+                return false;
+            }
+        }
+
+        return correlation >= threshold;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static bool HasCompatibleFormat(ICachedSoundData data1, ICachedSoundData data2)
+    {
+        return data1.SampleRate == data2.SampleRate &&
+               data1.Channels == data2.Channels &&
+               data1.BitsPerSample == data2.BitsPerSample;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static bool TryCheckSilenceMatch(
+        ICachedSoundData data1,
+        ICachedSoundData data2,
+        IReadOnlyList<ActiveRegion>[] activeRegions1,
+        IReadOnlyList<ActiveRegion>[] activeRegions2,
+        out bool isMatch)
+    {
         bool isData1Silent = true;
         bool isData2Silent = true;
+
         for (int ch = 0; ch < activeRegions1.Length && ch < data1.Channels; ch++)
         {
-            if (activeRegions1[ch]?.Count > 0) isData1Silent = false;
+            if (activeRegions1[ch]?.Count > 0)
+            {
+                isData1Silent = false;
+                break;
+            }
         }
+
         for (int ch = 0; ch < activeRegions2.Length && ch < data2.Channels; ch++)
         {
-            if (activeRegions2[ch]?.Count > 0) isData2Silent = false;
+            if (activeRegions2[ch]?.Count > 0)
+            {
+                isData2Silent = false;
+                break;
+            }
         }
 
-        // If both are entirely silent
-        if (isData1Silent && isData2Silent)
-        {
-            return true;
-        }
-        // If only one is entirely silent
         if (isData1Silent || isData2Silent)
         {
-            return false;
+            isMatch = isData1Silent && isData2Silent;
+            return true;
         }
 
-        // Length Heuristic: 既に末尾が無音トリム済みであるという前提に立ち、
-        // 長さ（フレーム数）が 0.1秒 以上異なる場合は、仮に部分一致しても
-        // 最終的に「はみ出た部分に音が鳴っている」として弾かれるため、重い計算をスキップする。
+        isMatch = false;
+        return false;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static bool ExceedsLengthDifference(ICachedSoundData data1, ICachedSoundData data2)
+    {
         int frames1 = data1.TotalSamples / data1.Channels;
         int frames2 = data2.TotalSamples / data2.Channels;
-        int lengthDiffThreshold = (int)(data1.SampleRate * 0.1); // 0.1秒の許容誤差
+        int lengthDiffThreshold = (int)(data1.SampleRate * AppConstants.AudioComparison.LengthSimilarityTolerance);
 
-        if (Math.Abs(frames1 - frames2) > lengthDiffThreshold)
-        {
-            return false;
-        }
+        return Math.Abs(frames1 - frames2) > lengthDiffThreshold;
+    }
 
-        // SimHash256 Cascade Classifier (Heuristic Hamming Distance Threshold: 64)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static bool IsMismatchedBySimHash(ICachedSoundData data1, ICachedSoundData data2)
+    {
         if (data1 is IAudioStatisticalData stat1 && data2 is IAudioStatisticalData stat2 &&
             stat1.SimHash256 != null && stat2.SimHash256 != null)
         {
             var s1 = stat1.SimHash256;
             var s2 = stat2.SimHash256;
 
-            // ループアンローリング（展開）による分岐命令の排除とパイプラインの最適化
+            // 手動ループ展開により分岐命令を排除
             int hammingDistance =
                 BitOperations.PopCount(s1[0] ^ s2[0]) +
                 BitOperations.PopCount(s1[1] ^ s2[1]) +
@@ -88,11 +157,15 @@ internal static class FastWaveCompare
 
             if (hammingDistance > 64)
             {
-                return false;
+                return true;
             }
         }
+        return false;
+    }
 
-        // Spectral Features Cascade Classifier (Heuristic Threshold: 0.88f)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static bool IsMismatchedBySpectralFeatures(ICachedSoundData data1, ICachedSoundData data2)
+    {
         if (data1 is IAudioStatisticalData sStat1 && data2 is IAudioStatisticalData sStat2 &&
             sStat1.SpectralFeatures != null && sStat2.SpectralFeatures != null)
         {
@@ -104,118 +177,118 @@ internal static class FastWaveCompare
                 float diff = v1[i] - v2[i];
                 distSq += diff * diff;
             }
-            // 0.88f ^ 2 = 0.7744f
-            if (distSq > 0.7744f)
+
+            if (distSq > 0.7744f) // 0.88f ^ 2
             {
-                return false;
+                return true;
             }
         }
+        return false;
+    }
 
-        // Find first active channel to compute Pearson on (usually 0, but could be 1 if left is silent)
-        int targetChannel = 0;
-        if (activeRegions1[0] == null || activeRegions1[0].Count == 0)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static bool HasSignificantNonOverlapEnergy(
+        ReadOnlySpan<float> longerFullSpan,
+        int shorterFrames,
+        int longerFrames,
+        int offset)
+    {
+        int overlapStart = offset >= 0 ? offset : 0;
+        int overlapEnd = offset >= 0 ? (offset + shorterFrames) : (shorterFrames + offset);
+        if (overlapEnd > longerFrames) overlapEnd = longerFrames;
+
+        double nonOverlapSumSq = 0;
+        int nonOverlapCount = 0;
+        for (int i = 0; i < overlapStart; i++)
         {
-            targetChannel = 1;
+            float val = longerFullSpan[i];
+            nonOverlapSumSq += val * val;
+            nonOverlapCount++;
         }
-
-        var shorter = data1.TotalSamples < data2.TotalSamples ? data1 : data2;
-        var longer = data1.TotalSamples < data2.TotalSamples ? data2 : data1;
-
-        var shorterFrames = shorter.TotalSamples / shorter.Channels;
-        var longerFrames = longer.TotalSamples / longer.Channels;
-
-        var shorterSpan = shorter.GetRawSpan(targetChannel, 0, shorterFrames);
-        var longerFullSpan = longer.GetRawSpan(targetChannel, 0, longerFrames);
-
-        var correlation = CalculateMaxCorrelation(shorter, longer, targetChannel, shorterFrames, longerFrames, shorterSpan, longerFullSpan, out int offset);
-
-        if (correlation >= threshold && shorterFrames < longerFrames)
+        for (int i = overlapEnd; i < longerFrames; i++)
         {
-            int overlapStart = offset >= 0 ? offset : 0;
-            int overlapEnd = offset >= 0 ? (offset + shorterFrames) : (shorterFrames + offset);
-            if (overlapEnd > longerFrames) overlapEnd = longerFrames;
-
-            double nonOverlapSumSq = 0;
-            int nonOverlapCount = 0;
-            for (int i = 0; i < overlapStart; i++)
-            {
-                float val = longerFullSpan[i];
-                nonOverlapSumSq += val * val;
-                nonOverlapCount++;
-            }
-            for (int i = overlapEnd; i < longerFrames; i++)
-            {
-                float val = longerFullSpan[i];
-                nonOverlapSumSq += val * val;
-                nonOverlapCount++;
-            }
-
-            if (nonOverlapCount > 0)
-            {
-                double nonOverlapRms = Math.Sqrt(nonOverlapSumSq / nonOverlapCount);
-                if (nonOverlapRms > AppConstants.AudioComparison.SilenceRmsThreshold)
-                {
-                    return false;
-                }
-            }
+            float val = longerFullSpan[i];
+            nonOverlapSumSq += val * val;
+            nonOverlapCount++;
         }
 
-        return correlation >= threshold;
+        if (nonOverlapCount > 0)
+        {
+            double nonOverlapRms = Math.Sqrt(nonOverlapSumSq / nonOverlapCount);
+            if (nonOverlapRms > AppConstants.AudioComparison.SilenceRmsThreshold)
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     /// <summary>
     /// 最適なアライメント（位相ズレ補正）を加味した上での最大ピアソン相関係数を計算します。
     /// </summary>
-    public static float CalculateMaxCorrelation(
-        ICachedSoundData shorter, ICachedSoundData longer,
-        int targetChannel,
-        int shorterFrames, int longerFrames,
-        ReadOnlySpan<float> shorterSpan, ReadOnlySpan<float> longerFullSpan,
-        out int offset)
+    public static (float Correlation, int Offset) CalculateMaxCorrelation(in WaveComparisonParameters parameters)
     {
-        offset = 0;
-        if (shorter is IAudioStatisticalData sFft && longer is IAudioStatisticalData lFft &&
-            sFft.FftSpectrum != null && lFft.FftSpectrum != null &&
-            sFft.FftSpectrum[targetChannel] != null && lFft.FftSpectrum[targetChannel] != null)
+        int offset = GetAlignmentOffset(parameters.Shorter, parameters.Longer, parameters.TargetChannel, parameters.ShorterSpan, parameters.LongerFullSpan);
+
+        if (parameters.ShorterFrames == parameters.LongerFrames && offset == 0)
         {
-            offset = WaveValidation.CalculateAlignmentOffset(sFft.FftSpectrum[targetChannel], lFft.FftSpectrum[targetChannel]);
-        }
-        else
-        {
-            offset = FftAlignmentEngine.CalculateAlignmentOffset(shorterSpan, longerFullSpan);
+            float corr = WaveValidation.CalculatePearsonCorrelationSIMD(parameters.ShorterSpan, parameters.LongerFullSpan);
+            return (corr, offset);
         }
 
-        float correlation;
-        if (shorterFrames == longerFrames && offset == 0)
+        float[] paddedShorter = System.Buffers.ArrayPool<float>.Shared.Rent(parameters.LongerFrames);
+        try
         {
-            correlation = WaveValidation.CalculatePearsonCorrelationSIMD(shorterSpan, longerFullSpan);
+            Array.Clear(paddedShorter, 0, parameters.LongerFrames);
+            PopulatePaddedShorter(parameters.ShorterSpan, paddedShorter, parameters.ShorterFrames, parameters.LongerFrames, ref offset);
+            float corr = WaveValidation.CalculatePearsonCorrelationSIMD(paddedShorter.AsSpan(0, parameters.LongerFrames), parameters.LongerFullSpan);
+            return (corr, offset);
+        }
+        finally
+        {
+            System.Buffers.ArrayPool<float>.Shared.Return(paddedShorter);
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static int GetAlignmentOffset(
+        ICachedSoundData shorter, ICachedSoundData longer,
+        int targetChannel, ReadOnlySpan<float> shorterSpan, ReadOnlySpan<float> longerFullSpan)
+    {
+        if (shorter is IAudioStatisticalData sFft && longer is IAudioStatisticalData lFft &&
+            sFft.FftSpectrum?[targetChannel] != null && lFft.FftSpectrum?[targetChannel] != null)
+        {
+            return WaveValidation.CalculateAlignmentOffset(sFft.FftSpectrum[targetChannel], lFft.FftSpectrum[targetChannel]);
+        }
+        return FftAlignmentEngine.CalculateAlignmentOffset(shorterSpan, longerFullSpan);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void PopulatePaddedShorter(
+        ReadOnlySpan<float> shorterSpan,
+        float[] paddedShorter,
+        int shorterFrames,
+        int longerFrames,
+        ref int offset)
+    {
+        if (offset >= 0)
+        {
+            if (offset + shorterFrames > longerFrames)
+            {
+                offset = 0;
+            }
+            shorterSpan.CopyTo(paddedShorter.AsSpan(offset, shorterFrames));
         }
         else
         {
-            float[] paddedShorter = System.Buffers.ArrayPool<float>.Shared.Rent(longerFrames);
-            try
+            int absOffset = -offset;
+            if (absOffset >= shorterFrames)
             {
-                Array.Clear(paddedShorter, 0, longerFrames);
-                if (offset >= 0)
-                {
-                    if (offset + shorterFrames > longerFrames) offset = 0;
-                    shorterSpan.CopyTo(paddedShorter.AsSpan(offset, shorterFrames));
-                }
-                else
-                {
-                    int absOffset = -offset;
-                    if (absOffset >= shorterFrames) absOffset = 0;
-                    int compareLen = shorterFrames - absOffset;
-                    shorterSpan.Slice(absOffset, compareLen).CopyTo(paddedShorter.AsSpan(0, compareLen));
-                }
-                correlation = WaveValidation.CalculatePearsonCorrelationSIMD(paddedShorter.AsSpan(0, longerFrames), longerFullSpan);
+                absOffset = 0;
             }
-            finally
-            {
-                System.Buffers.ArrayPool<float>.Shared.Return(paddedShorter);
-            }
+            int compareLen = shorterFrames - absOffset;
+            shorterSpan.Slice(absOffset, compareLen).CopyTo(paddedShorter.AsSpan(0, compareLen));
         }
-        return correlation;
     }
 
     /// <summary>

@@ -8,6 +8,7 @@
     "format": "npm run format:style && npm run format:analyzers",
     "test": "dotnet test",
     "test:coverage": "dotnet test --collect:\"XPlat Code Coverage\"",
-    "test:report": "powershell -ExecutionPolicy Bypass -File BmsAtelierKyokufu.BmsPartTuner.Tests/gen-test-results-json.ps1"
+    "test:report": "powershell -ExecutionPolicy Bypass -File BmsAtelierKyokufu.BmsPartTuner.Tests/gen-test-results-json.ps1",
+    "benchmark": "powershell -ExecutionPolicy Bypass -File run-benchmark.ps1"
   }
 }

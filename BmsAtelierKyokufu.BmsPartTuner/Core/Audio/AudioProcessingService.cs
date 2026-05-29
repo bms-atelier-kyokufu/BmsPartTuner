@@ -1,5 +1,4 @@
-﻿using BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Audio;
-
+using BmsAtelierKyokufu.BmsPartTuner.Core.Audio.Pipeline;
 namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio
 {
     /// <summary>
@@ -12,31 +11,15 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio
     {
         public static PreNormalizedSoundData LoadAndProcess(string path, NormalizationMode normalizationMode)
         {
-            // 1. ファイルI/O と デインターリーブ (NAudio依存の隔離)
-            var (samplesPerChannel, fileInfo) = AudioFileReaderService.LoadAndDeinterleave(path);
+            var context = new AudioProcessingContext(path, normalizationMode);
+            var pipeline = new AudioProcessingPipeline()
+                .AddStep(new LoadAndDeinterleaveStep())
+                .AddStep(new ApplyNormalizationStep())
+                .AddStep(new ExtractMetricsStep())
+                .AddStep(new ExtractFeaturesStep())
+                .AddStep(new BuildResultStep());
 
-            int samplesPerChannelLen = fileInfo.TotalSamples / fileInfo.Channels;
-            int channels = fileInfo.Channels;
-
-            // 2. 正規化処理 (純粋な配列計算)
-            if (normalizationMode != NormalizationMode.None)
-            {
-                AudioNormalizationEngine.ApplyNormalization(samplesPerChannel, channels, normalizationMode);
-            }
-
-            // 3. 有音区間とRMS・無音時間の抽出
-            var metrics = AudioNormalizationEngine.ExtractMetrics(samplesPerChannel, samplesPerChannelLen, channels);
-
-            // 4. 特徴量（FFT, LSH, SimHash等）の抽出
-            var features = AudioFeatureExtractor.ExtractAllFeatures(samplesPerChannel, samplesPerChannelLen, metrics.Regions, channels);
-
-            // 結果の生成
-            var p = new PreNormalizedSoundDataParameters(
-                fileInfo,
-                metrics,
-                features
-            );
-            return new PreNormalizedSoundData(p);
+            return pipeline.Execute(context);
         }
     }
 }

@@ -1,6 +1,7 @@
 using System.IO;
 using System.Text;
 using System.Text.Json;
+using BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 using BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms.Bmson;
 using BmsAtelierKyokufu.BmsPartTuner.Models;
@@ -329,8 +330,8 @@ public class BmsonOptimizationIntegrationTests
                 var shorterSpan = shorter.GetRawSpan(targetChannel, 0, shorterFrames);
                 var longerFullSpan = longer.GetRawSpan(targetChannel, 0, longerFrames);
 
-                float r = BmsAtelierKyokufu.BmsPartTuner.Core.Audio.FastWaveCompare.CalculateMaxCorrelation(
-                    shorter, longer, targetChannel, shorterFrames, longerFrames, shorterSpan, longerFullSpan, out _);
+                var parameters = new WaveComparisonParameters(shorter, longer, targetChannel, shorterFrames, longerFrames, shorterSpan, longerFullSpan);
+                float r = FastWaveCompare.CalculateMaxCorrelation(parameters).Correlation;
 
                 var v1 = vectors[data1.FilePath];
                 var v2 = vectors[data2.FilePath];
@@ -385,7 +386,7 @@ public class BmsonOptimizationIntegrationTests
 
             if (!audioCache.ContainsKey(file.Name))
             {
-                var data = BmsAtelierKyokufu.BmsPartTuner.Core.Audio.AudioProcessingService.LoadAndProcess(fullPath, NormalizationMode.None);
+                var data = AudioProcessingService.LoadAndProcess(fullPath, NormalizationMode.None);
                 audioCache[file.Name] = data;
             }
         }
@@ -418,8 +419,8 @@ public class BmsonOptimizationIntegrationTests
                 var shorterSpan = shorter.GetRawSpan(targetChannel, 0, shorterFrames);
                 var longerFullSpan = longer.GetRawSpan(targetChannel, 0, longerFrames);
 
-                float r = BmsAtelierKyokufu.BmsPartTuner.Core.Audio.FastWaveCompare.CalculateMaxCorrelation(
-                    shorter, longer, targetChannel, shorterFrames, longerFrames, shorterSpan, longerFullSpan, out _);
+                var parameters = new WaveComparisonParameters(shorter, longer, targetChannel, shorterFrames, longerFrames, shorterSpan, longerFullSpan);
+                float r = FastWaveCompare.CalculateMaxCorrelation(parameters).Correlation;
 
                 var s1 = stat1.SimHash256;
                 var s2 = stat2.SimHash256;

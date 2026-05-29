@@ -28,10 +28,12 @@ internal class ParallelAudioComparisonEngine(AudioComparisonParameters parameter
 
     #region フィールド
 
-    private readonly IReadOnlyList<BmsAudioFile> _fileList = parameters.FileList ?? throw new ArgumentNullException(nameof(parameters.FileList));
+    private readonly IReadOnlyList<BmsAudioFile> _fileList 
+        = parameters.FileList ?? throw new ArgumentNullException(nameof(parameters.FileList));
     private readonly int _startPoint = parameters.StartPoint;
     private readonly int _endPoint = parameters.EndPoint;
-    private readonly IReadOnlyDictionary<string, ICachedSoundData> _audioCache = parameters.AudioCache ?? throw new ArgumentNullException(nameof(parameters.AudioCache));
+    private readonly IReadOnlyDictionary<string, ICachedSoundData> _audioCache 
+        = parameters.AudioCache ?? throw new ArgumentNullException(nameof(parameters.AudioCache));
     private readonly ThreadSafeReplaceTable _tableManager = new(parameters.ReplaceTable, BuildFileSizeArray(parameters.FileList));
 
     private static long[] BuildFileSizeArray(IReadOnlyList<BmsAudioFile> fileList)
@@ -121,7 +123,6 @@ internal class ParallelAudioComparisonEngine(AudioComparisonParameters parameter
         IProgress<int> progress,
         CancellationToken cancellationToken = default)
     {
-        int processedCount = 0;
         int totalFiles = groups.Sum(g => g.Count);
         int totalComparisons = 0;
         int totalMatches = 0;
@@ -132,6 +133,7 @@ internal class ParallelAudioComparisonEngine(AudioComparisonParameters parameter
             CancellationToken = cancellationToken
         };
 
+        var context = new ComparisonContext(r2Threshold, totalFiles, progress, cancellationToken);
         var timer = PerformanceDebugLogger.StartTimer();
 
         try
@@ -141,24 +143,21 @@ internal class ParallelAudioComparisonEngine(AudioComparisonParameters parameter
                 // check for cancellation at start of group processing
                 parallelOptions.CancellationToken.ThrowIfCancellationRequested();
 
-                int groupComparisons = 0;
-                int groupMatches = 0;
-                int groupSkipped = 0;
+                var stats = new GroupComparisonStats();
 
-                CompareGroup(group, r2Threshold, ref processedCount, totalFiles, progress,
-                    ref groupComparisons, ref groupMatches, ref groupSkipped, cancellationToken);
+                CompareGroup(group, context, ref stats);
 
-                Interlocked.Add(ref totalComparisons, groupComparisons);
-                Interlocked.Add(ref totalMatches, groupMatches);
+                Interlocked.Add(ref totalComparisons, stats.Comparisons);
+                Interlocked.Add(ref totalMatches, stats.Matches);
             });
         }
         catch (OperationCanceledException)
         {
-            s_logger.WriteDebug( "=== CompareGroups Cancelled ===");
+            s_logger.WriteDebug("=== CompareGroups Cancelled ===");
             throw;
         }
 
-        s_logger.WriteDebug( $"=== CompareGroups Complete: {totalComparisons} comparisons, {timer.Lap("CompareGroups")}ms ===");
+        s_logger.WriteDebug($"=== CompareGroups Complete: {totalComparisons} comparisons, {timer.Lap("CompareGroups")}ms ===");
     }
 
     #endregion
@@ -171,38 +170,30 @@ internal class ParallelAudioComparisonEngine(AudioComparisonParameters parameter
     /// </summary>
     private void CompareGroup(
         IReadOnlyList<int> group,
-        float r2Threshold,
-        ref int processedCount,
-        int totalFiles,
-        IProgress<int> progress,
-        ref int comparisons,
-        ref int matches,
-        ref int skipped,
-        CancellationToken cancellationToken)
+        ComparisonContext context,
+        ref GroupComparisonStats stats)
     {
         if (group.Count == 1)
         {
-            MarkSelf(group[0], ref processedCount, totalFiles, progress);
+            MarkSelf(group[0], context);
             return;
         }
 
         var entries = CreateSortedEntries(group);
-        PerformSortAndSweep(entries, r2Threshold, ref processedCount, totalFiles, progress,
-            ref comparisons, ref matches, ref skipped, cancellationToken);
+        PerformSortAndSweep(entries, context, ref stats);
     }
 
     /// <summary>
     /// 単一ファイルグループの処理（自分自身をマーク）。
     /// </summary>
-    private void MarkSelf(int idx, ref int processedCount, int totalFiles, IProgress<int> progress)
+    private void MarkSelf(int idx, ComparisonContext context)
     {
         int fileNum = _fileList[idx].NumInteger;
         if (fileNum >= _startPoint && fileNum <= _endPoint)
         {
             _tableManager.MarkSelf(fileNum);
         }
-        Interlocked.Increment(ref processedCount);
-        ReportProgress(ref processedCount, totalFiles, progress);
+        context.IncrementProcessedCount();
     }
 
     /// <summary>
@@ -278,7 +269,8 @@ internal class ParallelAudioComparisonEngine(AudioComparisonParameters parameter
         var shorterSpan = shorter.GetRawSpan(ch, 0, shorterFrames);
         var longerFullSpan = longer.GetRawSpan(ch, 0, longerFrames);
 
-        float r = FastWaveCompare.CalculateMaxCorrelation(shorter, longer, ch, shorterFrames, longerFrames, shorterSpan, longerFullSpan, out _);
+        var parameters = new WaveComparisonParameters(shorter, longer, ch, shorterFrames, longerFrames, shorterSpan, longerFullSpan);
+        float r = FastWaveCompare.CalculateMaxCorrelation(parameters).Correlation;
 
         // 相関 r を距離 d に変換: d = sqrt(2 * max(0, 1 - r))
         return (float)Math.Sqrt(2.0 * Math.Max(0.0, 1.0 - r));
@@ -290,16 +282,10 @@ internal class ParallelAudioComparisonEngine(AudioComparisonParameters parameter
     /// </summary>
     private void PerformSortAndSweep(
         AudioEntry[] entries,
-        float r2Threshold,
-        ref int processedCount,
-        int totalFiles,
-        IProgress<int> progress,
-        ref int comparisons,
-        ref int matches,
-        ref int skipped,
-        CancellationToken cancellationToken)
+        ComparisonContext context,
+        ref GroupComparisonStats stats)
     {
-        float dThreshold = (float)Math.Sqrt(2.0 * Math.Max(0.0, 1.0 - r2Threshold));
+        float dThreshold = (float)Math.Sqrt(2.0 * Math.Max(0.0, 1.0 - context.R2Threshold));
         const float epsilon = 1e-4f;
 
         // 自分自身のエントリに対するマークおよび進捗報告（直列実行の初期化）
@@ -310,41 +296,59 @@ internal class ParallelAudioComparisonEngine(AudioComparisonParameters parameter
             {
                 _tableManager.MarkSelf(iVal);
             }
-            Interlocked.Increment(ref processedCount);
-            ReportProgress(ref processedCount, totalFiles, progress);
+            context.IncrementProcessedCount();
         }
 
-        // 対角線走査: 距離 d (1 から N-1 まで)
-        for (int d = 1; d < entries.Length; d++)
+        // 範囲内（startPoint 〜 endPoint）のエントリのみを事前抽出してループ対象を削減（メモリアロケーション回避のため ArrayPool を使用）
+        var inRangeEntries = ArrayPool<AudioEntry>.Shared.Rent(entries.Length);
+        int inRangeCount = 0;
+
+        try
         {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            for (int i = 0; i < entries.Length - d; i++)
+            for (int i = 0; i < entries.Length; i++)
             {
-                int j = i + d;
-
-                int iIdx = entries[i].OriginalIndex;
-                int jIdx = entries[j].OriginalIndex;
-
-                int iVal = _fileList[iIdx].NumInteger;
-                int jVal = _fileList[jIdx].NumInteger;
-
-                if (iVal < _startPoint || iVal > _endPoint || jVal < _startPoint || jVal > _endPoint) continue;
-
-                // 枝刈り (三角不等式)
-                if (entries[i].HasDistances && entries[j].HasDistances)
+                int val = _fileList[entries[i].OriginalIndex].NumInteger;
+                if (val >= _startPoint && val <= _endPoint)
                 {
-                    if (Math.Abs(entries[i].Dist0 - entries[j].Dist0) > dThreshold + epsilon ||
-                        Math.Abs(entries[i].Dist1 - entries[j].Dist1) > dThreshold + epsilon ||
-                        Math.Abs(entries[i].Dist2 - entries[j].Dist2) > dThreshold + epsilon)
-                    {
-                        Interlocked.Increment(ref skipped);
-                        continue;
-                    }
+                    inRangeEntries[inRangeCount++] = entries[i];
                 }
-
-                CompareFilePair(iIdx, jIdx, r2Threshold, ref comparisons, ref matches, ref skipped);
             }
+
+            // 対角線走査: 距離 d (1 から N-1 まで)
+            for (int d = 1; d < inRangeCount; d++)
+            {
+                context.CancellationToken.ThrowIfCancellationRequested();
+
+                for (int i = 0; i < inRangeCount - d; i++)
+                {
+                    int j = i + d;
+
+                    int iIdx = inRangeEntries[i].OriginalIndex;
+                    int jIdx = inRangeEntries[j].OriginalIndex;
+
+                    int jVal = _fileList[jIdx].NumInteger;
+                    if (_tableManager.IsMapped(jVal)) continue;
+
+                    // 枝刈り (三角不等式)
+                    if (inRangeEntries[i].HasDistances && inRangeEntries[j].HasDistances)
+                    {
+                        float limit = dThreshold + epsilon;
+                        if (Math.Abs(inRangeEntries[i].Dist0 - inRangeEntries[j].Dist0) > limit ||
+                            Math.Abs(inRangeEntries[i].Dist1 - inRangeEntries[j].Dist1) > limit ||
+                            Math.Abs(inRangeEntries[i].Dist2 - inRangeEntries[j].Dist2) > limit)
+                        {
+                            stats.Skipped++;
+                            continue;
+                        }
+                    }
+
+                    CompareFilePair(iIdx, jIdx, context, ref stats);
+                }
+            }
+        }
+        finally
+        {
+            System.Buffers.ArrayPool<AudioEntry>.Shared.Return(inRangeEntries);
         }
     }
 
@@ -352,7 +356,7 @@ internal class ParallelAudioComparisonEngine(AudioComparisonParameters parameter
     /// ファイルペアの波形を詳細に比較し、一致する場合は置換テーブルを更新します。
     /// 比較の前に高速チェック（Anti-Set、ファイル名、フィンガープリント）を行い、不要な処理をスキップします。
     /// </summary>
-    private void CompareFilePair(int iIdx, int jIdx, float r2Threshold, ref int comparisons, ref int matches, ref int skipped)
+    private void CompareFilePair(int iIdx, int jIdx, ComparisonContext context, ref GroupComparisonStats stats)
     {
         int iVal = _fileList[iIdx].NumInteger;
         int jVal = _fileList[jIdx].NumInteger;
@@ -366,7 +370,7 @@ internal class ParallelAudioComparisonEngine(AudioComparisonParameters parameter
         if (rootI == rootJ) return;
         if (_tableManager.IsKnownMismatch(rootI, rootJ))
         {
-            Interlocked.Increment(ref skipped);
+            stats.Skipped++;
             return;
         }
 
@@ -374,21 +378,21 @@ internal class ParallelAudioComparisonEngine(AudioComparisonParameters parameter
             (!string.IsNullOrEmpty(_fileList[iIdx].AudioFingerprint) && _fileList[iIdx].AudioFingerprint.Equals(_fileList[jIdx].AudioFingerprint)))
         {
             _tableManager.UpdateReplaceTable(iVal, jVal);
-            Interlocked.Increment(ref matches);
+            stats.Matches++;
             return;
         }
 
         _audioCache.TryGetValue(_fileList[iIdx].Name, out var cachedData1);
         _audioCache.TryGetValue(_fileList[jIdx].Name, out var cachedData2);
-        if (cachedData1 == null || cachedData2 == null) { Interlocked.Increment(ref skipped); return; }
+        if (cachedData1 == null || cachedData2 == null) { stats.Skipped++; return; }
 
-        Interlocked.Increment(ref comparisons);
-        bool isMatch = FastWaveCompare.IsMatch(cachedData1, cachedData2, r2Threshold);
+        stats.Comparisons++;
+        bool isMatch = FastWaveCompare.IsMatch(cachedData1, cachedData2, context.R2Threshold);
 
         if (isMatch)
         {
             _tableManager.UpdateReplaceTable(iVal, jVal);
-            Interlocked.Increment(ref matches);
+            stats.Matches++;
         }
         else
         {
@@ -398,19 +402,48 @@ internal class ParallelAudioComparisonEngine(AudioComparisonParameters parameter
         }
     }
 
+    #endregion
 
+    #region パラメーターオブジェクト定義
 
     /// <summary>
-    /// 100ファイルごと、または完了時に進捗を報告し、オーバーヘッドを削減します。
+    /// 全体的な比較処理のパラメーターと進捗状況を保持するコンテキストクラスです。
     /// </summary>
-    private static void ReportProgress(ref int processedCount, int totalCount, IProgress<int> progress)
+    private class ComparisonContext(
+        float r2Threshold,
+        int totalFiles,
+        IProgress<int> progress,
+        CancellationToken cancellationToken)
     {
-        int current = processedCount;
-        if (current % 100 == 0 || current == totalCount)
+        private int _processedCount;
+
+        public float R2Threshold { get; } = r2Threshold;
+        public int TotalFiles { get; } = totalFiles;
+        public IProgress<int> Progress { get; } = progress;
+        public CancellationToken CancellationToken { get; } = cancellationToken;
+
+        /// <summary>
+        /// 処理済みファイル数を thread-safe にインクリメントし、必要に応じて進捗状況を報告します。
+        /// </summary>
+        public void IncrementProcessedCount()
         {
-            int percentage = AppConstants.Progress.PreloadComplete + (int)((float)current / totalCount * ProgressPhase2Range);
-            progress.Report(percentage);
+            int current = Interlocked.Increment(ref _processedCount);
+            if (current % 100 == 0 || current == TotalFiles)
+            {
+                int percentage = AppConstants.Progress.PreloadComplete + (int)((float)current / TotalFiles * ProgressPhase2Range);
+                Progress.Report(percentage);
+            }
         }
+    }
+
+    /// <summary>
+    /// 単一のグループ内での比較統計情報を保持するオブジェクトです。
+    /// </summary>
+    private ref struct GroupComparisonStats
+    {
+        public int Comparisons { get; set; }
+        public int Matches { get; set; }
+        public int Skipped { get; set; }
     }
 
     #endregion

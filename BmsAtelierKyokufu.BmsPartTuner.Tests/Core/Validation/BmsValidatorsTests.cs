@@ -1,4 +1,4 @@
-﻿using BmsAtelierKyokufu.BmsPartTuner.Core.Validation;
+using BmsAtelierKyokufu.BmsPartTuner.Core.Validation;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Validation;
 
@@ -11,6 +11,11 @@ public class DefinitionRangeValidatorTests
 
     #region Valid Range Tests - 正常系
 
+    /// <summary>
+    /// 有効な定義範囲が指定された場合、検証が成功することを確認します。
+    /// </summary>
+    /// <param name="start">開始定義。</param>
+    /// <param name="end">終了定義。</param>
     [Theory]
     [InlineData("01", "ZZ")]     // 36進数の全範囲
     [InlineData("01", "zz")]     // 62進数の全範囲
@@ -32,6 +37,9 @@ public class DefinitionRangeValidatorTests
 
     #region Null/Empty Tests - Null・空値
 
+    /// <summary>
+    /// nullが指定された場合、検証が失敗することを確認します。
+    /// </summary>
     [Fact]
     public void Validate_NullRange_ReturnsFailure()
     {
@@ -45,6 +53,11 @@ public class DefinitionRangeValidatorTests
 
     #region Length Validation Tests - 長さチェック
 
+    /// <summary>
+    /// 開始定義の桁数が不正な場合、検証が失敗することを確認します。
+    /// </summary>
+    /// <param name="start">開始定義。</param>
+    /// <param name="end">終了定義。</param>
     [Theory]
     [InlineData("1", "ZZ")]       // 開始が1桁
     [InlineData("001", "ZZ")]    // 開始が3桁
@@ -59,6 +72,11 @@ public class DefinitionRangeValidatorTests
         Assert.Contains("開始定義は2桁で入力してください", result.GetFirstError());
     }
 
+    /// <summary>
+    /// 終了定義の桁数が不正な場合、検証が失敗することを確認します。
+    /// </summary>
+    /// <param name="start">開始定義。</param>
+    /// <param name="end">終了定義。</param>
     [Theory]
     [InlineData("01", "Z")]       // 終了が1桁
     [InlineData("01", "ZZZ")]    // 終了が3桁
@@ -77,6 +95,9 @@ public class DefinitionRangeValidatorTests
 
     #region Range Validation Tests - 範囲チェック
 
+    /// <summary>
+    /// 開始定義が最小値未満の場合、検証が失敗することを確認します。
+    /// </summary>
     [Fact]
     public void Validate_StartBelowMinimum_ReturnsFailure()
     {
@@ -89,6 +110,9 @@ public class DefinitionRangeValidatorTests
         Assert.Contains("開始定義は01以上にしてください", result.GetFirstError());
     }
 
+    /// <summary>
+    /// 終了定義が開始定義より小さい場合、検証が失敗することを確認します。
+    /// </summary>
     [Fact]
     public void Validate_EndGreaterThanStart_RequiredForSuccess()
     {
@@ -101,6 +125,9 @@ public class DefinitionRangeValidatorTests
         Assert.Contains("終了定義は開始定義より大きい値にしてください", result.GetFirstError());
     }
 
+    /// <summary>
+    /// 終了定義が開始定義と等しい場合、検証が失敗することを確認します。
+    /// </summary>
     [Fact]
     public void Validate_EndEqualsStart_ReturnsFailure()
     {
@@ -117,6 +144,11 @@ public class DefinitionRangeValidatorTests
 
     #region Format Validation Tests - 形式チェック
 
+    /// <summary>
+    /// 不正な文字が含まれている場合、検証が失敗することを確認します。
+    /// </summary>
+    /// <param name="start">開始定義。</param>
+    /// <param name="end">終了定義。</param>
     [Theory]
     [InlineData("!!", "ZZ")]     // 記号
     [InlineData("##", "ZZ")]     // 特殊文字
@@ -134,6 +166,9 @@ public class DefinitionRangeValidatorTests
 
     #region Case Sensitivity Tests - 大文字小文字
 
+    /// <summary>
+    /// 大文字と小文字が混在していても許容されることを確認します。
+    /// </summary>
     [Fact]
     public void Validate_MixedCase_AcceptsBoth()
     {
@@ -157,6 +192,11 @@ public class R2ThresholdValidatorTests
 
     #region ValidateWithValue Tests - 正常系（整数 = 表示値）
 
+    /// <summary>
+    /// 整数の表示値が指定された場合、対応する内部値に変換されることを確認します。
+    /// </summary>
+    /// <param name="input">入力文字列。</param>
+    /// <param name="expectedInternal">期待される内部値。</param>
     [Theory]
     [InlineData("0", 0.0f)]
     [InlineData("50", 0.5f)]
@@ -175,6 +215,11 @@ public class R2ThresholdValidatorTests
 
     #region ValidateWithValue Tests - 正常系（小数 = 内部値、後方互換）
 
+    /// <summary>
+    /// 小数の内部値が指定された場合、そのままの値が保持されることを確認します。
+    /// </summary>
+    /// <param name="input">入力文字列。</param>
+    /// <param name="expectedInternal">期待される内部値。</param>
     [Theory]
     [InlineData("0.0", 0.0f)]
     [InlineData("0.5", 0.5f)]
@@ -193,6 +238,11 @@ public class R2ThresholdValidatorTests
 
     #region ValidateWithValue Tests - 正常系（小数表示値）
 
+    /// <summary>
+    /// 小数の表示値が指定された場合、対応する内部値に正しく変換されることを確認します。
+    /// </summary>
+    /// <param name="input">入力文字列。</param>
+    /// <param name="expectedInternal">期待される内部値。</param>
     [Theory]
     [InlineData("50.5", 0.505f)]   // 1-100スケールの小数
     [InlineData("75.25", 0.7525f)]
@@ -209,6 +259,10 @@ public class R2ThresholdValidatorTests
 
     #region ValidateWithValue Tests - 異常系
 
+    /// <summary>
+    /// 空または空白の文字列が指定された場合、検証が失敗することを確認します。
+    /// </summary>
+    /// <param name="input">入力文字列。</param>
     [Theory]
     [InlineData("")]
     [InlineData("   ")]
@@ -221,6 +275,10 @@ public class R2ThresholdValidatorTests
         Assert.Contains("マッチ許容度を入力してください", result.GetFirstError());
     }
 
+    /// <summary>
+    /// 範囲外の値が指定された場合、検証が失敗することを確認します。
+    /// </summary>
+    /// <param name="input">入力文字列。</param>
     [Theory]
     [InlineData("-1")]
     [InlineData("-50")]
@@ -234,6 +292,10 @@ public class R2ThresholdValidatorTests
         Assert.Contains("0～100の範囲で入力してください", result.GetFirstError());
     }
 
+    /// <summary>
+    /// 不正な形式の文字列が指定された場合、検証が失敗することを確認します。
+    /// </summary>
+    /// <param name="input">入力文字列。</param>
     [Theory]
     [InlineData("abc")]
     [InlineData("!@#")]
@@ -250,6 +312,9 @@ public class R2ThresholdValidatorTests
 
     #region Validate Tests - 値なし版
 
+    /// <summary>
+    /// 有効な入力が指定された場合、検証が成功することを確認します。
+    /// </summary>
     [Fact]
     public void Validate_ValidInput_ReturnsSuccess()
     {
@@ -258,6 +323,9 @@ public class R2ThresholdValidatorTests
         Assert.True(result.IsValid);
     }
 
+    /// <summary>
+    /// 無効な入力が指定された場合、検証が失敗することを確認します。
+    /// </summary>
     [Fact]
     public void Validate_InvalidInput_ReturnsFailure()
     {
@@ -271,6 +339,10 @@ public class R2ThresholdValidatorTests
 
     #region Edge Cases - エッジケース
 
+    /// <summary>
+    /// 境界値が指定された場合、検証が成功することを確認します。
+    /// </summary>
+    /// <param name="input">入力文字列。</param>
     [Theory]
     [InlineData("0")]      // 最小境界
     [InlineData("100")]    // 最大境界
@@ -281,6 +353,9 @@ public class R2ThresholdValidatorTests
         Assert.True(result.IsValid);
     }
 
+    /// <summary>
+    /// 先頭にゼロが含まれる値が指定された場合、正しく解析されることを確認します。
+    /// </summary>
     [Fact]
     public void ValidateWithValue_LeadingZeros_ParsesCorrectly()
     {
@@ -300,6 +375,9 @@ public class ValidationResultTests
 {
     #region ValidationResult Tests
 
+    /// <summary>
+    /// 成功を表す有効な結果が作成されることを確認します。
+    /// </summary>
     [Fact]
     public void Success_CreatesValidResult()
     {
@@ -309,6 +387,9 @@ public class ValidationResultTests
         Assert.Empty(result.Errors);
     }
 
+    /// <summary>
+    /// 単一のエラーを持つ失敗結果が作成されることを確認します。
+    /// </summary>
     [Fact]
     public void Failure_SingleError_CreatesInvalidResult()
     {
@@ -319,6 +400,9 @@ public class ValidationResultTests
         Assert.Equal("エラーメッセージ", result.GetFirstError());
     }
 
+    /// <summary>
+    /// 複数のエラーを持つ失敗結果が作成されることを確認します。
+    /// </summary>
     [Fact]
     public void Failure_MultipleErrors_CreatesInvalidResult()
     {
@@ -330,6 +414,9 @@ public class ValidationResultTests
         Assert.Equal(3, result.Errors.Count);
     }
 
+    /// <summary>
+    /// 全てのエラーメッセージが指定した区切り文字で結合されることを確認します。
+    /// </summary>
     [Fact]
     public void GetAllErrors_JoinsWithSeparator()
     {
@@ -341,6 +428,9 @@ public class ValidationResultTests
         Assert.Equal("エラー1, エラー2", allErrors);
     }
 
+    /// <summary>
+    /// エラーがない場合、最初のエラーとして空文字列が返されることを確認します。
+    /// </summary>
     [Fact]
     public void GetFirstError_NoErrors_ReturnsEmptyString()
     {
@@ -355,6 +445,9 @@ public class ValidationResultTests
 
     #region ValidationResult<T> Tests
 
+    /// <summary>
+    /// 値を持つ成功結果が作成されることを確認します。
+    /// </summary>
     [Fact]
     public void Success_WithValue_CreatesValidResultWithValue()
     {
@@ -365,6 +458,9 @@ public class ValidationResultTests
         Assert.Empty(result.Errors);
     }
 
+    /// <summary>
+    /// 値を持たない失敗結果が作成されることを確認します。
+    /// </summary>
     [Fact]
     public void Failure_WithValue_CreatesInvalidResult()
     {
