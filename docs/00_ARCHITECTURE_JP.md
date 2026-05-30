@@ -1,4 +1,4 @@
-﻿# BmsPartTuner ソフトウェアアーキテクチャ
+# BmsPartTuner ソフトウェアアーキテクチャ
 
 <div style="display: flex; justify-content: center; margin:1em">
        <img src="img/Document-Hierarchy_JP.svg" alt="ドキュメント階層" width="40%" >
@@ -23,9 +23,7 @@
 - BmsAtelierKyokufu.BmsPartTuner.Tests: ユニットテストおよび統合テスト (xUnit)。
 
 ## システム構造図
-![ARCHITECTURE図解](svg/ARCHITECTURE.svg)
-<!-- https://www.mermaidchart.com/ -->
-<!--
+
 ```mermaid
 flowchart TB
  subgraph Controls["Custom Controls"]
@@ -58,9 +56,12 @@ flowchart TB
         TNS["ToastNotificationService"]
         TS["ThemeService"]
  end
- subgraph Audio_Engine["Audio Processing"]
+ subgraph Audio_Engine["Audio Processing & Comparison"]
         PACE["ParallelAudioComparisonEngine"]
-        FWC["FastWaveCompare"]
+        TSRT["ThreadSafeReplaceTable (Anti-Set)"]
+        SH["SimHash256 (LSH)"]
+        SF["SpectralFeatures (FFT)"]
+        FWC["FastWaveCompare (SIMD)"]
         INDS["InstrumentNameDetectionService"]
  end
  subgraph Bms_Core["BMS Management"]
@@ -73,17 +74,17 @@ flowchart TB
         Audio_Engine
         Bms_Core
  end
-    MainWindow --\> MainVM
-    SettingsView --\> SVM
-    SCC -.-\> OVM
-    SFC -.-\> FLVM
-    MainVM --\> FOVM & FLVM & OVM & SVM & NVM
-    FLVM --\> FLFS
-    OVM --\> BOS
-    SVM --\> SS & TS & LLS & LLS
-    BOS --\> PACE & BM & BFR & SE
-    PACE --\> FWC
-    FLFS --\> INDS
+    MainWindow --> MainVM
+    SettingsView --> SVM
+    SCC -.-> OVM
+    SFC -.-> FLVM
+    MainVM --> FOVM & FLVM & OVM & SVM & NVM
+    FLVM --> FLFS
+    OVM --> BOS
+    SVM --> SS & TS & LLS & LLS
+    BOS --> PACE & BM & BFR & SE
+    PACE --> TSRT & SH & SF & FWC
+    FLFS --> INDS
 
     %% クラス定義：ここで青統一スタイルを適用
     classDef blueNode fill:#FFFFFF,stroke:#1565C0,stroke-width:1px,color:#0D47A1;
@@ -95,9 +96,9 @@ flowchart TB
     style Bms_Core fill:#F2F7FF,stroke:#8CBCFF,color:#001D36,stroke-dasharray: 5 5
     
     %% 全ノードとクラスターに適用
-    class SCC,SFC,TC,MainWindow,SettingsView,FOVM,FLVM,OVM,SVM,NVM,MainVM,FLFS,SS,RCS,LLS,DDS,TNS,TS,PACE,FWC,INDS,BM,BFR,SE,BOS blueNode;
+    class SCC,SFC,TC,MainWindow,SettingsView,FOVM,FLVM,OVM,SVM,NVM,MainVM,FLFS,SS,RCS,LLS,DDS,TNS,TS,PACE,TSRT,SH,SF,FWC,INDS,BM,BFR,SE,BOS blueNode;
     class Controls,View_Layer,Sub_ViewModels,ViewModel_Layer,Service_Layer,Audio_Engine,Bms_Core,Core_Layer blueCluster;
--->
+```
 
 
 ## ディレクトリ構成と責務
@@ -115,9 +116,12 @@ UIレイヤーから独立した、純粋なドメインロジックが含まれ
 
 ### 2\. 音声処理 (/Audio)
 
-低レベルの音声操作と波形分析を担当します。
+低レベルの音声操作、波形分析、およびカスケード分類エンジンを担当します。
 
-* **FastWaveCompare**: 音声波形データを比較するための最適化されたアルゴリズム。  
+* **ParallelAudioComparisonEngine**: 4段階のカスケード分類アルゴリズムの並列実行をオーケストレーションします。
+* **ThreadSafeReplaceTable**: Stage 1の足切りのための Lock-free Anti-Set（不一致キャッシュ）実装。
+* **SimHash256 / SpectralFeatures**: Stage 2 (LSH) および Stage 3 (FFT) の早期除外（Early Pruning）ロジック。
+* **FastWaveCompare**: Stage 4の最終比較を行うためのSIMD最適化されたピアソン相関アルゴリズム。
 * **WaveValidation**: 音声ファイル形式の検証ロジック。  
 * **AudioCacheManager**: パフォーマンス向上のための音声データキャッシュ機構。
 

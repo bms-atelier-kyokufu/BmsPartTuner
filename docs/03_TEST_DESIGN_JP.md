@@ -10,7 +10,8 @@
 純粋なロジックを分離して検証し、高速なフィードバックを得ます。
 - **対象**:
     - `RadixConvert`: 36進数/1296進数/62進数変換ロジック
-    - `FastWaveCompare`: 音声波形比較ロジック（数学的正当性）
+    - `FastWaveCompare`: カスケード最終段の音声波形比較ロジック（数学的正当性）
+    - `ParallelAudioComparisonEngine`: 4段階カスケード分類アルゴリズムの制御ロジック
     - `WaveValidation`: 相関係数計算、SIMD演算
     - `DefinitionRangeManager`: 定義範囲管理
     - `AudioCacheManager`: 音声ファイル読み込み異常系、リソース管理
@@ -50,19 +51,22 @@ MVVMパターンに基づき、ViewModelの状態遷移とコマンド実行を�
 
 ### B. 音声比較エンジン (`Audio/`)
 
-#### Unit Tests (`FastWaveCompare`, `WaveValidation`)
-- **波形比較の精度**:
+#### Unit Tests (`ParallelAudioComparisonEngine`, `FastWaveCompare`, `WaveValidation`)
+- **波形比較の精度（Stage 4）**:
     - 同一ファイル（Correlation = 1.0）。
     - 逆相ファイル（Correlation = -1.0）。
     - 無音ファイル同士の比較。
+- **カスケード早期除外の正確性（Stage 1-3）**:
+    - Anti-Setキャッシュに登録されたペアが確実にO(1)でスキップされるか。
+    - SimHashによるハミング距離計算が、全く異なる波形を正確に除外するか。
 - **エッジケース**:
     - 極端に短いファイル。
-    - サンプリングレートやビット深度が異なるファイルの比較（即座に `false` または `0.0` を返すか）。
+    - サンプリングレートやビット深度が異なるファイルの比較（フォーマット不一致として即座に除外されるか）。
     - **無音の長さ違い**: 音声内容は同じだが前後の無音が異なる場合の判定（仕様に従う）。
-    - **フォーマット不一致**: 比較不可として処理されるか。
 
 #### Performance Tests (`Benchmarks/`)
 - **処理速度検証**:
+    - カスケードアルゴリズム（LSH, FFT足切り）が、従来の部分的比較よりも全体として高速であることを確認。
     - `FastWaveCompare` のSIMD演算がスカラー実装と比較して高速であることを確認。
     - アサーション例: `simdTime < scalarTime * 0.9`
 

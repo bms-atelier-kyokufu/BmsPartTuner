@@ -1,0 +1,71 @@
+site_name: BMS Part Tuner
+site_url: https://bms-atelier-kyokufu.github.io/BmsPartTuner/
+repo_url: https://github.com/bms-atelier-kyokufu/BmsPartTuner
+site_dir: site
+
+theme:
+  name: material
+  language: ja
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+extra:
+  alternate:
+    - name: 日本語
+      link: ./
+      lang: ja
+    - name: English
+      link: ./en/
+      lang: en
+
+markdown_extensions:
+  - toc:
+      permalink: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.arithmatex:
+      generic: true
+  - admonition
+  - pymdownx.details
+
+extra_javascript:
+  - javascripts/mathjax.js
+  - https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js
+
+nav:
+  - ホーム: index.md
+  - 構造とアーキテクチャ: 00_ARCHITECTURE_JP.md
+  - テクニカルガイド: 01_TECHNICAL_GUIDE_JP.md
+  - 最適化レポート: 02_OPTIMIZATION_GUIDE_JP.md
+  - テスト設計: 03_TEST_DESIGN_JP.md
+  - テスト戦略: 04_TEST_STRATEGY_JP.md
+  - コミット規約: COMMIT_MESSAGE_GUIDE_JP.md

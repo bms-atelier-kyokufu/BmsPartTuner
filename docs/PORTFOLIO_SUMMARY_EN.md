@@ -4,30 +4,30 @@
 
 This project is not just a utility tool; it is a demonstration of **high-performance computing**, **modern .NET architecture**, and **AI-orchestrated development**.
 
-## **1\. Optimization Engineering (The "8000x" Logic)**
+## 1\. Optimization Engineering (The "8000x" Logic)
 
-**Source:** [02_OPTIMIZATION\_GUIDE_EN.md](https://raw.githubusercontent.com/bms-atelier-kyokufu/BmsPartTuner/refs/heads/main/docs/02_OPTIMIZATION_GUIDE_EN.md)
+**Source:** [02_OPTIMIZATION_GUIDE_EN.md](02_OPTIMIZATION_GUIDE_EN.md)
 
-I achieved an **800x performance boost** (1 hour → 300 milliseconds) by resolving critical bottlenecks in file I/O and audio processing.
+I achieved an **~8000x performance boost** (1 hour → 300 milliseconds) by resolving critical bottlenecks in file I/O and audio processing.
 
 * **Bottleneck Analysis:** Identified severe latency in System.IO file access and naive byte-array comparisons.  
 * **Key Techniques:**  
   * **Memory-Mapped Files:** Zero-copy access to large audio datasets.  
   * **SIMD / Vectorization:** Utilized hardware intrinsics for parallel wave data comparison.  
-  * **Algorithmic Overhaul:** Replaced $O(N^2)$ comparison logic with an optimized hashing strategy.
+  * **Algorithmic Overhaul:** Replaced $O(N^2)$ comparison logic with a 4-Stage Cascade Classification Algorithm (Anti-Set, SimHash, FFT, and SIMD Pearson correlation).
 
-* ##  2. System Architecture (Scalability & Maintainability)
+## 2. System Architecture (Scalability & Maintainability)
 
-**Source:** [00_ARCHITECTURE_EN.md](https://raw.githubusercontent.com/bms-atelier-kyokufu/BmsPartTuner/refs/heads/main/docs/00_ARCHITECTURE_EN.md)
+**Source:** [00_ARCHITECTURE_EN.md](00_ARCHITECTURE_EN.md)
 
 Designed with **Clean Architecture** principles to ensure the application is testable, maintainable, and scalable.
 
 * **Layered Design:** Strict separation between Core (Domain), Infrastructure (Services), and UI (WPF/MVVM).  
 * **Modern Stack:** Built on **.NET 10**, leveraging **CommunityToolkit.Mvvm** for efficient state management and **Dependency Injection** for loose coupling.
 
-## **3\. Quality Assurance Strategy**
+## 3\. Quality Assurance Strategy
 
-**Source:** [04_TEST\_STRATEGY_EN.md](https://raw.githubusercontent.com/bms-atelier-kyokufu/BmsPartTuner/refs/heads/main/docs/04_TEST_STRATEGY_EN.md)
+**Source:** [04_TEST_STRATEGY_EN.md](04_TEST_STRATEGY_EN.md)
 
 Quality is not an afterthought. I implemented a robust testing pyramid to guarantee stability.
 
