@@ -1,4 +1,4 @@
-using System.Reflection;
+﻿using System.Reflection;
 using BmsAtelierKyokufu.BmsPartTuner.UI.Services;
 using Microsoft.Win32;
 
@@ -10,7 +10,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.UI.ViewModels;
 /// </summary>
 public partial class SettingsViewModel : ObservableObject
 {
-    private static readonly IPerformanceLogger s_logger = new TypedLogger(typeof(SettingsViewModel));
+    private static readonly Logger<SettingsViewModel> s_logger = new();
 
     private readonly SettingsService _settingsService;
     private readonly ThemeService _themeService;
@@ -287,3 +287,4 @@ public partial class SettingsViewModel : ObservableObject
         SelectedLicense = null;
     }
 }
+

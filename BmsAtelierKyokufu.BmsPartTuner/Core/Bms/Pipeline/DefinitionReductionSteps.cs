@@ -1,4 +1,4 @@
-namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms.Pipeline;
+﻿namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms.Pipeline;
 
 /// <summary>
 /// 処理範囲を決定し、統計用クラスを初期化するステップ。
@@ -138,7 +138,7 @@ internal sealed class WriteAndFlushToDiskStep : IDefinitionReductionStep
 /// </summary>
 internal sealed class PhysicalDeletionStep : IDefinitionReductionStep
 {
-    private static readonly IPerformanceLogger s_logger = new TypedLogger(typeof(PhysicalDeletionStep));
+    private static readonly Logger<PhysicalDeletionStep> s_logger = new();
     public string Name => PipelineStepHelper.GetStepName(nameof(PhysicalDeletionStep));
     public void Execute(DefinitionReductionContext context)
     {
@@ -179,3 +179,4 @@ internal sealed class LogStatisticsStep : IDefinitionReductionStep
         context.Statistics?.LogStatistics();
     }
 }
+

@@ -6,9 +6,10 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Audio
     /// NAudio依存やファイルI/Oをこのクラスに集約します。
     /// </summary>
     [ADRAnchor("OPT-05", nameof(AudioFileReaderService))]
-    internal static class AudioFileReaderService
+    internal class AudioFileReaderService
     {
-        private static readonly IPerformanceLogger s_logger = new TypedLogger(typeof(AudioFileReaderService));
+        private AudioFileReaderService() { }
+        private static readonly Logger<AudioFileReaderService> s_logger = new();
 
         public static (float[][] samplesPerChannel, AudioFileInfo fileInfo) LoadAndDeinterleave(string path)
 
@@ -108,3 +109,4 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Audio
         }
     }
 }
+

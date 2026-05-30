@@ -1,4 +1,4 @@
-namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio.Pipeline;
+﻿namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio.Pipeline;
 
 /// <summary>
 /// 音声処理パイプライン。
@@ -7,7 +7,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio.Pipeline;
 [ADRAnchor("ARCH-01", nameof(AudioProcessingPipeline))]
 internal sealed class AudioProcessingPipeline
 {
-    private static readonly IPerformanceLogger s_logger = new TypedLogger(typeof(AudioProcessingPipeline));
+    private static readonly Logger<AudioProcessingPipeline> s_logger = new();
     private readonly List<IAudioProcessingStep> _steps = [];
 
     /// <summary>
@@ -25,8 +25,8 @@ internal sealed class AudioProcessingPipeline
     /// <param name="context">実行コンテキスト</param>
     public PreNormalizedSoundData Execute(AudioProcessingContext context)
     {
-        var timerTotal = PerformanceDebugLogger.StartTimer();
-        var timerStep = PerformanceDebugLogger.StartTimer();
+        var timerTotal = s_logger.StartTimer();
+        var timerStep = s_logger.StartTimer();
 
         foreach (var step in _steps)
         {
@@ -43,3 +43,5 @@ internal sealed class AudioProcessingPipeline
         return context.Result ?? throw new InvalidOperationException("Pipeline completed without producing a result.");
     }
 }
+
+

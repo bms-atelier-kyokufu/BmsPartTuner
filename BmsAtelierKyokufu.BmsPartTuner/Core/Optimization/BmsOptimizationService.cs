@@ -1,4 +1,4 @@
-using BmsAtelierKyokufu.BmsPartTuner.Core.Validation;
+﻿using BmsAtelierKyokufu.BmsPartTuner.Core.Validation;
 using ValidationResult = BmsAtelierKyokufu.BmsPartTuner.Core.Validation.ValidationResult;
 namespace BmsAtelierKyokufu.BmsPartTuner.Core.Optimization;
 
@@ -9,7 +9,7 @@ public class BmsOptimizationService : IBmsOptimizationService
 {
     private readonly DefinitionRangeValidator _definitionRangeValidator;
     private readonly R2ThresholdValidator _r2ThresholdValidator;
-    private static readonly IPerformanceLogger s_logger = new TypedLogger(typeof(BmsOptimizationService));
+    private static readonly Logger<BmsOptimizationService> s_logger = new();
 
     /// <summary>
     /// BmsOptimizationServiceを初期化します。
@@ -41,7 +41,7 @@ public class BmsOptimizationService : IBmsOptimizationService
             throw new ArgumentException("ファイルリストが空です", nameof(files));
 
         long memoryBefore = GC.GetTotalMemory(false);
-        var timerTotal = PerformanceDebugLogger.StartTimer();
+        var timerTotal = s_logger.StartTimer();
 
         var context = new Pipeline.OptimizationSimulationContext(
             files,
@@ -153,8 +153,8 @@ public class BmsOptimizationService : IBmsOptimizationService
             };
         }
 
-        var timerTotal = PerformanceDebugLogger.StartTimer();
-        var timer = PerformanceDebugLogger.StartTimer();
+        var timerTotal = s_logger.StartTimer();
+        var timer = s_logger.StartTimer();
 
         // 音声データの事前ロード（キャッシュ構築）
         var (FailedFiles, Cache) = AudioCacheManager.PreloadAudioData(fileList, options.Progress);
@@ -209,7 +209,7 @@ public class BmsOptimizationService : IBmsOptimizationService
                 // 物理削除処理
                 if (options.IsPhysicalDeletionEnabled)
                 {
-                    var timerDelete = PerformanceDebugLogger.StartTimer();
+                    var timerDelete = s_logger.StartTimer();
                     List<string> unusedFiles = dr.GetUnusedFilePaths();
                     deletedFilesCount = DeleteUnusedFiles(unusedFiles);
                     s_logger.WriteDebug($"DeleteUnusedFiles: {timerDelete.Lap("DeleteUnusedFiles")} ms");
@@ -359,3 +359,5 @@ public class BmsOptimizationService : IBmsOptimizationService
     #endregion
 
 }
+
+

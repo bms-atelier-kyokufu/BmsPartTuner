@@ -6,9 +6,11 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Core.Helpers;
 /// キーワードフィルタ（楽器種別など）や、ファイルサイズとRMS値による分類を利用してグループ化を行い、巨大なグループは自動的に分割します。
 /// </summary>
 [ADRAnchor("OPT-09", nameof(AudioFileGroupingStrategy))]
-public static class AudioFileGroupingStrategy
+public class AudioFileGroupingStrategy
 {
-    private static readonly IPerformanceLogger s_logger = new TypedLogger(typeof(AudioFileGroupingStrategy));
+    private AudioFileGroupingStrategy() { }
+
+    private static readonly Logger<AudioFileGroupingStrategy> s_logger = new();
 
     /// <summary>
     /// ファイルリストをグループ化します。
@@ -58,7 +60,7 @@ public static class AudioFileGroupingStrategy
         int endPoint,
         List<string> selectedKeywords)
     {
-        var timer = PerformanceDebugLogger.StartTimer();
+        var timer = s_logger.StartTimer();
         var keywordGroups = new Dictionary<string, Dictionary<string, List<int>>>();
 
         int totalFiles = 0;
@@ -179,7 +181,7 @@ public static class AudioFileGroupingStrategy
         int startPoint,
         int endPoint)
     {
-        var timer = PerformanceDebugLogger.StartTimer();
+        var timer = s_logger.StartTimer();
         var groups = new Dictionary<string, List<int>>();
 
         int totalFiles = 0;
@@ -258,3 +260,5 @@ public static class AudioFileGroupingStrategy
         return finalGroups;
     }
 }
+
+

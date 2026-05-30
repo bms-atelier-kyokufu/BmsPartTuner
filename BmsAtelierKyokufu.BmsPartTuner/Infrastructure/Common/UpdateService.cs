@@ -1,4 +1,4 @@
-using System.Net.Http;
+﻿using System.Net.Http;
 using System.Net.Http.Json;
 using System.Reflection;
 using System.Text.Json;
@@ -13,7 +13,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Common;
 [ADRAnchor("OPT-08", nameof(UpdateService))]
 public class UpdateService : IUpdateService, IDisposable
 {
-    private static readonly IPerformanceLogger s_logger = new TypedLogger(typeof(UpdateService));
+    private static readonly Logger<UpdateService> s_logger = new();
     private const string GitHubApiUrl = "https://api.github.com/repos/bms-atelier-kyokufu/BmsPartTuner/releases/latest";
     private const string UserAgent = "BmsPartTuner-UpdateChecker";
 
@@ -231,3 +231,4 @@ public class UpdateService : IUpdateService, IDisposable
 
     #endregion
 }
+

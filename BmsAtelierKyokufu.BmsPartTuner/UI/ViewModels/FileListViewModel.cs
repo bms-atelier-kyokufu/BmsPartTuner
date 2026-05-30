@@ -1,4 +1,4 @@
-using BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Audio;
+﻿using BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Audio;
 namespace BmsAtelierKyokufu.BmsPartTuner.UI.ViewModels;
 
 /// <summary>
@@ -11,7 +11,7 @@ public partial class FileListViewModel : ObservableObject, IDisposable
     private FileListFilterService? _filterService;
     private BmsDefinitionManager? _bmsFileList;
     private bool disposedValue;
-    private static readonly IPerformanceLogger s_logger = new TypedLogger(typeof(FileListViewModel));
+    private static readonly Logger<FileListViewModel> s_logger = new();
 
     /// <summary>
     /// 表示用のBMS音声ファイルリスト。
@@ -108,8 +108,8 @@ public partial class FileListViewModel : ObservableObject, IDisposable
     public void LoadBmsFile(string bmsFilePath, string? bmsContent = null)
     {
         s_logger.WriteDebug( $"=== FileListViewModel.LoadBmsFile Started for {Path.GetFileName(bmsFilePath)} ===");
-        var timerTotal = PerformanceDebugLogger.StartTimer();
-        var timer = PerformanceDebugLogger.StartTimer();
+        var timerTotal = s_logger.StartTimer();
+        var timer = s_logger.StartTimer();
         try
         {
             _bmsFileList = new BmsDefinitionManager(bmsFilePath, bmsContent);
@@ -284,3 +284,5 @@ public partial class FileListViewModel : ObservableObject, IDisposable
         GC.SuppressFinalize(this);
     }
 }
+
+

@@ -1,4 +1,4 @@
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms;
 
@@ -11,7 +11,7 @@ public partial class InstrumentNameDetectionService(
     int minimumWordLength = 3,
     int maximumWordLength = 20)
 {
-    private static readonly IPerformanceLogger s_logger = new TypedLogger(typeof(InstrumentNameDetectionService));
+    private static readonly Logger<InstrumentNameDetectionService> s_logger = new();
     /// <summary>
     /// 楽器名検出の結果データ。
     /// </summary>
@@ -282,3 +282,4 @@ public partial class InstrumentNameDetectionService(
         }
     }
 }
+

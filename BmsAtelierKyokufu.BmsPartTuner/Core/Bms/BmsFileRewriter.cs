@@ -1,4 +1,4 @@
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 
@@ -15,7 +15,7 @@ internal partial class BmsFileRewriter(
     int endPoint,
     string? inputBmsContent = null)
 {
-    private static readonly IPerformanceLogger s_logger = new TypedLogger(typeof(BmsFileRewriter));
+    private static readonly Logger<BmsFileRewriter> s_logger = new();
     private readonly IReadOnlyList<BmsAudioFile> _fileList = fileList ?? throw new ArgumentNullException(nameof(fileList));
     private readonly int[] _replaces = replaces ?? throw new ArgumentNullException(nameof(replaces));
     private readonly int _startPoint = startPoint;
@@ -300,3 +300,4 @@ internal partial class BmsFileRewriter(
     private static partial Regex WavDefinitionRegex();
 
 }
+

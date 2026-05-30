@@ -1,4 +1,4 @@
-namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms.Pipeline;
+﻿namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms.Pipeline;
 
 /// <summary>
 /// BMS定義削減パイプライン。
@@ -7,7 +7,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms.Pipeline;
 [ADRAnchor("ARCH-01", nameof(DefinitionReductionPipeline))]
 internal sealed class DefinitionReductionPipeline
 {
-    private static readonly IPerformanceLogger s_logger = new TypedLogger(typeof(DefinitionReductionPipeline));
+    private static readonly Logger<DefinitionReductionPipeline> s_logger = new();
     private readonly List<IDefinitionReductionStep> _steps = [];
 
     /// <summary>
@@ -25,8 +25,8 @@ internal sealed class DefinitionReductionPipeline
     /// <param name="context">実行コンテキスト</param>
     public void Execute(DefinitionReductionContext context)
     {
-        var timerTotal = PerformanceDebugLogger.StartTimer();
-        var timerStep = PerformanceDebugLogger.StartTimer();
+        var timerTotal = s_logger.StartTimer();
+        var timerStep = s_logger.StartTimer();
 
         var progress = context.Options.Progress ?? new Progress<int>();
         progress.Report(0);
@@ -46,3 +46,5 @@ internal sealed class DefinitionReductionPipeline
         s_logger.WriteDebug($"=== DefinitionReductionPipeline completed in {totalElapsed} ms ({totalElapsed / 1000.0:F2}s) ===");
     }
 }
+
+

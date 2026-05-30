@@ -102,7 +102,7 @@ public class BmsScoreGenerator(
     private readonly bool _keyNotesOnly = keyNotesOnly;
     private int _radix = RadixBase62; // Default, will be recalculated
     private readonly bool _isDoublePlay = DetermineIsDoublePlay(bmson);
-    private static readonly IPerformanceLogger s_logger = new TypedLogger(typeof(BmsScoreGenerator));
+    private static readonly Logger<BmsScoreGenerator> s_logger = new();
 
     private static readonly string[] MeasureStrings = GenerateMeasureStrings();
 
@@ -177,9 +177,9 @@ public class BmsScoreGenerator(
 
     public string GenerateBmsText()
     {
-        PerformanceDebugLogger.ClearAccumulated();
+        Logger.ClearAccumulated();
         s_logger.WriteDebug( "Start GenerateBmsText");
-        var timer = PerformanceDebugLogger.StartTimer();
+        var timer = s_logger.StartTimer();
 
         // 0. Y座標データの事前計算 (次元 of 分離)
         PrecalculateYPositions();
@@ -730,3 +730,5 @@ public class BmsScoreGenerator(
         return false;
     }
 }
+
+

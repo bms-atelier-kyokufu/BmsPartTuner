@@ -1,11 +1,11 @@
-namespace BmsAtelierKyokufu.BmsPartTuner.Core.Optimization.Pipeline;
+﻿namespace BmsAtelierKyokufu.BmsPartTuner.Core.Optimization.Pipeline;
 
 /// <summary>
 /// 実際のファイル数を数え、有効なファイルのリストを作成するステップ。
 /// </summary>
 internal sealed class LoadValidFilesStep : IAsyncOptimizationStep
 {
-    private static readonly IPerformanceLogger s_logger = new TypedLogger(typeof(LoadValidFilesStep));
+    private static readonly Logger<LoadValidFilesStep> s_logger = new();
     public string Name => PipelineStepHelper.GetStepName(nameof(LoadValidFilesStep));
     public Task ExecuteAsync(OptimizationSimulationContext context)
     {
@@ -58,7 +58,7 @@ internal sealed class LoadValidFilesStep : IAsyncOptimizationStep
 /// </summary>
 internal sealed class PreloadAudioCacheStep : IAsyncOptimizationStep
 {
-    private static readonly IPerformanceLogger s_logger = new TypedLogger(typeof(PreloadAudioCacheStep));
+    private static readonly Logger<PreloadAudioCacheStep> s_logger = new();
     public string Name => PipelineStepHelper.GetStepName(nameof(PreloadAudioCacheStep));
     public Task ExecuteAsync(OptimizationSimulationContext context)
     {
@@ -95,7 +95,7 @@ internal sealed class PreloadAudioCacheStep : IAsyncOptimizationStep
 /// </summary>
 internal sealed class RunParallelSimulationStep : IAsyncOptimizationStep
 {
-    private static readonly IPerformanceLogger s_logger = new TypedLogger(typeof(RunParallelSimulationStep));
+    private static readonly Logger<RunParallelSimulationStep> s_logger = new();
     public string Name => PipelineStepHelper.GetStepName(nameof(RunParallelSimulationStep));
     public async Task ExecuteAsync(OptimizationSimulationContext context)
     {
@@ -138,7 +138,7 @@ internal sealed class RunParallelSimulationStep : IAsyncOptimizationStep
 /// </summary>
 internal sealed class FindOptimalThresholdsStep : IAsyncOptimizationStep
 {
-    private static readonly IPerformanceLogger s_logger = new TypedLogger(typeof(FindOptimalThresholdsStep));
+    private static readonly Logger<FindOptimalThresholdsStep> s_logger = new();
     public string Name => PipelineStepHelper.GetStepName(nameof(FindOptimalThresholdsStep));
     public Task ExecuteAsync(OptimizationSimulationContext context)
     {
@@ -205,3 +205,4 @@ internal sealed class FindOptimalThresholdsStep : IAsyncOptimizationStep
         return ((float)optimalEntry.Threshold, optimalEntry.Count);
     }
 }
+

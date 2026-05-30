@@ -1,4 +1,4 @@
-using NAudio.Wave;
+﻿using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms.Bmson;
@@ -15,7 +15,7 @@ public class CachedAudioSource
 
     private BaseAudioOptimizationData? _decodedData;
     private readonly Lock _lock = new();
-    private static readonly IPerformanceLogger s_logger = new TypedLogger(typeof(CachedAudioSource));
+    private static readonly Logger<CachedAudioSource> s_logger = new();
 
     public BaseAudioOptimizationData DecodedData
     {
@@ -88,7 +88,7 @@ public class CachedAudioSource
 
     public CachedAudioSource(string path)
     {
-        var timer = PerformanceDebugLogger.StartTimer();
+        var timer = s_logger.StartTimer();
 
         if (path.EndsWith(".wav", StringComparison.OrdinalIgnoreCase))
         {
@@ -269,3 +269,5 @@ public class CachedAudioSource
         }
     }
 }
+
+

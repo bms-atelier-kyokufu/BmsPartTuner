@@ -1,4 +1,4 @@
-namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
+﻿namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
 /// <summary>
 /// 並列オーディオ比較エンジンの実行パラメーター。
 /// </summary>
@@ -18,7 +18,7 @@ internal record AudioComparisonParameters(
 [ADRAnchor("OPT-01", nameof(ParallelAudioComparisonEngine))]
 internal class ParallelAudioComparisonEngine(AudioComparisonParameters parameters)
 {
-    private static readonly IPerformanceLogger s_logger = new TypedLogger(typeof(ParallelAudioComparisonEngine));
+    private static readonly Logger<ParallelAudioComparisonEngine> s_logger = new();
     #region 定数定義
 
     /// <summary>進捗レポートの範囲（Phase 2 の幅）。</summary>
@@ -134,7 +134,7 @@ internal class ParallelAudioComparisonEngine(AudioComparisonParameters parameter
         };
 
         var context = new ComparisonContext(r2Threshold, totalFiles, progress, cancellationToken);
-        var timer = PerformanceDebugLogger.StartTimer();
+        var timer = s_logger.StartTimer();
 
         try
         {
@@ -448,3 +448,5 @@ internal class ParallelAudioComparisonEngine(AudioComparisonParameters parameter
 
     #endregion
 }
+
+

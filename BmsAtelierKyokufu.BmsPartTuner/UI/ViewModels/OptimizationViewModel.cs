@@ -1,4 +1,4 @@
-using BmsAtelierKyokufu.BmsPartTuner.UI.Views.Controls;
+﻿using BmsAtelierKyokufu.BmsPartTuner.UI.Views.Controls;
 using BmsAtelierKyokufu.BmsPartTuner.UseCases;
 using BmsAtelierKyokufu.BmsPartTuner.UseCases.Dto;
 namespace BmsAtelierKyokufu.BmsPartTuner.UI.ViewModels;
@@ -9,7 +9,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.UI.ViewModels;
 [ADRAnchor("OPT-07", nameof(OptimizationViewModel))]
 public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
 {
-    private static readonly IPerformanceLogger s_logger = new TypedLogger(typeof(OptimizationViewModel));
+    private static readonly Logger<OptimizationViewModel> s_logger = new();
     private readonly IBmsOptimizationUseCase _optimizationUseCase;
     private readonly IBmsOptimizationService _optimizationService;
     private readonly Progress<int> _progress;
@@ -499,3 +499,4 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
         public float Threshold { get; set; }
     }
 }
+

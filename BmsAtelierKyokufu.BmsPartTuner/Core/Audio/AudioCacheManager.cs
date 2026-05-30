@@ -5,9 +5,11 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
 /// 全オーディオデータをメモリにプリロードし、CPUコア数に応じたバッチ処理による並列ロードを行うことで、
 /// 効率的なメモリ管理とディスクI/Oの大幅な削減を実現します。
 /// </summary>
-internal static class AudioCacheManager
+internal class AudioCacheManager
 {
-    private static readonly IPerformanceLogger s_logger = new TypedLogger(typeof(AudioCacheManager));
+    private AudioCacheManager() { }
+
+    private static readonly Logger<AudioCacheManager> s_logger = new();
 
     /// <summary>
     /// 全オーディオデータをメモリにプリロードします。
@@ -48,9 +50,9 @@ internal static class AudioCacheManager
         }
 
         s_logger.WriteDebug($"Storage type detected as: {(isSsd ? "SSD (Full Parallel Mode)" : "HDD (Batch Mode)")}");
-        PerformanceDebugLogger.StartMemoryDiagnosis(); // 5秒後の強制レポート機能をオン
+        Logger.StartMemoryDiagnosis(); // 5秒後の強制レポート機能をオン
 
-        var timer = PerformanceDebugLogger.StartTimer();
+        var timer = s_logger.StartTimer();
 
         if (isSsd)
         {
@@ -76,7 +78,7 @@ internal static class AudioCacheManager
                 int percentage = (int)((float)currentCount / totalFiles * AppConstants.Progress.PreloadComplete);
                 progress?.Report(percentage);
 
-                PerformanceDebugLogger.CheckAndHaltIfDiagnosisTriggered("AudioCacheManager", "AudioCacheManager Parallel Loop", audioCache);
+                s_logger.CheckAndHaltIfDiagnosisTriggered("AudioCacheManager Parallel Loop", audioCache);
             });
         }
         else
@@ -109,7 +111,7 @@ internal static class AudioCacheManager
                 progress?.Report(percentage);
 
                 // ループのたびに5秒経過していないかチェックし、経過していれば停止・レポート
-                PerformanceDebugLogger.CheckAndHaltIfDiagnosisTriggered("AudioCacheManager", "AudioCacheManager Batch Loop", audioCache);
+                s_logger.CheckAndHaltIfDiagnosisTriggered("AudioCacheManager Batch Loop", audioCache);
             });
         }
 
@@ -239,3 +241,5 @@ internal static class AudioCacheManager
         }
     }
 }
+
+

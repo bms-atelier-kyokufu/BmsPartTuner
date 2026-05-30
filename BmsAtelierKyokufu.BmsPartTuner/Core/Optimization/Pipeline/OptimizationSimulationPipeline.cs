@@ -1,4 +1,4 @@
-namespace BmsAtelierKyokufu.BmsPartTuner.Core.Optimization.Pipeline;
+﻿namespace BmsAtelierKyokufu.BmsPartTuner.Core.Optimization.Pipeline;
 
 /// <summary>
 /// 非同期最適化シミュレーションパイプライン。
@@ -7,7 +7,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Core.Optimization.Pipeline;
 [ADRAnchor("ARCH-01", nameof(OptimizationSimulationPipeline))]
 internal sealed class OptimizationSimulationPipeline
 {
-    private static readonly IPerformanceLogger s_logger = new TypedLogger(typeof(OptimizationSimulationPipeline));
+    private static readonly Logger<OptimizationSimulationPipeline> s_logger = new();
     private readonly List<IAsyncOptimizationStep> _steps = [];
 
     public OptimizationSimulationPipeline AddStep(IAsyncOptimizationStep step)
@@ -19,8 +19,8 @@ internal sealed class OptimizationSimulationPipeline
     public async Task<OptimizationResult?> ExecuteAsync(OptimizationSimulationContext context)
     {
         s_logger.WriteDebug("=== Async Pipeline Starting ===");
-        var timerTotal = PerformanceDebugLogger.StartTimer();
-        var timerStep = PerformanceDebugLogger.StartTimer();
+        var timerTotal = s_logger.StartTimer();
+        var timerStep = s_logger.StartTimer();
 
         try
         {
@@ -49,3 +49,5 @@ internal sealed class OptimizationSimulationPipeline
         return context.Result;
     }
 }
+
+

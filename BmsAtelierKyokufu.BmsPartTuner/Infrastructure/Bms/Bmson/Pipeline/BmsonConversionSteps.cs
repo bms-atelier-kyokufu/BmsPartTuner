@@ -1,4 +1,5 @@
 using System.Text.Json;
+
 namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms.Bmson.Pipeline;
 
 /// <summary>
@@ -72,6 +73,8 @@ public sealed class BmsonBuildCalculatorsStep : IBmsonConversionStep
 /// </summary>
 public sealed class BmsonPrepareAudioSlicerStep : IBmsonConversionStep
 {
+    private static readonly Logger<BmsonPrepareAudioSlicerStep> s_logger = new();
+
     public string Name => Core.Helpers.PipelineStepHelper.GetStepName(nameof(BmsonPrepareAudioSlicerStep));
     public void Execute(BmsonConversionContext context)
     {
@@ -80,7 +83,7 @@ public sealed class BmsonPrepareAudioSlicerStep : IBmsonConversionStep
         // コンテキストが管理する IDisposable なリソースとして AudioSliceManager を生成
         context.AudioSlicer = new AudioSliceManager(bmsonDir);
 
-        PerformanceDebugLogger.LogMemoryUsage("Before BmsScoreGenerator (Engine ready)");
+        s_logger.LogMemoryUsage("Before BmsScoreGenerator (Engine ready)");
     }
 }
 
@@ -89,6 +92,8 @@ public sealed class BmsonPrepareAudioSlicerStep : IBmsonConversionStep
 /// </summary>
 public sealed class BmsScoreGenerateStep : IBmsonConversionStep
 {
+    private static readonly Logger<BmsScoreGenerateStep> s_logger = new();
+
     public string Name => Core.Helpers.PipelineStepHelper.GetStepName(nameof(BmsScoreGenerateStep));
     public void Execute(BmsonConversionContext context)
     {
@@ -111,6 +116,7 @@ public sealed class BmsScoreGenerateStep : IBmsonConversionStep
 
         context.ResultBmsText = generator.GenerateBmsText();
 
-        PerformanceDebugLogger.LogMemoryUsage("After BmsScoreGenerator (Downconvert finished)");
+        s_logger.LogMemoryUsage("After BmsScoreGenerator (Downconvert finished)");
     }
 }
+

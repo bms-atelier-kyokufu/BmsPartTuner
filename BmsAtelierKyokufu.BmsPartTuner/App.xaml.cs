@@ -1,4 +1,4 @@
-using BmsAtelierKyokufu.BmsPartTuner.Extensions;
+﻿using BmsAtelierKyokufu.BmsPartTuner.Extensions;
 using BmsAtelierKyokufu.BmsPartTuner.UI.Services;
 using BmsAtelierKyokufu.BmsPartTuner.UI.Views.Windows;
 using Microsoft.Extensions.DependencyInjection;
@@ -9,7 +9,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner
 {
     public partial class App : Application
     {
-    private static readonly IPerformanceLogger s_logger = new TypedLogger(typeof(App));
+    private static readonly Logger<App> s_logger = new();
         private readonly IHost _host;
         private ThemeService? _themeService;
         private IUpdateService? _updateService;
@@ -115,3 +115,4 @@ namespace BmsAtelierKyokufu.BmsPartTuner
         }
     }
 }
+

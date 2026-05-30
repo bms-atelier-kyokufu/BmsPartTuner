@@ -1,4 +1,4 @@
-namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
+﻿namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 
 /// <summary>
 /// BMSファイルに関連付けられたオーディオファイルリストの管理および解析を行います。
@@ -8,7 +8,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 /// </summary>
 public partial class BmsDefinitionManager(string bmsFilePath, string? bmsContent = null)
 {
-    private static readonly IPerformanceLogger s_logger = new TypedLogger(typeof(BmsDefinitionManager));
+    private static readonly Logger<BmsDefinitionManager> s_logger = new();
     [System.Text.RegularExpressions.GeneratedRegex("[a-z]")]
     private static partial System.Text.RegularExpressions.Regex LowerCaseRegex();
     private readonly string _bmsFilePath = bmsFilePath ?? throw new ArgumentNullException(nameof(bmsFilePath));
@@ -35,8 +35,8 @@ public partial class BmsDefinitionManager(string bmsFilePath, string? bmsContent
     public ObservableCollection<BmsAudioFile> CreateFileList()
     {
         s_logger.WriteDebug( $"=== BmsDefinitionManager.CreateFileList Started for {Path.GetFileName(_bmsFilePath)} ===");
-        var timerTotal = PerformanceDebugLogger.StartTimer();
-        var timer = PerformanceDebugLogger.StartTimer();
+        var timerTotal = s_logger.StartTimer();
+        var timer = s_logger.StartTimer();
         MissingFiles.Clear();
 
         var lines = new List<string>();
@@ -143,4 +143,6 @@ public partial class BmsDefinitionManager(string bmsFilePath, string? bmsContent
     }
 
 }
+
+
 

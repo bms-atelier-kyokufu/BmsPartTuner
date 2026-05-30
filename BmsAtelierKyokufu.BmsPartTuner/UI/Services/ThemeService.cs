@@ -1,4 +1,4 @@
-using Microsoft.Win32;
+﻿using Microsoft.Win32;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.UI.Services;
 
@@ -8,7 +8,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.UI.Services;
 [ExcludeFromCodeCoverage]
 public class ThemeService
 {
-    private static readonly IPerformanceLogger s_logger = new TypedLogger(typeof(ThemeService));
+    private static readonly Logger<ThemeService> s_logger = new();
     private const string LightThemePath = "/Themes/LightTheme.xaml";
     private const string DarkThemePath = "/Themes/DarkTheme.xaml";
     private const string RegistryKeyPath = @"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize";
@@ -153,3 +153,4 @@ public class ThemeService
         }
     }
 }
+

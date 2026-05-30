@@ -1,4 +1,4 @@
-using System.Windows.Media.Animation;
+﻿using System.Windows.Media.Animation;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.UI.Views.Controls
 {
@@ -15,7 +15,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.UI.Views.Controls
     [ExcludeFromCodeCoverage]
     public partial class SlideConfirmationControl : UserControl
     {
-    private static readonly IPerformanceLogger s_logger = new TypedLogger(typeof(SlideConfirmationControl));
+    private static readonly Logger<SlideConfirmationControl> s_logger = new();
         #region 依存関係プロパティ
 
         /// <summary>
@@ -487,3 +487,4 @@ namespace BmsAtelierKyokufu.BmsPartTuner.UI.Views.Controls
         #endregion
     }
 }
+

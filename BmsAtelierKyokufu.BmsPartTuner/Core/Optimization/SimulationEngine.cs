@@ -1,4 +1,4 @@
-namespace BmsAtelierKyokufu.BmsPartTuner.Core.Optimization;
+﻿namespace BmsAtelierKyokufu.BmsPartTuner.Core.Optimization;
 
 /// <summary>
 /// 複数のしきい値で並列シミュレーションを実行するエンジンです。
@@ -18,7 +18,7 @@ internal class SimulationEngine(
     private readonly int _endPoint = endPoint;
     private readonly IReadOnlyDictionary<string, ICachedSoundData> _audioCache = audioCache ?? throw new ArgumentNullException(nameof(audioCache));
     private readonly int _parallelDegree = Math.Max(1, Environment.ProcessorCount - 1);
-    private static readonly IPerformanceLogger s_logger = new TypedLogger(typeof(SimulationEngine));
+    private static readonly Logger<SimulationEngine> s_logger = new();
 
     /// <summary>
     /// 並列シミュレーション実行（詳細進捗版）。
@@ -49,7 +49,7 @@ internal class SimulationEngine(
         var groups = AudioFileGroupingStrategy.GroupFiles(_audioCache, _fileList, _startPoint, _endPoint, null);
 
         var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = _parallelDegree };
-        var timer = PerformanceDebugLogger.StartTimer();
+        var timer = s_logger.StartTimer();
 
         Parallel.ForEach(thresholds, parallelOptions, threshold =>
         {
@@ -120,10 +120,10 @@ internal class SimulationEngine(
             s_logger.WriteDebug( "CRITICAL ERROR: No cached audio data! All simulations will return original count.");
         }
 
-        var timer = PerformanceDebugLogger.StartTimer();
+        var timer = s_logger.StartTimer();
 
         // グループ分けを事前に1回だけ計算
-        var timerGroup = PerformanceDebugLogger.StartTimer();
+        var timerGroup = s_logger.StartTimer();
         var groups = AudioFileGroupingStrategy.GroupFiles(_audioCache, _fileList, _startPoint, _endPoint, null);
         s_logger.WriteDebug( $"AudioFileGroupingStrategy.GroupFiles: {timerGroup.Lap("AudioFileGroupingStrategy.GroupFiles")} ms");
 
@@ -484,3 +484,5 @@ internal class SimulationEngine(
         public readonly float Rms = rms;
     }
 }
+
+

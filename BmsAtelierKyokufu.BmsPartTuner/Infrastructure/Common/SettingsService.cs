@@ -1,4 +1,4 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Common;
 
@@ -8,7 +8,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Common;
 /// </summary>
 public class SettingsService
 {
-    private static readonly IPerformanceLogger s_logger = new TypedLogger(typeof(SettingsService));
+    private static readonly Logger<SettingsService> s_logger = new();
     private readonly string _settingsFilePath;
 
     private static readonly JsonSerializerOptions JsonOptions = new()
@@ -89,3 +89,4 @@ public class SettingsService
         _cachedSettings = null;
     }
 }
+

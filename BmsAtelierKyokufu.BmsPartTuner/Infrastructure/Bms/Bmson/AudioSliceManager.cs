@@ -1,4 +1,4 @@
-namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms.Bmson;
+﻿namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms.Bmson;
 
 /// <summary>
 /// bmsonのノート情報に基づき、元の音声ファイル（ステムなど）を指定時間で切り出し、
@@ -7,7 +7,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms.Bmson;
 [ADRAnchor("OPT-10", nameof(AudioSliceManager))]
 public class AudioSliceManager(string bmsonDir, bool throwOnMissingFile = true) : IDisposable
 {
-    private static readonly IPerformanceLogger s_logger = new TypedLogger(typeof(AudioSliceManager));
+    private static readonly Logger<AudioSliceManager> s_logger = new();
     private readonly string _bmsonDir = bmsonDir;
 
     private static readonly byte[] WavHeaderTemplate = WavHeaderGenerator.CreateWavHeaderTemplate();
@@ -215,4 +215,5 @@ public class AudioSliceManager(string bmsonDir, bool throwOnMissingFile = true) 
     }
 
 }
+
 

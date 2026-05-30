@@ -1,4 +1,4 @@
-namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms.Bmson.Pipeline;
+﻿namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms.Bmson.Pipeline;
 
 /// <summary>
 /// BMSON変換パイプライン。
@@ -7,7 +7,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms.Bmson.Pipeline;
 [ADRAnchor("ARCH-01", nameof(BmsonConversionPipeline))]
 public sealed class BmsonConversionPipeline
 {
-    private static readonly IPerformanceLogger s_logger = new TypedLogger(typeof(BmsonConversionPipeline));
+    private static readonly Logger<BmsonConversionPipeline> s_logger = new();
     private readonly List<IBmsonConversionStep> _steps = [];
 
     /// <summary>
@@ -28,10 +28,10 @@ public sealed class BmsonConversionPipeline
     /// <returns>生成されたBMSテキスト</returns>
     public string Execute(BmsonConversionContext context)
     {
-        PerformanceDebugLogger.Clear();
+        Logger.Clear();
         s_logger.WriteDebug("=== Downconvert started ===");
-        var timerTotal = PerformanceDebugLogger.StartTimer();
-        var timerStep = PerformanceDebugLogger.StartTimer();
+        var timerTotal = s_logger.StartTimer();
+        var timerStep = s_logger.StartTimer();
 
         foreach (var step in _steps)
         {
@@ -48,3 +48,5 @@ public sealed class BmsonConversionPipeline
         return context.ResultBmsText ?? throw new InvalidOperationException("Pipeline completed without producing a result.");
     }
 }
+
+
