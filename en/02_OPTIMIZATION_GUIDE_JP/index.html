@@ -1,0 +1,1535 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://bms-atelier-kyokufu.github.io/BmsPartTuner/en/02_OPTIMIZATION_GUIDE_JP/">
+      
+      
+      
+      
+        
+          <link rel="alternate" href="../" hreflang="en">
+        
+          <link rel="alternate" href="../../" hreflang="ja">
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>BMS Part Tuner - 最適化実装ガイド - BMS Part Tuner</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#bms-part-tuner-" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="BMS Part Tuner" class="md-header__button md-logo" aria-label="BMS Part Tuner" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            BMS Part Tuner
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              BMS Part Tuner - 最適化実装ガイド
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Select language">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="../" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../" hreflang="ja" class="md-select__link">
+              日本語
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/bms-atelier-kyokufu/BmsPartTuner" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../index_en/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../PORTFOLIO_SUMMARY_EN/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Portfolio Summary
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../00_ARCHITECTURE_EN/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../01_TECHNICAL_GUIDE_EN/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Technical Guide
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../02_OPTIMIZATION_GUIDE_EN/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Optimization Report
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../04_TEST_STRATEGY_EN/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Test Strategy
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../COMMIT_MESSAGE_GUIDE_EN/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Commit Guide
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="BMS Part Tuner" class="md-nav__button md-logo" aria-label="BMS Part Tuner" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    BMS Part Tuner
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/bms-atelier-kyokufu/BmsPartTuner" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../index_en/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PORTFOLIO_SUMMARY_EN/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Portfolio Summary
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../00_ARCHITECTURE_EN/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../01_TECHNICAL_GUIDE_EN/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Technical Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../02_OPTIMIZATION_GUIDE_EN/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Optimization Report
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../04_TEST_STRATEGY_EN/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Test Strategy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../COMMIT_MESSAGE_GUIDE_EN/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Commit Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        最適化実装ガイドにおける変数定義の解説
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="最適化実装ガイドにおける変数定義の解説">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-complexity-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. 計算量理論に関する変数 (Complexity Analysis)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-signal-processing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. 信号処理・統計学に関する変数 (Signal Processing)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-combinatorics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. 組み合わせ論・基数変換に関する変数 (Combinatorics)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        クラス設計
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="クラス設計">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        コアクラス
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="コアクラス">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#bmsoptimizationservice" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        BmsOptimizationService（サービス層のオーケストレータ）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#simulationengine" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SimulationEngine（しきい値探索の評価器）
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ファイル管理層
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="ファイル管理層">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#filelist" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        FileList
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bmsmanager" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        BmsManager
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bmsfilerewriter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        BmsFileRewriter
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        キャッシュ管理層
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="キャッシュ管理層">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#audiocachemanager" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AudioCacheManager
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cachedsounddata" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CachedSoundData
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        グループ化層
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="グループ化層">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#audiofilegroupingstrategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AudioFileGroupingStrategy
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        比較エンジン層
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="比較エンジン層">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#parallelaudiocomparisonengine" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ParallelAudioComparisonEngine
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fastwavecompare" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        FastWaveCompare
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#wavevalidation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        WaveValidation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        データフロー
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="データフロー">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        メイン処理フロー
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        パフォーマンス特性
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="パフォーマンス特性">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        時間計算量（詳細分析）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        しきい値探索（シミュレーション）の時間特性
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_13" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        空間計算量（メモリ使用量）
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_14" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        関連ドキュメント
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="bms-part-tuner-">BMS Part Tuner - 最適化実装ガイド<a class="headerlink" href="#bms-part-tuner-" title="Permanent link">&para;</a></h1>
+<div style="display: flex; justify-content: center; margin:1em">
+       <img src="img/Document-Hierarchy_JP.svg" alt="ドキュメント階層" width="40%" >
+</div>
+
+<p>本ドキュメントは、BMS Part Tunerの最適化エンジンの実装詳細を解説する<strong>技術者向け深掘りガイド</strong>です。</p>
+<p>本ドキュメントを最大限に活用するには、以下の前提知識があると便利です：</p>
+<ul>
+<li>線形代数（ベクトル、内積、ノルム）</li>
+<li>信号処理（サンプリング、RMS）</li>
+<li>.NET/C#（並列処理、メモリ管理）</li>
+<li>マルチスレッド設計パターン</li>
+</ul>
+<hr />
+<h2 id="_1">最適化実装ガイドにおける変数定義の解説<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<h3 id="1-complexity-analysis">1. 計算量理論に関する変数 (Complexity Analysis)<a class="headerlink" href="#1-complexity-analysis" title="Permanent link">&para;</a></h3>
+<hr />
+<p>これらの変数は、主に「処理にどれくらいの時間がかかるか」を見積もるために使用されています。</p>
+<ul>
+<li><span class="arithmatex">\(n\)</span> : 総対象数（行数、または総ファイル数）<ul>
+<li>意味: 処理のベースとなるデータ量です。BMS解析やプリロードなど、全データを1回ずつ触る処理は <span class="arithmatex">\(O(n)\)</span> になります。</li>
+</ul>
+</li>
+<li><span class="arithmatex">\(m\)</span> : グループサイズ（特定のグループに含まれるファイル数）<ul>
+<li>意味: ファイルサイズやRMS（音量）が似通った「比較対象候補」の数です。</li>
+<li>なぜ重要か: 実装ガイドの <span class="arithmatex">\(O(\sum{m^2})\)</span> という表記は、グループ内でのペア比較（総当たり）を意味します。グループ化が上手く機能し m が小さくなれば、計算時間は劇的に短縮されます。</li>
+</ul>
+</li>
+<li><span class="arithmatex">\(T\)</span> : しきい値の試行回数 (Threshold count)<ul>
+<li>意味: 0.01刻みなどでシミュレーションを行う際の、ループの回数です。</li>
+</ul>
+</li>
+<li><span class="arithmatex">\(k\)</span> : イテレーション（反復）のインデックス<ul>
+<li>意味:総和計算における「反復変数」です。</li>
+<li><span class="arithmatex">\(\sum_{k=1}^{T}\)</span> のように「1番目のしきい値から <span class="arithmatex">\(T\)</span>番目まで」を数え上げるためのカウンタ変数です。</li>
+</ul>
+</li>
+</ul>
+<h3 id="2-signal-processing">2. 信号処理・統計学に関する変数 (Signal Processing)<a class="headerlink" href="#2-signal-processing" title="Permanent link">&para;</a></h3>
+<hr />
+<p>音声波形の類似度を判定するための数式で使用されています。</p>
+<ul>
+<li><span class="arithmatex">\(r\)</span> : ピアソン相関係数<ul>
+<li>意味: 2つの波形がどれくらい似ているかを示す指標（<span class="arithmatex">\(-1.0\)</span> 〜 <span class="arithmatex">\(1.0\)</span>）。<span class="arithmatex">\(1.0\)</span>に近いほど「同じ音」と判定されます。</li>
+</ul>
+</li>
+<li><span class="arithmatex">\(R^2\)</span> : 決定係数<ul>
+<li>意味: 回帰モデルの当てはまりの良さを示す指標。実装上は相関係数の二乗に近い意味合いで、判定精度を補強します。</li>
+</ul>
+</li>
+<li><span class="arithmatex">\(x, y\)</span> : 波形データ（信号ベクトル）<ul>
+<li>意味: 比較する2つの音声データそのものを指します。</li>
+</ul>
+</li>
+<li><span class="arithmatex">\(\hat{x}, \hat{y}\)</span> : 正規化済み波形データ<ul>
+<li>意味: 平均を0、ノルム（長さ）を1に調整したデータ。これにより、音量の大小に関わらず「波形の形」だけで比較可能になります。</li>
+</ul>
+</li>
+<li><span class="arithmatex">\(RSS\)</span> : 残差平方和<ul>
+<li>意味: 2つの波形の「ズレ」の合計です。これが小さいほど、波形が一致していることを示します。</li>
+</ul>
+</li>
+<li><span class="arithmatex">\(DSS\)</span> : 偏差平方和<ul>
+<li>意味: データ全体の「ばらつき」です。RSSをこれで割ることで、データの規模に左右されない相対的な誤差を算出します。</li>
+</ul>
+</li>
+</ul>
+<h3 id="3-combinatorics">3. 組み合わせ論・基数変換に関する変数 (Combinatorics)<a class="headerlink" href="#3-combinatorics" title="Permanent link">&para;</a></h3>
+<hr />
+<p>BMSの「定義枠（#WAV）」をどれだけ確保できるかを計算するために使用されます。</p>
+<ul>
+<li><span class="arithmatex">\(R\)</span> : 基数<ul>
+<li>意味: 数値の数え方の底。標準BMSは 36 通りの文字列(0-9, A-Z)、本ツールの拡張モードは 62 通りの文字列(0-9, A-Z, a-z) です。</li>
+</ul>
+</li>
+<li><span class="arithmatex">\(L\)</span> : 桁数<ul>
+<li>意味: BMS定義番号の桁数（通常は 2 固定）。</li>
+</ul>
+</li>
+<li><span class="arithmatex">\(C\)</span> : 容量<ul>
+<li>意味: 使用可能な最大定義数。<span class="arithmatex">\(C = R^L - 1\)</span> という式で、最大何種類の音を鳴らせるかが決まります。</li>
+</ul>
+</li>
+<li><span class="arithmatex">\(i\)</span> : 整数インデックス<ul>
+<li>意味: 内部で管理している <span class="arithmatex">\(0, 1, 2...\)</span> という連番です。これを BaseConv 関数で <code>'01', '0A'</code> などのBMS用文字列に変換します。</li>
+</ul>
+</li>
+</ul>
+<h2 id="_2"><strong>クラス設計</strong><a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<h3 id="_3"><strong>コアクラス</strong><a class="headerlink" href="#_3" title="Permanent link">&para;</a></h3>
+<h4 id="bmsoptimizationservice"><strong>BmsOptimizationService</strong>（サービス層のオーケストレータ）<a class="headerlink" href="#bmsoptimizationservice" title="Permanent link">&para;</a></h4>
+<p><strong>責務</strong>: 全体のワークフローを制御・統合</p>
+<h4 id="simulationengine"><strong>SimulationEngine</strong>（しきい値探索の評価器）<a class="headerlink" href="#simulationengine" title="Permanent link">&para;</a></h4>
+<p><strong>責務</strong>: 複数のしきい値で「削減後ユニーク数」を推定し、しきい値探索に必要な系列データを作る。</p>
+<ul>
+<li>
+<p>エントリポイント（実装）</p>
+<ul>
+<li><code>RunParallelSimulation(rangeMin, rangeMax, step, progress)</code><ul>
+<li>しきい値リストを<strong>降順</strong>に生成し、しきい値ごとのシミュレーションを<strong>順次</strong>実行</li>
+<li>Base36条件（1295件以下）を満たした時点で早期終了</li>
+<li>しきい値ごとの内部（SimulateThreshold）では、グループ単位で <code>Parallel.ForEach</code> により並列化</li>
+</ul>
+</li>
+<li><code>RunParallelSimulationDetailed(...)</code><ul>
+<li>しきい値自体も <code>Parallel.ForEach</code> で並列化する別実装（サービス層では現状未使用）</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>計算量（概算）</p>
+<ul>
+<li>しきい値数を <span class="arithmatex">\(T\)</span>、グループサイズを <span class="arithmatex">\(m\)</span> とすると<ul>
+<li>しきい値探索: <span class="arithmatex">\(O\left(\sum_{k=1}^{T}(n + \sum m^2)\right)\)</span></li>
+</ul>
+</li>
+<li>実装は「降順 + Base36成立で早期終了」するため、実運用では <span class="arithmatex">\(T\)</span> が小さくなる（=高速化）。</li>
+</ul>
+</li>
+</ul>
+<hr />
+<h3 id="_4"><strong>ファイル管理層</strong><a class="headerlink" href="#_4" title="Permanent link">&para;</a></h3>
+<h4 id="filelist"><strong>FileList</strong><a class="headerlink" href="#filelist" title="Permanent link">&para;</a></h4>
+<p><strong>責務</strong>: 1つのBMSファイルに対して、#WAV定義を解析し、WAVファイルのメタ情報リスト（<code>WavFiles</code>）を作成・保持する。</p>
+<h4 id="bmsmanager"><strong>BmsManager</strong><a class="headerlink" href="#bmsmanager" title="Permanent link">&para;</a></h4>
+<p><strong>責務</strong>: BMSの行解析と、譜面データ内の定義番号置換のための低レベルユーティリティ。</p>
+<h4 id="bmsfilerewriter"><strong>BmsFileRewriter</strong><a class="headerlink" href="#bmsfilerewriter" title="Permanent link">&para;</a></h4>
+<p><strong>責務</strong>: 置換テーブル（replaces）に基づき、#WAV定義と譜面データを整列・書き換えして出力する。</p>
+<ul>
+<li>計算量の目安<ul>
+<li>BMS読み込み/書き換え: <span class="arithmatex">\(O(n)\)</span>（行数）</li>
+<li>置換（譜面データ部）: <span class="arithmatex">\(O(m)\)</span>（置換対象の譜面行数 × 文字列長に比例）</li>
+</ul>
+</li>
+</ul>
+<hr />
+<h3 id="_5"><strong>キャッシュ管理層</strong><a class="headerlink" href="#_5" title="Permanent link">&para;</a></h3>
+<h4 id="audiocachemanager"><strong>AudioCacheManager</strong><a class="headerlink" href="#audiocachemanager" title="Permanent link">&para;</a></h4>
+<p><strong>責務</strong>: 音声データのオンメモリ管理</p>
+<ul>
+<li>
+<p>職責</p>
+<ul>
+<li>音声ファイルの並列プリロード</li>
+<li>バッチ処理による効率化</li>
+<li>メモリ使用量の統計出力（推定）</li>
+<li>破損ファイル等の失敗を収集して呼び出し元へ返却</li>
+</ul>
+</li>
+<li>
+<p>最適化戦略</p>
+<ul>
+<li>バッチサイズ: <span class="arithmatex">\(\max(10, \lfloor \frac{\text{totalFiles}}{\text{cores} \times D}\rfloor)\)</span>（<span class="arithmatex">\(D\)</span> は定数、実装は AppConstants.Cache.BatchSizeDivisor）</li>
+<li>バッチ間: 並列（MaxDegreeOfParallelism = Environment.ProcessorCount）</li>
+<li>バッチ内: 順次（ディスク負荷を抑え、シークを減らす）</li>
+<li>進捗レポート: バッチ単位</li>
+</ul>
+</li>
+</ul>
+<h4 id="cachedsounddata"><strong>CachedSoundData</strong><a class="headerlink" href="#cachedsounddata" title="Permanent link">&para;</a></h4>
+<p><strong>責務</strong>: 音声データのメモリ表現（POCO）</p>
+<ul>
+<li>
+<p>職責</p>
+<ul>
+<li>波形データの保持（オンメモリキャッシュ）</li>
+<li>チャンネル分離（デインターリーブ）済みの配列を提供</li>
+<li>RMS（TotalRms）と、Phase 2 用の正規化波形（NormalizedWaveform）を事前計算</li>
+<li>推定メモリ使用量を算出</li>
+</ul>
+</li>
+<li>
+<p>メモリ使用量の概算</p>
+<ul>
+<li>1秒の音声（44.1kHz, ステレオ）の場合<ul>
+<li>サンプル数: <span class="arithmatex">\(44{,}100\,\text{samples/ch} \times 2\,\text{ch} = 88{,}200\)</span></li>
+<li>メモリ: <span class="arithmatex">\(88{,}200 \times 4\,\text{bytes} \approx 352.8\,\text{KB}\)</span></li>
+</ul>
+</li>
+<li>30秒の音声の場合<ul>
+<li><span class="arithmatex">\(352.8\,\text{KB} \times 30 \approx 10.6\,\text{MB}\)</span></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<hr />
+<h3 id="_6"><strong>グループ化層</strong><a class="headerlink" href="#_6" title="Permanent link">&para;</a></h3>
+<h4 id="audiofilegroupingstrategy"><strong>AudioFileGroupingStrategy</strong><a class="headerlink" href="#audiofilegroupingstrategy" title="Permanent link">&para;</a></h4>
+<p><strong>責務</strong>: 効率的なファイルグループ化による比較最適化</p>
+<h3 id="_7"><strong>比較エンジン層</strong><a class="headerlink" href="#_7" title="Permanent link">&para;</a></h3>
+<h4 id="parallelaudiocomparisonengine"><strong>ParallelAudioComparisonEngine</strong><a class="headerlink" href="#parallelaudiocomparisonengine" title="Permanent link">&para;</a></h4>
+<p><strong>責務</strong>: マルチスレッド音声比較と4段階カスケード分類アルゴリズムのオーケストレーション</p>
+<ul>
+<li>
+<p>職責（実装ベース）</p>
+<ul>
+<li>グループ単位での並列比較（Parallel.ForEach）</li>
+<li>カスケードアルゴリズムによる早期足切り（Early Pruning）</li>
+<li>置換テーブル（int[]）の更新（CAS / Interlocked）</li>
+</ul>
+</li>
+<li>
+<p>並列化とカスケード戦略
+  比較対象のペアは、計算コストの低い手法から順に評価され、不一致と判断された時点で即座に次のペアへ移行します。</p>
+<ol>
+<li><strong>Stage 1 (Lock-free Anti-Set)</strong>: 過去の比較で不一致だったペアをビットマスクでキャッシュし、<span class="arithmatex">\(O(1)\)</span> でスキップ。</li>
+<li><strong>Stage 2 (SimHash256)</strong>: 波形から算出した256bitのLSH（局所性鋭敏型ハッシュ）のハミング距離を <code>POPCNT</code> で計算し、数クロックで足切り。</li>
+<li><strong>Stage 3 (FFT 16D Features)</strong>: 高速フーリエ変換による16次元の周波数帯域ごとのエネルギー特徴量を使用し、ユークリッド距離で足切り。</li>
+</ol>
+</li>
+</ul>
+<h4 id="fastwavecompare"><strong>FastWaveCompare</strong><a class="headerlink" href="#fastwavecompare" title="Permanent link">&para;</a></h4>
+<p><strong>責務</strong>: カスケードの最終段（Stage 4）におけるSIMD最適化された厳密な一致判定</p>
+<ul>
+<li>
+<p>判定対象（実装）</p>
+<ul>
+<li>ピアソン相関係数 <span class="arithmatex">\(r\)</span>（<span class="arithmatex">\(-1.0 \le r \le 1.0\)</span>）を用いた Z-score 正規化波形比較。</li>
+<li>Stage 3までを通過した（＝極めて類似性が高いと推測される）ペアに対してのみ実行されます。</li>
+</ul>
+</li>
+<li>
+<p>IsMatch(data1, data2, threshold) の処理フロー</p>
+<ol>
+<li>フォーマット一致チェック（SampleRate / Channels 等）</li>
+<li>長さ一致チェック（TotalSamples）</li>
+<li>正規化波形のドット積によるピアソン相関係数の計算（SIMDベクタライズ）</li>
+<li><span class="arithmatex">\(\text{correlation} \ge \text{threshold}\)</span> なら一致と判定</li>
+</ol>
+</li>
+</ul>
+<p>数式（Phase 2: 正規化波形がある場合）:
+正規化済み波形 <span class="arithmatex">\(\hat{x}, \hat{y}\)</span> に対して
+$$ r = \sum_{i=1}^{n} \hat{x}_i \hat{y}_i $$</p>
+<h4 id="wavevalidation"><strong>WaveValidation</strong><a class="headerlink" href="#wavevalidation" title="Permanent link">&para;</a></h4>
+<p><strong>責務</strong>: 波形指標の計算（SIMD最適化）</p>
+<ul>
+<li>
+<p>提供API（実装）</p>
+<ul>
+<li>
+<p>CalculatePearsonCorrelationSIMD(wav1, wav2)</p>
+<ul>
+<li>1パスで <span class="arithmatex">\(\sum x\)</span>, <span class="arithmatex">\(\sum y\)</span>, <span class="arithmatex">\(\sum x^2\)</span>, <span class="arithmatex">\(\sum y^2\)</span>, <span class="arithmatex">\(\sum xy\)</span> を計算し、平均・分散・共分散からピアソン相関係数 <span class="arithmatex">\(r\)</span> を算出</li>
+<li>定数列（分散ほぼ0）や短配列の特例を持ち、結果は <span class="arithmatex">\([-1, 1]\)</span> にクランプ</li>
+</ul>
+</li>
+<li>
+<p>CalculatePearsonFromNormalizedSIMD(normalizedWav1, normalizedWav2)</p>
+<ul>
+<li>正規化済み（平均0・ノルム1）前提で、ドット積で <span class="arithmatex">\(r\)</span> を算出</li>
+</ul>
+</li>
+<li>
+<p>CalculateRSquaredSIMD(wav1, wav2)</p>
+<ul>
+<li>決定係数 <span class="arithmatex">\(R^2\)</span> を算出（FastWaveCompare は現状これを使用していない）</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>数式:
+$$ r = \sum<em>{i=1}^{n} \hat{x}_i \hat{y}_i $$
+$$ R^2 = 1 - \frac{RSS}{DSS} $$
+$$ RSS = \sum</em>{i=1}^{n}(x<em>i - y_i)^2 $$
+$$ DSS = \sum</em>{i=1}^{n}(x_i - \bar{x})^2 $$</p>
+<p>備考:</p>
+<ul>
+<li>SIMD は Vector<float> を使用（実行環境に応じてベクトル幅が変化）</li>
+<li>相関は 0〜1 を主に想定するが、逆相なら -1 になり得る</li>
+</ul>
+<hr />
+<h2 id="_8"><strong>データフロー</strong><a class="headerlink" href="#_8" title="Permanent link">&para;</a></h2>
+<h3 id="_9"><strong>メイン処理フロー</strong><a class="headerlink" href="#_9" title="Permanent link">&para;</a></h3>
+<pre class="mermaid"><code>flowchart TD
+    %% スタイル定義（意味論的カラーリング）
+    classDef startNode fill:#f3f4f6,stroke:#4b5563,stroke-width:2px,color:#1f2937;
+    classDef processNode fill:#dbf4ff,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+    classDef filterNode fill:#fef08a,stroke:#ca8a04,stroke-width:2px,color:#713f12;
+    classDef successNode fill:#bbf7d0,stroke:#16a34a,stroke-width:2px,color:#14532d;
+    classDef rejectNode fill:#fecaca,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+
+    %% 起点
+    Start(["すべての音声ファイルペア"]):::startNode
+
+    %% メインパイプライン（成功ルート：ブルー）
+    Start --&gt;|"第1ステージ：O(N) 局所性鋭敏型ハッシュ"| S1["SimHash256"]:::processNode
+    S1 ==&gt;|"第2ステージ：16次元 Spectral Projection"| S2["FFT 16D 特徴量"]:::processNode
+    S2 ==&gt;|"第3ステージ：負の推移律 グラフ理論"| S3["Lock-free Anti-Set"]:::processNode
+    S3 ==&gt;|"最終ステージ：極限SIMDドット積"| S4["Z-score正規化波形比較"]:::processNode
+    S4 ===&gt; Success(["100%正確なマージ"]):::successNode
+
+    %% 足切りルート（除外判定：イエロー）
+    S1 -.-&gt;|"ハミング距離 ＞ 64"| R1["超高速足切り 数クロック"]:::filterNode
+    S2 -.-&gt;|"コサイン類似度低"| R2["高速足切り 1パス"]:::filterNode
+    S3 -.-&gt;|"既知の不一致ルート"| R3["比較をスキップ O(1)"]:::filterNode
+
+    %% 足切りの収束先（破棄ルート：レッド）
+    R1 --&gt; Reject(["不一致として除外"]):::rejectNode
+    R2 --&gt; Reject
+    R3 --&gt; Reject</code></pre>
+<h2 id="_10"><strong>パフォーマンス特性</strong><a class="headerlink" href="#_10" title="Permanent link">&para;</a></h2>
+<h3 id="_11"><strong>時間計算量（詳細分析）</strong><a class="headerlink" href="#_11" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>フェーズ</th>
+<th>計算量</th>
+<th>時間</th>
+<th>備考</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>BMS解析</td>
+<td><span class="arithmatex">\(O(n)\)</span></td>
+<td>10ms</td>
+<td>行数に比例（テキスト処理）</td>
+</tr>
+<tr>
+<td>プリロード</td>
+<td><span class="arithmatex">\(O(n)\)</span></td>
+<td>1-5s</td>
+<td>バッチ並列・Memory-Mapped FilesによるゼロコピーI/O</td>
+</tr>
+<tr>
+<td>グループ化</td>
+<td><span class="arithmatex">\(O(n)\)</span></td>
+<td>50ms</td>
+<td>メモリ操作のみ</td>
+</tr>
+<tr>
+<td>比較処理</td>
+<td>近似 <span class="arithmatex">\(O(n)\)</span></td>
+<td>~300ms</td>
+<td>4段階カスケード分類による劇的な早期除外</td>
+</tr>
+<tr>
+<td>BMS置換</td>
+<td><span class="arithmatex">\(O(n)\)</span></td>
+<td>10ms</td>
+<td>テキスト置換</td>
+</tr>
+<tr>
+<td>合計</td>
+<td>-</td>
+<td>1-5s</td>
+<td>主にファイルI/Oに依存（比較自体は一瞬）</td>
+</tr>
+</tbody>
+</table>
+<h3 id="_12"><strong>しきい値探索（シミュレーション）の時間特性</strong><a class="headerlink" href="#_12" title="Permanent link">&para;</a></h3>
+<p><code>FindOptimalThresholdsAsync</code> は「キャッシュ → しきい値ごとのユニーク数推定」を行います。</p>
+<ul>
+<li>しきい値探索の支配項（概算）<ul>
+<li>しきい値数を <span class="arithmatex">\(T\)</span>（例: 0.00..1.00 step 0.01 なら最大101）として<ul>
+<li><span class="arithmatex">\(O\left(T \times (n + \sum m^2)\right)\)</span></li>
+</ul>
+</li>
+</ul>
+</li>
+<li>実装上のポイント<ul>
+<li><code>RunParallelSimulation</code> はしきい値を降順に<strong>順次</strong>評価し、Base36条件成立で早期終了するため、実運用では <span class="arithmatex">\(T\)</span> が小さくなりやすい</li>
+<li>各しきい値の内部ではグループ単位で並列化される（CPUバウンド寄り）</li>
+</ul>
+</li>
+</ul>
+<p><strong>計算量の詳細（概算の考え方）</strong>:</p>
+<ul>
+<li><strong><span class="arithmatex">\(O(n)\)</span>操作</strong>: 各ファイルを1回走査<ul>
+<li>BMS解析: <span class="arithmatex">\(\text{定数} \times \text{行数}\)</span></li>
+<li>プリロード: ファイルI/O（ストレージ性能に依存）</li>
+</ul>
+</li>
+<li><strong>近似 <span class="arithmatex">\(O(n)\)</span>操作</strong>: カスケード分類による比較<ul>
+<li>LSHやFFTを用いた早期除外により、計算量の高い波形比較を行うペアを極限まで削減</li>
+<li>実際の比較計算負荷は、SIMDベクタライズと定数時間キャッシュ（Anti-Set）により劇的に抑制</li>
+</ul>
+</li>
+</ul>
+<h3 id="_13"><strong>空間計算量（メモリ使用量）</strong><a class="headerlink" href="#_13" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>データ構造</th>
+<th>メモリ使用量</th>
+<th>備考</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>WavFiles[]</td>
+<td><span class="arithmatex">\(O(n)\)</span></td>
+<td>ファイル定義リスト</td>
+</tr>
+<tr>
+<td>CachedSoundData[]</td>
+<td><span class="arithmatex">\(O(n)\)</span></td>
+<td>音声サンプルデータ</td>
+</tr>
+<tr>
+<td>グループリスト</td>
+<td><span class="arithmatex">\(O(n)\)</span></td>
+<td>インデックスの参照</td>
+</tr>
+<tr>
+<td>置換テーブル</td>
+<td><span class="arithmatex">\(\approx 3844 \times 4\,\text{bytes} \approx 15\,\text{KB}\)</span></td>
+<td>int配列（Union-Find）</td>
+</tr>
+<tr>
+<td><strong>合計</strong></td>
+<td><strong>~440MB</strong> (例)</td>
+<td><span class="arithmatex">\(2196 \times 200\,\text{KB}\)</span></td>
+</tr>
+</tbody>
+</table>
+<p><strong>メモリ最適化テクニック</strong>:</p>
+<ol>
+<li><strong>遅延ロード</strong>: ファイルメタデータのみ先読み</li>
+<li><strong>バッチ処理</strong>: 全体をメモリに載せず分割処理</li>
+<li><strong>参照型管理</strong>: キャッシュデータは参照管理（GC対応）</li>
+<li><strong>早期リリース</strong>: グループ比較完了後にデータ解放</li>
+</ol>
+<hr />
+<h2 id="_14"><strong>関連ドキュメント</strong><a class="headerlink" href="#_14" title="Permanent link">&para;</a></h2>
+<p>本ドキュメントはドキュメント階層の最下層です。関連リソースへのリンク：</p>
+<p><strong>上位ドキュメント（参照先）</strong>:</p>
+<ul>
+<li><a href="../README.md">README.md</a> - プロジェクト概要・ユーザーガイド</li>
+<li><a href="TECHNICAL_GUIDE.md">TECHNICAL_GUIDE.md</a> - 技術的背景・アルゴリズム解説</li>
+</ul>
+<p><strong>プロジェクト内ドキュメント</strong>:</p>
+<ul>
+<li><a href="ARCHITECTURE.md">ARCHITECTURE.md</a>
+  システム全体のコンポーネント構成とクラス設計の概要</li>
+<li><a href="TEST_DESIGN.md">TEST_DESIGN.md</a>
+  ユニットテストおよびミューテーションテストの設計方針</li>
+<li><a href="COMMIT_MESSAGE_GUIDE.md">COMMIT_MESSAGE_GUIDE.md</a>
+  開発に参加する際のコミット規約</li>
+</ul>
+<p><strong>標準化規格</strong>:</p>
+<ul>
+<li><a href="https://bmson-spec.github.io/">bmson仕様</a> - JSON形式のBMS</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+      
+    
+  </body>
+</html>
