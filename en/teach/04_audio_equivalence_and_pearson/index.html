@@ -1,0 +1,1033 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://bms-atelier-kyokufu.github.io/BmsPartTuner/en/teach/04_audio_equivalence_and_pearson/">
+      
+      
+      
+      
+        
+          <link rel="alternate" href="../../" hreflang="en">
+        
+          <link rel="alternate" href="../../../" hreflang="ja">
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>第4章 音響信号の等価性判定とピアソン相関係数 - BMS Part Tuner</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#4" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="BMS Part Tuner" class="md-header__button md-logo" aria-label="BMS Part Tuner" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            BMS Part Tuner
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              第4章 音響信号の等価性判定とピアソン相関係数
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Select language">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="../../" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../../" hreflang="ja" class="md-select__link">
+              日本語
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/bms-atelier-kyokufu/BmsPartTuner" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../index_en/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../PORTFOLIO_SUMMARY_EN/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Portfolio Summary
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../00_ARCHITECTURE_EN/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../01_TECHNICAL_GUIDE_EN/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Technical Guide
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../02_OPTIMIZATION_GUIDE_EN/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Optimization Report
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../04_TEST_STRATEGY_EN/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Test Strategy
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../COMMIT_MESSAGE_GUIDE_EN/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Commit Guide
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="BMS Part Tuner" class="md-nav__button md-logo" aria-label="BMS Part Tuner" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    BMS Part Tuner
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/bms-atelier-kyokufu/BmsPartTuner" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../index_en/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../PORTFOLIO_SUMMARY_EN/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Portfolio Summary
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../00_ARCHITECTURE_EN/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../01_TECHNICAL_GUIDE_EN/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Technical Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../02_OPTIMIZATION_GUIDE_EN/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Optimization Report
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../04_TEST_STRATEGY_EN/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Test Strategy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../COMMIT_MESSAGE_GUIDE_EN/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Commit Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#41" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 離散時間信号の類似度空間の定式化
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4.1 離散時間信号の類似度空間の定式化">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        定義 4.1 (離散時間音響信号ベクトル)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        定義 4.2 (ピアソン積率相関係数)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#411" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1.1 ピアソン相関係数のスケール・シフト不変性と正規化パスの削減
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#42_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2 計算量と精度のジレンマを解消するオンライン累積法
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4.2 計算量と精度のジレンマを解消するオンライン累積法">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#421" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2.1 課題：なぜ素朴な計算アルゴリズムは破綻するのか
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#422-welford-why" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2.2 解決策としての Welford の漸化式 (Why)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#423-41" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2.3 定理 4.1 とその証明
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#424" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2.4 実装への射影：オーダー削減と疑似コード
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#43" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.3 時間シフトを伴う相互相関計算とハードウェア最適化
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4.3 時間シフトを伴う相互相関計算とハードウェア最適化">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#43-tau" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        定義 4.3 (ラグ \(\tau\) を伴う相互相関関数)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#431-fastwavecomparesimd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.3.1 【実装への射影: FastWaveCompare】SIMDによる計算量定数倍の極限削減
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#44" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.4 等価性判定と統計的確実性限界
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#45" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.5 参考文献
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="4">第4章 音響信号の等価性判定とピアソン相関係数<a class="headerlink" href="#4" title="Permanent link">&para;</a></h1>
+<p>本章では、2つの有限長さ離散音響信号が物理的および聴覚的に実質同一であるかを数学的に判定するための基礎理論を展開する。
+また、計算機上で数式を評価する際に不可避となる浮動小数点演算の桁落ちを回避するためのオンラインアルゴリズムの数学的証明と、SIMD命令を用いた実装極限の最適化技術について解説する。</p>
+<blockquote>
+<p>[!NOTE]
+<strong>本章における主要な略称・用語</strong></p>
+<ul>
+<li><strong>SIMD</strong>: Single Instruction, Multiple Data</li>
+<li><strong>AVX</strong>: Advanced Vector Extensions</li>
+<li><strong>CLR</strong>: Common Language Runtime (.NET 実行環境)</li>
+<li><strong>FMA</strong>: Fused Multiply-Add</li>
+<li><strong>スケール・シフト不変性</strong>: 線形変換に対する不変性 (Scale and Shift Invariance)</li>
+<li><strong>DCオフセット</strong>: 直流成分のズレ</li>
+</ul>
+</blockquote>
+<h2 id="41">4.1 離散時間信号の類似度空間の定式化<a class="headerlink" href="#41" title="Permanent link">&para;</a></h2>
+<p>音響信号の比較を行うための土台として、信号を内積が定義された計量ベクトル空間（ヒルベルト空間の有限次元の部分空間）上の点として定義する。</p>
+<h3 id="41_1">定義 4.1 (離散時間音響信号ベクトル)<a class="headerlink" href="#41_1" title="Permanent link">&para;</a></h3>
+<p>サンプリング周波数 <span class="arithmatex">\(f_s \in \mathbb{R}^+\)</span>（例えば <span class="arithmatex">\(44100\text{ Hz}\)</span>）において、量子化された離散時間音響信号を <span class="arithmatex">\(N\)</span> 次元の実数ベクトル空間 <span class="arithmatex">\(\mathbb{R}^N\)</span> 上の点 <span class="arithmatex">\(\mathbf{x} = [x_0, x_1, \dots, x_{N-1}]^T\)</span> として定義する。ここで各要素 <span class="arithmatex">\(x_i \in \mathbb{R}\)</span> は時間ステップ <span class="arithmatex">\(t_i = i / f_s\)</span> における振幅を表す。実装上は <span class="arithmatex">\([-1.0, 1.0]\)</span> の範囲に正規化された単精度浮動小数点数（<code>float</code>）として扱われる。</p>
+<h3 id="42">定義 4.2 (ピアソン積率相関係数)<a class="headerlink" href="#42" title="Permanent link">&para;</a></h3>
+<p>長さ <span class="arithmatex">\(N\)</span> の2つの離散信号ベクトル <span class="arithmatex">\(\mathbf{x}, \mathbf{y} \in \mathbb{R}^N\)</span> において、その標本平均をそれぞれ <span class="arithmatex">\(\bar{x} = \frac{1}{N}\sum_{i=0}^{N-1}x_i, \bar{y} = \frac{1}{N}\sum_{i=0}^{N-1}y_i\)</span> とする。このとき、両ベクトル間のピアソン積率相関係数 <span class="arithmatex">\(r_{xy} \in [-1.0, 1.0]\)</span> は以下のように定義される。</p>
+<div class="arithmatex">\[r_{xy} = \frac{\sum_{i=0}^{N-1} (x_i - \bar{x})(y_i - \bar{y})}{\sqrt{\sum_{i=0}^{N-1} (x_i - \bar{x})^2} \sqrt{\sum_{i=0}^{N-1} (y_i - \bar{y})^2}} \quad \cdots (4.1)\]</div>
+<p>空間 <span class="arithmatex">\(\mathbb{R}^N\)</span> における標準内積 <span class="arithmatex">\(\langle \mathbf{u}, \mathbf{v} \rangle = \sum_{i=0}^{N-1} u_i v_i\)</span> およびそこから誘導される <span class="arithmatex">\(L^2\)</span> ノルム <span class="arithmatex">\(\|\mathbf{u}\|_2 = \sqrt{\langle \mathbf{u}, \mathbf{u} \rangle}\)</span> を導入する。平均減算した中心化ベクトル <span class="arithmatex">\(\tilde{\mathbf{x}} = \mathbf{x} - \bar{x}\mathbf{1}\)</span>、<span class="arithmatex">\(\tilde{\mathbf{y}} = \mathbf{y} - \bar{y}\mathbf{1}\)</span> （ここで <span class="arithmatex">\(\mathbf{1}\)</span> は全要素が <span class="arithmatex">\(1\)</span> のベクトル）を用いると、式 (4.1) の分子は <span class="arithmatex">\(\langle\tilde{\mathbf{x}}, \tilde{\mathbf{y}}\rangle\)</span>、分母は <span class="arithmatex">\(\|\tilde{\mathbf{x}}\|_2 \|\tilde{\mathbf{y}}\|_2\)</span> と書き換えられる。</p>
+<p>したがって、相関係数は <span class="arithmatex">\(\mathbb{R}^N\)</span> 空間における2つの中心化ベクトルのなす角 <span class="arithmatex">\(\theta\)</span> のコサイン類似度に一致する。</p>
+<div class="arithmatex">\[r_{xy} = \frac{\langle\tilde{\mathbf{x}}, \tilde{\mathbf{y}}\rangle}{\|\tilde{\mathbf{x}}\|_2 \|\tilde{\mathbf{y}}\|_2} = \cos \theta \quad \cdots (4.2)\]</div>
+<p>判定対象となる2つの信号の相関係数 <span class="arithmatex">\(r_{xy}\)</span> が、あらかじめ定めた許容閾値 <span class="arithmatex">\(1 - \epsilon\)</span> 以上であれば、両者は実質的に同値（線形従属に近い状態）であるとみなす。</p>
+<h3 id="411">4.1.1 ピアソン相関係数のスケール・シフト不変性と正規化パスの削減<a class="headerlink" href="#411" title="Permanent link">&para;</a></h3>
+<p>前述の式 (5.1) において、ピアソン相関係数が持つ極めて強力な数学的性質としてスケール・シフト不変性が挙げられる。</p>
+<p>任意の定数 <span class="arithmatex">\(a &gt; 0\)</span> および <span class="arithmatex">\(b \in \mathbb{R}\)</span> に対して、信号 <span class="arithmatex">\(\mathbf{y}\)</span> を線形変換した <span class="arithmatex">\(\mathbf{y}' = a\mathbf{y} + b\mathbf{1}\)</span> を考える。このとき、変換後の平均は <span class="arithmatex">\(\bar{y}' = a\bar{y} + b\)</span> となり、各要素の偏差は <span class="arithmatex">\(y'_i - \bar{y}' = (ay_i + b) - (a\bar{y} + b) = a(y_i - \bar{y})\)</span> となる。
+これを式 (4.1) に代入すると、分子からは <span class="arithmatex">\(a\)</span> がくくり出され、分母の各項からは <span class="arithmatex">\(\sqrt{a^2} = a\)</span> がくくり出されるため、約分されて結果は完全に一致する。</p>
+<div class="arithmatex">\[r_{x, ay+b} = r_{xy} \quad (a &gt; 0)\]</div>
+<p><strong>【計算量最適化への応用】</strong>
+この数理的性質は、オーディオ信号処理において決定的な意味を持つ。
+比較する2つのWAVファイル間で、音量差やDCオフセットが存在していたとしても、波形の形状さえ一致していれば相関係数は完全に等しくなる。
+これにより、素朴な実装で不可避となる「比較前に全音声ファイルを一度スキャンしてピーク音量を探索し、DCオフセットを除去する」という前処理パスを丸ごとスキップすることが可能となり、ファイル読み込みから比較までの物理的なメモリアクセス量を大幅に削減している。</p>
+<h2 id="42_1">4.2 計算量と精度のジレンマを解消するオンライン累積法<a class="headerlink" href="#42_1" title="Permanent link">&para;</a></h2>
+<h3 id="421">4.2.1 課題：なぜ素朴な計算アルゴリズムは破綻するのか<a class="headerlink" href="#421" title="Permanent link">&para;</a></h3>
+<p>式 (4.1) をプログラム上で評価する場合、計算量と計算精度の相反するジレンマに直面する。</p>
+<p><strong>1. 定義通りの計算（2パス・アルゴリズム）:</strong>
+式 (4.1) をそのまま実装すると、まず平均 <span class="arithmatex">\(\bar{x}, \bar{y}\)</span> を計算するために1回目の配列走査を行い、次に偏差の積和を計算するために2回目の走査が必要となる。時間計算量こそ <span class="arithmatex">\(O(N)\)</span> であるが、巨大な音声データをメモリからCPUキャッシュへ2回ロードする必要があり、メモリアクセスのボトルネック（定数倍の悪化）によりパフォーマンスが著しく低下する。</p>
+<p><strong>2. 展開式による1パス化と桁落ち:</strong>
+メモリアクセスを1回（1パス）に削減するために、分散の定義式を展開した以下の等式が広く知られている。</p>
+<div class="arithmatex">\[\sum_{i=0}^{N-1} (x_i - \bar{x})^2 = \sum_{i=0}^{N-1} x_i^2 - \frac{1}{N}\left(\sum_{i=0}^{N-1} x_i\right)^2 \quad \cdots (4.3)\]</div>
+<p>この式を用いれば、時間計算量 <span class="arithmatex">\(O(N)\)</span> かつ配列走査1回で済む。しかし、浮動小数点演算（IEEE 754）においてこの式を評価すると、<strong>桁落ち</strong>という致命的な精度崩壊を引き起こす。波形の振幅変動が極めて小さい場合、右辺の第一項と第二項は巨大な近似値となる。この減算において有効ビットの大半が相殺され、最悪の場合は丸め誤差により分散がマイナスになる。</p>
+<h3 id="422-welford-why">4.2.2 解決策としての Welford の漸化式 (Why)<a class="headerlink" href="#422-welford-why" title="Permanent link">&para;</a></h3>
+<p>上記のジレンマを打破し、1パスによるメモリアクセス半減と桁落ちを回避する数学的安定性を両立させるため、本システムでは式を Welford のアルゴリズムに準ずる漸化式へと変形する。</p>
+<p>この変形の本質は、配列全体をメモリに保持する（空間計算量 <span class="arithmatex">\(O(N)\)</span>）のではなく、直前までの状態（平均・分散）と現在の入力値の微小な差分のみを用いて状態を更新していく点にある。これにより空間計算量を <span class="arithmatex">\(O(1)\)</span> に圧縮し、時間計算量 <span class="arithmatex">\(O(N)\)</span> の厳密な1パスを実現する。</p>
+<h3 id="423-41">4.2.3 定理 4.1 とその証明<a class="headerlink" href="#423-41" title="Permanent link">&para;</a></h3>
+<blockquote>
+<p>[!IMPORTANT]
+<strong>定理 4.1</strong>
+系列の <span class="arithmatex">\(k\)</span> 番目までの標本平均を <span class="arithmatex">\(\bar{x}_k\)</span>、偏差平方和を <span class="arithmatex">\(S_{xx, k}\)</span> とする。
+初期条件を <span class="arithmatex">\(\bar{x}_0 = 0, S_{xx, 0} = 0\)</span> としたとき、<span class="arithmatex">\(k \ge 1\)</span> について次式が成立する。</p>
+<ol>
+<li><strong>平均の漸化式</strong>:
+   $<span class="arithmatex">\(\bar{x}_k = \bar{x}_{k-1} + \frac{x_k - \bar{x}_{k-1}}{k} \quad \cdots (4.4)\)</span>$</li>
+<li><strong>偏差平方和の漸化式</strong>:
+   $<span class="arithmatex">\(S_{xx, k} = S_{xx, k-1} + (x_k - \bar{x}_{k-1})(x_k - \bar{x}_k) \quad \cdots (4.5)\)</span>$</li>
+</ol>
+<p>[!NOTE]
+<strong>証明</strong></p>
+<ol>
+<li>
+<p>平均の漸化式について：
+   定義より <span class="arithmatex">\(\bar{x}_k = \frac{1}{k}\sum_{i=1}^k x_i\)</span> である。これを変形すると、</p>
+<div class="arithmatex">\[ \begin{aligned} \bar{x}_k &amp;= \frac{1}{k} \left( x_k + \sum_{i=1}^{k-1} x*i \right) \\ &amp;= \frac{1}{k} \left( x_k + (k-1)\bar{x}*{k-1} \right) \\ &amp;= \frac{x*k + k\bar{x}*{k-1} - \bar{x}_{k-1}}{k} \\ &amp;= \bar{x}_{k-1} + \frac{x*k - \bar{x}*{k-1}}{k} \end{aligned} \]</div>
+<p>となり、(4.4) が示された。</p>
+</li>
+<li>
+<p>偏差平方和の漸化式について：
+   <span class="arithmatex">\(S_{xx, k} = \sum_{i=1}^k (x_i - \bar{x}_k)^2\)</span> である。和を <span class="arithmatex">\(k-1\)</span> 番目までと <span class="arithmatex">\(k\)</span> 番目に分割し、<span class="arithmatex">\(\bar{x}_k\)</span> を <span class="arithmatex">\(\bar{x}_{k-1}\)</span> を用いて表す過程で (4.4) より導かれる関係式 <span class="arithmatex">\((x_i - \bar{x}_k) = (x_i - \bar{x}_{k-1}) - \frac{x_k - \bar{x}_{k-1}}{k}\)</span> を用い、
+   展開と整理を繰り返すことで、以下の簡潔な差分更新式が得られる。
+   $<span class="arithmatex">\(S_{xx, k} - S_{xx, k-1} = (x_k - \bar{x}_k)(x_k - \bar{x}_{k-1})\)</span>$
+   これにより (4.5) が示された。共分散 <span class="arithmatex">\(S_{xy, k}\)</span> についても同様に <span class="arithmatex">\(S_{xy, k} = S_{xy, k-1} + (x_k - \bar{x}_{k-1})(y_k - \bar{y}_k)\)</span> が導かれる。<span class="arithmatex">\(\blacksquare\)</span></p>
+</li>
+</ol>
+</blockquote>
+<h3 id="424">4.2.4 実装への射影：オーダー削減と疑似コード<a class="headerlink" href="#424" title="Permanent link">&para;</a></h3>
+<p>C#における <code>PearsonAccumulator</code> は、この定理を定数空間 <span class="arithmatex">\(O(1)\)</span> で実行するアキュムレータとして実装されている。</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1">// 【疑似コード】PearsonAccumulator による O(N)時間・O(1)空間アルゴリズム</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kt">double</span><span class="w"> </span><span class="n">meanX</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">meanY</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="kt">double</span><span class="w"> </span><span class="n">varX</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">varY</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">covXY</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="c1">// キャッシュラインに乗った配列を1度だけ走査する（1パスによるメモリ帯域幅の半減）</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="n">N</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="o">++</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">signalX</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">signalY</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">dx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">meanX</span><span class="p">;</span><span class="w"> </span><span class="c1">// 式(4.4)の分子</span>
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">dy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">meanY</span><span class="p">;</span>
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="w">    </span><span class="n">meanX</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">dx</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">i</span><span class="p">;</span><span class="w">       </span><span class="c1">// 平均の更新 O(1)</span>
+</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="w">    </span><span class="n">meanY</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">dy</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">i</span><span class="p">;</span>
+</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>
+</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="w">    </span><span class="n">varX</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">dx</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">x</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">meanX</span><span class="p">);</span><span class="w"> </span><span class="c1">// 式(4.5)の適用 O(1)</span>
+</span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a><span class="w">    </span><span class="n">varY</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">dy</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">y</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">meanY</span><span class="p">);</span>
+</span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span class="w">    </span><span class="n">covXY</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">dx</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">y</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">meanY</span><span class="p">);</span>
+</span><span id="__span-0-19"><a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a><span class="p">}</span>
+</span><span id="__span-0-20"><a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a><span class="c1">// 最終的な相関係数の導出</span>
+</span><span id="__span-0-21"><a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a><span class="kt">double</span><span class="w"> </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">covXY</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">Math</span><span class="p">.</span><span class="n">Sqrt</span><span class="p">(</span><span class="n">varX</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">varY</span><span class="p">);</span>
+</span></code></pre></div>
+<p>この実装により、一時配列のメモリアロケーションが完全に排除され（空間 <span class="arithmatex">\(O(N) \to O(1)\)</span>）、かつ <span class="arithmatex">\((x_k - \bar{x}_{k-1})\)</span> という「真値に近い微小な差分」を累積するため、式(4.3)のような巨大数の減算が発生せず、二重の課題（速度と精度）が解決されている。</p>
+<h2 id="43">4.3 時間シフトを伴う相互相関計算とハードウェア最適化<a class="headerlink" href="#43" title="Permanent link">&para;</a></h2>
+<p>実際の音響ファイル同士を比較する際、サンプリングの開始位置が微小に異なる場合がある。このとき、単なる要素ごとの比較（ラグ <span class="arithmatex">\(\tau = 0\)</span>）では相関係数が著しく低下する。</p>
+<h3 id="43-tau">定義 4.3 (ラグ <span class="arithmatex">\(\tau\)</span> を伴う相互相関関数)<a class="headerlink" href="#43-tau" title="Permanent link">&para;</a></h3>
+<p>ベクトル <span class="arithmatex">\(\mathbf{y}\)</span> を時間軸方向に <span class="arithmatex">\(\tau \in \mathbb{Z}\)</span> サンプルだけシフトさせた信号ベクトルを考える。比較可能なオーバーラップ区間長を <span class="arithmatex">\(M(\tau) = N - |\tau|\)</span> とする。この有限区間におけるピアソン相関係数を <span class="arithmatex">\(r_{xy}(\tau)\)</span> と定義する。
+等価性判定問題は、許容される最大のズレ幅を <span class="arithmatex">\(\tau_{\text{max}}\)</span> としたとき、探索範囲 <span class="arithmatex">\(\tau \in [-\tau_{\text{max}}, \tau_{\text{max}}]\)</span> における最大相関を見つける局所最適化問題として定式化される。</p>
+<div class="arithmatex">\[r_{\text{max}} = \max_{-\tau_{\text{max}} \le \tau \le \tau_{\text{max}}} r_{xy}(\tau) \quad \cdots (4.6)\]</div>
+<h3 id="431-fastwavecomparesimd">4.3.1 【実装への射影: <code>FastWaveCompare</code>】SIMDによる計算量定数倍の極限削減<a class="headerlink" href="#431-fastwavecomparesimd" title="Permanent link">&para;</a></h3>
+<p>ラグ <span class="arithmatex">\(\tau\)</span> の全探索は、素朴な実装では時間計算量 <span class="arithmatex">\(O(N \cdot \tau_{\text{max}})\)</span> を要求する。これを実用的な時間内に収めるため、<code>FastWaveCompare.cs</code> ではアルゴリズム的オーダー削減に加え、ハードウェアレベルでの定数倍の極限削減を行っている。</p>
+<ol>
+<li><strong>ポインタによる境界チェック排除</strong>
+   C# の <code>unsafe</code> と <code>fixed</code> により配列への直接ポインタを取得する。これによりCLRの配列境界チェックループごとのオーバーヘッド <span class="arithmatex">\(O(1)\)</span> が消失する。</li>
+<li><strong>SIMD超並列化による命令数削減</strong>
+   スカラー演算による <span class="arithmatex">\(\sum\)</span> の評価を棄て、<code>Vector256&lt;float&gt;</code> を用いる。これにより、8次元のベクトル積和演算を1命令で実行する。ループの回転数は <span class="arithmatex">\(N\)</span> から <span class="arithmatex">\(N/8\)</span> へと削減され、計算スループットは理論上最大8倍に引き上げられる。</li>
+</ol>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1">// 【疑似コード】AVX2 / AVX-512 による内積計算のSIMD最適化</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="n">Vector256</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="w"> </span><span class="n">acc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Vector256</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="p">.</span><span class="n">Zero</span><span class="p">;</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">N</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">7</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="mi">8</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">    </span><span class="c1">// 8サンプルを同時にレジスタへロードし、1クロックで積和(FMA)演算</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">    </span><span class="n">Vector256</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="w"> </span><span class="n">vX</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Avx</span><span class="p">.</span><span class="n">LoadVector256</span><span class="p">(</span><span class="n">pX</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">i</span><span class="p">);</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">    </span><span class="n">Vector256</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="w"> </span><span class="n">vY</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Avx</span><span class="p">.</span><span class="n">LoadVector256</span><span class="p">(</span><span class="n">pY</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">tau</span><span class="p">);</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">    </span><span class="n">acc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Avx</span><span class="p">.</span><span class="n">Add</span><span class="p">(</span><span class="n">acc</span><span class="p">,</span><span class="w"> </span><span class="n">Avx</span><span class="p">.</span><span class="n">Multiply</span><span class="p">(</span><span class="n">vX</span><span class="p">,</span><span class="w"> </span><span class="n">vY</span><span class="p">));</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="p">}</span>
+</span></code></pre></div>
+<ol>
+<li><strong>ループアンロール</strong>
+   さらに、<code>GenerateSimdBatchUnrollAttribute</code> を通じてループ展開を強制する。これにより、複数のSIMDレジスタに対する独立した命令がパイプラインに投入され、CPUのアウト・オブ・オーダー実行が誘発される。依存関係によるストール（待機状態）が排除され、レイテンシという物理的な壁を越えた最適化が達成される。</li>
+</ol>
+<h2 id="44">4.4 等価性判定と統計的確実性限界<a class="headerlink" href="#44" title="Permanent link">&para;</a></h2>
+<p>算出された最大相関係数 <span class="arithmatex">\(r_{\text{max}}\)</span> から最終的な同一性判定を下す際、単なる固定の閾値（例えば <span class="arithmatex">\(r &gt; 0.99\)</span>）を用いることは統計学的に不十分である。</p>
+<p><code>WaveValidation.Pearson.cs</code> では、オーバーラップした有効サンプル数 <span class="arithmatex">\(M(\tau)\)</span> が少ない場合、無相関のホワイトノイズ同士であっても偶然に高い相関が生じる確率（偽陽性率）が上昇するという数理統計学的性質を考慮している。そのため、判定関数 <code>IsPearsonCorrelationValid</code> では、経験的かつ数学的限界に基づく厳格な許容誤差（<span class="arithmatex">\(\epsilon \approx 10^{-4}\)</span> オーダー）の適用に加え、十分な <span class="arithmatex">\(M(\tau)\)</span> の長さを必須条件として組み込むことで、確実な等価性証明を担保している。</p>
+<h2 id="45">4.5 参考文献<a class="headerlink" href="#45" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Welford, B. P. (1962). "Note on a method for calculating corrected sums of squares and products". <em>Technometrics</em>, 4(3), 419-420.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="../../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+      
+    
+  </body>
+</html>

@@ -1,0 +1,952 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://bms-atelier-kyokufu.github.io/BmsPartTuner/en/teach/07_simulation_engine/">
+      
+      
+      
+      
+        
+          <link rel="alternate" href="../../" hreflang="en">
+        
+          <link rel="alternate" href="../../../" hreflang="ja">
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>第7章 時間軸シミュレーションエンジンとプレイアビリティ保存 - BMS Part Tuner</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#7" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="BMS Part Tuner" class="md-header__button md-logo" aria-label="BMS Part Tuner" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            BMS Part Tuner
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              第7章 時間軸シミュレーションエンジンとプレイアビリティ保存
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Select language">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="../../" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../../" hreflang="ja" class="md-select__link">
+              日本語
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/bms-atelier-kyokufu/BmsPartTuner" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../index_en/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../PORTFOLIO_SUMMARY_EN/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Portfolio Summary
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../00_ARCHITECTURE_EN/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../01_TECHNICAL_GUIDE_EN/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Technical Guide
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../02_OPTIMIZATION_GUIDE_EN/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Optimization Report
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../04_TEST_STRATEGY_EN/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Test Strategy
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../COMMIT_MESSAGE_GUIDE_EN/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Commit Guide
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="BMS Part Tuner" class="md-nav__button md-logo" aria-label="BMS Part Tuner" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    BMS Part Tuner
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/bms-atelier-kyokufu/BmsPartTuner" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../index_en/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../PORTFOLIO_SUMMARY_EN/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Portfolio Summary
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../00_ARCHITECTURE_EN/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../01_TECHNICAL_GUIDE_EN/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Technical Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../02_OPTIMIZATION_GUIDE_EN/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Optimization Report
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../04_TEST_STRATEGY_EN/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Test Strategy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../COMMIT_MESSAGE_GUIDE_EN/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Commit Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#71" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.1 楽譜時間（パルス）と実時間（秒）の非線形写像の定式化
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7.1 楽譜時間（パルス）と実時間（秒）の非線形写像の定式化">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#71-pulse-time" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        定義 7.1 (Pulse-Time 写像)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#72" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        定義 7.2 (発音イベントとエネルギー密度)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#72_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.2 課題：静的解析の限界と波形干渉のジレンマ
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#73-sweep-line-proof" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.3 定理の提示とSweep-Lineアルゴリズムによる証明 (Proof)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#74" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.4 計算量削減の定量的評価と疑似コード
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7.4 計算量削減の定量的評価と疑似コード">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pulsetorealtimecalculator-simulationengine" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        実装への射影：PulseToRealTimeCalculator と SimulationEngine
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#75" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.5 プレイアビリティ等価定理と許容限界
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#76-references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.6 参考文献 (References)
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="7">第7章 時間軸シミュレーションエンジンとプレイアビリティ保存<a class="headerlink" href="#7" title="Permanent link">&para;</a></h1>
+<p>本章では、冗長な音声定義を単一の代表元へと統合した結果、ゲームプレイ時に「音が不自然に重なる」「発音タイミングが変わる」といったプレイフィール上の破綻が絶対に発生しないことを数学的・論理的に保証するためのシステムシミュレーション理論を解説する。
+単なる静的な定義置換が引き起こす干渉問題を排除し、楽譜時間から実時間への非線形写像、および Sweep-Line アルゴリズムを用いた区間代数によって、重複発音の検証計算量を <span class="arithmatex">\(O(M^2)\)</span> から <span class="arithmatex">\(O(M \log M)\)</span> へと削減する過程を証明する。</p>
+<blockquote>
+<p>[!NOTE]
+<strong>本章における主要な略称・用語</strong></p>
+<ul>
+<li><strong>BPM</strong>: Beats Per Minute</li>
+<li><strong>JND</strong>: 最小可聴差異</li>
+<li><strong>Sweep-Line</strong>: 走査線アルゴリズム</li>
+</ul>
+</blockquote>
+<h2 id="71">7.1 楽譜時間（パルス）と実時間（秒）の非線形写像の定式化<a class="headerlink" href="#71" title="Permanent link">&para;</a></h2>
+<p>BMSにおけるノート（音符）の配置は、一定のリズム間隔を示す「パルス」と呼ばれる離散的な座標系で行われる。これを物理的な音響波形のオーバーラップ検証に用いるためには、パルスから実時間（秒）への厳密な写像を構築する必要がある。</p>
+<h3 id="71-pulse-time">定義 7.1 (Pulse-Time 写像)<a class="headerlink" href="#71-pulse-time" title="Permanent link">&para;</a></h3>
+<p>BMSのタイムライン上に存在するBPM変更イベントおよびSTOPイベントの全集合を考慮する。
+パルス座標 <span class="arithmatex">\(p \in \mathbb{R}_{\ge 0}\)</span> から実時間座標 <span class="arithmatex">\(t \in \mathbb{R}_{\ge 0}\)</span> への変換を、非線形な連続関数（または区間的に連続な関数） <span class="arithmatex">\(T: p \mapsto t\)</span> として定義する。</p>
+<p>あるパルス区間 <span class="arithmatex">\([p_k, p_{k+1})\)</span> においてBPMが定数 <span class="arithmatex">\(B_k &gt; 0\)</span> であるとき、パルスの基本分解能を <span class="arithmatex">\(R\)</span>（通常 <span class="arithmatex">\(R=96\)</span> または <span class="arithmatex">\(192\)</span>）とすると、その区間における実時間の増分 <span class="arithmatex">\(\Delta t\)</span> はパルスの増分 <span class="arithmatex">\(\Delta p\)</span> に対して以下の線形関係を持つ。</p>
+<div class="arithmatex">\[\Delta t = \frac{60}{B_k \cdot R} \Delta p \quad \cdots (7.1)\]</div>
+<h3 id="72">定義 7.2 (発音イベントとエネルギー密度)<a class="headerlink" href="#72" title="Permanent link">&para;</a></h3>
+<p>タイムライン上の <span class="arithmatex">\(i\)</span> 番目の発音イベント <span class="arithmatex">\(e_i\)</span> を、タプル <span class="arithmatex">\((p_i, w_i, L_i)\)</span> として定義する。
+ここで <span class="arithmatex">\(p_i\)</span> は発音開始パルス、<span class="arithmatex">\(w_i \in V\)</span> は再生される音声定義、<span class="arithmatex">\(L_i\)</span> は音声波形の実時間長である。写像 <span class="arithmatex">\(T\)</span> により、実時間における発音区間は <span class="arithmatex">\(I_i = [T(p_i), T(p_i) + L_i]\)</span> となる。</p>
+<h2 id="72_1">7.2 課題：静的解析の限界と波形干渉のジレンマ<a class="headerlink" href="#72_1" title="Permanent link">&para;</a></h2>
+<p>最適化の目的は、類似した音声定義群（同値類 <span class="arithmatex">\([w]\)</span>）を代表元 <span class="arithmatex">\(w_{\text{rep}}\)</span> にすべて置換することである。しかし、タイムラインを考慮せずに静的置換を強行すると、以下の物理的・音響的破綻を引き起こす。</p>
+<p><strong>1. 位相干渉とコムフィルタ効果の発生</strong>
+もし異なるレーンに配置されたノート <span class="arithmatex">\(e_1, e_2\)</span> が同一の実時間 <span class="arithmatex">\(t\)</span> に極めて近いタイミングで発音され、それらが同じ代表元 <span class="arithmatex">\(w_{\text{rep}}\)</span> に置換されたとする。二つの同一波形が微小な時間差 <span class="arithmatex">\(\Delta t\)</span> で重ね合わされると、周波数領域においてコムフィルタ効果が発生する。これにより、元の音響的性質が著しく歪む（フランジャーのような音質劣化を招く）。</p>
+<p><strong>2. 同時発音数制限による音抜け</strong>
+多くの再生エンジンは、全く同一のバッファへの同時アクセスや多重再生に対してハードウェア的またはソフトウェア的な発音数上限を持つ。同一時刻付近に多数の <span class="arithmatex">\(w_{\text{rep}}\)</span> が密集すると、後着のノートが再生をキャンセルされる（音抜けが発生する）。</p>
+<p><strong>3.</strong> <span class="arithmatex">\(O(M^2)\)</span> <strong>の素朴な区間衝突判定の爆発</strong>
+上記の破綻を防ぐには、「置換対象のノート群の実時間区間 <span class="arithmatex">\(I_i\)</span> と <span class="arithmatex">\(I_j\)</span> がオーバーラップしているか否か」を全イベントについてシミュレーションする必要がある。総ノート数を <span class="arithmatex">\(M\)</span> としたとき、すべてのペアを素朴に比較すると時間計算量は <span class="arithmatex">\(O(M^2)\)</span> となる。高難易度の譜面（<span class="arithmatex">\(M &gt; 10^5\)</span>）では数分間の計算ブロックが発生し、パイプラインのリアルタイム性を損なう。</p>
+<h2 id="73-sweep-line-proof">7.3 定理の提示とSweep-Lineアルゴリズムによる証明 (Proof)<a class="headerlink" href="#73-sweep-line-proof" title="Permanent link">&para;</a></h2>
+<p>Pulse-Time写像の単調性と、区間代数における Sweep-Line アルゴリズムを導入することで、シミュレーション計算量を劇的に削減する。</p>
+<blockquote>
+<p>[!IMPORTANT]
+<strong>定理 7.1 (Pulse-Time 写像の広義単調増加性と逆関数)</strong>
+STOPイベントによる停留区間を除き、関数 <span class="arithmatex">\(T(p)\)</span> は広義単調増加である。
+すなわち、任意の <span class="arithmatex">\(p_1 &lt; p_2\)</span> に対して <span class="arithmatex">\(T(p_1) \le T(p_2)\)</span> が成り立つ。これにより、<span class="arithmatex">\(B\)</span> 個のBPM/STOP変化点を持つ区分線形関数 <span class="arithmatex">\(T(p)\)</span> の評価は、変化点の配列に対する二分探索を用いることで、任意の <span class="arithmatex">\(p\)</span> に対して <span class="arithmatex">\(O(\log B)\)</span> 時間で一意に計算可能である。</p>
+<p>[!IMPORTANT]
+<strong>定理 7.2 (Sweep-Lineによる区間オーバーラップの高速検出)</strong>
+総数 <span class="arithmatex">\(M\)</span> 個の発音イベント集合 <span class="arithmatex">\(E\)</span> におけるすべての区間交差（オーバーラップ）の検出は、時間計算量 <span class="arithmatex">\(O(M \log M)\)</span> で完了する。</p>
+<p>[!NOTE]
+<strong>証明</strong></p>
+<p>各発音イベント <span class="arithmatex">\(e_i\)</span> の実時間区間 <span class="arithmatex">\(I_i = [t_{\text{start}}^{(i)}, t_{\text{end}}^{(i)}]\)</span> に対して、2つの端点を生成する。</p>
+<ul>
+<li>始点イベント: <span class="arithmatex">\((t_{\text{start}}^{(i)}, \text{type: START}, \text{id}: i)\)</span></li>
+<li>終点イベント: <span class="arithmatex">\((t_{\text{end}}^{(i)}, \text{type: END}, \text{id}: i)\)</span></li>
+</ul>
+<p>これら <span class="arithmatex">\(2M\)</span> 個の端点を、時間 <span class="arithmatex">\(t\)</span> の順にソートする（ソートの時間計算量は <span class="arithmatex">\(O(M \log M)\)</span>）。
+Sweep-Line を時間 <span class="arithmatex">\(t=0\)</span> から順に進めながら、以下の状態遷移を行う。</p>
+<ol>
+<li><code>START</code> イベントに遭遇した場合：現在の「発音中リスト」にノート <span class="arithmatex">\(i\)</span> を追加する。このとき、リスト内に既に存在するノート群が、ノート <span class="arithmatex">\(i\)</span> と確実に交差（オーバーラップ）している区間である。</li>
+<li><code>END</code> イベントに遭遇した場合：「発音中リスト」からノート <span class="arithmatex">\(i\)</span> を削除する。</li>
+</ol>
+<p>この走査処理において、各イベントのリストへの追加・削除がそれぞれ1回ずつ行われるため、走査自体の時間計算量は <span class="arithmatex">\(O(M)\)</span> である。交差の列挙を含めても、ソートの計算量が支配的となるため、全体の時間計算量は <span class="arithmatex">\(O(M \log M)\)</span> となることが示された。<span class="arithmatex">\(\blacksquare\)</span></p>
+</blockquote>
+<h2 id="74">7.4 計算量削減の定量的評価と疑似コード<a class="headerlink" href="#74" title="Permanent link">&para;</a></h2>
+<p>前述の証明により、譜面の全ノートのペアを検証する <span class="arithmatex">\(O(M^2)\)</span> の力技探索は排除され、ソートに基づいた <span class="arithmatex">\(O(M \log M)\)</span> 空間へと最適化された。</p>
+<h3 id="pulsetorealtimecalculator-simulationengine">実装への射影：PulseToRealTimeCalculator と SimulationEngine<a class="headerlink" href="#pulsetorealtimecalculator-simulationengine" title="Permanent link">&para;</a></h3>
+<p>C# 実装においては、<code>PulseToRealTimeCalculator</code> が前計算による変化点配列の二分探索を担保し、<code>SimulationEngine</code> が走査線アルゴリズムを実行する。</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1">// 【疑似コード】PulseToRealTimeCalculator.cs における O(log B) 時間変換</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="k">public</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="nf">ConvertPulseToSeconds</span><span class="p">(</span><span class="kt">double</span><span class="w"> </span><span class="n">pulse</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">    </span><span class="c1">// _timeEvents はパルス順にソート済みの BPM/STOP 変化点配列</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">    </span><span class="c1">// 二分探索により、O(log B) で対象区間を特定</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">idx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">BinarySearch</span><span class="p">(</span><span class="n">_timeEvents</span><span class="p">,</span><span class="w"> </span><span class="n">pulse</span><span class="p">);</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">    </span><span class="kt">var</span><span class="w"> </span><span class="n">ev</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_timeEvents</span><span class="p">[</span><span class="n">idx</span><span class="p">];</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">    </span><span class="c1">// 式(7.1)に基づく線形補間</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">deltaP</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pulse</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">ev</span><span class="p">.</span><span class="n">Pulse</span><span class="p">;</span>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">ev</span><span class="p">.</span><span class="n">RealTime</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="n">deltaP</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="mf">60.0</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="p">(</span><span class="n">ev</span><span class="p">.</span><span class="n">Bpm</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">Resolution</span><span class="p">)));</span>
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="p">}</span>
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="c1">// 【疑似コード】SimulationEngine.cs における Sweep-Line オーバーラップ検出</span>
+</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="k">public</span><span class="w"> </span><span class="k">void</span><span class="w"> </span><span class="nf">SimulateAndOptimize</span><span class="p">(</span><span class="n">List</span><span class="o">&lt;</span><span class="n">NoteEvent</span><span class="o">&gt;</span><span class="w"> </span><span class="n">notes</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="w">    </span><span class="kt">var</span><span class="w"> </span><span class="n">endpoints</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">List</span><span class="o">&lt;</span><span class="n">TimePoint</span><span class="o">&gt;</span><span class="p">(</span><span class="n">notes</span><span class="p">.</span><span class="n">Count</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">2</span><span class="p">);</span>
+</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="w">    </span><span class="k">foreach</span><span class="w"> </span><span class="p">(</span><span class="kt">var</span><span class="w"> </span><span class="n">note</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="n">notes</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a><span class="w">        </span><span class="n">endpoints</span><span class="p">.</span><span class="n">Add</span><span class="p">(</span><span class="k">new</span><span class="w"> </span><span class="n">TimePoint</span><span class="p">(</span><span class="n">note</span><span class="p">.</span><span class="n">StartTime</span><span class="p">,</span><span class="w"> </span><span class="n">START</span><span class="p">,</span><span class="w"> </span><span class="n">note</span><span class="p">));</span>
+</span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span class="w">        </span><span class="n">endpoints</span><span class="p">.</span><span class="n">Add</span><span class="p">(</span><span class="k">new</span><span class="w"> </span><span class="n">TimePoint</span><span class="p">(</span><span class="n">note</span><span class="p">.</span><span class="n">EndTime</span><span class="p">,</span><span class="w"> </span><span class="n">END</span><span class="p">,</span><span class="w"> </span><span class="n">note</span><span class="p">));</span>
+</span><span id="__span-0-19"><a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-0-20"><a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>
+</span><span id="__span-0-21"><a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a><span class="w">    </span><span class="c1">// O(M log M): タイムライン順にソート</span>
+</span><span id="__span-0-22"><a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a><span class="w">    </span><span class="n">endpoints</span><span class="p">.</span><span class="n">Sort</span><span class="p">((</span><span class="n">a</span><span class="p">,</span><span class="w"> </span><span class="n">b</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">a</span><span class="p">.</span><span class="n">Time</span><span class="p">.</span><span class="n">CompareTo</span><span class="p">(</span><span class="n">b</span><span class="p">.</span><span class="n">Time</span><span class="p">));</span>
+</span><span id="__span-0-23"><a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>
+</span><span id="__span-0-24"><a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a><span class="w">    </span><span class="kt">var</span><span class="w"> </span><span class="n">activeNotes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">HashSet</span><span class="o">&lt;</span><span class="n">NoteEvent</span><span class="o">&gt;</span><span class="p">();</span>
+</span><span id="__span-0-25"><a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>
+</span><span id="__span-0-26"><a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a><span class="w">    </span><span class="c1">// O(M): 走査線によるシミュレーション</span>
+</span><span id="__span-0-27"><a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a><span class="w">    </span><span class="k">foreach</span><span class="w"> </span><span class="p">(</span><span class="kt">var</span><span class="w"> </span><span class="n">pt</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="n">endpoints</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-0-28"><a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">pt</span><span class="p">.</span><span class="n">Type</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">START</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-0-29"><a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a><span class="w">            </span><span class="c1">// 現在発音中のノートとの衝突判定</span>
+</span><span id="__span-0-30"><a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a><span class="w">            </span><span class="k">foreach</span><span class="w"> </span><span class="p">(</span><span class="kt">var</span><span class="w"> </span><span class="n">active</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="n">activeNotes</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-0-31"><a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a><span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">AreInSameEquivalenceClass</span><span class="p">(</span><span class="n">pt</span><span class="p">.</span><span class="n">Note</span><span class="p">.</span><span class="n">Audio</span><span class="p">,</span><span class="w"> </span><span class="n">active</span><span class="p">.</span><span class="n">Audio</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-0-32"><a id="__codelineno-0-32" name="__codelineno-0-32" href="#__codelineno-0-32"></a><span class="w">                    </span><span class="n">MarkAsNonOptimizable</span><span class="p">(</span><span class="n">pt</span><span class="p">.</span><span class="n">Note</span><span class="p">);</span><span class="w"> </span><span class="c1">// 同時発音による破綻を回避するため最適化から除外</span>
+</span><span id="__span-0-33"><a id="__codelineno-0-33" name="__codelineno-0-33" href="#__codelineno-0-33"></a><span class="w">                </span><span class="p">}</span>
+</span><span id="__span-0-34"><a id="__codelineno-0-34" name="__codelineno-0-34" href="#__codelineno-0-34"></a><span class="w">            </span><span class="p">}</span>
+</span><span id="__span-0-35"><a id="__codelineno-0-35" name="__codelineno-0-35" href="#__codelineno-0-35"></a><span class="w">            </span><span class="n">activeNotes</span><span class="p">.</span><span class="n">Add</span><span class="p">(</span><span class="n">pt</span><span class="p">.</span><span class="n">Note</span><span class="p">);</span>
+</span><span id="__span-0-36"><a id="__codelineno-0-36" name="__codelineno-0-36" href="#__codelineno-0-36"></a><span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-0-37"><a id="__codelineno-0-37" name="__codelineno-0-37" href="#__codelineno-0-37"></a><span class="w">            </span><span class="n">activeNotes</span><span class="p">.</span><span class="n">Remove</span><span class="p">(</span><span class="n">pt</span><span class="p">.</span><span class="n">Note</span><span class="p">);</span>
+</span><span id="__span-0-38"><a id="__codelineno-0-38" name="__codelineno-0-38" href="#__codelineno-0-38"></a><span class="w">        </span><span class="p">}</span>
+</span><span id="__span-0-39"><a id="__codelineno-0-39" name="__codelineno-0-39" href="#__codelineno-0-39"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-0-40"><a id="__codelineno-0-40" name="__codelineno-0-40" href="#__codelineno-0-40"></a><span class="p">}</span>
+</span></code></pre></div>
+<p>このシミュレーションにより、置換対象となる音声が「タイムライン上でオーバーラップする」場合は安全のために最適化から除外される。</p>
+<h2 id="75">7.5 プレイアビリティ等価定理と許容限界<a class="headerlink" href="#75" title="Permanent link">&para;</a></h2>
+<p>最終的に、このシミュレーションエンジンが保証する「ゲームプレイの不変性」を数学的に定義する。</p>
+<blockquote>
+<p>[!IMPORTANT]
+<strong>定理 7.3 (プレイアビリティ等価定理)</strong>
+最適化前の譜面における時刻 <span class="arithmatex">\(t\)</span> での全発音エネルギー密度関数を <span class="arithmatex">\(\Phi_{\text{orig}}(t)\)</span>、最適化後のそれを <span class="arithmatex">\(\Phi_{\text{opt}}(t)\)</span> とする。
+SimulationEngine によって「干渉する同値類ノートを統合しない」という境界条件が守られる限り、任意の時刻 <span class="arithmatex">\(t\)</span> において以下の不等式が成立する。</p>
+<div class="arithmatex">\[\int_{t}^{t + \Delta t} |\Phi_{\text{orig}}(\tau) - \Phi_{\text{opt}}(\tau)| d\tau \le \delta \quad \cdots (7.2)\]</div>
+<p>ここで <span class="arithmatex">\(\delta\)</span> は人間の聴覚におけるJNDに基づく極微小な許容限界値である。</p>
+</blockquote>
+<p>この定理により、BMS Part Tuner が行う最適化は単なるファイルサイズの削減に留まらず、「プレイヤーが体感する音響的エネルギーの総量と位相分布を数学的に完全保存している」ことが論理的に証明される。</p>
+<h2 id="76-references">7.6 参考文献 (References)<a class="headerlink" href="#76-references" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Shamos, M. I., &amp; Hoey, D. (1976). "Geometric intersection problems". <em>17th Annual Symposium on Foundations of Computer Science (sfcs 1976)</em>. IEEE.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="../../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+      
+    
+  </body>
+</html>

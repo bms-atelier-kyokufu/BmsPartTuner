@@ -1,0 +1,986 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://bms-atelier-kyokufu.github.io/BmsPartTuner/en/teach/05_fft_alignment/">
+      
+      
+      
+      
+        
+          <link rel="alternate" href="../../" hreflang="en">
+        
+          <link rel="alternate" href="../../../" hreflang="ja">
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>第5章 周波数領域における時間アライメント - BMS Part Tuner</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#5" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="BMS Part Tuner" class="md-header__button md-logo" aria-label="BMS Part Tuner" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            BMS Part Tuner
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              第5章 周波数領域における時間アライメント
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Select language">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="../../" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../../" hreflang="ja" class="md-select__link">
+              日本語
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/bms-atelier-kyokufu/BmsPartTuner" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../index_en/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../PORTFOLIO_SUMMARY_EN/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Portfolio Summary
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../00_ARCHITECTURE_EN/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../01_TECHNICAL_GUIDE_EN/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Technical Guide
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../02_OPTIMIZATION_GUIDE_EN/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Optimization Report
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../04_TEST_STRATEGY_EN/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Test Strategy
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../COMMIT_MESSAGE_GUIDE_EN/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Commit Guide
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="BMS Part Tuner" class="md-nav__button md-logo" aria-label="BMS Part Tuner" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    BMS Part Tuner
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/bms-atelier-kyokufu/BmsPartTuner" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../index_en/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../PORTFOLIO_SUMMARY_EN/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Portfolio Summary
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../00_ARCHITECTURE_EN/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../01_TECHNICAL_GUIDE_EN/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Technical Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../02_OPTIMIZATION_GUIDE_EN/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Optimization Report
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../04_TEST_STRATEGY_EN/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Test Strategy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../COMMIT_MESSAGE_GUIDE_EN/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Commit Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#51" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1 時間アライメント問題の数理的定式化
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5.1 時間アライメント問題の数理的定式化">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        定義 5.1 (離散相互相関関数)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#52-why" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2 課題：時間領域探索における計算量爆発のジレンマ (Why)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#53-proof" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.3 定理の提示と畳み込み定理による証明 (Proof)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5.3 定理の提示と畳み込み定理による証明 (Proof)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#52-dft" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        定義 5.2 (離散フーリエ変換: DFT)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tau_textopt" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        逆変換による最適シフト \(\tau_{\text{opt}}\) の導出
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#54" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.4 計算量削減の定量的評価と疑似コード
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5.4 計算量削減の定量的評価と疑似コード">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#541-on2-to-on-log-n" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.4.1 計算量の劇的な削減（\(O(N^2) \to O(N \log N)\)）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#542" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.4.2 実装への射影：疑似コード
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#55" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.5 誤差限界と境界条件（巡回畳み込みの回避）
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5.5 誤差限界と境界条件（巡回畳み込みの回避）">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ゼロパディングの数学的必要性
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#56-references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.6 参考文献 (References)
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="5">第5章 周波数領域における時間アライメント<a class="headerlink" href="#5" title="Permanent link">&para;</a></h1>
+<p>本章では、2つの音響信号間に存在する微小な時間的ズレを、サブサンプル精度かつ高速に検出・補正するための数理を解説する。
+時間領域における素朴な全探索が抱える計算量爆発の課題を明確にし、信号を周波数領域へ射影する「畳み込み定理」と「FFT」を用い、計算量を <span class="arithmatex">\(O(N \log N)\)</span> へと劇的に削減する過程を数学的に証明する。</p>
+<blockquote>
+<p>[!NOTE]
+<strong>本章における主要な略称・用語</strong></p>
+<ul>
+<li><strong>FFT</strong>: 高速フーリエ変換 (Fast Fourier Transform)</li>
+<li><strong>DFT</strong>: 離散フーリエ変換 (Discrete Fourier Transform)</li>
+<li><strong>IDFT</strong>: 逆離散フーリエ変換 (Inverse Discrete Fourier Transform)</li>
+</ul>
+</blockquote>
+<h2 id="51">5.1 時間アライメント問題の数理的定式化<a class="headerlink" href="#51" title="Permanent link">&para;</a></h2>
+<p>2つの同一音源に由来する信号であっても、エンコード時のパディングや切り出し位置の違いにより、時間的なズレ（ラグ）が生じることがある。このズレを特定する問題を定式化する。</p>
+<h3 id="51_1">定義 5.1 (離散相互相関関数)<a class="headerlink" href="#51_1" title="Permanent link">&para;</a></h3>
+<p>長さ <span class="arithmatex">\(N\)</span> の実数値離散時間信号 <span class="arithmatex">\(\mathbf{x}, \mathbf{y} \in \mathbb{R}^N\)</span> において、信号 <span class="arithmatex">\(\mathbf{y}\)</span> を時間 <span class="arithmatex">\(\tau \in \mathbb{Z}\)</span> だけシフトさせたときの相互相関関数 <span class="arithmatex">\(R_{xy}(\tau)\)</span> を次のように定義する。</p>
+<div class="arithmatex">\[R_{xy}(\tau) = \sum_{n=0}^{N-1} x[n] y[n + \tau] \quad \cdots (5.1)\]</div>
+<p>ただし、範囲外のインデックスに対してはゼロパディング（<span class="arithmatex">\(x[n]=0, y[n]=0\)</span>）されているものとする。
+時間アライメント（ズレの補正）の目的は、この相互相関関数が最大となる最適なシフト量 <span class="arithmatex">\(\tau_{\text{opt}}\)</span> を見つける最適化問題である。</p>
+<div class="arithmatex">\[\tau_{\text{opt}} = \arg\max_{\tau} R_{xy}(\tau) \quad \cdots (5.2)\]</div>
+<h2 id="52-why">5.2 課題：時間領域探索における計算量爆発のジレンマ (Why)<a class="headerlink" href="#52-why" title="Permanent link">&para;</a></h2>
+<p>前章のピアソン相関係数探索（式4.6）において、局所的な微小ズレ <span class="arithmatex">\(\tau \in [-\tau_{\text{max}}, \tau_{\text{max}}]\)</span> をSIMD命令で探索する手法を解説した。しかし、これには致命的な限界が存在する。</p>
+<p><strong>時間領域探索の破綻：</strong>
+もし、2つの信号間に数秒単位（数万サンプル）の巨大なズレが存在する場合や、ズレの範囲が全く未知である場合、探索範囲は <span class="arithmatex">\(\tau \in [-N, N]\)</span> となる。
+このとき、式(5.1)をすべての <span class="arithmatex">\(\tau\)</span> について計算する時間領域アルゴリズムは、二重ループ構造となり、<strong>時間計算量</strong> <span class="arithmatex">\(O(N^2)\)</span> を要求する。
+例えば <span class="arithmatex">\(N = 44100\)</span>（1秒の音声）の場合、約20億回の積和演算が必要となり、数万のファイル群を比較する本システムにおいては、処理時間が年単位に膨れ上がり完全に破綻する。</p>
+<p>この計算量 <span class="arithmatex">\(O(N^2)\)</span> の壁を突破し、どのようなズレであっても実用時間内にアライメントを完了させるためには、演算の空間（ドメイン）を時間から周波数へと写像する数学的変形が不可避となる。</p>
+<h2 id="53-proof">5.3 定理の提示と畳み込み定理による証明 (Proof)<a class="headerlink" href="#53-proof" title="Permanent link">&para;</a></h2>
+<p>計算量を削減するため、信号を複素数平面上の周波数領域へと射影する。</p>
+<h3 id="52-dft">定義 5.2 (離散フーリエ変換: DFT)<a class="headerlink" href="#52-dft" title="Permanent link">&para;</a></h3>
+<p>信号 <span class="arithmatex">\(\mathbf{x}\)</span> のDFT <span class="arithmatex">\(X[k] \in \mathbb{C}\)</span> を次のように定義する。</p>
+<div class="arithmatex">\[X[k] = \mathcal{F}\{x\}[k] = \sum_{n=0}^{N-1} x[n] e^{-j \frac{2\pi}{N} k n} \quad \cdots (5.3)\]</div>
+<p>ここで <span class="arithmatex">\(j\)</span> は虚数単位（<span class="arithmatex">\(j^2 = -1\)</span>）である。同様に <span class="arithmatex">\(\mathbf{y}\)</span> のDFTを <span class="arithmatex">\(Y[k]\)</span> とする。</p>
+<blockquote>
+<p>[!IMPORTANT]
+<strong>定理 5.1 (相互相関の周波数領域定理 / ウィーナー・ヒンチン定理の離散版)</strong>
+時間領域における相互相関関数 <span class="arithmatex">\(R_{xy}(\tau)\)</span> のフーリエ変換は、周波数領域における <span class="arithmatex">\(X[k]\)</span> の複素共役 <span class="arithmatex">\(X^*[k]\)</span> と <span class="arithmatex">\(Y[k]\)</span> の要素ごとの積（Hadamard積）に等しい。</p>
+<div class="arithmatex">\[\mathcal{F}\{R_{xy}\}[k] = X^*[k] \cdot Y[k] \quad \cdots (5.4)\]</div>
+<p>[!NOTE]
+<strong>証明</strong></p>
+<p>相互相関関数 <span class="arithmatex">\(R_{xy}(\tau)\)</span> のフーリエ変換を展開する。</p>
+<p><!-- prettier-ignore -->
+$$ \begin{aligned} \mathcal{F}{R_{xy}}[k] &amp;= \sum_{\tau=0}^{N-1} R_{xy}(\tau) e^{-j \frac{2\pi}{N} k \tau} \ &amp;= \sum_{\tau=0}^{N-1} \left( \sum_{n=0}^{N-1} x[n] y[n + \tau] \right) e^{-j \frac{2\pi}{N} k \tau} \end{aligned} $$</p>
+<p>和の順序を交換（フビニの定理の離散適用）し、<span class="arithmatex">\(m = n + \tau\)</span> と変数変換を行う。このとき <span class="arithmatex">\(\tau = m - n\)</span> である。</p>
+<p><!-- prettier-ignore -->
+$$ \begin{aligned} &amp;= \sum_{n=0}^{N-1} x[n] \sum_{m=0}^{N-1} y[m] e^{-j \frac{2\pi}{N} k (m - n)} \ &amp;= \left( \sum_{n=0}^{N-1} x[n] e^{j \frac{2\pi}{N} k n} \right) \left( \sum_{m=0}^{N-1} y[m] e^{-j \frac{2\pi}{N} k m} \right) \end{aligned} $$</p>
+<p>第一項は <span class="arithmatex">\(x[n]\)</span> のDFTの虚数部の符号が反転しているため、<span class="arithmatex">\(X[k]\)</span> の複素共役 <span class="arithmatex">\(X^*[k]\)</span> となる。第二項は <span class="arithmatex">\(Y[k]\)</span> そのものである。
+したがって、</p>
+<p><!-- prettier-ignore -->
+$$ \mathcal{F}{R_{xy}}[k] = X^{*}[k] Y[k] $$</p>
+<p>が示された。<span class="arithmatex">\(\blacksquare\)</span></p>
+</blockquote>
+<h3 id="tau_textopt">逆変換による最適シフト <span class="arithmatex">\(\tau_{\text{opt}}\)</span> の導出<a class="headerlink" href="#tau_textopt" title="Permanent link">&para;</a></h3>
+<p>定理5.1より、求める相互相関関数 <span class="arithmatex">\(R_{xy}(\tau)\)</span> は、周波数領域の積を逆離散フーリエ変換（IDFT）することで一挙に得られる。</p>
+<div class="arithmatex">\[R_{xy}(\tau) = \mathcal{F}^{-1} \{ X^*[k] Y[k] \}(\tau) \quad \cdots (5.5)\]</div>
+<h2 id="54">5.4 計算量削減の定量的評価と疑似コード<a class="headerlink" href="#54" title="Permanent link">&para;</a></h2>
+<h3 id="541-on2-to-on-log-n">5.4.1 計算量の劇的な削減（<span class="arithmatex">\(O(N^2) \to O(N \log N)\)</span>）<a class="headerlink" href="#541-on2-to-on-log-n" title="Permanent link">&para;</a></h3>
+<p>式(5.5)の計算過程において、クーリー・テューキー型アルゴリズム等のFFTを適用した場合の計算量を評価する。</p>
+<ol>
+<li><span class="arithmatex">\(X[k] = \text{FFT}(x)\)</span> : <span class="arithmatex">\(O(N \log N)\)</span></li>
+<li><span class="arithmatex">\(Y[k] = \text{FFT}(y)\)</span> : <span class="arithmatex">\(O(N \log N)\)</span></li>
+<li>複素共役積 <span class="arithmatex">\(X^*[k] Y[k]\)</span> : <span class="arithmatex">\(O(N)\)</span></li>
+<li><span class="arithmatex">\(R_{xy}(\tau) = \text{IFFT}(X^* Y)\)</span> : <span class="arithmatex">\(O(N \log N)\)</span></li>
+</ol>
+<p>結果として、全体の時間計算量は
+$<span class="arithmatex">\(O(N \log N)\)</span>$
+となる。
+<span class="arithmatex">\(N = 65536 \ (= 2^{16})\)</span> の場合、
+$<span class="arithmatex">\(N^2 \approx 4.2 \times 10^9\)</span>$ に対して、
+$<span class="arithmatex">\(N \log_2 N \approx 1.0 \times 10^6\)</span>$
+となり、<strong>数千倍の物理的演算削減</strong>が達成される。これが、時間領域での力技探索を棄て、FFTアライメントを採用する決定的な数学的理由である。</p>
+<h3 id="542">5.4.2 実装への射影：疑似コード<a class="headerlink" href="#542" title="Permanent link">&para;</a></h3>
+<p><code>FftAlignmentEngine.cs</code> におけるアライメント算出ロジックは、この定理を直接具現化している。</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1">// 【疑似コード】FFTを用いた O(N log N) 時間アライメント</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kt">int</span><span class="w"> </span><span class="n">N</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MathHelper</span><span class="p">.</span><span class="n">NextPowerOfTwo</span><span class="p">(</span><span class="n">signalX</span><span class="p">.</span><span class="n">Length</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">signalY</span><span class="p">.</span><span class="n">Length</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span><span class="w"> </span><span class="c1">// 巡回畳み込み回避のゼロパディング</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="c1">// 1. O(N log N): 両信号を周波数領域へ写像</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="n">Complex</span><span class="p">[]</span><span class="w"> </span><span class="n">freqX</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">FFT</span><span class="p">.</span><span class="n">Forward</span><span class="p">(</span><span class="n">PadWithZeros</span><span class="p">(</span><span class="n">signalX</span><span class="p">,</span><span class="w"> </span><span class="n">N</span><span class="p">));</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="n">Complex</span><span class="p">[]</span><span class="w"> </span><span class="n">freqY</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">FFT</span><span class="p">.</span><span class="n">Forward</span><span class="p">(</span><span class="n">PadWithZeros</span><span class="p">(</span><span class="n">signalY</span><span class="p">,</span><span class="w"> </span><span class="n">N</span><span class="p">));</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="c1">// 2. O(N): 周波数領域での複素共役積 (相互相関スペクトル)</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="n">Complex</span><span class="p">[]</span><span class="w"> </span><span class="n">crossSpectrum</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">Complex</span><span class="p">[</span><span class="n">N</span><span class="p">];</span>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">k</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">N</span><span class="p">;</span><span class="w"> </span><span class="n">k</span><span class="o">++</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="w">    </span><span class="c1">// freqX[k]の複素共役(Conjugate)と freqY[k]の積</span>
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="w">    </span><span class="n">crossSpectrum</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Complex</span><span class="p">.</span><span class="n">Conjugate</span><span class="p">(</span><span class="n">freqX</span><span class="p">[</span><span class="n">k</span><span class="p">])</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">freqY</span><span class="p">[</span><span class="n">k</span><span class="p">];</span>
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="p">}</span>
+</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>
+</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="c1">// 3. O(N log N): 逆フーリエ変換で時間領域の相互相関関数へ戻す</span>
+</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="kt">double</span><span class="p">[]</span><span class="w"> </span><span class="n">crossCorrelation</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">FFT</span><span class="p">.</span><span class="n">Inverse</span><span class="p">(</span><span class="n">crossSpectrum</span><span class="p">);</span>
+</span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>
+</span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span class="c1">// 4. O(N): 最大相関を与えるインデックス(遅延 tau)を特定</span>
+</span><span id="__span-0-19"><a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a><span class="kt">int</span><span class="w"> </span><span class="n">optimalTau</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">FindPeakIndex</span><span class="p">(</span><span class="n">crossCorrelation</span><span class="p">);</span>
+</span></code></pre></div>
+<h2 id="55">5.5 誤差限界と境界条件（巡回畳み込みの回避）<a class="headerlink" href="#55" title="Permanent link">&para;</a></h2>
+<h3 id="_1">ゼロパディングの数学的必要性<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h3>
+<p>FFTを用いた相互相関計算（式5.5）は、本来「巡回相互相関」を計算するものである。すなわち、信号が周期 <span class="arithmatex">\(N\)</span> で無限に繰り返していると暗黙に仮定される。</p>
+<p>もし長さ <span class="arithmatex">\(L\)</span> の信号をそのままサイズ <span class="arithmatex">\(L\)</span> のFFTにかけると、シフトして右端からはみ出した信号が左端から回り込んでくる「エイリアシング」現象が発生し、正しいズレ <span class="arithmatex">\(\tau\)</span> が検出できなくなる。</p>
+<p>これを防ぐための境界条件として、FFTのサイズ <span class="arithmatex">\(N\)</span> は必ず以下の不等式を満たすように選択されなければならない。</p>
+<div class="arithmatex">\[N \ge \text{Length}(x) + \text{Length}(y) - 1 \quad \cdots (5.6)\]</div>
+<p><code>FftAlignmentEngine.cs</code> において、入力を必ずこのサイズ <span class="arithmatex">\(N\)</span>（通常は更に高速化のため <span class="arithmatex">\(2\)</span> の冪乗）にまで <span class="arithmatex">\(0\)</span> で埋める「ゼロパディング」という前処理が行われているのは、この数学的境界条件を保証し、計算誤差を論理的にゼロにするためである。</p>
+<h2 id="56-references">5.6 参考文献 (References)<a class="headerlink" href="#56-references" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Bracewell, R. N. (1986). <em>The Fourier Transform and Its Applications</em>. McGraw-Hill.</li>
+<li>Cooley, J. W., &amp; Tukey, J. W. (1965). "An algorithm for the machine calculation of complex Fourier series". <em>Mathematics of Computation</em>, 19(90), 297-301.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="../../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+      
+    
+  </body>
+</html>
