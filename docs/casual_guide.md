@@ -2,8 +2,8 @@
 
 $$
 \begin{aligned}
-\chi(G) = \omega(G) \quad \text{and} \quad \mu_k = \mu_{k-1} + \frac{x_k - \mu_{k-1}}{k} \\
-\mathcal{O}(M^2 \cdot N^2) \longrightarrow \mathcal{O}(M \log M + N \log N)
+\chi(G) &= \omega(G) \quad \text{and} \quad \mu_k = \mu_{k-1} + \frac{x_k - \mu_{k-1}}{k} \\
+\mathcal{O}(M^2 \cdot N^2) &\longrightarrow \mathcal{O}(M \log M + N \log N)
 \end{aligned}
 $$
 
