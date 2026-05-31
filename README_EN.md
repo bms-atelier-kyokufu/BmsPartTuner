@@ -17,7 +17,7 @@ By employing pure computer science and mathematical logic, it radically reduces 
 
 ## Features
 
-- **Algorithmic Breakthrough (17,000,000x Operations Reduction)**: We transformed a catastrophic $\mathcal{O}(M^2 \cdot N^2 + L^2)$ brute-force bottleneck into a lightning-fast $\mathcal{O}(M \cdot N \log N)$ pipeline using a combination of LSH (Locality-Sensitive Hashing) and FFT. This mathematical breakthrough delivers an **approximate 17,000,000-fold ($1.7 \times 10^7$) reduction in computational operations** on practical datasets, completing what used to take an hour in just 300 milliseconds—pushing the limits of physical file I/O.
+- **Algorithmic Breakthrough (17,000,000x Operations Reduction)**: We transformed a catastrophic $\mathcal{O}(M^2 \cdot N^2 + L^2)$ brute-force bottleneck into a lightning-fast $\mathcal{O}(M \cdot N \log N)$ pipeline using a combination of LSH (Locality-Sensitive Hashing) and FFT. This mathematical breakthrough delivers an **approximate 17,000,000-fold ($1.7 \times 10^7$) reduction in computational operations** on practical datasets, completing what used to take an hour in just 3 seconds—pushing the limits of physical file I/O.
 - **Ultimate Memory Efficiency ($\mathcal{O}(1)$ Space Complexity)**: Complete elimination of dynamic allocations through DOD (Data-Oriented Design) coloring and Flyweight patterns, effectively preventing heap bloat and Garbage Collection stalls.
 - **Modern UI**: Built with WPF (.NET 10) and Material Design, providing an intuitive and seamless user experience.
 
