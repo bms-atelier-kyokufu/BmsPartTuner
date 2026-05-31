@@ -1725,8 +1725,8 @@
         音A1_old --&gt; |ちょっとズラして比較| 比較1(ズレた？)
         音B1_old --&gt; |ちょっとズラして比較| 比較1
         比較1 -.-&gt; |数千回繰り返す...PCが悲鳴| 結果1[ズレを発見]
-    end
-
+    end</code></pre>
+<pre class="mermaid"><code>graph TD
     subgraph after  ["✨ FFTの魔法（周波数の世界へワープ）"]
         音A2_new[音A]
         音B2_new[音B]
@@ -1761,7 +1761,8 @@
         音符A --- 音符C
         音符B --- 音符C
         音符A &amp; 音符B &amp; 音符C -.-&gt; Note1[数千万回の無駄なチェックが発生...]
-    end
+    end</code></pre>
+<pre class="mermaid"><code>graph LR
     subgraph after  ["✨ 監視カメラ（Sweep-Line）"]
         時間軸[時間 0秒 --&gt; 100秒]
         音符A2_new[音符A 鳴ってる]
@@ -1793,7 +1794,8 @@
         皿1 --&gt; ゴミ箱[ゴミ箱がパンク]
         皿2 --&gt; ゴミ箱
         ゴミ箱 --&gt; GC((ゴミ収集車が来て&lt;br&gt;PCフリーズ！))
-    end
+    end</code></pre>
+<pre class="mermaid"><code>graph TD
     subgraph after [✨ BMS Part Tuner（ArrayPool）]
         棚[最初からある『固定のメモリ』を使い回す]
         処理A --&gt; 棚
