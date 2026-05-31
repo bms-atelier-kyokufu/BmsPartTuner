@@ -1,0 +1,1399 @@
+
+<!doctype html>
+<html lang="ja" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://bms-atelier-kyokufu.github.io/BmsPartTuner/casual_guide/">
+      
+      
+      
+      
+        
+          <link rel="alternate" href="../" hreflang="ja">
+        
+          <link rel="alternate" href="../en/" hreflang="en">
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>BMS Part Tuner 副読本：計算を「賢くサボる」ための数学 - BMS Part Tuner</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#bms-part-tuner" class="md-skip">
+          コンテンツにスキップ
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="ヘッダー">
+    <a href=".." title="BMS Part Tuner" class="md-header__button md-logo" aria-label="BMS Part Tuner" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            BMS Part Tuner
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              BMS Part Tuner 副読本：計算を「賢くサボる」ための数学
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="言語切り替え">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="../" hreflang="ja" class="md-select__link">
+              日本語
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../en/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="検索" placeholder="検索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="検索">
+        
+        <button type="reset" class="md-search__icon md-icon" title="クリア" aria-label="クリア" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            検索を初期化
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/bms-atelier-kyokufu/BmsPartTuner" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="タブ" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  ホーム
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../00_ARCHITECTURE_JP.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  構造とアーキテクチャ
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../01_TECHNICAL_GUIDE_JP.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  テクニカルガイド
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../02_OPTIMIZATION_GUIDE_JP.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  最適化レポート
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../03_TEST_DESIGN_JP.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  テスト設計
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../04_TEST_STRATEGY_JP.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  テスト戦略
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../COMMIT_MESSAGE_GUIDE_JP.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  コミット規約
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="ナビゲーション" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="BMS Part Tuner" class="md-nav__button md-logo" aria-label="BMS Part Tuner" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    BMS Part Tuner
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/bms-atelier-kyokufu/BmsPartTuner" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ホーム
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../00_ARCHITECTURE_JP.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    構造とアーキテクチャ
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../01_TECHNICAL_GUIDE_JP.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    テクニカルガイド
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../02_OPTIMIZATION_GUIDE_JP.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    最適化レポート
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../03_TEST_DESIGN_JP.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    テスト設計
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../04_TEST_STRATEGY_JP.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    テスト戦略
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../COMMIT_MESSAGE_GUIDE_JP.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    コミット規約
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目次">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目次
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        プロローグ
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0-12-22" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        第0章：なぜ計算は速くなるのか？ ～「1×2 + 2×2」の魔法～
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="第0章：なぜ計算は速くなるのか？ ～「1×2 + 2×2」の魔法～">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#45" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        「4.5億回のじゃんけん」を回避せよ
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        第1章：音の「見えないゴミ」を1秒で捨てる魔法 ＆ ブチッ！を防ぐ職人技
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="第1章：音の「見えないゴミ」を1秒で捨てる魔法 ＆ ブチッ！を防ぐ職人技">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        毎回小銭を数えるか、通帳を見るか
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        「ブチッ！」と鳴らないハサミの入れ方
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#23-union-find" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        第2章：3万人の「ソックリさん」をまとめる派閥作り ～Union-Findの魔法～
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="第2章：3万人の「ソックリさん」をまとめる派閥作り ～Union-Findの魔法～">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pc" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        「名札の書き換え」が引き起こすPCのフリーズ
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#union-find" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        社長だけを覚える「Union-Find」
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="社長だけを覚える「Union-Find」">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        工夫1：ランクによる結合（下剋上の禁止）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        工夫2：経路圧縮（社長への直通ホットライン）
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        宇宙一成長が遅い関数「アッカーマン関数の逆関数」
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pc_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        極限までPCを汚さない「配列への射影」
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-lsh" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        第3章：ファミコンの裏技でソックリさんを見つける ～LSHとビット演算～
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="第3章：ファミコンの裏技でソックリさんを見つける ～LSHとビット演算～">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#45_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.5億回の「虫眼鏡での顔面チェック」は終わらない
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#64yesno-simhash" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        64個の「YES/NO アンケート」に変換する（SimHash）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cpuxorpopcnt" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CPUの必殺技「XOR」と「POPCNT」
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-fft" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        第4章：時間をワープするプリズム ～相関係数とFFTの魔法～
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="第4章：時間をワープするプリズム ～相関係数とFFTの魔法～">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pc_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        「音量ツマミ」に騙されないPCの目（ピアソン相関係数）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        タイムラインの「音ズレ」を直す地獄の作業
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fft" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        音を別の次元へ飛ばす「プリズム（FFT）」
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        時間の世界の「引きずり」＝ 周波数の世界の「掛け算」
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-sweep-line" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        第5章：絶対に事故らない！ 魔法のタイムライン監視カメラ ～Sweep-Line～
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="第5章：絶対に事故らない！ 魔法のタイムライン監視カメラ ～Sweep-Line～">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        音をまとめると発生する「事故」
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        全てのペアをチェックするのは無理
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sweep-line" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        走査線（Sweep-Line）という「監視カメラ」
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6pc" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        第6章：PCを限界突破させる「絶対に皿洗いしない」最強レストラン
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="第6章：PCを限界突破させる「絶対に皿洗いしない」最強レストラン">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pccpu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PCの脳みそ（CPU）は「超優秀なシェフ」
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gc" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ゴミ収集車（GC）による「営業停止」
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#arraypool" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ArrayPool：絶対に皿洗いしない究極の仕組み
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        エピローグ：魔法の種明かし
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="bms-part-tuner">BMS Part Tuner 副読本：計算を「賢くサボる」ための数学<a class="headerlink" href="#bms-part-tuner" title="Permanent link">&para;</a></h1>
+<div class="arithmatex">\[\chi(G) = \omega(G) \quad \text{and} \quad \mu_k = \mu_{k-1} + \frac{x_k - \mu_{k-1}}{k}$$
+$$\mathcal{O}(M^2 \cdot N^2) \longrightarrow \mathcal{O}(M \log M + N \log N)\]</div>
+<p>離散数学の教授「えー、任意の有限音響イベント集合 <span class="arithmatex">\(M\)</span> に対する時間座標 <span class="arithmatex">\(t\)</span> の量子化において、ユークリッド互除法に基づく最適離散格子 <span class="arithmatex">\(L\)</span> への射影を行い、競合関係を記述する区間グラフ <span class="arithmatex">\(G=(V, E)\)</span> の彩色数 <span class="arithmatex">\(\chi(G)\)</span> がクリーク数 <span class="arithmatex">\(\omega(G)\)</span> に一致するとき、すなわちグラフ <span class="arithmatex">\(G\)</span> が完全グラフの補グラフである場合の空間 <span class="arithmatex">\(\mathcal{O}(1)\)</span> アロケーションフリー・パッキング数理と、確率空間における二乗累積和系列を用いた局所エネルギー評価値を適用することで、計算複雑度をこのように縮退させることが可能となり……」</p>
+<p>……。
+…………。</p>
+<p><strong>ええい、眠い！！！ 頭痛がする！！！ 難しい数式なんか1ミリも見たくない！！！</strong>
+<strong>もっとこう、図とか例え話を使って、限界まで直感的にわかりやすく解説してくれ！！！</strong></p>
+<p>……という、開発者の内なる魂の叫び（と睡魔）から生まれたのがこのガイドブックです。</p>
+<p>BMS Part Tuner がいかにして「普通にやったら数時間かかるはずの処理を数秒で終わらせているのか」、その裏側で動いているアプローチの「超ウルトラC級のサボり技術（最適化）」を、難しい数式を完全に排除して、知的パズルのような面白さで解き明かしていきます。</p>
+<h2 id="_1">プロローグ<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<p>昔、私は某高等専門学校の情報工学科に所属していて、まさにこの解説書に出てくる「離散数学」や「代数」等を勉強しました。 ……と言っても、当時の私は決して優秀な学生ではありませんでした。離散数学は本当に難しくて、代々の先輩から「離散数学だけに<strong>悲惨</strong>なテスト結果になるぞ」と語り継がれていたほど。案の定、私も見事に赤点を取り、なんとか過去問を丸暗記して応用することでギリギリ学生時代を乗り切ったクチです。</p>
+<p>それから13年。当時の解き方なんて、正直もうほとんど覚えていません。「あー、なんかそういうのがあったなー」程度の知識です。
+でも今回、改めて数理モデルを複雑に駆使したプログラム（BMS Part Tuner）を作り上げてみて、「あ、あの時の数学って、こういうことだったのか！！」と、今さらながらものすごく鳥肌が立っています。</p>
+<p><a href="https://www.youtube.com/watch?v=Q4gTV4r0zRs">『フカシギの数え方』の動画</a>などで語られているような、宇宙の寿命が尽きるほどの「計算爆発」。
+それを、導出過程こそAI（まさに今これを一緒に書いているGoogle Geminiです）の力を借りたものの、最終的には純粋なコンピュータ・サイエンス（CS）の力だけで解決してしまったのです。</p>
+<p>昨今は空前のAIブームです。何でもかんでもクラウドのAIにデータを投げれば解決する時代になりつつあります。
+でも、AIに頼るとAPIクレジット代が高くつきますよね。
+だから私は思いました。「AIを使わず、CSの力だけでなんとかしてしまおう。無料でいいよ。オープンソースにしてやるよ。なんなら、こうやって授業（解説書）もしてやんよ！」と。</p>
+<p>もちろん、AIを使ってコードを生成した最適化プログラムなら、今の世の中、掃いて捨てるほどあります。
+しかし、この BMS Part Tuner が一線を画しているのはそこではありません。通常ならAIモデルに丸投げして諦めてしまうような「計算爆発」のドメイン課題に対して、<strong>人間とAI（LLM）が徹底的に壁打ちを行い、LSHやFFT、Union-Findといった『純粋な数学的アプローチ』を導き出し、それを極限まで研ぎ澄ませた非AIプログラムとして結実させたこと</strong>にあります。</p>
+<p>「AIが作ったAIのプログラム」ではなく、「AIを家庭教師にして作り上げた、人間と数学の極限の結晶」。
+こんな泥臭くて痛快なアプローチ、今までに絶対なかったはずです。</p>
+<p>このガイドブックでは、かつての私を苦しめた「難解な数学」がいかにして「宇宙規模の計算を3秒で終わらせる裏技」へと変貌するのか、その面白さを解説していきます。難しい数式を追う必要はありません。知的パズルのような「究極のサボり方」を、ぜひ楽しんでいってください。</p>
+<h2 id="0-12-22">第0章：なぜ計算は速くなるのか？ ～「1×2 + 2×2」の魔法～<a class="headerlink" href="#0-12-22" title="Permanent link">&para;</a></h2>
+<p>「プログラムの処理が速い」と聞くと、PCの性能が良いからだ、と思うかもしれません。
+しかし、本当の理由は違います。プログラムが速いのは、「計算を賢くサボっている（最適化している）」からです。</p>
+<p>たとえば、次のような計算があるとします。</p>
+<div class="arithmatex">\[1 \times 2 + 2 \times 2\]</div>
+<p>これを愚直に計算すると、どうなるでしょうか。</p>
+<ol>
+<li><span class="arithmatex">\(1 \times 2 = 2\)</span> （掛け算1回）</li>
+<li><span class="arithmatex">\(2 \times 2 = 4\)</span> （掛け算2回目）</li>
+<li><span class="arithmatex">\(2 + 4 = 6\)</span> （足し算1回）
+   合計で<strong>3回</strong>の計算が必要です。</li>
+</ol>
+<p>しかし、小学校で習った「くくり出し（分配法則）」を使うとどうでしょう。共通している「<span class="arithmatex">\(\times 2\)</span>」でくくってみます。</p>
+<div class="arithmatex">\[(1 + 2) \times 2\]</div>
+<ol>
+<li><span class="arithmatex">\(1 + 2 = 3\)</span> （足し算1回）</li>
+<li><span class="arithmatex">\(3 \times 2 = 6\)</span> （掛け算1回）
+   合計で<strong>2回</strong>の計算で終わってしまいました。</li>
+</ol>
+<p>「なんだ、たった1回減っただけじゃないか」と思うかもしれません。
+しかし、もしこれが「3万個の数字」の計算だったらどうでしょう？ 工夫を知らないPCは3万回の掛け算をしますが、工夫を知っているPCはたった1回の掛け算で答えを出します。</p>
+<p><strong>BMS Part Tunerが裏でやっている恐ろしく高度な数学も、本質はこれと全く同じです。</strong></p>
+<h3 id="45">「4.5億回のじゃんけん」を回避せよ<a class="headerlink" href="#45" title="Permanent link">&para;</a></h3>
+<p>BMS Part Tuner の使命は、3万個の音声ファイルから「同じ音」を見つけ出すことです。
+これを愚直に総当たり戦（1対1の比較）でやろうとすると、約 <strong>4.5億回</strong> の比較が必要です。これが「次元の呪い」と呼ばれる計算量の爆発です。</p>
+<p>しかし、本システムは「LSH」や「FFT」といった数学の魔法（究極のくくり出しや変形）を使うことで、この4.5億回の重たい計算を<strong>たった数秒</strong>で終わらせます。
+次章からは、具体的にどんな「計算のサボり方」をしているのかを見ていきましょう。</p>
+<h2 id="11">第1章：音の「見えないゴミ」を1秒で捨てる魔法 ＆ ブチッ！を防ぐ職人技<a class="headerlink" href="#11" title="Permanent link">&para;</a></h2>
+<p>最初のステップは、音声ファイルの最初と最後に入っている「無音の空間」をハサミで切り落とす作業（無音トリミング）です。
+ここでも、愚直に計算するとPCは悲鳴を上げます。</p>
+<h3 id="_2">毎回小銭を数えるか、通帳を見るか<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h3>
+<p>音が鳴っているかどうかを判定するには、ある一瞬の音量だけでなく、「その前後の少しの期間のエネルギーの合計」を見る必要があります。</p>
+<ul>
+<li><strong>愚直な方法（毎回数える）：</strong>
+  今日のエネルギーを計算するために、昨日と今日と明日の数値を足す。明日のエネルギーを計算するために、今日と明日と明後日の数値を足す……。
+  これは、「いま財布にいくらあるか確認するために、毎回ひっくり返して10円玉を1枚ずつ数え直す」ようなものです。計算回数が膨大になります。</li>
+<li><strong>BMS Part Tunerの方法（累積和）：</strong>
+  ここでシステムは「累積和（Prefix Sum）」という算数のテクニックを使います。これは「銀行の通帳」<strong>を見るのと同じです。
+  通帳には、毎回計算しなくても「その日までの残高（合計）」が常に記帳されていますよね。最初にこの「残高リスト」を1回だけ作っておけば、「15日の残高」から「10日の残高」を引き算するだけで、</strong>「この5日間でいくら増えたか（指定した期間のエネルギーの合計）」が一瞬（引き算1回）で分かります。</li>
+</ul>
+<p>たったこれだけの工夫で、確認する期間がどれだけ広くても、PCの計算は常に1回で済むようになり、処理速度が劇的に向上するのです。</p>
+<h3 id="_3">「ブチッ！」と鳴らないハサミの入れ方<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h3>
+<p>無音の場所が分かったら、いよいよ音をカットします。しかし、ここで単に「音が小さくなった瞬間」でハサミを入れると、ゲームで再生したときにスピーカーから「ブチッ！」という不快なノイズ（ポップノイズ）が鳴ってしまいます。</p>
+<p>音は「波」です。波が上下に激しく揺れている途中でいきなりブツッと切ると、スピーカーの振動板が急ブレーキをかけられ、それがノイズになります。例えるなら、「ピンと引っ張った輪ゴムをハサミで切ると、バチン！と弾ける」のと同じです。</p>
+<p>そこでシステムは、波がちょうど真ん中の「ゼロ」を通過する瞬間（<strong>ゼロクロス点</strong>）をわざわざ探し出し、そこでハサミを入れます。
+輪ゴムが全く引っ張られていない、たるんだ状態で切れば音は鳴りません。これにより、どれだけ音を切り貼りしても、プレイ中の音が驚くほど滑らかに保たれるのです。</p>
+<h2 id="23-union-find">第2章：3万人の「ソックリさん」をまとめる派閥作り ～Union-Findの魔法～<a class="headerlink" href="#23-union-find" title="Permanent link">&para;</a></h2>
+<p>音声の比較が進むと、「ファイルAとファイルBは同じ音」「ファイルBとファイルCも同じ音」という情報が次々と見つかります。
+ここでの目的は、「友達の友達はみんな友達」という論理（推移律）を使って、同じ音の「グループ（同値類）」を作ることです。</p>
+<p>しかし、ここにも恐ろしい罠が潜んでいます。</p>
+<h3 id="pc">「名札の書き換え」が引き起こすPCのフリーズ<a class="headerlink" href="#pc" title="Permanent link">&para;</a></h3>
+<p>素朴なプログラミングでは、グループを「リスト（名簿）」で管理しようとします。 たとえば、複数の人材派遣会社が統合していく様子を想像してみてください。「会社A」と「会社B」があり、それぞれに1万人の派遣社員が登録しているとします。</p>
+<p>ここで、派遣社員の「佐藤さん」が、実は会社Aと会社Bの両方に登録している（＝2つの音声ファイルが類似している）ことが判明しました。佐藤さんという架け橋によって、会社Aと会社Bは実は同じグループとして合併すべきだとわかります。</p>
+<p>素朴な方法だと、会社Bの1万人全員の「社員証（名札）」をわざわざ回収して、一つ一つ「会社A」に書き直さなければなりません。合併が起きるたびにこの名簿の書き換え作業が発生するため、計算量はあっという間に指数関数的に跳ね上がり、PCはフリーズしてしまいます。</p>
+<h3 id="union-find">社長だけを覚える「Union-Find」<a class="headerlink" href="#union-find" title="Permanent link">&para;</a></h3>
+<p>そこでシステムは、数学のグラフ理論に基づく <strong>「Union-Find（素集合データ構造）」</strong> という魔法の構造を使います。
+これは、全員の社員証を書き換えるのではなく、「各自が自分の『直属の上司』だけを覚える」という非常に賢いサボり方です。</p>
+<p>会社同士を合併するときは、一方の社長に「今日から君の社長はあっちの人ね」と伝えるだけ。たった1回の操作で、数万人の会社同士が一瞬で合併します。</p>
+<pre class="mermaid"><code>graph TD
+    subgraph with_gc ["❌ 普通のプログラム（GCでフリーズ）"]
+        処理1 --&gt; 皿1[新しいメモリを確保]
+        処理2 --&gt; 皿2[新しいメモリを確保]
+        皿1 --&gt; ゴミ箱[ゴミ箱がパンク]
+        皿2 --&gt; ゴミ箱
+        ゴミ箱 --&gt; GC((ゴミ収集車が来て&lt;br&gt;PCフリーズ！))
+    end
+    subgraph with_arraypool ["✨ BMS Part Tuner（ArrayPool）"]
+        棚[最初からある『固定のメモリ』を使い回す]
+        処理A --&gt; 棚
+        処理B --&gt; 棚
+        棚 --&gt; |上書きして使うので&lt;br&gt;ゴミが出ない！| 爆速((GC発生ゼロ！&lt;br&gt;限界スピードを維持))
+    end</code></pre>
+<p>さらに、このUnion-FindにはPCの限界を引き出す「2つのチート級の工夫」が組み込まれています。</p>
+<h4 id="1">工夫1：ランクによる結合（下剋上の禁止）<a class="headerlink" href="#1" title="Permanent link">&para;</a></h4>
+<p>合併する際、適当に社長を決めると、社長の下に部長、その下に課長……と、階層（ランク）がムダに深くなってしまいます。
+そこで、「必ず人数の少ない会社のトップが、多い会社のトップの傘下に入る」というルールを徹底します。これにより、どんなに巨大な会社ができても、組織図が驚くほど平たく保たれます。</p>
+<h4 id="2">工夫2：経路圧縮（社長への直通ホットライン）<a class="headerlink" href="#2" title="Permanent link">&para;</a></h4>
+<p>これが最大の魔法です。
+ある平社員が「うちの本当のトップ（最終的な代表音）は誰だろう？」と、直属の上司から順に組織図を辿って、社長を探し当てたとします。
+その瞬間、この平社員と、<strong>辿る途中にいた中間管理職全員の連絡先を、いきなり「社長直通（ホットライン）」に書き換えてしまいます。</strong></p>
+<pre class="mermaid"><code>graph BT
+    subgraph before ["経路圧縮前（毎回たどるのが重い）"]
+        佐藤さん1[平社員 佐藤] --&gt; 係長1[係長]
+        係長1 --&gt; 部長1[部長]
+        部長1 --&gt; 社長1((社長))
+    end
+
+    subgraph after["経路圧縮後（直通ホットライン完成！）"]
+        佐藤さん2[平社員 佐藤] ==&gt;|次から一瞬で繋がる！| 社長2((社長))
+        係長2[係長] ==&gt;|ついでに直通に書き換え！| 社長2
+        部長2[部長] --&gt; 社長2
+    end
+</code></pre>
+<p>次に同じ人が社長を探すときは、間に誰も挟まず「一瞬」で社長にたどり着くことができます。</p>
+<h3 id="_4">宇宙一成長が遅い関数「アッカーマン関数の逆関数」<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h3>
+<p>この「ランク結合」と「経路圧縮（直通ホットライン）」を組み合わせると、処理スピードはどれくらい速くなるのでしょうか？</p>
+<p>数学者の厳密な証明によると、この処理にかかる時間は <strong>「アッカーマン関数の逆関数」</strong> というペースでしか増えません。
+この関数は、成長スピードが異常に遅いことで有名です。なんと、<strong>「観測可能な宇宙に存在する全原子の数」を入力しても、答えは「4」以下にしかなりません。</strong></p>
+<p>つまり、音声ファイルが数万個あろうが、事実上 <strong>「常に1回の計算」</strong> で会社の代表を見つけ出せるということです。重たかった名簿の書き換え作業は、数学の力によって実質ゼロ秒になりました。</p>
+<h3 id="pc_1">極限までPCを汚さない「配列への射影」<a class="headerlink" href="#pc_1" title="Permanent link">&para;</a></h3>
+<p>BMS Part Tunerの実装は、これをさらに研ぎ澄ませています。
+普通は「人（社員）」を管理するために、プログラム内で「社員カード（オブジェクト）」を新しく作ります。しかし、PCにとって「新しくモノを作る」のは意外と重い作業です。</p>
+<p>そのため本システムでは、社員カードを一切作らず、ただの「数字の羅列（1次元配列）」だけでこの社長と部下の関係性を管理しています。メモリを全く汚さず、PCのゴミ拾い（ガベージコレクション）による停止時間を物理的に発生させない、極限の実装が行われています。</p>
+<h2 id="3-lsh">第3章：ファミコンの裏技でソックリさんを見つける ～LSHとビット演算～<a class="headerlink" href="#3-lsh" title="Permanent link">&para;</a></h2>
+<p>第2章で「同じ音をどうやってグループ化するか」を解説しました。しかし、そもそも「どの音とどの音が同じなのか」を、4.5億回の総当たり戦の中でどうやって素早く見つけ出すのでしょうか？</p>
+<h3 id="45_1">4.5億回の「虫眼鏡での顔面チェック」は終わらない<a class="headerlink" href="#45_1" title="Permanent link">&para;</a></h3>
+<p>2つの音声が同じかどうかを最も正確に調べる方法は、「波形のデータを端から端まで、小数点以下の細かい数字まで全部見比べる」ことです。
+しかし、これは例えるなら、「3万人の顔を、虫眼鏡を使って毛穴のレベルまで1対1で見比べる」ようなものです。計算が重すぎて、PCはすぐに息切れしてしまいます。</p>
+<h3 id="64yesno-simhash">64個の「YES/NO アンケート」に変換する（SimHash）<a class="headerlink" href="#64yesno-simhash" title="Permanent link">&para;</a></h3>
+<p>そこでBMS Part Tunerは、「LSH（局所性鋭敏型ハッシュ）」、特に <strong>「SimHash」</strong> という数学の魔法を使います。
+虫眼鏡で毛穴を見るのをやめて、音声データに「64個の YES/NO アンケート」に答えてもらうのです。</p>
+<ul>
+<li>第1問：「高い音の成分は多いですか？」 → YES (1)</li>
+<li>第2問：「出だしは静かですか？」 → NO (0)</li>
+<li>第3問：「途中で急に大きくなりますか？」 → YES (1)</li>
+</ul>
+<p>これを64問分繰り返すと、どんなに複雑で長い音声データも、<code>1011001...</code> という <strong>「64個の0と1の並び（ビット列）」</strong> に変換されます。
+ここでの魔法は、「元の音が似ていれば似ているほど、このアンケートの回答もそっくり同じになる」という性質を持っていることです。</p>
+<h3 id="cpuxorpopcnt">CPUの必殺技「XOR」と「POPCNT」<a class="headerlink" href="#cpuxorpopcnt" title="Permanent link">&para;</a></h3>
+<p>巨大な小数のデータが、たった「64個の0と1」に変身しました。現代のPCにとって、これを比較するのは「息をするより簡単」です。</p>
+<p>ここで、ファミコン時代のゲームプログラマーがよく使っていた「ビット演算」という裏技が登場します。
+なぜ「ファミコン」なのかというと、当時のゲーム機はメモリが数キロバイトしかなく、CPUのパワーも今のスマホの数百万分の1以下だったため、普通の計算（掛け算や割り算など）をさせるだけで処理が追いつかなくなってしまったからです。そこで彼らは、あらゆるデータを「0か1のスイッチ」に凝縮し、CPUに直接スイッチをパチパチ切り替えるような超高速の電気回路処理（ビット演算）をさせることで、あの滑らかなゲームの動きを実現していました。</p>
+<p>BMS Part Tunerがやっているのも、まさにこれと同じです。
+2つのアンケート結果を見比べるために、上から順番に「1問目は同じかな？」と調べるのはまだ遅いです。</p>
+<p>ここでCPUが持つ <strong>「XOR（排他的論理和）」</strong> という電気回路の必殺技を使います。XORを使うと、2つのデータをガチャン！とぶつけるだけで、「答えが違っていた問題の場所」だけが一瞬で「1」になって浮かび上がります。</p>
+<pre class="mermaid"><code>graph LR
+    subgraph before ["❌ 従来のやり方（激重でやらない）"]
+        音A_old[巨大な波形データ 0.123, -0.456...]
+        音B_old[巨大な波形データ 0.125, -0.450...]
+        音A_old &lt;--&gt; |数万回の少数計算| 音B_old
+    end
+
+    subgraph simhash ["✨ BMS Part Tuner（SimHash + ビット演算で爆速！）"]
+        音A_new[巨大な波形データ] --&gt; |64問のアンケート| ビットA[1 0 1 1 0]
+        音B_new[巨大な波形データ] --&gt; |64問のアンケート| ビットB[1 0 0 1 1]
+        ビットA --&gt; XOR((XOR 衝突!))
+        ビットB --&gt; XOR
+        XOR --&gt; |違っていた場所だけ1になる| 違い[0 0 1 0 1]
+        違い --&gt; POPCNT((POPCNT))
+        POPCNT --&gt; |1の数を数える| 答え[2箇所違う！]
+    end
+</code></pre>
+<p>さらに、この浮かび上がった「1」の数を数えるために、<strong>「POPCNT（ポップカウント）」</strong> というCPU専用のストップウォッチ（専用命令）を使います。</p>
+<p>XORでぶつけて、POPCNTで数える。
+この作業は、CPUにとってわずか <strong>「2クロック（およそ10億分の1秒）」</strong> で完了します。小数の計算地獄だった4.5億回の比較作業が、この「アンケート変換（SimHash）」と「ファミコンの裏技（ビット演算）」によって、実質0秒の世界へとワープしたのです。</p>
+<h2 id="4-fft">第4章：時間をワープするプリズム ～相関係数とFFTの魔法～<a class="headerlink" href="#4-fft" title="Permanent link">&para;</a></h2>
+<p>第3章の「64個のアンケート（SimHash）」によって、4.5億回の比較から「真のソックリさん候補」を無事に絞り込むことができました。しかし、最終確認として「本当に完全に同じ音か？」を厳密に調べる必要があります。</p>
+<p>ここで2つの厄介な問題が発生します。「音量の違い」と「録音タイミングのズレ」です。</p>
+<h3 id="pc_2">「音量ツマミ」に騙されないPCの目（ピアソン相関係数）<a class="headerlink" href="#pc_2" title="Permanent link">&para;</a></h3>
+<p>スマホの音量をMAXにして聴く曲と、最小にして聴く曲。人間は「同じ曲だ」とすぐに分かります。しかし、波形データを素直に見比べるPCにとっては大問題です。音量が違えば、波の「高さ（数字）」が全く違ってしまうからです。</p>
+<p>そこでシステムは <strong>「ピアソン相関係数」</strong> という数学のフィルターを通します。
+これは、「音のデカさ（スケール）」や「基準線のズレ（オフセット）」を完全に無視して、<strong>「波の形（アップダウンのリズム）」だけを純粋に抜き出す</strong> 魔法です。どれだけ音量ツマミをいじられても、PCは「あ、これ形が完全に一致してるな」と正確に見抜くことができるようになります。</p>
+<h3 id="_5">タイムラインの「音ズレ」を直す地獄の作業<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h3>
+<p>一番の強敵は「タイミングのズレ」です。
+同じ音源でも、ゲームに組み込む際の切り出し方の違いで、ほんの数ミリ秒（数サンプル）だけ再生タイミングがズレていることがよくあります。</p>
+<p>これを直すための素朴な方法は、「動画編集ソフトのように、2つの波形ブロックを1ミリずつズラしながら、一番形がピッタリ重なる場所を探す」というやり方です（相互相関関数）。
+しかし、この「ちょっとズラしては全体を比較する」という作業を繰り返すと、またしても計算量が <span class="arithmatex">\(N^2\)</span> （Nの2乗）へと跳ね上がってしまいます。もしデータが6万個あれば、約42億回の計算が必要です。</p>
+<h3 id="fft">音を別の次元へ飛ばす「プリズム（FFT）」<a class="headerlink" href="#fft" title="Permanent link">&para;</a></h3>
+<p>ここで、信号処理における最大のチート技、<strong>「FFT（高速フーリエ変換）」</strong> が登場します。
+時間を少しずつズラして比べるのが遅いなら、<strong>「時間の世界」から脱出すればいい</strong> のです。</p>
+<p>FFTは、音にとっての <strong>「プリズム」</strong> です。
+太陽の光をプリズムに通すと、赤から紫までの「虹色（周波数）」に綺麗に分かれますよね。FFTも同じように、音の波形を一瞬でバラバラの「周波数（音の高さ）」の世界へとワープさせます。</p>
+<pre class="mermaid"><code>graph TD
+    subgraph before  ["❌ 従来のやり方（時間の世界で引きずり回す）"]
+        音A1_old[音A]
+        音B1_old[音B]
+        音A1_old --&gt; |ちょっとズラして比較| 比較1(ズレた？)
+        音B1_old --&gt; |ちょっとズラして比較| 比較1
+        比較1 -.-&gt; |数千回繰り返す...PCが悲鳴| 結果1[ズレを発見]
+    end
+
+    subgraph after  ["✨ FFTの魔法（周波数の世界へワープ）"]
+        音A2_new[音A]
+        音B2_new[音B]
+        音A2_new ==&gt; |FFT（ワープ！）| 周波数A[音Aの周波数]
+        音B2_new ==&gt; |FFT（ワープ！）| 周波数B[音Bの周波数]
+        周波数A --&gt; |単なる掛け算（一瞬）| 掛け算(周波数の世界で合成)
+        周波数B --&gt; |単なる掛け算（一瞬）| 掛け算
+        掛け算 ==&gt; |逆FFT（現実へ帰還！）| 結果2[ズレが一発で判明！]
+    end
+</code></pre>
+<h3 id="_6">時間の世界の「引きずり」＝ 周波数の世界の「掛け算」<a class="headerlink" href="#_6" title="Permanent link">&para;</a></h3>
+<p>数学の神様（畳み込み定理）は、信じられない事実を証明しました。
+「時間の世界で一生懸命テープをズラす重労働」は、「周波数の世界では、ただの『掛け算』1回と同じ」だというのです。</p>
+<p>だからBMS Part Tunerは、2つの音を一度FFTで「周波数の世界」へワープさせ、そこでサクッと掛け算を行い、逆FFT（IFFT）で再び「現実（時間の世界）」へ引き戻します。
+これだけで、カセットテープを何千回もズラして探す必要があった「ピッタリ重なる最高のズレ幅」が、一発でポンッと手に入ります。</p>
+<p>計算回数は <span class="arithmatex">\(N^2\)</span>（約42億回）から <span class="arithmatex">\(N \log N\)</span>（約100万回）へ激減。<strong>実に数千倍のスピードアップ</strong>です。重たい力技の探索を捨て、空間をワープすることでPCの物理的な演算をサボる、究極の最適化手法なのです。</p>
+<h2 id="5-sweep-line">第5章：絶対に事故らない！ 魔法のタイムライン監視カメラ ～Sweep-Line～<a class="headerlink" href="#5-sweep-line" title="Permanent link">&para;</a></h2>
+<p>これまでの魔法を駆使して、「Aの音とBの音は同じだから、Bは消してAにまとめよう！」という圧縮の準備が整いました。しかし、ここで最後に「ゲームとしての安全性」を証明しなければなりません。</p>
+<h3 id="_7">音をまとめると発生する「事故」<a class="headerlink" href="#_7" title="Permanent link">&para;</a></h3>
+<p>BMSなどの音楽ゲームでは、無数の音が同時に鳴っています。
+もし「ギターの音A」と「ギターの音B」を同じ音だとしてまとめた結果、ゲームのある瞬間に「まとめたはずの音が、うっかり2つ同時に鳴ってしまう」という事故が起きたらどうなるでしょう？</p>
+<p>音が完全に重なると、音量が2倍になって耳をつんざいたり、微妙にズレて重なると「シュオオオ」という宇宙人のような不自然な音（フランジャー効果）が発生したりします。最悪の場合、ゲームがプレイできなくなります。</p>
+<p>これを防ぐためには、「まとめた後のゲームのタイムライン上で、同じ音が絶対に重ならないか」をチェック（オーバーラップ検証）する必要があります。</p>
+<h3 id="_8">全てのペアをチェックするのは無理<a class="headerlink" href="#_8" title="Permanent link">&para;</a></h3>
+<p>ここでも、素朴な方法をとるとPCは死にます。
+「ノート1とノート2は重なるかな？」「ノート1とノート3は？」「じゃあノート2と3は？」……。すべての音符の組み合わせを総当たりでチェックすると、やはり <span class="arithmatex">\(O(M^2)\)</span> の計算量大爆発が起きてしまいます。</p>
+<h3 id="sweep-line">走査線（Sweep-Line）という「監視カメラ」<a class="headerlink" href="#sweep-line" title="Permanent link">&para;</a></h3>
+<p>そこでBMS Part Tunerは、「走査線（Sweep-Line）アルゴリズム」<strong>という空間幾何学のテクニックを使います。これは例えるなら、</strong>「タイムライン上を左から右へと移動する監視カメラ」です。</p>
+<pre class="mermaid"><code>graph LR
+    subgraph before [❌ 総当たりチェック（全てのペアを確認）]
+        音符A --- 音符B
+        音符A --- 音符C
+        音符B --- 音符C
+        音符A &amp; 音符B &amp; 音符C -.-&gt; Note1[数千万回の無駄なチェックが発生...]
+    end
+    subgraph after  ["✨ 監視カメラ（Sweep-Line）"]
+        時間軸[時間 0秒 --&gt; 100秒]
+        音符A2_new[音符A 鳴ってる]
+        音符B2_new[音符B 鳴ってる]
+        カメラ((監視カメラ&lt;br&gt;右へ移動))
+        時間軸 --&gt; カメラ
+        カメラ --&gt; |今、同じ瞬間に鳴ってる！| 音符A2_new
+        カメラ --&gt; |今、同じ瞬間に鳴ってる！| 音符B2_new
+        音符A2_new &amp; 音符B2_new --&gt; Note2[今鳴っている&lt;br&gt;音だけをチェック！]
+    end
+</code></pre>
+<p>すべての組み合わせを調べるのではなく、時間を0秒から最後まで「ツーッ」とスキャンしていきます。そして、「今この瞬間、監視カメラに映っている（鳴っている）音符」だけを調べます。</p>
+<p>この方法の凄さは、最初に音符が鳴り始める時間を「順番に並べる（ソートする）」だけで済む点です。ソートの計算量は <span class="arithmatex">\(O(M \log M)\)</span>。
+すべての組み合わせを調べる力技を捨て、「時間の流れ」を味方につけることで、ゲームプレイ中に音が壊れないことを「数学的に、かつ一瞬で」証明しているのです。</p>
+<h2 id="6pc">第6章：PCを限界突破させる「絶対に皿洗いしない」最強レストラン<a class="headerlink" href="#6pc" title="Permanent link">&para;</a></h2>
+<p>ここまでの第1章〜第5章で紹介した数学の魔法によって、計算の回数自体は極限まで減りました。しかし、BMS Part Tunerは「PCの物理的な構造」すらも最適化の対象にします。</p>
+<h3 id="pccpu">PCの脳みそ（CPU）は「超優秀なシェフ」<a class="headerlink" href="#pccpu" title="Permanent link">&para;</a></h3>
+<p>プログラムを実行するCPUは、例えるなら「1秒間に何億回も包丁を動かせる、超優秀なシェフ」です。
+しかし、どんなにシェフが優秀でも、料理（計算）をするたびに「新しいお皿（メモリ）」を棚から出して使っていると、すぐにお皿が尽きてしまいます。</p>
+<h3 id="gc">ゴミ収集車（GC）による「営業停止」<a class="headerlink" href="#gc" title="Permanent link">&para;</a></h3>
+<p>お皿が尽きると、PCは慌てて「ガベージコレクション（GC）」と呼ばれるゴミ収集車を呼び、汚れたお皿を洗い始めます。
+このGCが走っている間、プログラムの処理（レストランの営業）は完全にストップしてしまいます。これが、ゲームや重い処理をしている最中にPCが「カクッ」とフリーズする最大の原因です。特に、音声データのような巨大なデータを扱うと、このGCによる停止時間が致命傷になります。</p>
+<h3 id="arraypool">ArrayPool：絶対に皿洗いしない究極の仕組み<a class="headerlink" href="#arraypool" title="Permanent link">&para;</a></h3>
+<p>そこでBMS Part Tunerは、「ArrayPool（メモリプール）」<strong>と</strong>「Span」<strong>という技術を組み合わせ、</strong>「絶対に皿洗い（GC）を発生させない最強のレストラン」を作り上げました。</p>
+<pre class="mermaid"><code>graph TD
+    subgraph before  [❌ 普通のプログラム（GCでフリーズ）]
+        処理1 --&gt; 皿1[新しいメモリを確保]
+        処理2 --&gt; 皿2[新しいメモリを確保]
+        皿1 --&gt; ゴミ箱[ゴミ箱がパンク]
+        皿2 --&gt; ゴミ箱
+        ゴミ箱 --&gt; GC((ゴミ収集車が来て&lt;br&gt;PCフリーズ！))
+    end
+    subgraph after [✨ BMS Part Tuner（ArrayPool）]
+        棚[最初からある『固定のメモリ』を使い回す]
+        処理A --&gt; 棚
+        処理B --&gt; 棚
+        棚 --&gt; |上書きして使うので&lt;br&gt;ゴミが出ない！| 爆速((GC発生ゼロ！&lt;br&gt;限界スピードを維持))
+    end
+</code></pre>
+<p>システムが起動した瞬間に、「これ以上はお皿を使わない」という固定の数を棚に用意しておきます。そして、計算が終わったらそのお皿を捨てるのではなく、<strong>そのまま洗わずに次の計算データを上書きして使い回す</strong>のです。</p>
+<p>これにより、プログラムが起動してから終了するまで、新しいお皿（動的メモリ確保）は一切行われません。ゴミが出ないため、ゴミ収集車（GC）は一度も呼ばれず、超優秀なシェフ（CPU）は一度も手を止めることなく、物理的な限界スピードで計算をぶっ飛ばし続けることができます。</p>
+<h2 id="_9">エピローグ：魔法の種明かし<a class="headerlink" href="#_9" title="Permanent link">&para;</a></h2>
+<p>いかがでしたでしょうか。
+「3万個の音声ファイルから同じ音を探して最適化する」という、普通にやれば数時間、あるいは数年かかるかもしれない無謀なミッション。</p>
+<p>BMS Part Tunerは、決してPCの力技で解決しているのではありません。</p>
+<ul>
+<li><strong>累積和</strong>で「通帳」を作り、</li>
+<li><strong>Union-Find</strong>で「社長への直通ホットライン」を引き、</li>
+<li><strong>SimHashとビット演算</strong>で「ファミコンの裏技」を使い、</li>
+<li><strong>FFT</strong>で時間を「プリズム」のようにワープさせ、</li>
+<li><strong>Sweep-Line</strong>で「監視カメラ」を動かし、</li>
+<li><strong>ArrayPool</strong>で「皿洗いをゼロ」にする。</li>
+</ul>
+<p>こうした「数学」と「コンピュータサイエンス」の粋を集めた究極の「賢いサボり方（最適化）」<strong>が何重にも組み合わさることで、あの</strong>「たった数秒での処理完了」という魔法が実現しているのです。</p>
+<p>このガイドブックが、ツールを支える目に見えない「知の結晶」を楽しむ一助になれば幸いです！</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  ページトップへ戻る
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u30b3\u30d4\u30fc\u3057\u307e\u3057\u305f", "clipboard.copy": "\u30af\u30ea\u30c3\u30d7\u30dc\u30fc\u30c9\u3078\u30b3\u30d4\u30fc", "search.result.more.one": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3082\u30461\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.more.other": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3042\u3068#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.none": "\u4f55\u3082\u898b\u3064\u304b\u308a\u307e\u305b\u3093\u3067\u3057\u305f", "search.result.one": "1\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.other": "#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.placeholder": "\u691c\u7d22\u30ad\u30fc\u30ef\u30fc\u30c9\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044", "search.result.term.missing": "\u691c\u7d22\u306b\u542b\u307e\u308c\u306a\u3044", "select.version": "\u30d0\u30fc\u30b8\u30e7\u30f3\u5207\u308a\u66ff\u3048"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+      
+    
+  </body>
+</html>
