@@ -10,3 +10,8 @@ window.MathJax = {
     processHtmlClass: "arithmatex"
   }
 };
+
+// admonition / callout が展開された後も MathJax を再実行する
+document$.subscribe(() => {
+  MathJax.typesetPromise();
+});
