@@ -1175,14 +1175,14 @@
 
 <h1 id="2">第2章 短時間振幅包絡線と無音トリミングの数理<a class="headerlink" href="#2" title="Permanent link">&para;</a></h1>
 <p>本章では、音響信号の先頭および末尾に存在する無音区間（あるいは聴覚上無視できるレベルのバックグラウンドノイズ）を検出し、情報の損失なしにトリミングするアルゴリズムの数理を解説する。 単純な振幅の絶対値判定が引き起こすゼロクロス点での誤検知という数学的破綻を指摘し、短時間局所エネルギーの包絡線計算を「累積和」によって <span class="arithmatex">\(O(N)\)</span> で高速化する手法、およびポップノイズを回避するための境界条件について証明を展開する。</p>
-<blockquote>
-<p>[!NOTE]
-<strong>本章における主要な略称・用語</strong></p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>本章における主要な略称・用語</strong></p>
 <ul>
 <li><strong>RMS</strong>: 二乗平均平方根 (Root Mean Square)</li>
 <li><strong>ゼロクロス点</strong>: 信号の振幅の符号が反転する位置</li>
 </ul>
-</blockquote>
+</div>
 <h2 id="21">2.1 振幅包絡線と無音区間の数理的定式化<a class="headerlink" href="#21" title="Permanent link">&para;</a></h2>
 <p>無音トリミングを数学的に定義するため、信号の「局所的な大きさ（エネルギー）」を測る尺度を導入する。</p>
 <h3 id="21-rms">定義 2.1 (短時間局所エネルギーとRMS包絡線)<a class="headerlink" href="#21-rms" title="Permanent link">&para;</a></h3>
@@ -1207,20 +1207,22 @@
 <h3 id="23">定義 2.3 (エネルギーの累積和系列)<a class="headerlink" href="#23" title="Permanent link">&para;</a></h3>
 <p>信号の二乗系列 <span class="arithmatex">\(x_i^2\)</span> の累積和系列 <span class="arithmatex">\(C_k\)</span> を以下のように定義する。</p>
 <div class="arithmatex">\[C_k = \sum_{i=0}^{k-1} x_i^2 \quad \text{for } k = 1, 2, \dots, N \quad (C_0 = 0) \quad \cdots (2.4)\]</div>
-<blockquote>
-<p>[!IMPORTANT]
-<strong>定理 2.1 (累積和による区間エネルギーの定数時間計算)</strong>
+<div class="admonition tip">
+<p class="admonition-title">Important</p>
+<p><strong>定理 2.1 (累積和による区間エネルギーの定数時間計算)</strong>
 任意の時刻 <span class="arithmatex">\(t\)</span> における窓幅 <span class="arithmatex">\(W\)</span> の局所エネルギー <span class="arithmatex">\(E(t)\)</span> は、累積和系列 <span class="arithmatex">\(C_k\)</span> を用いて空間計算量 <span class="arithmatex">\(O(N)\)</span> を消費することで、各時刻につき定数時間 <span class="arithmatex">\(O(1)\)</span> で計算できる。</p>
 <div class="arithmatex">\[E(t) = C_{\min(t + \lfloor W/2 \rfloor + 1, N)} - C_{\max(t - \lfloor W/2 \rfloor, 0)} \quad \cdots (2.5)\]</div>
-<p>[!NOTE]
-<strong>証明</strong></p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>証明</strong></p>
 <p>式(2.4)の定義より、<span class="arithmatex">\(C_b - C_a \ (b &gt; a)\)</span> は次のように展開できる。</p>
 <div class="arithmatex">\[C_b - C_a = \sum_{i=0}^{b-1} x_i^2 - \sum_{i=0}^{a-1} x_i^2 = \sum_{i=a}^{b-1} x_i^2\]</div>
 <p>式(2.1)の <span class="arithmatex">\(E(t)\)</span> における和の範囲は <span class="arithmatex">\(i = t - \lfloor W/2 \rfloor\)</span> から <span class="arithmatex">\(i = t + \lfloor W/2 \rfloor\)</span> までである。
 ここで <span class="arithmatex">\(a = t - \lfloor W/2 \rfloor\)</span>、 <span class="arithmatex">\(b = t + \lfloor W/2 \rfloor + 1\)</span> と置くと、</p>
 <div class="arithmatex">\[E(t) = \sum_{i=a}^{b-1} x_i^2 = C_b - C_a\]</div>
 <p>となり、累積和配列の2点の値の差分のみで任意の窓幅 <span class="arithmatex">\(W\)</span> の総和が求まることが示された。境界条件を満たすように <span class="arithmatex">\(\min, \max\)</span> を適用すれば式(2.5)を得る。 <span class="arithmatex">\(\blacksquare\)</span></p>
-</blockquote>
+</div>
 <h2 id="24">2.4 計算量削減の定量的評価と疑似コード<a class="headerlink" href="#24" title="Permanent link">&para;</a></h2>
 <h3 id="_1">計算量の変化<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h3>
 <ol>

@@ -1008,15 +1008,15 @@
 <h1 id="7">第7章 時間軸シミュレーションエンジンとプレイアビリティ保存<a class="headerlink" href="#7" title="Permanent link">&para;</a></h1>
 <p>本章では、冗長な音声定義を単一の代表元へと統合した結果、ゲームプレイ時に「音が不自然に重なる」「発音タイミングが変わる」といったプレイフィール上の破綻が絶対に発生しないことを数学的・論理的に保証するためのシステムシミュレーション理論を解説する。
 単なる静的な定義置換が引き起こす干渉問題を排除し、楽譜時間から実時間への非線形写像、および Sweep-Line アルゴリズムを用いた区間代数によって、重複発音の検証計算量を <span class="arithmatex">\(O(M^2)\)</span> から <span class="arithmatex">\(O(M \log M)\)</span> へと削減する過程を証明する。</p>
-<blockquote>
-<p>[!NOTE]
-<strong>本章における主要な略称・用語</strong></p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>本章における主要な略称・用語</strong></p>
 <ul>
 <li><strong>BPM</strong>: Beats Per Minute</li>
 <li><strong>JND</strong>: 最小可聴差異</li>
 <li><strong>Sweep-Line</strong>: 走査線アルゴリズム</li>
 </ul>
-</blockquote>
+</div>
 <h2 id="71">7.1 楽譜時間（パルス）と実時間（秒）の非線形写像の定式化<a class="headerlink" href="#71" title="Permanent link">&para;</a></h2>
 <p>BMSにおけるノート（音符）の配置は、一定のリズム間隔を示す「パルス」と呼ばれる離散的な座標系で行われる。これを物理的な音響波形のオーバーラップ検証に用いるためには、パルスから実時間（秒）への厳密な写像を構築する必要がある。</p>
 <h3 id="71-pulse-time">定義 7.1 (Pulse-Time 写像)<a class="headerlink" href="#71-pulse-time" title="Permanent link">&para;</a></h3>
@@ -1037,16 +1037,20 @@
 上記の破綻を防ぐには、「置換対象のノート群の実時間区間 <span class="arithmatex">\(I_i\)</span> と <span class="arithmatex">\(I_j\)</span> がオーバーラップしているか否か」を全イベントについてシミュレーションする必要がある。総ノート数を <span class="arithmatex">\(M\)</span> としたとき、すべてのペアを素朴に比較すると時間計算量は <span class="arithmatex">\(O(M^2)\)</span> となる。高難易度の譜面（<span class="arithmatex">\(M &gt; 10^5\)</span>）では数分間の計算ブロックが発生し、パイプラインのリアルタイム性を損なう。</p>
 <h2 id="73-sweep-line-proof">7.3 定理の提示とSweep-Lineアルゴリズムによる証明 (Proof)<a class="headerlink" href="#73-sweep-line-proof" title="Permanent link">&para;</a></h2>
 <p>Pulse-Time写像の単調性と、区間代数における Sweep-Line アルゴリズムを導入することで、シミュレーション計算量を劇的に削減する。</p>
-<blockquote>
-<p>[!IMPORTANT]
-<strong>定理 7.1 (Pulse-Time 写像の広義単調増加性と逆関数)</strong>
+<div class="admonition tip">
+<p class="admonition-title">Important</p>
+<p><strong>定理 7.1 (Pulse-Time 写像の広義単調増加性と逆関数)</strong>
 STOPイベントによる停留区間を除き、関数 <span class="arithmatex">\(T(p)\)</span> は広義単調増加である。
 すなわち、任意の <span class="arithmatex">\(p_1 &lt; p_2\)</span> に対して <span class="arithmatex">\(T(p_1) \le T(p_2)\)</span> が成り立つ。これにより、<span class="arithmatex">\(B\)</span> 個のBPM/STOP変化点を持つ区分線形関数 <span class="arithmatex">\(T(p)\)</span> の評価は、変化点の配列に対する二分探索を用いることで、任意の <span class="arithmatex">\(p\)</span> に対して <span class="arithmatex">\(O(\log B)\)</span> 時間で一意に計算可能である。</p>
-<p>[!IMPORTANT]
-<strong>定理 7.2 (Sweep-Lineによる区間オーバーラップの高速検出)</strong>
+</div>
+<div class="admonition tip">
+<p class="admonition-title">Important</p>
+<p><strong>定理 7.2 (Sweep-Lineによる区間オーバーラップの高速検出)</strong>
 総数 <span class="arithmatex">\(M\)</span> 個の発音イベント集合 <span class="arithmatex">\(E\)</span> におけるすべての区間交差（オーバーラップ）の検出は、時間計算量 <span class="arithmatex">\(O(M \log M)\)</span> で完了する。</p>
-<p>[!NOTE]
-<strong>証明</strong></p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>証明</strong></p>
 <p>各発音イベント <span class="arithmatex">\(e_i\)</span> の実時間区間 <span class="arithmatex">\(I_i = [t_{\text{start}}^{(i)}, t_{\text{end}}^{(i)}]\)</span> に対して、2つの端点を生成する。</p>
 <ul>
 <li>始点イベント: <span class="arithmatex">\((t_{\text{start}}^{(i)}, \text{type: START}, \text{id}: i)\)</span></li>
@@ -1059,7 +1063,7 @@ Sweep-Line を時間 <span class="arithmatex">\(t=0\)</span> から順に進め�
 <li><code>END</code> イベントに遭遇した場合：「発音中リスト」からノート <span class="arithmatex">\(i\)</span> を削除する。</li>
 </ol>
 <p>この走査処理において、各イベントのリストへの追加・削除がそれぞれ1回ずつ行われるため、走査自体の時間計算量は <span class="arithmatex">\(O(M)\)</span> である。交差の列挙を含めても、ソートの計算量が支配的となるため、全体の時間計算量は <span class="arithmatex">\(O(M \log M)\)</span> となることが示された。<span class="arithmatex">\(\blacksquare\)</span></p>
-</blockquote>
+</div>
 <h2 id="74">7.4 計算量削減の定量的評価と疑似コード<a class="headerlink" href="#74" title="Permanent link">&para;</a></h2>
 <p>前述の証明により、譜面の全ノートのペアを検証する <span class="arithmatex">\(O(M^2)\)</span> の力技探索は排除され、ソートに基づいた <span class="arithmatex">\(O(M \log M)\)</span> 空間へと最適化された。</p>
 <h3 id="pulsetorealtimecalculator-simulationengine">実装への射影：PulseToRealTimeCalculator と SimulationEngine<a class="headerlink" href="#pulsetorealtimecalculator-simulationengine" title="Permanent link">&para;</a></h3>
@@ -1108,14 +1112,14 @@ Sweep-Line を時間 <span class="arithmatex">\(t=0\)</span> から順に進め�
 <p>このシミュレーションにより、置換対象となる音声が「タイムライン上でオーバーラップする」場合は安全のために最適化から除外される。</p>
 <h2 id="75">7.5 プレイアビリティ等価定理と許容限界<a class="headerlink" href="#75" title="Permanent link">&para;</a></h2>
 <p>最終的に、このシミュレーションエンジンが保証する「ゲームプレイの不変性」を数学的に定義する。</p>
-<blockquote>
-<p>[!IMPORTANT]
-<strong>定理 7.3 (プレイアビリティ等価定理)</strong>
+<div class="admonition tip">
+<p class="admonition-title">Important</p>
+<p><strong>定理 7.3 (プレイアビリティ等価定理)</strong>
 最適化前の譜面における時刻 <span class="arithmatex">\(t\)</span> での全発音エネルギー密度関数を <span class="arithmatex">\(\Phi_{\text{orig}}(t)\)</span>、最適化後のそれを <span class="arithmatex">\(\Phi_{\text{opt}}(t)\)</span> とする。
 SimulationEngine によって「干渉する同値類ノートを統合しない」という境界条件が守られる限り、任意の時刻 <span class="arithmatex">\(t\)</span> において以下の不等式が成立する。</p>
 <div class="arithmatex">\[\int_{t}^{t + \Delta t} |\Phi_{\text{orig}}(\tau) - \Phi_{\text{opt}}(\tau)| d\tau \le \delta \quad \cdots (7.2)\]</div>
 <p>ここで <span class="arithmatex">\(\delta\)</span> は人間の聴覚におけるJNDに基づく極微小な許容限界値である。</p>
-</blockquote>
+</div>
 <p>この定理により、BMS Part Tuner が行う最適化は単なるファイルサイズの削減に留まらず、「プレイヤーが体感する音響的エネルギーの総量と位相分布を数学的に完全保存している」ことが論理的に証明される。</p>
 <h2 id="76-references">7.6 参考文献 (References)<a class="headerlink" href="#76-references" title="Permanent link">&para;</a></h2>
 <ul>

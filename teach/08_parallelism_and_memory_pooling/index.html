@@ -1118,14 +1118,16 @@
 <h1 id="8-gc">第8章 アムダールの法則とGCフリーなメモリ空間理論<a class="headerlink" href="#8-gc" title="Permanent link">&para;</a></h1>
 <p>本章では、これまでの章で展開されたアルゴリズム的オーダー削減（<span class="arithmatex">\(O(M^2) \to O(M \log M)\)</span> 等）とデータ並列化（SIMD）を、マルチコアCPUの物理スレッド上に射影するためのスレッドレベル並列性 (TLP) の数理モデルを解説する。
 同時に、数万の音声ファイルを同時に扱うことで発生する致命的なラージオブジェクトヒープ (LOH) フラグメンテーションの脅威と、それを <code>ArrayPool&lt;T&gt;</code> および <code>Span&lt;T&gt;</code> によって数学的に完全回避し、空間計算量を定数倍に圧縮するメモリプール理論について証明する。</p>
-<blockquote>
-<p>[!NOTE]
-<strong>本章における主要な略称・用語</strong>
-- <strong>TLP</strong>: スレッドレベル並列性 (Thread-Level Parallelism)
-- <strong>LOH</strong>: ラージオブジェクトヒープ (Large Object Heap)
-- <strong>GC</strong>: ガベージコレクション (Garbage Collection)
-- <strong>Embarrassingly Parallel</strong>: 完全並列（スレッド間の依存関係が全くない問題クラス）</p>
-</blockquote>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>本章における主要な略称・用語</strong></p>
+<ul>
+<li><strong>TLP</strong>: スレッドレベル並列性 (Thread-Level Parallelism)</li>
+<li><strong>LOH</strong>: ラージオブジェクトヒープ (Large Object Heap)</li>
+<li><strong>GC</strong>: ガベージコレクション (Garbage Collection)</li>
+<li><strong>Embarrassingly Parallel</strong>: 完全並列（スレッド間の依存関係が全くない問題クラス）</li>
+</ul>
+</div>
 <hr />
 <h2 id="81">8.1 アムダールの法則による最適化の限界<a class="headerlink" href="#81" title="Permanent link">&para;</a></h2>
 <p>これまでの章において、SIMD（Instruction-Level Parallelism）を用いた命令レベルの最適化について解説した。しかし、単一スレッド上での最適化には物理的なクロック周波数という上限が存在する。
@@ -1156,13 +1158,15 @@
 <p>このLOHの呪縛から逃れるためには、動的アロケーション自体を数学的に禁止し、空間計算量を入力 <span class="arithmatex">\(M\)</span> から完全に切り離す必要がある。</p>
 <h3 id="82">定義 8.2 (オブジェクトプールとライフサイクル)<a class="headerlink" href="#82" title="Permanent link">&para;</a></h3>
 <p>各スレッドは音声ファイルをデコードする直前にプールから配列 <span class="arithmatex">\(A_k\)</span> を借用し、比較や特徴抽出が完了した瞬間に返却する。</p>
-<blockquote>
-<p>[!IMPORTANT]
-<strong>定理 8.1 (空間計算量の圧縮と定数化)</strong>
+<div class="admonition tip">
+<p class="admonition-title">Important</p>
+<p><strong>定理 8.1 (空間計算量の圧縮と定数化)</strong>
 音声ファイル数 <span class="arithmatex">\(M\)</span>、各音声の最大サンプル長を <span class="arithmatex">\(N_{\text{max}}\)</span>、並列実行スレッドの最大数を <span class="arithmatex">\(P\)</span> とする。
 素朴なロードにおける空間計算量 <span class="arithmatex">\(O(M \cdot N_{\text{max}})\)</span> は、容量固定のオブジェクトプールを適用することで、入力規模 <span class="arithmatex">\(M\)</span> に完全に依存しないスレッドスループット定数空間 <span class="arithmatex">\(O(P \cdot N_{\text{max}})\)</span> へと圧縮できる。</p>
-<p>[!NOTE]
-<strong>証明</strong></p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>証明</strong></p>
 <p>実行スレッド数を <span class="arithmatex">\(P\)</span> とする。各スレッドが同時に借用できるバッファ配列の数は高々1つ（または処理に必要な定数個）である。
 したがって、プール内に維持される必要のあるアクティブな配列オブジェクトの最大数は恒等的に <span class="arithmatex">\(P\)</span> に制限される。</p>
 <p>各バッファ配列の最大サイズを <span class="arithmatex">\(N_{\text{max}}\)</span> とすると、プール全体が消費する物理メモリ空間 <span class="arithmatex">\(S_{\text{pool}}\)</span> の上限は次式で抑えられる。</p>
@@ -1170,7 +1174,7 @@
 <p>ここで <span class="arithmatex">\(P\)</span> および <span class="arithmatex">\(N_{\text{max}}\)</span> は入力ファイルの総数 <span class="arithmatex">\(M\)</span> に対して独立した定数（ハードウェア物理コア数、および音声フォーマットの上限値）である。
 したがって、入力規模 <span class="arithmatex">\(M\)</span> が数万〜数百万に増加しても、メモリの空間計算量は <span class="arithmatex">\(O(P \cdot N_{\text{max}}) = O(1)\)</span>（入力に対して定数）に抑え込まれる。
 これにより、動的ヒープアロケーションが完全に排除され、GCの発生回数が数学的にゼロに収束することが証明された。 <span class="arithmatex">\(\blacksquare\)</span></p>
-</blockquote>
+</div>
 <hr />
 <h2 id="84-arraypool-span">8.4 実装への射影：ArrayPool と Span によるゼロ・アロケーション<a class="headerlink" href="#84-arraypool-span" title="Permanent link">&para;</a></h2>
 <p>C# 実装における <code>ParallelAudioComparisonEngine</code> では、このプール理論に基づき、.NET標準の <code>System.Buffers.ArrayPool&lt;T&gt;</code> および <code>System.Span&lt;T&gt;</code> を高度に融合したメモリアーキテクチャを採用している。</p>

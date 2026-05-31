@@ -1150,12 +1150,14 @@
 <li><strong>ランクによる結合</strong>: 各ノードに高さのバウンドを示す変数 <span class="arithmatex">\(\text{rank}\)</span> を持たせる。二つの木を結合する際、必ず <span class="arithmatex">\(\text{rank}\)</span> の小さい木のルートを、大きい木のルートの子として接続する。</li>
 <li><strong>経路圧縮</strong>: ある頂点 <span class="arithmatex">\(u\)</span> の所属グループを探索する際、探索経路上にあるすべての頂点の親ポインタを、直接ルートノードへ繋ぎ直す。</li>
 </ol>
-<blockquote>
-<p>[!IMPORTANT]
-<strong>定理 6.1 (素集合データ構造の計算量とランクの最大値)</strong>
+<div class="admonition tip">
+<p class="admonition-title">Important</p>
+<p><strong>定理 6.1 (素集合データ構造の計算量とランクの最大値)</strong>
 頂点数 <span class="arithmatex">\(N\)</span> の Union-Find において、「ランクによる結合」のみを適用した場合、任意の頂点のランク <span class="arithmatex">\(r\)</span> は <span class="arithmatex">\(r \le \log_2 N\)</span> を満たす。さらに「経路圧縮」を併用した場合、<span class="arithmatex">\(M\)</span> 回の操作（Find および Union）の合計時間計算量は <span class="arithmatex">\(O(M \alpha(N))\)</span> となる。ここで <span class="arithmatex">\(\alpha(N)\)</span> はアッカーマン関数 <span class="arithmatex">\(A(x, x)\)</span> の逆関数である。</p>
-<p>[!NOTE]
-<strong>証明</strong></p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>証明</strong></p>
 <p>まず、ランクによる結合における木のサイズの性質を数学的帰納法で証明する。
 補題：「ランク <span class="arithmatex">\(r\)</span> の木は、少なくとも <span class="arithmatex">\(2^r\)</span> 個の頂点を含む。」</p>
 <ol>
@@ -1167,7 +1169,7 @@
 </ol>
 <p>全頂点数は <span class="arithmatex">\(N\)</span> であるため、最大ランク <span class="arithmatex">\(r_{\max}\)</span> について <span class="arithmatex">\(2^{r_{\max}} \le N\)</span> が成り立ち、両辺の対数を取ると <span class="arithmatex">\(r_{\max} \le \log_2 N\)</span> となる。この時点で木の高さは対数オーダーに抑えられている。</p>
 <p>さらに経路圧縮を併用すると、Find操作のたびに探索パス上の辺がすべてルート直下へと再配線される。Tarjan (1975) の解析によれば、この平坦化によって深さが再帰的に削られる結果、操作あたりの償却計算量はアッカーマン関数の逆関数 <span class="arithmatex">\(\alpha(N)\)</span> に漸近する。<span class="arithmatex">\(\alpha(N)\)</span> は <span class="arithmatex">\(N\)</span> が観測可能な宇宙の原子数であっても <span class="arithmatex">\(4\)</span> 以下となる極めて増加の遅い関数であるため、実質的に定数時間 <span class="arithmatex">\(O(1)\)</span> とみなせる。<span class="arithmatex">\(\blacksquare\)</span></p>
-</blockquote>
+</div>
 <h2 id="64">6.4 計算量削減の定量的評価と疑似コード<a class="headerlink" href="#64" title="Permanent link">&para;</a></h2>
 <h3 id="_1">計算量の劇的な削減<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h3>
 <p>前述の通り、素朴なリスト結合では最悪 <span class="arithmatex">\(O(N^2)\)</span> の時間を要していた同値類の構築処理は、定理6.1の性質により <span class="arithmatex">\(O(N \alpha(N)) \approx O(N)\)</span> のほぼ線形時間へと劇的に圧縮された。

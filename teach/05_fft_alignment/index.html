@@ -1098,15 +1098,15 @@
 <h1 id="5">第5章 周波数領域における時間アライメント<a class="headerlink" href="#5" title="Permanent link">&para;</a></h1>
 <p>本章では、2つの音響信号間に存在する微小な時間的ズレを、サブサンプル精度かつ高速に検出・補正するための数理を解説する。
 時間領域における素朴な全探索が抱える計算量爆発の課題を明確にし、信号を周波数領域へ射影する「畳み込み定理」と「FFT」を用い、計算量を <span class="arithmatex">\(O(N \log N)\)</span> へと劇的に削減する過程を数学的に証明する。</p>
-<blockquote>
-<p>[!NOTE]
-<strong>本章における主要な略称・用語</strong></p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>本章における主要な略称・用語</strong></p>
 <ul>
 <li><strong>FFT</strong>: 高速フーリエ変換 (Fast Fourier Transform)</li>
 <li><strong>DFT</strong>: 離散フーリエ変換 (Discrete Fourier Transform)</li>
 <li><strong>IDFT</strong>: 逆離散フーリエ変換 (Inverse Discrete Fourier Transform)</li>
 </ul>
-</blockquote>
+</div>
 <h2 id="51">5.1 時間アライメント問題の数理的定式化<a class="headerlink" href="#51" title="Permanent link">&para;</a></h2>
 <p>2つの同一音源に由来する信号であっても、エンコード時のパディングや切り出し位置の違いにより、時間的なズレ（ラグ）が生じることがある。このズレを特定する問題を定式化する。</p>
 <h3 id="51_1">定義 5.1 (離散相互相関関数)<a class="headerlink" href="#51_1" title="Permanent link">&para;</a></h3>
@@ -1128,13 +1128,15 @@
 <p>信号 <span class="arithmatex">\(\mathbf{x}\)</span> のDFT <span class="arithmatex">\(X[k] \in \mathbb{C}\)</span> を次のように定義する。</p>
 <div class="arithmatex">\[X[k] = \mathcal{F}\{x\}[k] = \sum_{n=0}^{N-1} x[n] e^{-j \frac{2\pi}{N} k n} \quad \cdots (5.3)\]</div>
 <p>ここで <span class="arithmatex">\(j\)</span> は虚数単位（<span class="arithmatex">\(j^2 = -1\)</span>）である。同様に <span class="arithmatex">\(\mathbf{y}\)</span> のDFTを <span class="arithmatex">\(Y[k]\)</span> とする。</p>
-<blockquote>
-<p>[!IMPORTANT]
-<strong>定理 5.1 (相互相関の周波数領域定理 / ウィーナー・ヒンチン定理の離散版)</strong>
+<div class="admonition tip">
+<p class="admonition-title">Important</p>
+<p><strong>定理 5.1 (相互相関の周波数領域定理 / ウィーナー・ヒンチン定理の離散版)</strong>
 時間領域における相互相関関数 <span class="arithmatex">\(R_{xy}(\tau)\)</span> のフーリエ変換は、周波数領域における <span class="arithmatex">\(X[k]\)</span> の複素共役 <span class="arithmatex">\(X^*[k]\)</span> と <span class="arithmatex">\(Y[k]\)</span> の要素ごとの積（Hadamard積）に等しい。</p>
 <div class="arithmatex">\[\mathcal{F}\{R_{xy}\}[k] = X^*[k] \cdot Y[k] \quad \cdots (5.4)\]</div>
-<p>[!NOTE]
-<strong>証明</strong></p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>証明</strong></p>
 <p>相互相関関数 <span class="arithmatex">\(R_{xy}(\tau)\)</span> のフーリエ変換を展開する。</p>
 <p><!-- prettier-ignore -->
 $$ \begin{aligned} \mathcal{F}{R_{xy}}[k] &amp;= \sum_{\tau=0}^{N-1} R_{xy}(\tau) e^{-j \frac{2\pi}{N} k \tau} \ &amp;= \sum_{\tau=0}^{N-1} \left( \sum_{n=0}^{N-1} x[n] y[n + \tau] \right) e^{-j \frac{2\pi}{N} k \tau} \end{aligned} $$</p>
@@ -1146,7 +1148,7 @@ $$ \begin{aligned} &amp;= \sum_{n=0}^{N-1} x[n] \sum_{m=0}^{N-1} y[m] e^{-j \fra
 <p><!-- prettier-ignore -->
 $$ \mathcal{F}{R_{xy}}[k] = X^{*}[k] Y[k] $$</p>
 <p>が示された。<span class="arithmatex">\(\blacksquare\)</span></p>
-</blockquote>
+</div>
 <h3 id="tau_textopt">逆変換による最適シフト <span class="arithmatex">\(\tau_{\text{opt}}\)</span> の導出<a class="headerlink" href="#tau_textopt" title="Permanent link">&para;</a></h3>
 <p>定理5.1より、求める相互相関関数 <span class="arithmatex">\(R_{xy}(\tau)\)</span> は、周波数領域の積を逆離散フーリエ変換（IDFT）することで一挙に得られる。</p>
 <div class="arithmatex">\[R_{xy}(\tau) = \mathcal{F}^{-1} \{ X^*[k] Y[k] \}(\tau) \quad \cdots (5.5)\]</div>
