@@ -1,0 +1,1374 @@
+
+<!doctype html>
+<html lang="ja" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://bms-atelier-kyokufu.github.io/BmsPartTuner/teach/">
+      
+      
+      
+      
+        
+          <link rel="alternate" href="../" hreflang="ja">
+        
+          <link rel="alternate" href="../en/" hreflang="en">
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>第0章 技術解説書インデックスおよび理論概要 - BMS Part Tuner</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#0" class="md-skip">
+          コンテンツにスキップ
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="ヘッダー">
+    <a href=".." title="BMS Part Tuner" class="md-header__button md-logo" aria-label="BMS Part Tuner" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            BMS Part Tuner
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              第0章 技術解説書インデックスおよび理論概要
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="言語切り替え">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="../" hreflang="ja" class="md-select__link">
+              日本語
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../en/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="検索" placeholder="検索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="検索">
+        
+        <button type="reset" class="md-search__icon md-icon" title="クリア" aria-label="クリア" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            検索を初期化
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/bms-atelier-kyokufu/BmsPartTuner" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="タブ" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  ホーム
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../00_ARCHITECTURE_JP/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  構造とアーキテクチャ
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../01_TECHNICAL_GUIDE_JP/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  テクニカルガイド
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../02_OPTIMIZATION_GUIDE_JP/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  最適化レポート
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../03_TEST_DESIGN_JP/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  テスト設計
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../04_TEST_STRATEGY_JP/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  テスト戦略
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../COMMIT_MESSAGE_GUIDE_JP/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  コミット規約
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="ナビゲーション" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="BMS Part Tuner" class="md-nav__button md-logo" aria-label="BMS Part Tuner" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    BMS Part Tuner
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/bms-atelier-kyokufu/BmsPartTuner" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ホーム
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../00_ARCHITECTURE_JP/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    構造とアーキテクチャ
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../01_TECHNICAL_GUIDE_JP/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    テクニカルガイド
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../02_OPTIMIZATION_GUIDE_JP/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    最適化レポート
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../03_TEST_DESIGN_JP/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    テスト設計
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../04_TEST_STRATEGY_JP/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    テスト戦略
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../COMMIT_MESSAGE_GUIDE_JP/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    コミット規約
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目次">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目次
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#01" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.1 ターゲット読者および前提知識
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#02-notation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.2 本書で使用する数学記号（Notation）
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#03" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.3 最最適化がもたらすシステム全体のインパクトと次元の呪い
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.3 最最適化がもたらすシステム全体のインパクトと次元の呪い">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#031" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.3.1 各最適化フェーズにおける計算量削減効果
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#032" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.3.2 パイプライン統合時におけるトータル計算量の削減
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#04" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.4 処理アーキテクチャと数理理論のマッピング
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#05-theory-to-code-mapping" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.5 理論と実装の対応マップ（Theory-to-Code Mapping）
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#06" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.6 各章の構成と解説対象の数理
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.6 各章の構成と解説対象の数理">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        第1章：音響信号の等価性判定とピアソン相関係数
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        第2章：周波数領域における時間アライメント
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        第3章：短時間振幅包絡線と無音トリミングの数理
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4union-find" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        第4章：Union-Find グラフ理論による音声定義の同値類分割
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        第5章：時間軸シミュレーションエンジンとプレイアビリティ保存
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6lshsimd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        第6章：LSHと超並列SIMD演算による高速化数理（実装極限）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#7bmsonbms" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        第7章：bmsonからBMSへの逆変換における離散格子量子化と彩色パッキング数理
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#8gc" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        第8章：アムダールの法則とGCフリーなメモリ空間理論
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#07" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.7 理論の実証およびベンチマーク評価
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.7 理論の実証およびベンチマーク評価">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#071" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.7.1 フルパイプライン実行における実測パフォーマンス
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#072" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.7.2 統計データに基づくアーキテクチャの堅牢性の論理的検証
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.7.2 統計データに基づくアーキテクチャの堅牢性の論理的検証">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mean-3018-s" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        平均実行時間 (Mean: 3.018 s)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#stddev-0052-s-error-0059-s" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        標準偏差と誤差 (StdDev: 0.052 s / Error: 0.059 s)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        初回実行ペナルティと定常状態
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#allocated-33106-mb" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        メモリ空間 (Allocated: 331.06 MB)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="0">第0章 技術解説書インデックスおよび理論概要<a class="headerlink" href="#0" title="Permanent link">&para;</a></h1>
+<p>本インデックスは、<code>BMS Part Tuner</code> のコアロジックを構成する音響信号処理、離散数学、および時間軸シミュレーションの理論的背景について、大学レベルの応用数学・信号処理理論の枠組みに則り体系化した技術解説書の全体像を示すものである。</p>
+<blockquote>
+<p>[!NOTE]
+<strong>謝辞</strong>
+本システムにおける複雑なアルゴリズムの導出、ならびにこれらの高度な数理モデルの構築および実装の大部分は、<strong>Google AI Gemini 3.0 Pro</strong> および <strong>Gemini 3.5 Flash</strong> の膨大な計算力と論理的推論能力を多大に駆使することによって実現されました。開発者個人の力だけでは到底到達し得なかった領域であり、この場を借りて深い敬意と謝意を表します。</p>
+</blockquote>
+<h2 id="01">0.1 ターゲット読者および前提知識<a class="headerlink" href="#01" title="Permanent link">&para;</a></h2>
+<p>本ドキュメント群は、単なるアプリケーションの使用方法の提示にとどまらず、「極限の処理性能がいかにして数理的・アルゴリズム的に導出されるか」に関心を持つアルゴリズムエンジニア、コンピュータサイエンスの研究者、およびハードウェア最適化のスペシャリストを対象とする。</p>
+<blockquote>
+<p>[!IMPORTANT]
+<strong>要求される前提知識</strong>
+本解説書を読み進めるにあたり、以下の数学・アルゴリズム理論に関する基礎知識を前提とする。</p>
+<ul>
+<li><strong>線形代数学・微積分学</strong>: ベクトル演算、連続空間と離散空間の射影論。</li>
+<li><strong>離散数学・グラフ理論</strong>: グラフの彩色問題、連結成分、同値関係の推移律。</li>
+<li><strong>計算量理論</strong>: <span class="arithmatex">\(\mathcal{O}\)</span>（ランダウの記号）を用いた時間・空間計算量の評価。</li>
+<li><strong>信号処理</strong>: フーリエ変換（FFT）、窓関数、畳み込み定理の基礎。</li>
+</ul>
+<p>[!NOTE]
+<strong>本書における主要な略称・用語</strong></p>
+<ul>
+<li><strong>GC</strong>: ガベージコレクション (Garbage Collection)</li>
+<li><strong>DOD</strong>: データ指向設計 (Data-Oriented Design)</li>
+<li><strong>LSH</strong>: 局所性鋭敏型ハッシュ (Locality-Sensitive Hashing)</li>
+<li><strong>FFT</strong>: 高速フーリエ変換 (Fast Fourier Transform)</li>
+<li><strong>JIT</strong>: Just-In-Time</li>
+<li><strong>Sweep-Line</strong>: 走査線アルゴリズム</li>
+</ul>
+</blockquote>
+<h2 id="02-notation">0.2 本書で使用する数学記号（Notation）<a class="headerlink" href="#02-notation" title="Permanent link">&para;</a></h2>
+<p>本書の各章にわたり共通して使用される主要な数学記号とその定義を以下に示す。</p>
+<ul>
+<li><span class="arithmatex">\(N\)</span> : 音声波形のサンプル長（時間軸解像度）</li>
+<li><span class="arithmatex">\(M\)</span> : 入力となる音声ファイル数、あるいは処理対象のノーツイベント数</li>
+<li><span class="arithmatex">\(L\)</span> : システム全体における総ノーツ数（通常 <span class="arithmatex">\(L \ge M\)</span>）</li>
+<li><span class="arithmatex">\(W\)</span> : 短時間エネルギー計算等に用いる移動窓（ウィンドウ）の幅</li>
+<li><span class="arithmatex">\(k\)</span> : 1小節内の細分化された音符数（解像度）</li>
+<li><span class="arithmatex">\(\alpha(x)\)</span> : アッカーマン関数の逆関数（極めてゆっくりと成長する関数）</li>
+<li><span class="arithmatex">\(x(t), y(t)\)</span> : 離散時間 <span class="arithmatex">\(t\)</span> における音響信号（波形）の振幅</li>
+<li><span class="arithmatex">\(\mathcal{O}(\cdot)\)</span> : アルゴリズムの漸近的な計算量オーダー</li>
+</ul>
+<h2 id="03">0.3 最最適化がもたらすシステム全体のインパクトと次元の呪い<a class="headerlink" href="#03" title="Permanent link">&para;</a></h2>
+<p>数万規模の音声ファイル群から「聴覚上のクオリティを一切損なわずに」重複を検出し統合する処理、および高解像度フォーマット（bmson）から表現能力に制限のあるBMSフォーマットへのダウンコンバート（逆写像）処理は、素朴に実装した場合、以下の致命的な技術的障壁に直面し破綻する。</p>
+<ul>
+<li><strong>次元の呪い</strong>: ペア間の総当り比較による指数関数的な時間計算量の増大。</li>
+<li><strong>浮動小数点演算の丸め誤差（桁落ち）</strong>: 極小振幅区間における精度崩壊。</li>
+<li><strong>頻繁なヒープアロケーション</strong>: 大量のオブジェクトアロケーションに伴うGCストール。</li>
+</ul>
+<p>本システムでは、これらの課題を「数理的定理による計算空間の次元削減」と「DODやSIMD命令によるハードウェア駆動最適化」の双方を組み合わせることで克服し、数時間を要していた処理時間を数秒〜数十秒へと劇的に（<span class="arithmatex">\(99.9\%\)</span>以上）短縮した。その理論的アプローチを各章にて詳述する。</p>
+<h3 id="031">0.3.1 各最適化フェーズにおける計算量削減効果<a class="headerlink" href="#031" title="Permanent link">&para;</a></h3>
+<p>本システムにおいて適用されている数学的変形によるオーダー削減の全貌を以下に示す。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">処理フェーズ</th>
+<th style="text-align: left;">素朴な実装の計算量</th>
+<th style="text-align: left;">本システムの計算量</th>
+<th style="text-align: left;">適用した数理・アルゴリズム (該当章)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>無音トリミング</strong></td>
+<td style="text-align: left;"><span class="arithmatex">\(\mathcal{O}(N \cdot W)\)</span></td>
+<td style="text-align: left;"><span class="arithmatex">\(\mathcal{O}(N)\)</span></td>
+<td style="text-align: left;">局所エネルギーの累積和系列 (第3章)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>ペアワイズ比較空間</strong></td>
+<td style="text-align: left;"><span class="arithmatex">\(\mathcal{O}(M^2)\)</span></td>
+<td style="text-align: left;"><span class="arithmatex">\(\mathcal{O}(M)\)</span></td>
+<td style="text-align: left;">LSH / SimHash (第6章)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>微小時間ズレ補正</strong></td>
+<td style="text-align: left;"><span class="arithmatex">\(\mathcal{O}(N^2)\)</span></td>
+<td style="text-align: left;"><span class="arithmatex">\(\mathcal{O}(N \log N)\)</span></td>
+<td style="text-align: left;">畳み込み定理とFFT (第2章)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>同値類の構築</strong></td>
+<td style="text-align: left;"><span class="arithmatex">\(\mathcal{O}(M^2)\)</span></td>
+<td style="text-align: left;"><span class="arithmatex">\(\mathcal{O}(M \alpha(M))\)</span></td>
+<td style="text-align: left;">経路圧縮を伴う Union-Find (第4章)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>プレイアビリティ検証</strong></td>
+<td style="text-align: left;"><span class="arithmatex">\(\mathcal{O}(L^2)\)</span></td>
+<td style="text-align: left;"><span class="arithmatex">\(\mathcal{O}(L \log L)\)</span></td>
+<td style="text-align: left;">Sweep-Line アルゴリズム (第5章)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>逆変換：最適格子量子化</strong></td>
+<td style="text-align: left;"><span class="arithmatex">\(\mathcal{O}(k \cdot \vert \mathcal{D}_{\text{valid}} \vert)\)</span></td>
+<td style="text-align: left;"><span class="arithmatex">\(\mathcal{O}(k \log(\max R))\)</span></td>
+<td style="text-align: left;">ユークリッドの互除法による動的解像度決定 (第7章)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>逆変換：チャンネル彩色</strong></td>
+<td style="text-align: left;"><span class="arithmatex">\(\frac{\mathcal{O}(M^2) \text{ [時間]}}{\mathcal{O}(M) \text{ [空間]}}\)</span></td>
+<td style="text-align: left;"><span class="arithmatex">\(\frac{\mathcal{O}(M \log M) \text{ [時間]}}{\mathcal{O}(1) \text{ [空間]}}\)</span></td>
+<td style="text-align: left;">区間グラフの貪欲彩色 ＆ Array-Backed Pool (第7章)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>並列I/Oと波形解析</strong></td>
+<td style="text-align: left;"><span class="arithmatex">\(\mathcal{O}(M \cdot N) \text{ [空間]}\)</span></td>
+<td style="text-align: left;"><span class="arithmatex">\(\mathcal{O}(P \cdot N) \text{ [空間]}\)</span></td>
+<td style="text-align: left;"><code>ArrayPool</code> と <code>Span&lt;T&gt;</code> によるゼロ・アロケーション (第8章)</td>
+</tr>
+</tbody>
+</table>
+<p>※表内の各変数の定義：</p>
+<ul>
+<li><span class="arithmatex">\(N\)</span> ：波形サンプル数</li>
+<li><span class="arithmatex">\(M\)</span> ：音声ファイル数・ノーツイベント数</li>
+<li><span class="arithmatex">\(L\)</span> ：総ノーツ数</li>
+<li><span class="arithmatex">\(W\)</span> ：窓幅</li>
+<li><span class="arithmatex">\(k\)</span> ：小節内音符数</li>
+<li><span class="arithmatex">\(\alpha\)</span> ：アッカーマン関数の逆関数</li>
+<li><span class="arithmatex">\(\mathcal{C}\)</span> ：BMS最大チャンネル数（1296）</li>
+</ul>
+<h3 id="032">0.3.2 パイプライン統合時におけるトータル計算量の削減<a class="headerlink" href="#032" title="Permanent link">&para;</a></h3>
+<p>各フェーズにおける独立した最適化を統合したパイプラインにおいて、システム全体の時間および空間の複雑性は以下のように劇的に圧縮される。</p>
+<p><strong>1. 素朴な実装（総当り・時間領域シフト全探索・動的アロケーション彩色）：</strong></p>
+<div class="arithmatex">\[
+\begin{aligned}
+\text{時間計算量} &amp;: \mathcal{O}(M^2 \cdot N^2 + L^2)\\
+\text{空間計算量} &amp;: \mathcal{O}(M)
+\end{aligned}
+\]</div>
+<ul>
+<li><strong>破綻の理由</strong>: すべての音声ペア（<span class="arithmatex">\(M^2\)</span>）に対して時間領域のズレ探索（<span class="arithmatex">\(N^2\)</span>）を実行し、さらにプレイアビリティ検証でも総当り（<span class="arithmatex">\(L^2\)</span>）を行うため、入力ファイル数やノーツ数が微増するだけで演算回数が指数関数的に跳ね上がり、処理が完全に膠着する。また、ダウンコンバート時にオブジェクト生成を乱発（<span class="arithmatex">\(\mathcal{O}(M)\)</span>）することで、ヒープの肥大化とGCストールによる重大な遅延を引き起こす。</li>
+</ul>
+<p><strong>2. 本システム（LSH ＋ FFT ＋ Union-Find ＋ 走査線 ＋ DOD彩色）：</strong></p>
+<div class="arithmatex">\[
+\begin{aligned}
+\text{時間計算量} &amp;: \mathcal{O}(M \cdot N \log N + M \alpha(M) + L \log L) \\
+\text{空間計算量} &amp;: \mathcal{O}(1)
+\end{aligned}
+\]</div>
+<ul>
+<li><strong>削減のメカニズム</strong>:<ul>
+<li><strong>LSH および SimHash ハック</strong>: 音声の総当り比較空間を <span class="arithmatex">\(\mathcal{O}(M^2) \to \mathcal{O}(M)\)</span> の線形オーダーへと確率的に圧縮する。ハミング距離は <code>XOR</code> および <code>POPCNT</code> 命令のわずか 2 クロックで算出される（第6章）。</li>
+<li><strong>FFT</strong>: 2波形間のアライメント積和演算を <span class="arithmatex">\(\mathcal{O}(N^2) \to \mathcal{O}(N \log N)\)</span> へと削減する（第2章）。</li>
+<li><strong>Union-Find</strong>: 抽出された重複ペアから同値群をまとめる処理を、<span class="arithmatex">\(\mathcal{O}(M^2) \to \mathcal{O}(M \alpha(M))\)</span> の実質的な線形時間で完了させる（第4章）。</li>
+<li><strong>Sweep-Line</strong>: プレイフィールを完全保存する区間衝突検証、および逆変換時の多重発音彩色パッキングを、それぞれ <span class="arithmatex">\(\mathcal{O}(L \log L)\)</span> または <span class="arithmatex">\(\mathcal{O}(M \log M)\)</span> に抑制する（第5章、第7章）。</li>
+<li><strong>DOD / Array-Backed Pool</strong>: チャンネル割当の状態管理を、動的アロケーションを廃した定数サイズのフラットな配列ポインタ操作に射影し、空間計算量を実質定数 <span class="arithmatex">\(\mathcal{O}(1)\)</span> まで圧縮。GCストールを物理的に排除する（第7章）。</li>
+</ul>
+</li>
+</ul>
+<p>この直交するすべての数理の組み合わせ（ <span class="arithmatex">\(\mathcal{O}(M^2 \cdot N^2 + L^2) \Longrightarrow \mathcal{O}(M \cdot N \log N + M \alpha(M) + L \log L)\)</span> ）こそが、数時間におよぶ力技のバッチ処理をわずか数十秒のバックグラウンドタスクへと昇華させる「異次元のパフォーマンス」の真の論理的根拠である。</p>
+<h2 id="04">0.4 処理アーキテクチャと数理理論のマッピング<a class="headerlink" href="#04" title="Permanent link">&para;</a></h2>
+<p>巨大なBMSファイル群が入力されてから、最適化またはダウンコンバートされて出力されるまでのデータフローと、各フェーズを支える数学理論（各章）の対応関係を以下の図に示す。</p>
+<pre class="mermaid"><code>flowchart TB
+    %% 1. グローバル起点
+    A["入力: 未最適化のBMS / bmson と音声ファイル"]
+
+    %% 2. 前処理フェーズ (bmsonの場合のみ)
+    subgraph Phase4 ["前処理: 逆写像と格子・チャンネルパッキング"]
+        direction TB
+        I("第7章: ユークリッド互除法による最適格子量子化")
+        J("第7章: 区間グラフ彩色 ＆ Array-Backed Pool によるGCフリーパッキング")
+        I --&gt; J
+    end
+
+    %% 3. 最適化パイプラインの定義
+    subgraph Phase1 ["フェーズ1: 信号の正規化と特徴抽出"]
+        direction TB
+        B("第3章: 無音トリミングと短時間振幅包絡線")
+        C("第6章: LSH / SimHashによる特徴パッキング")
+        B --&gt; C
+    end
+
+    subgraph Phase2 ["フェーズ2: 並列比較と同値関係の抽出"]
+        direction TB
+        D("第1章: SIMD超並列によるピアソン相関係数")
+        E("第2章: FFTアライメントによる位相補正")
+        D --&gt; E
+    end
+
+    subgraph Phase3 ["フェーズ3: グラフ縮約と論理検証"]
+        direction TB
+        F("第4章: Union-Findによる同値類グラフの構築")
+        G("第5章: Sweep-Lineによるプレイアビリティ等価性証明")
+        F --&gt; G
+    end
+
+    %% 4. フローの結合
+    A --&gt;|"bmsonの場合"| I
+    A --&gt;|"BMSの場合"| B
+    J --&gt;|"ダウンコンバート済BMS"| B
+
+    C --&gt;|"ハッシュバケツ分割 &amp; POPCNT比較"| D
+    E --&gt;|"高相関ペアの抽出"| F
+
+    H["出力: 最適化済BMS と 統合音声 (代表元)"]
+    G --&gt;|"プレイアビリティ等価性確認済"| H
+
+    %% 5. 非類似・除外フロー (終端ノード)
+    Z["出力: 統合除外 (独立したWAVとしてそのまま保持)"]
+    C -.-&gt;|"ハミング距離が閾値超過"| Z
+    D -.-&gt;|"相関係数が閾値未満"| Z
+    E -.-&gt;|"アライメント後相関が閾値未満"| Z
+    G -.-&gt;|"同時発音による干渉検出"| Z
+
+    %% 6. スタイリング
+    style B fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    style C fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    style D fill:#e8f5e9,stroke:#1b5e20,stroke-width:2px
+    style E fill:#e8f5e9,stroke:#1b5e20,stroke-width:2px
+    style F fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    style G fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    style I fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    style J fill:#f3e5f5,stroke:#4a148c,stroke-width:2px</code></pre>
+<h2 id="05-theory-to-code-mapping">0.5 理論と実装の対応マップ（Theory-to-Code Mapping）<a class="headerlink" href="#05-theory-to-code-mapping" title="Permanent link">&para;</a></h2>
+<p>抽象的な数学理論が、本プロジェクトの実際のコードベースにおいてどこに実装されているかを示す。ドキュメントを読み進めながら実際のソースコードを参照することで、理論と実践のギャップを埋めることができる。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">解説章</th>
+<th style="text-align: left;">数学的理論 / アルゴリズム</th>
+<th style="text-align: left;">実装されている主要クラスとファイルパス</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>第1章</strong></td>
+<td style="text-align: left;">Welfordのオンライン漸化式、ピアソン相関係数</td>
+<td style="text-align: left;"><code>PearsonAccumulator</code> <br> Core/Audio/PearsonAccumulator.cs</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>第2章</strong></td>
+<td style="text-align: left;">畳み込み定理、高速フーリエ変換 (FFT)</td>
+<td style="text-align: left;"><code>FftAlignmentEngine</code> <br> Core/Audio/FftAlignmentEngine.cs</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>第3章</strong></td>
+<td style="text-align: left;">二乗エネルギーの累積和系列 (Prefix Sum)</td>
+<td style="text-align: left;"><code>AudioFeatureExtractor</code> <br> Core/Audio/AudioFeatureExtractor.cs</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>第4章</strong></td>
+<td style="text-align: left;">経路圧縮を伴う Union-Find、同値類</td>
+<td style="text-align: left;"><code>UnionFind</code> <br> Core/Optimization/UnionFind.cs</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>第5章</strong></td>
+<td style="text-align: left;">Sweep-Line アルゴリズム</td>
+<td style="text-align: left;"><code>SimulationEngine</code> <br> Core/Optimization/SimulationEngine.cs</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>第6章</strong></td>
+<td style="text-align: left;">LSH, SimHash</td>
+<td style="text-align: left;"><code>FastWaveCompare</code> <br> Core/Audio/FastWaveCompare.cs</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>第7章</strong></td>
+<td style="text-align: left;">ユークリッド互除法、区間グラフ彩色</td>
+<td style="text-align: left;"><code>BmsScoreGenerator</code> <br> Infrastructure/Bms/Bmson/BmsScoreGenerator.cs</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>第8章</strong></td>
+<td style="text-align: left;">アムダールの法則、LOH、ゼロ・アロケーション</td>
+<td style="text-align: left;"><code>ParallelAudioComparisonEngine</code> <br> Core/Audio/ParallelAudioComparisonEngine.cs</td>
+</tr>
+</tbody>
+</table>
+<h2 id="06">0.6 各章の構成と解説対象の数理<a class="headerlink" href="#06" title="Permanent link">&para;</a></h2>
+<p>アーキテクチャの各コンポーネントを支える厳密な数学的証明と実装への射影について、詳細は以下の各章を参照されたい。</p>
+<ul>
+<li>
+<h3 id="1"><a href="01_audio_equivalence_and_pearson.md">第1章：音響信号の等価性判定とピアソン相関係数</a><a class="headerlink" href="#1" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>数理トピック</strong>: 浮動小数点演算の桁落ちを防ぐ Welford のアルゴリズム（1パス漸化式計算）と、相関係数の数理的定義。</li>
+<li><strong>実装への射影</strong>: <code>PearsonAccumulator</code> における定数空間 <span class="arithmatex">\(\mathcal{O}(1)\)</span> での逐次オンライン累積演算。</li>
+</ul>
+</li>
+<li>
+<h3 id="2"><a href="02_fft_alignment.md">第2章：周波数領域における時間アライメント</a><a class="headerlink" href="#2" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>数理トピック</strong>: 時間領域の <span class="arithmatex">\(\mathcal{O}(N^2)\)</span> 探索を、畳み込み定理を用いて周波数領域の <span class="arithmatex">\(\mathcal{O}(N \log N)\)</span> へと射影する数学的証明。</li>
+<li><strong>実装への射影</strong>: <code>FftAlignmentEngine</code> でのゼロパディング境界条件処理と高速相互相関。</li>
+</ul>
+</li>
+<li>
+<h3 id="3"><a href="03_silence_trimming/">第3章：短時間振幅包絡線と無音トリミングの数理</a><a class="headerlink" href="#3" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>数理トピック</strong>: ゼロクロス点での誤検知やポップノイズを防ぎつつ、二乗エネルギー累積和系列を用いて任意の窓幅を <span class="arithmatex">\(\mathcal{O}(1)\)</span> で評価する定数時間局所エネルギー計算。</li>
+<li><strong>実装への射影</strong>: <code>AudioFeatureExtractor</code> における平方根回避の二乗比較最適化。</li>
+</ul>
+</li>
+<li>
+<h3 id="4union-find"><a href="04_union_find.md">第4章：Union-Find グラフ理論による音声定義の同値類分割</a><a class="headerlink" href="#4union-find" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>数理トピック</strong>: 類似関係の推移律の破れを「連結成分」として再定義し、経路圧縮とランク結合を用いてアッカーマン関数の逆関数 <span class="arithmatex">\(\alpha(M)\)</span> で同値類を構築する証明。</li>
+<li><strong>実装への射影</strong>: <code>UnionFind</code> クラスでのオブジェクトインスタンス生成を排除した、高速フラットポインタ配列。</li>
+</ul>
+</li>
+<li>
+<h3 id="5"><a href="05_simulation_engine.md">第5章：時間軸シミュレーションエンジンとプレイアビリティ保存</a><a class="headerlink" href="#5" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>数理トピック</strong>: 単なる静的置換が招くコムフィルタ効果や同時発音数の限界を証明。Sweep-Lineを用いて、複雑な発音干渉を <span class="arithmatex">\(\mathcal{O}(L \log L)\)</span> で精密にシミュレート。</li>
+<li><strong>実装への射影</strong>: <code>SimulationEngine</code> による最適化安全性検証。</li>
+</ul>
+</li>
+<li>
+<h3 id="6lshsimd"><a href="06_lsh_and_simd_limits.md">第6章：LSHと超並列SIMD演算による高速化数理（実装極限）</a><a class="headerlink" href="#6lshsimd" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>数理トピック</strong>: SimHash定理に基づき、数千次元の浮動小数点特徴量を単一の 64-bit 整数に詰め込み、近似相関距離を <code>XOR</code> ＋ <code>POPCNT</code> のハードウェア命令（<span class="arithmatex">\(\mathcal{O}(1)\)</span>）に射影する離散代数。</li>
+<li><strong>実装への射影</strong>: <code>FastWaveCompare</code> での <code>Vector256</code> 命令と、パイプラインハザードを防止する自動コンパイルループアンロール。</li>
+</ul>
+</li>
+<li>
+<h3 id="7bmsonbms"><a href="07_bmson_to_bms_conversion.md">第7章：bmsonからBMSへの逆変換における離散格子量子化と彩色パッキング数理</a><a class="headerlink" href="#7bmsonbms" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>数理トピック</strong>: 連続時間座標をユークリッドの互除法により最適な離散格子へ射影する量子化数理、および多重発音の競合を区間グラフ彩色問題として解決する数理。</li>
+<li><strong>実装への射影</strong>: C#のGCオーバーヘッドを完全に無力化する、空間 <span class="arithmatex">\(\mathcal{O}(1)\)</span> のアロケーションフリーな <strong>Array-Backed Pool</strong> / Handle パターン（DOD）の実装。</li>
+</ul>
+</li>
+<li>
+<h3 id="8gc"><a href="08_parallelism_and_memory_pooling.md">第8章：アムダールの法則とGCフリーなメモリ空間理論</a><a class="headerlink" href="#8gc" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>数理トピック</strong>: アムダールの法則によるタスク並列化（Thread-Level Parallelism）のスループット限界と、Large Object Heap (LOH) 断片化を回避するためのメモリプール理論。</li>
+<li><strong>実装への射影</strong>: <code>ParallelAudioComparisonEngine</code> における <code>ArrayPool&lt;T&gt;</code> と <code>Span&lt;T&gt;</code> を用いた、完全並列かつアロケーションゼロのI/O・解析パイプライン。</li>
+</ul>
+</li>
+</ul>
+<h2 id="07">0.7 理論の実証およびベンチマーク評価<a class="headerlink" href="#07" title="Permanent link">&para;</a></h2>
+<p>本解説書で展開された数学的証明およびオーダー削減は、机上の空論ではない。実際のハードウェア上で実行された公式ベンチマーク（BenchmarkDotNet）において、その圧倒的なパフォーマンスが実証されている。</p>
+<h3 id="071">0.7.1 フルパイプライン実行における実測パフォーマンス<a class="headerlink" href="#071" title="Permanent link">&para;</a></h3>
+<p>以下は、最適化パイプライン全体（音声波形の解析、LSHバケッティング、SIMD波形比較、FFTアライメント、Union-Find縮約、Sweep-Line検証まで）を統合実行した際の実測データである。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">処理メソッド</th>
+<th style="text-align: left;">Mean (平均実行時間)</th>
+<th style="text-align: left;">Error (誤差マージン)</th>
+<th style="text-align: left;">StdDev (標準偏差)</th>
+<th style="text-align: left;">Allocated (総アロケーション)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>OptimizeBmson_FullPipeline</strong></td>
+<td style="text-align: left;"><strong>3.018 s</strong></td>
+<td style="text-align: left;">0.0592 s</td>
+<td style="text-align: left;">0.0525 s</td>
+<td style="text-align: left;"><strong>331.06 MB</strong></td>
+</tr>
+</tbody>
+</table>
+<h3 id="072">0.7.2 統計データに基づくアーキテクチャの堅牢性の論理的検証<a class="headerlink" href="#072" title="Permanent link">&para;</a></h3>
+<ul>
+<li>
+<h4 id="mean-3018-s">平均実行時間 (Mean: 3.018 s)<a class="headerlink" href="#mean-3018-s" title="Permanent link">&para;</a></h4>
+<p>数万規模の計算空間を持つ巨大な譜面データのフル最適化が、<strong>わずか約3秒</strong>で完了している。これは、<span class="arithmatex">\(\mathcal{O}(M^2 \cdot N^2)\)</span> の素朴な実装であれば数時間〜数日を要する処理が、直交する数学的次元圧縮によって実用的なリアルタイム処理へと昇華された決定的な証拠である。</p>
+</li>
+<li>
+<h4 id="stddev-0052-s-error-0059-s">標準偏差と誤差 (StdDev: 0.052 s / Error: 0.059 s)<a class="headerlink" href="#stddev-0052-s-error-0059-s" title="Permanent link">&para;</a></h4>
+<p>平均実行時間 3秒 に対して、標準偏差がわずか <span class="arithmatex">\(1.7\%\)</span> 程度（約52ミリ秒）に収束している。この極めて低い分散は、GCの予測不能な停止やOSレベルのキャッシュミスが、アルゴリズムの力によって数理的に抑え込まれ、「常に一定の最大スループットで決定論的に実行されていること」を統計学的に証明している。</p>
+</li>
+<li>
+<h4 id="_1">初回実行ペナルティと定常状態<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h4>
+<p>C# (.NET) ランタイムのアーキテクチャ上、初回実行時には JIT コンパイラによる機械語への翻訳、SIMD命令の Tier 1（最適化）への昇格、およびCPUキャッシュのウォームアップが発生する。そのため、アプリケーション起動直後の1回目の処理は上記より時間を要する。
+本ベンチマークはこれらのウォームアップフェーズを厳格に分離・除外し、「ハードウェアとエンジンが完全に温まった定常状態における純粋な限界性能」を抽出している。</p>
+</li>
+<li>
+<h4 id="allocated-33106-mb">メモリ空間 (Allocated: 331.06 MB)<a class="headerlink" href="#allocated-33106-mb" title="Permanent link">&para;</a></h4>
+<p>音声波形のオンメモリ展開と数万回の区間検証を伴う巨大な処理でありながら、総アロケーションが 331 MB に抑え込まれている。これは、第7章等で解説した <strong>Array-Backed Pool</strong> やインデックスポインタを用いた <strong>DOD</strong> により、実行時のヒープへの無駄なオブジェクト生成（GC爆発のトリガー）が物理的に排除されている結果である。</p>
+</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  ページトップへ戻る
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u30b3\u30d4\u30fc\u3057\u307e\u3057\u305f", "clipboard.copy": "\u30af\u30ea\u30c3\u30d7\u30dc\u30fc\u30c9\u3078\u30b3\u30d4\u30fc", "search.result.more.one": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3082\u30461\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.more.other": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3042\u3068#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.none": "\u4f55\u3082\u898b\u3064\u304b\u308a\u307e\u305b\u3093\u3067\u3057\u305f", "search.result.one": "1\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.other": "#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.placeholder": "\u691c\u7d22\u30ad\u30fc\u30ef\u30fc\u30c9\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044", "search.result.term.missing": "\u691c\u7d22\u306b\u542b\u307e\u308c\u306a\u3044", "select.version": "\u30d0\u30fc\u30b8\u30e7\u30f3\u5207\u308a\u66ff\u3048"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+      
+    
+  </body>
+</html>

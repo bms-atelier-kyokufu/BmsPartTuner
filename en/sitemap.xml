@@ -2,142 +2,178 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://bms-atelier-kyokufu.github.io/BmsPartTuner/en/</loc>
-         <lastmod>2026-05-30</lastmod>
+         <lastmod>2026-05-31</lastmod>
     </url>
     <url>
          <loc>https://bms-atelier-kyokufu.github.io/BmsPartTuner/en/00_ARCHITECTURE_EN/</loc>
-         <lastmod>2026-05-30</lastmod>
+         <lastmod>2026-05-31</lastmod>
     </url>
     <url>
          <loc>https://bms-atelier-kyokufu.github.io/BmsPartTuner/en/00_ARCHITECTURE_JP/</loc>
-         <lastmod>2026-05-30</lastmod>
+         <lastmod>2026-05-31</lastmod>
     </url>
     <url>
          <loc>https://bms-atelier-kyokufu.github.io/BmsPartTuner/en/01_TECHNICAL_GUIDE_EN/</loc>
-         <lastmod>2026-05-30</lastmod>
+         <lastmod>2026-05-31</lastmod>
     </url>
     <url>
          <loc>https://bms-atelier-kyokufu.github.io/BmsPartTuner/en/01_TECHNICAL_GUIDE_JP/</loc>
-         <lastmod>2026-05-30</lastmod>
+         <lastmod>2026-05-31</lastmod>
     </url>
     <url>
          <loc>https://bms-atelier-kyokufu.github.io/BmsPartTuner/en/02_OPTIMIZATION_GUIDE_EN/</loc>
-         <lastmod>2026-05-30</lastmod>
+         <lastmod>2026-05-31</lastmod>
     </url>
     <url>
          <loc>https://bms-atelier-kyokufu.github.io/BmsPartTuner/en/02_OPTIMIZATION_GUIDE_JP/</loc>
-         <lastmod>2026-05-30</lastmod>
+         <lastmod>2026-05-31</lastmod>
     </url>
     <url>
          <loc>https://bms-atelier-kyokufu.github.io/BmsPartTuner/en/03_TEST_DESIGN_JP/</loc>
-         <lastmod>2026-05-30</lastmod>
+         <lastmod>2026-05-31</lastmod>
     </url>
     <url>
          <loc>https://bms-atelier-kyokufu.github.io/BmsPartTuner/en/04_TEST_STRATEGY_EN/</loc>
-         <lastmod>2026-05-30</lastmod>
+         <lastmod>2026-05-31</lastmod>
     </url>
     <url>
          <loc>https://bms-atelier-kyokufu.github.io/BmsPartTuner/en/04_TEST_STRATEGY_JP/</loc>
-         <lastmod>2026-05-30</lastmod>
+         <lastmod>2026-05-31</lastmod>
     </url>
     <url>
          <loc>https://bms-atelier-kyokufu.github.io/BmsPartTuner/en/05_BMSON_CONVERSION_EN/</loc>
-         <lastmod>2026-05-30</lastmod>
+         <lastmod>2026-05-31</lastmod>
     </url>
     <url>
          <loc>https://bms-atelier-kyokufu.github.io/BmsPartTuner/en/05_BMSON_CONVERSION_JP/</loc>
-         <lastmod>2026-05-30</lastmod>
+         <lastmod>2026-05-31</lastmod>
     </url>
     <url>
          <loc>https://bms-atelier-kyokufu.github.io/BmsPartTuner/en/COMMIT_MESSAGE_GUIDE_EN/</loc>
-         <lastmod>2026-05-30</lastmod>
+         <lastmod>2026-05-31</lastmod>
     </url>
     <url>
          <loc>https://bms-atelier-kyokufu.github.io/BmsPartTuner/en/COMMIT_MESSAGE_GUIDE_JP/</loc>
-         <lastmod>2026-05-30</lastmod>
+         <lastmod>2026-05-31</lastmod>
     </url>
     <url>
          <loc>https://bms-atelier-kyokufu.github.io/BmsPartTuner/en/PORTFOLIO_SUMMARY_EN/</loc>
-         <lastmod>2026-05-30</lastmod>
+         <lastmod>2026-05-31</lastmod>
     </url>
     <url>
          <loc>https://bms-atelier-kyokufu.github.io/BmsPartTuner/en/index_en/</loc>
-         <lastmod>2026-05-30</lastmod>
+         <lastmod>2026-05-31</lastmod>
     </url>
     <url>
          <loc>https://bms-atelier-kyokufu.github.io/BmsPartTuner/en/adr/arch/immutable_domain_models/</loc>
-         <lastmod>2026-05-30</lastmod>
+         <lastmod>2026-05-31</lastmod>
     </url>
     <url>
          <loc>https://bms-atelier-kyokufu.github.io/BmsPartTuner/en/adr/arch/pipeline_architecture/</loc>
-         <lastmod>2026-05-30</lastmod>
+         <lastmod>2026-05-31</lastmod>
     </url>
     <url>
          <loc>https://bms-atelier-kyokufu.github.io/BmsPartTuner/en/adr/math/audio_compare/</loc>
-         <lastmod>2026-05-30</lastmod>
+         <lastmod>2026-05-31</lastmod>
     </url>
     <url>
          <loc>https://bms-atelier-kyokufu.github.io/BmsPartTuner/en/adr/math/bmson_score/</loc>
-         <lastmod>2026-05-30</lastmod>
+         <lastmod>2026-05-31</lastmod>
     </url>
     <url>
          <loc>https://bms-atelier-kyokufu.github.io/BmsPartTuner/en/adr/math/fft_alignment/</loc>
-         <lastmod>2026-05-30</lastmod>
+         <lastmod>2026-05-31</lastmod>
     </url>
     <url>
          <loc>https://bms-atelier-kyokufu.github.io/BmsPartTuner/en/adr/math/lsh_cache/</loc>
-         <lastmod>2026-05-30</lastmod>
+         <lastmod>2026-05-31</lastmod>
     </url>
     <url>
          <loc>https://bms-atelier-kyokufu.github.io/BmsPartTuner/en/adr/math/silence_trim/</loc>
-         <lastmod>2026-05-30</lastmod>
+         <lastmod>2026-05-31</lastmod>
     </url>
     <url>
          <loc>https://bms-atelier-kyokufu.github.io/BmsPartTuner/en/adr/math/simulation/</loc>
-         <lastmod>2026-05-30</lastmod>
+         <lastmod>2026-05-31</lastmod>
     </url>
     <url>
          <loc>https://bms-atelier-kyokufu.github.io/BmsPartTuner/en/adr/perf/audio_grouping/</loc>
-         <lastmod>2026-05-30</lastmod>
+         <lastmod>2026-05-31</lastmod>
     </url>
     <url>
          <loc>https://bms-atelier-kyokufu.github.io/BmsPartTuner/en/adr/perf/audio_slice_cache/</loc>
-         <lastmod>2026-05-30</lastmod>
+         <lastmod>2026-05-31</lastmod>
     </url>
     <url>
          <loc>https://bms-atelier-kyokufu.github.io/BmsPartTuner/en/adr/perf/file_rewrite/</loc>
-         <lastmod>2026-05-30</lastmod>
+         <lastmod>2026-05-31</lastmod>
     </url>
     <url>
          <loc>https://bms-atelier-kyokufu.github.io/BmsPartTuner/en/adr/perf/flyweight_sound/</loc>
-         <lastmod>2026-05-30</lastmod>
+         <lastmod>2026-05-31</lastmod>
     </url>
     <url>
          <loc>https://bms-atelier-kyokufu.github.io/BmsPartTuner/en/adr/perf/logger/</loc>
-         <lastmod>2026-05-30</lastmod>
+         <lastmod>2026-05-31</lastmod>
     </url>
     <url>
          <loc>https://bms-atelier-kyokufu.github.io/BmsPartTuner/en/adr/perf/next_gen_optimization/</loc>
-         <lastmod>2026-05-30</lastmod>
+         <lastmod>2026-05-31</lastmod>
     </url>
     <url>
          <loc>https://bms-atelier-kyokufu.github.io/BmsPartTuner/en/adr/perf/parallel_audio/</loc>
-         <lastmod>2026-05-30</lastmod>
+         <lastmod>2026-05-31</lastmod>
     </url>
     <url>
          <loc>https://bms-atelier-kyokufu.github.io/BmsPartTuner/en/adr/perf/radix_convert/</loc>
-         <lastmod>2026-05-30</lastmod>
+         <lastmod>2026-05-31</lastmod>
     </url>
     <url>
          <loc>https://bms-atelier-kyokufu.github.io/BmsPartTuner/en/adr/perf/storage_detect/</loc>
-         <lastmod>2026-05-30</lastmod>
+         <lastmod>2026-05-31</lastmod>
     </url>
     <url>
          <loc>https://bms-atelier-kyokufu.github.io/BmsPartTuner/en/adr/perf/update_service/</loc>
-         <lastmod>2026-05-30</lastmod>
+         <lastmod>2026-05-31</lastmod>
     </url>
     <url>
          <loc>https://bms-atelier-kyokufu.github.io/BmsPartTuner/en/adr/perf/view_model/</loc>
-         <lastmod>2026-05-30</lastmod>
+         <lastmod>2026-05-31</lastmod>
+    </url>
+    <url>
+         <loc>https://bms-atelier-kyokufu.github.io/BmsPartTuner/en/teach/</loc>
+         <lastmod>2026-05-31</lastmod>
+    </url>
+    <url>
+         <loc>https://bms-atelier-kyokufu.github.io/BmsPartTuner/en/teach/01_parallelism_and_memory_pooling/</loc>
+         <lastmod>2026-05-31</lastmod>
+    </url>
+    <url>
+         <loc>https://bms-atelier-kyokufu.github.io/BmsPartTuner/en/teach/02_bmson_to_bms_conversion/</loc>
+         <lastmod>2026-05-31</lastmod>
+    </url>
+    <url>
+         <loc>https://bms-atelier-kyokufu.github.io/BmsPartTuner/en/teach/03_silence_trimming/</loc>
+         <lastmod>2026-05-31</lastmod>
+    </url>
+    <url>
+         <loc>https://bms-atelier-kyokufu.github.io/BmsPartTuner/en/teach/04_lsh_and_simd_limits/</loc>
+         <lastmod>2026-05-31</lastmod>
+    </url>
+    <url>
+         <loc>https://bms-atelier-kyokufu.github.io/BmsPartTuner/en/teach/05_audio_equivalence_and_pearson/</loc>
+         <lastmod>2026-05-31</lastmod>
+    </url>
+    <url>
+         <loc>https://bms-atelier-kyokufu.github.io/BmsPartTuner/en/teach/06_fft_alignment/</loc>
+         <lastmod>2026-05-31</lastmod>
+    </url>
+    <url>
+         <loc>https://bms-atelier-kyokufu.github.io/BmsPartTuner/en/teach/07_union_find/</loc>
+         <lastmod>2026-05-31</lastmod>
+    </url>
+    <url>
+         <loc>https://bms-atelier-kyokufu.github.io/BmsPartTuner/en/teach/08_simulation_engine/</loc>
+         <lastmod>2026-05-31</lastmod>
     </url>
 </urlset>

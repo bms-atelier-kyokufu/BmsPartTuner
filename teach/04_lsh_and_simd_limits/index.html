@@ -1,0 +1,922 @@
+
+<!doctype html>
+<html lang="ja" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://bms-atelier-kyokufu.github.io/BmsPartTuner/teach/04_lsh_and_simd_limits/">
+      
+      
+      
+      
+        
+          <link rel="alternate" href="../../" hreflang="ja">
+        
+          <link rel="alternate" href="../../en/" hreflang="en">
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>第4章 LSHと超並列SIMD演算による高速化数理（実装極限） - BMS Part Tuner</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#4-lshsimd" class="md-skip">
+          コンテンツにスキップ
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="ヘッダー">
+    <a href="../.." title="BMS Part Tuner" class="md-header__button md-logo" aria-label="BMS Part Tuner" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            BMS Part Tuner
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              第4章 LSHと超並列SIMD演算による高速化数理（実装極限）
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="言語切り替え">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="../../" hreflang="ja" class="md-select__link">
+              日本語
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../en/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="検索" placeholder="検索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="検索">
+        
+        <button type="reset" class="md-search__icon md-icon" title="クリア" aria-label="クリア" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            検索を初期化
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/bms-atelier-kyokufu/BmsPartTuner" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="タブ" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  ホーム
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../00_ARCHITECTURE_JP/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  構造とアーキテクチャ
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../01_TECHNICAL_GUIDE_JP/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  テクニカルガイド
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../02_OPTIMIZATION_GUIDE_JP/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  最適化レポート
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../03_TEST_DESIGN_JP/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  テスト設計
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../04_TEST_STRATEGY_JP/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  テスト戦略
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../COMMIT_MESSAGE_GUIDE_JP/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  コミット規約
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="ナビゲーション" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="BMS Part Tuner" class="md-nav__button md-logo" aria-label="BMS Part Tuner" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    BMS Part Tuner
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/bms-atelier-kyokufu/BmsPartTuner" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ホーム
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../00_ARCHITECTURE_JP/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    構造とアーキテクチャ
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../01_TECHNICAL_GUIDE_JP/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    テクニカルガイド
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../02_OPTIMIZATION_GUIDE_JP/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    最適化レポート
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../03_TEST_DESIGN_JP/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    テスト設計
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../04_TEST_STRATEGY_JP/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    テスト戦略
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../COMMIT_MESSAGE_GUIDE_JP/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    コミット規約
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目次">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目次
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#41" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 次元削減と近傍探索の数理的定式化
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4.1 次元削減と近傍探索の数理的定式化">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-lsh" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        定義 4.1 (LSHファミリ)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#42-om2-why" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2 課題：ペアワイズ比較における \(O(M^2)\) の次元の呪い (Why)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#43-simhash-proof" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.3 定理の提示：SimHashによるコサイン類似度のビット射影 (Proof)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#44-popcnt" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.4 実装への射影：ビットパッキングと POPCNT ハック
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4.4 実装への射影：ビットパッキングと POPCNT ハック">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        空間の圧縮（ビットパッキング）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#xor-popcnt-o1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        XOR と POPCNT による \(O(1)\) 距離計算
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#45" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.5 バケツ分割と同値類構築への接続
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#46-loop-unrolling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.6 実装極限におけるパイプライン最適化 (Loop Unrolling)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#47-references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.7 参考文献 (References)
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="4-lshsimd">第4章 LSHと超並列SIMD演算による高速化数理（実装極限）<a class="headerlink" href="#4-lshsimd" title="Permanent link">&para;</a></h1>
+<p>本章では、数千規模の音声ファイル群に対する総当りの等価性判定において立ちはだかる、<span class="arithmatex">\(O(M^2)\)</span> の計算量爆発を打破するためのアルゴリズム論、およびハードウェアの演算器を極限まで駆動するためのプログラマティックな最適化手法を解説する。
+LSHによる次元削減の数理、浮動小数点演算を <span class="arithmatex">\(O(1)\)</span> の「整数ビット演算」へと射影するSimHash定理、そしてSIMDループアンロールがレイテンシの物理的限界をいかに突破するかを証明する。</p>
+<blockquote>
+<p>[!NOTE]
+<strong>本章における主要な略称・用語</strong></p>
+<ul>
+<li><strong>LSH</strong>: 局所性鋭敏型ハッシュ (Locality-Sensitive Hashing)</li>
+<li><strong>SIMD</strong>: Single Instruction, Multiple Data</li>
+<li><strong>POPCNT</strong>: Population Count (立っているビット数を数える命令)</li>
+<li><strong>XOR</strong>: 排他的論理和</li>
+</ul>
+</blockquote>
+<h2 id="41">4.1 次元削減と近傍探索の数理的定式化<a class="headerlink" href="#41" title="Permanent link">&para;</a></h2>
+<p>対象となるすべての音声ファイルの集合を <span class="arithmatex">\(\mathcal{S} = \{ \mathbf{x}_1, \mathbf{x}_2, \dots, \mathbf{x}_M \}\)</span> とする（<span class="arithmatex">\(M\)</span> は数千のオーダー）。各 <span class="arithmatex">\(\mathbf{x}_i \in \mathbb{R}^N\)</span> は高次元の特徴量ベクトルである。</p>
+<h3 id="41-lsh">定義 4.1 (LSHファミリ)<a class="headerlink" href="#41-lsh" title="Permanent link">&para;</a></h3>
+<p>距離空間 <span class="arithmatex">\((\mathcal{S}, d)\)</span> において、ハッシュ関数の族 <span class="arithmatex">\(\mathcal{H} = \{ h : \mathcal{S} \to U \}\)</span> が Locality Sensitive であるとは、任意の <span class="arithmatex">\(\mathbf{x}, \mathbf{y} \in \mathcal{S}\)</span> に対して、距離 <span class="arithmatex">\(d(\mathbf{x}, \mathbf{y})\)</span> が小さい（類似している）ほど、ハッシュ値が衝突する確率 <span class="arithmatex">\(\Pr[h(\mathbf{x}) = h(\mathbf{y})]\)</span> が高くなる性質を持つことと定義する。</p>
+<h2 id="42-om2-why">4.2 課題：ペアワイズ比較における <span class="arithmatex">\(O(M^2)\)</span> の次元の呪い (Why)<a class="headerlink" href="#42-om2-why" title="Permanent link">&para;</a></h2>
+<p><span class="arithmatex">\(M\)</span> 個の音声ファイル群から重複ペアを見つけるためには、素朴な実装（全探索）ではすべての組み合わせについて第5章のピアソン相関係数を計算しなければならない。
+必要な比較回数 <span class="arithmatex">\(C\)</span> は以下の組み合わせ論的計算式となる。</p>
+<div class="arithmatex">\[\begin{aligned}C &amp;= \binom{M}{2} \\&amp;= \frac{M(M - 1)}{2} \\&amp;= O(M^2) \quad \cdots (4.1)\end{aligned}\]</div>
+<p><span class="arithmatex">\(M = 30,000\)</span> 個の場合、比較回数は約4.5億回に達する。仮に1回の比較（浮動小数点演算＋SIMD処理）が <span class="arithmatex">\(10\ \mu\text{s}\)</span> だったとしても、全体で約4,500秒（1時間以上）を要し、リアルタイムパイプラインとしては完全に破綻する。
+この <span class="arithmatex">\(O(M^2 \cdot N)\)</span> の壁を突破するには、「比較対象を絞り込むこと」と「比較演算そのものを軽量化すること」の2つのアプローチが不可避である。</p>
+<h2 id="43-simhash-proof">4.3 定理の提示：SimHashによるコサイン類似度のビット射影 (Proof)<a class="headerlink" href="#43-simhash-proof" title="Permanent link">&para;</a></h2>
+<p>浮動小数点ベクトル同士の内積（コサイン類似度）計算を、圧倒的に軽量な「整数ビット演算」に射影する数学的ハックを導入する。</p>
+<blockquote>
+<p>[!IMPORTANT]
+<strong>定理 4.1 (CharikarのSimHash定理とランダム超平面)</strong>
+<span class="arithmatex">\(\mathbb{R}^N\)</span> 空間において、平均が <span class="arithmatex">\(0\)</span> になるように正規化された2つのベクトル <span class="arithmatex">\(\mathbf{x}, \mathbf{y}\)</span> を考える。この空間を原点を通るランダムな超平面で二分し、ベクトルがどちらの側（符号）にあるかで <span class="arithmatex">\(0\)</span> または <span class="arithmatex">\(1\)</span> のビットを割り当てる関数 <span class="arithmatex">\(h(\mathbf{v}) = \text{sgn}(\mathbf{v})\)</span> を定義する。
+このとき、2つのベクトルのなす角 <span class="arithmatex">\(\theta\)</span> は、それらの符号ビットが異なる確率に完全に線形比例する。</p>
+<div class="arithmatex">\[\Pr[h(\mathbf{x}) \neq h(\mathbf{y})] = \frac{\theta}{\pi} \quad \cdots (4.2)\]</div>
+<p>[!NOTE]
+<strong>証明の概要と導出</strong></p>
+<p>2つのベクトル <span class="arithmatex">\(\mathbf{x}, \mathbf{y}\)</span> によって張られる2次元平面を考える。原点を通るランダムな超平面は、この2次元平面上ではランダムな直線として現れる。
+この直線が <span class="arithmatex">\(\mathbf{x}\)</span> と <span class="arithmatex">\(\mathbf{y}\)</span> の間を通過する場合にのみ、両者の符号ビット <span class="arithmatex">\(h(\mathbf{x})\)</span> と <span class="arithmatex">\(h(\mathbf{y})\)</span> は異なる値（<span class="arithmatex">\(1\)</span> と <span class="arithmatex">\(0\)</span>、または <span class="arithmatex">\(0\)</span> と <span class="arithmatex">\(1\)</span>）をとる。
+全角度は <span class="arithmatex">\(2\pi\)</span> であり、直線がベクトル間を通過する角度の範囲は両側合わせて <span class="arithmatex">\(2\theta\)</span> である。したがって、その確率は <span class="arithmatex">\(\frac{2\theta}{2\pi} = \frac{\theta}{\pi}\)</span> となる。
+コサイン類似度は <span class="arithmatex">\(\cos(\theta)\)</span> であるため、符号ビットの不一致確率（ハミング距離）を測定するだけで、元の浮動小数点空間におけるコサイン類似度を数学的に推定（近似）できることが示された。<span class="arithmatex">\(\blacksquare\)</span></p>
+</blockquote>
+<h2 id="44-popcnt">4.4 実装への射影：ビットパッキングと POPCNT ハック<a class="headerlink" href="#44-popcnt" title="Permanent link">&para;</a></h2>
+<p>定理 4.1 の強烈な恩恵は、浮動小数点数の重い配列演算を、1つの巨大な整数へのビット詰め込み、**「XOR演算」へ変換できる点にある。これはメモリやCPUサイクルを極限まで切り詰めたファミコン時代のハックに酷似している。</p>
+<h3 id="_1">空間の圧縮（ビットパッキング）<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h3>
+<p>64次元の特徴量ベクトルの符号（正なら <code>1</code>、負なら <code>0</code>）を、C#における単一の64ビット整数（<code>ulong</code>）の各ビット位置にシフト演算（<code>&lt;&lt;</code>）と論理和（<code>|</code>）を用いてパッキングする（シグネチャ化）。
+これにより、ベクトルデータは数キロバイトの配列から、わずか 8 バイトの <code>ulong</code> 値1つへと圧縮される。</p>
+<h3 id="xor-popcnt-o1">XOR と POPCNT による <span class="arithmatex">\(O(1)\)</span> 距離計算<a class="headerlink" href="#xor-popcnt-o1" title="Permanent link">&para;</a></h3>
+<p>2つのシグネチャ <code>A</code> と <code>B</code> の非類似度（ハミング距離）は、XOR (<code>^</code>) を取ることで「ビットが異なる箇所のみ <code>1</code> が立つ整数」を作り出し、その <code>1</code> の数を数えることで得られる。</p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1">// 【疑似コード】ビットパッキングとPOPCNTによる超高速類似度判定</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="k">public</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="nf">IsSimilar_SimHash</span><span class="p">(</span><span class="kt">ulong</span><span class="w"> </span><span class="n">signatureA</span><span class="p">,</span><span class="w"> </span><span class="kt">ulong</span><span class="w"> </span><span class="n">signatureB</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">    </span><span class="c1">// 1. XOR演算で、符号が異なるビット位置のみを 1 にする</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">    </span><span class="kt">ulong</span><span class="w"> </span><span class="n">diff</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">signatureA</span><span class="w"> </span><span class="o">^</span><span class="w"> </span><span class="n">signatureB</span><span class="p">;</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">    </span><span class="c1">// 2. ハードウェア命令 (POPCNT) を直接駆動し、立っているビット数を1クロックで数える</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">    </span><span class="c1">// この関数はコンパイル時に x86_64 の popcnt 命令などに展開される</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">hammingDistance</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">Numerics</span><span class="p">.</span><span class="n">BitOperations</span><span class="p">.</span><span class="n">PopCount</span><span class="p">(</span><span class="n">diff</span><span class="p">);</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="w">    </span><span class="c1">// 64ビット中、ビットの違いが一定の閾値(例: 4ビット以下)なら類似と判定</span>
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">hammingDistance</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="mi">4</span><span class="p">;</span>
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="p">}</span>
+</span></code></pre></div>
+<p>この実装により、64個の浮動小数点数の差の二乗和に本来なら数多のクロックとメモリアクセスが必要だが、CPUの <code>XOR</code> 命令と <code>POPCNT</code> 命令のわずか2クロック（実質的な時間計算量 <span class="arithmatex">\(O(1)\)</span>）へと短縮される。
+このハックにより、事前フィルタリングの速度は数十倍に跳ね上がり、<span class="arithmatex">\(O(M^2)\)</span> の呪縛は実用上完全に無力化される。</p>
+<h2 id="45">4.5 バケツ分割と同値類構築への接続<a class="headerlink" href="#45" title="Permanent link">&para;</a></h2>
+<p>上記で得られた64ビットのシグネチャ <code>ulong</code> は、そのままLSHのハッシュ値（バケツID）としても機能する。</p>
+<ol>
+<li><strong>バケティング</strong>: シグネチャが完全に一致する（ハミング距離 0）ファイル群は同じバケツに <span class="arithmatex">\(O(1)\)</span> で分割され、後続の厳密な波形比較（第5章・第6章）へと送られる。</li>
+<li><strong>近傍探索</strong>: ハミング距離が 1、2 程度の微小な差を持つバケツ同士も、上記の <code>PopCount</code> ハックによって極めて高速に隣接判定され、類似ペアとして抽出される。</li>
+</ol>
+<h2 id="46-loop-unrolling">4.6 実装極限におけるパイプライン最適化 (Loop Unrolling)<a class="headerlink" href="#46-loop-unrolling" title="Permanent link">&para;</a></h2>
+<p>最後に残ったバケツ内の厳密な波形比較（<code>FastWaveCompare</code>）においても、ハードウェアの物理的極限を引き出す最適化が行われる。</p>
+<p>SIMDレジスタ（<code>Vector256&lt;float&gt;</code>）を用いたアキュムレータ処理において、単一の変数に結果を累積し続けると、CPUのパイプラインにおいて「前の演算が終わるまで次の演算が待機する」データ依存性ストールが発生する。
+本システムでは、<code>[GenerateSimdBatchUnroll]</code> というカスタム属性（メタプログラミング）を用いてコンパイル時にループをアンロールし、独立した 4 個のアキュムレータへ交互に命令を発行する。これにより、最新CPUの「アウト・オブ・オーダー実行」が誘発され、レイテンシの壁を越えた理論上の最大スループットが達成される。</p>
+<h2 id="47-references">4.7 参考文献 (References)<a class="headerlink" href="#47-references" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Charikar, M. S. (2002). "Similarity estimation techniques from rounding algorithms". <em>Proceedings of the 34th annual ACM symposium on Theory of computing (STOC '02)</em>.</li>
+<li>Indyk, P., &amp; Motwani, R. (1998). "Approximate nearest neighbors: towards removing the curse of dimensionality". <em>Proceedings of the 30th annual ACM symposium on Theory of computing (STOC '98)</em>.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  ページトップへ戻る
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u30b3\u30d4\u30fc\u3057\u307e\u3057\u305f", "clipboard.copy": "\u30af\u30ea\u30c3\u30d7\u30dc\u30fc\u30c9\u3078\u30b3\u30d4\u30fc", "search.result.more.one": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3082\u30461\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.more.other": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3042\u3068#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.none": "\u4f55\u3082\u898b\u3064\u304b\u308a\u307e\u305b\u3093\u3067\u3057\u305f", "search.result.one": "1\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.other": "#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.placeholder": "\u691c\u7d22\u30ad\u30fc\u30ef\u30fc\u30c9\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044", "search.result.term.missing": "\u691c\u7d22\u306b\u542b\u307e\u308c\u306a\u3044", "select.version": "\u30d0\u30fc\u30b8\u30e7\u30f3\u5207\u308a\u66ff\u3048"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="../../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+      
+    
+  </body>
+</html>
