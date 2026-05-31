@@ -32,8 +32,7 @@
 
 ## 開発・品質保証プロセス
 
-本プロジェクトの意思決定記録やパフォーマンステストの結果は以下を参照してください。
+本プロジェクトの意思決定記録は以下を参照してください。
 
-- **[ADR (Architecture Decision Records)](adr/)**: アーキテクチャの設計決定ログ
-- **[Benchmarks](benchmarks/)**: パフォーマンス検証データ
+- **[ADR (Architecture Decision Records)](https://github.com/bms-atelier-kyokufu/BmsPartTuner/tree/main/docs/adr)**: アーキテクチャの設計決定ログ
 
