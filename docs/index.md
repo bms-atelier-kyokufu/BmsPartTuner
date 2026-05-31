@@ -7,6 +7,8 @@
 
 読者の目的や背景知識に合わせて、2つの主要なドキュメントルートを用意しています。
 
+GitHubレポジトリはこちら: [![GitHub](https://img.shields.io/badge/-GitHub-181717?style=flat-square&logo=github) bms-atelier-kyokufu/BmsPartTuner](https://github.com/bms-atelier-kyokufu/BmsPartTuner)
+
 ---
 
 ## ストーリーで読む「やさしい解説書」
