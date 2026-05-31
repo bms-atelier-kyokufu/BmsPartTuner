@@ -1,7 +1,9 @@
 # BMS Part Tuner 副読本：計算を「賢くサボる」ための数学
 
-$$\chi(G) = \omega(G) \quad \text{and} \quad \mu_k = \mu_{k-1} + \frac{x_k - \mu_{k-1}}{k}$$
-$$\mathcal{O}(M^2 \cdot N^2) \longrightarrow \mathcal{O}(M \log M + N \log N)$$
+$$
+\chi(G) = \omega(G) \quad \text{and} \quad \mu_k = \mu_{k-1} + \frac{x_k - \mu_{k-1}}{k}\\
+\mathcal{O}(M^2 \cdot N^2) \longrightarrow \mathcal{O}(M \log M + N \log N)
+$$
 
 離散数学の教授「えー、任意の有限音響イベント集合 $M$ に対する時間座標 $t$ の量子化において、ユークリッド互除法に基づく最適離散格子 $L$ への射影を行い、競合関係を記述する区間グラフ $G=(V, E)$ の彩色数 $\chi(G)$ がクリーク数 $\omega(G)$ に一致するとき、すなわちグラフ $G$ が完全グラフの補グラフである場合の空間 $\mathcal{O}(1)$ アロケーションフリー・パッキング数理と、確率空間における二乗累積和系列を用いた局所エネルギー評価値を適用することで、計算複雑度をこのように縮退させることが可能となり……」
 
