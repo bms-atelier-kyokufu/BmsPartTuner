@@ -1001,16 +1001,16 @@
 <h1 id="3-lshsimd">第3章 LSHと超並列SIMD演算による高速化数理（実装極限）<a class="headerlink" href="#3-lshsimd" title="Permanent link">&para;</a></h1>
 <p>本章では、数千規模の音声ファイル群に対する総当りの等価性判定において立ちはだかる、<span class="arithmatex">\(O(M^2)\)</span> の計算量爆発を打破するためのアルゴリズム論、およびハードウェアの演算器を極限まで駆動するためのプログラマティックな最適化手法を解説する。
 LSHによる次元削減の数理、浮動小数点演算を <span class="arithmatex">\(O(1)\)</span> の「整数ビット演算」へと射影するSimHash定理、そしてSIMDループアンロールがレイテンシの物理的限界をいかに突破するかを証明する。</p>
-<blockquote>
-<p>[!NOTE]
-<strong>本章における主要な略称・用語</strong></p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>本章における主要な略称・用語</strong></p>
 <ul>
 <li><strong>LSH</strong>: 局所性鋭敏型ハッシュ (Locality-Sensitive Hashing)</li>
 <li><strong>SIMD</strong>: Single Instruction, Multiple Data</li>
 <li><strong>POPCNT</strong>: Population Count (立っているビット数を数える命令)</li>
 <li><strong>XOR</strong>: 排他的論理和</li>
 </ul>
-</blockquote>
+</div>
 <h2 id="31">3.1 次元削減と近傍探索の数理的定式化<a class="headerlink" href="#31" title="Permanent link">&para;</a></h2>
 <p>対象となるすべての音声ファイルの集合を <span class="arithmatex">\(\mathcal{S} = \{ \mathbf{x}_1, \mathbf{x}_2, \dots, \mathbf{x}_M \}\)</span> とする（<span class="arithmatex">\(M\)</span> は数千規模）。各 <span class="arithmatex">\(\mathbf{x}_i \in \mathbb{R}^N\)</span> は高次元の特徴量ベクトルである。</p>
 <h3 id="31-lsh">定義 3.1 (LSHファミリ)<a class="headerlink" href="#31-lsh" title="Permanent link">&para;</a></h3>
@@ -1023,19 +1023,21 @@ LSHによる次元削減の数理、浮動小数点演算を <span class="arithm
 この <span class="arithmatex">\(O(M^2 \cdot N)\)</span> の壁を突破するには、「比較対象を絞り込むこと」と「比較演算そのものを軽量化すること」の2つのアプローチが不可避である。</p>
 <h2 id="33-simhash-proof">3.3 定理の提示：SimHashによるコサイン類似度のビット射影 (Proof)<a class="headerlink" href="#33-simhash-proof" title="Permanent link">&para;</a></h2>
 <p>浮動小数点ベクトル同士の内積（コサイン類似度）計算を、圧倒的に軽量な「整数ビット演算」に射影する数学的ハックを導入する。</p>
-<blockquote>
-<p>[!IMPORTANT]
-<strong>定理 3.1 (CharikarのSimHash定理とランダム超平面)</strong>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p><strong>定理 3.1 (CharikarのSimHash定理とランダム超平面)</strong>
 <span class="arithmatex">\(\mathbb{R}^N\)</span> 空間において、平均が <span class="arithmatex">\(0\)</span> になるように正規化された2つのベクトル <span class="arithmatex">\(\mathbf{x}, \mathbf{y}\)</span> を考える。この空間を原点を通るランダムな超平面で二分し、ベクトルがどちらの側にあるかで <span class="arithmatex">\(0\)</span> または <span class="arithmatex">\(1\)</span> のビットを割り当てる関数 <span class="arithmatex">\(h(\mathbf{v}) = \text{sgn}(\mathbf{v})\)</span> を定義する。
 このとき、2つのベクトルのなす角 <span class="arithmatex">\(\theta\)</span> は、それらの符号ビットが異なる確率に完全に線形比例する。</p>
 <div class="arithmatex">\[\Pr[h(\mathbf{x}) \neq h(\mathbf{y})] = \frac{\theta}{\pi} \quad \cdots (3.2)\]</div>
-<p>[!NOTE]
-<strong>証明の概要と導出</strong></p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>証明の概要と導出</strong></p>
 <p>2つのベクトル <span class="arithmatex">\(\mathbf{x}, \mathbf{y}\)</span> によって張られる2次元平面を考える。原点を通るランダムな超平面は、この2次元平面上ではランダムな直線として現れる。
 この直線が <span class="arithmatex">\(\mathbf{x}\)</span> と <span class="arithmatex">\(\mathbf{y}\)</span> の間を通過する場合にのみ、両者の符号ビット <span class="arithmatex">\(h(\mathbf{x})\)</span> と <span class="arithmatex">\(h(\mathbf{y})\)</span> は異なる値をとるとる。
 全角度は <span class="arithmatex">\(2\pi\)</span> であり、直線がベクトル間を通過する角度の範囲は両側合わせて <span class="arithmatex">\(2\theta\)</span> である。したがって、その確率は <span class="arithmatex">\(\frac{2\theta}{2\pi} = \frac{\theta}{\pi}\)</span> となる。
 コサイン類似度は <span class="arithmatex">\(\cos(\theta)\)</span> であるため、符号ビットの不一致確率（ハミング距離）を測定するだけで、元の浮動小数点空間におけるコサイン類似度を数学的に推定できることが示された。<span class="arithmatex">\(\blacksquare\)</span></p>
-</blockquote>
+</div>
 <h2 id="34-popcnt">3.4 実装への射影：ビットパッキングと POPCNT ハック<a class="headerlink" href="#34-popcnt" title="Permanent link">&para;</a></h2>
 <p>定理 3.1 の強烈な恩恵は、浮動小数点数の重い配列演算を、1つの巨大な整数へのビット詰め込み、**「XOR演算」へ変換できる点にある。これはメモリやCPUサイクルを極限まで切り詰めたファミコン時代のハックに酷似している。</p>
 <h3 id="_1">空間の圧縮（ビットパッキング）<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h3>

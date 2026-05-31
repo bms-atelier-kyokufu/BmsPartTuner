@@ -1101,9 +1101,9 @@
 <h1 id="4">第4章 音響信号の等価性判定とピアソン相関係数<a class="headerlink" href="#4" title="Permanent link">&para;</a></h1>
 <p>本章では、2つの有限長さ離散音響信号が物理的および聴覚的に実質同一であるかを数学的に判定するための基礎理論を展開する。
 また、計算機上で数式を評価する際に不可避となる浮動小数点演算の桁落ちを回避するためのオンラインアルゴリズムの数学的証明と、SIMD命令を用いた実装極限の最適化技術について解説する。</p>
-<blockquote>
-<p>[!NOTE]
-<strong>本章における主要な略称・用語</strong></p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>本章における主要な略称・用語</strong></p>
 <ul>
 <li><strong>SIMD</strong>: Single Instruction, Multiple Data</li>
 <li><strong>AVX</strong>: Advanced Vector Extensions</li>
@@ -1112,7 +1112,7 @@
 <li><strong>スケール・シフト不変性</strong>: 線形変換に対する不変性 (Scale and Shift Invariance)</li>
 <li><strong>DCオフセット</strong>: 直流成分のズレ</li>
 </ul>
-</blockquote>
+</div>
 <h2 id="41">4.1 離散時間信号の類似度空間の定式化<a class="headerlink" href="#41" title="Permanent link">&para;</a></h2>
 <p>音響信号の比較を行うための土台として、信号を内積が定義された計量ベクトル空間（ヒルベルト空間の有限次元の部分空間）上の点として定義する。</p>
 <h3 id="41_1">定義 4.1 (離散時間音響信号ベクトル)<a class="headerlink" href="#41_1" title="Permanent link">&para;</a></h3>
@@ -1146,9 +1146,9 @@
 <p>上記のジレンマを打破し、1パスによるメモリアクセス半減と桁落ちを回避する数学的安定性を両立させるため、本システムでは式を Welford のアルゴリズムに準ずる漸化式へと変形する。</p>
 <p>この変形の本質は、配列全体をメモリに保持する（空間計算量 <span class="arithmatex">\(O(N)\)</span>）のではなく、直前までの状態（平均・分散）と現在の入力値の微小な差分のみを用いて状態を更新していく点にある。これにより空間計算量を <span class="arithmatex">\(O(1)\)</span> に圧縮し、時間計算量 <span class="arithmatex">\(O(N)\)</span> の厳密な1パスを実現する。</p>
 <h3 id="423-41">4.2.3 定理 4.1 とその証明<a class="headerlink" href="#423-41" title="Permanent link">&para;</a></h3>
-<blockquote>
-<p>[!IMPORTANT]
-<strong>定理 4.1</strong>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p><strong>定理 4.1</strong>
 系列の <span class="arithmatex">\(k\)</span> 番目までの標本平均を <span class="arithmatex">\(\bar{x}_k\)</span>、偏差平方和を <span class="arithmatex">\(S_{xx, k}\)</span> とする。
 初期条件を <span class="arithmatex">\(\bar{x}_0 = 0, S_{xx, 0} = 0\)</span> としたとき、<span class="arithmatex">\(k \ge 1\)</span> について次式が成立する。</p>
 <ol>
@@ -1157,8 +1157,10 @@
 <li><strong>偏差平方和の漸化式</strong>:
    $<span class="arithmatex">\(S_{xx, k} = S_{xx, k-1} + (x_k - \bar{x}_{k-1})(x_k - \bar{x}_k) \quad \cdots (4.5)\)</span>$</li>
 </ol>
-<p>[!NOTE]
-<strong>証明</strong></p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>証明</strong></p>
 <ol>
 <li>
 <p>平均の漸化式について：
@@ -1174,7 +1176,7 @@
    これにより (4.5) が示された。共分散 <span class="arithmatex">\(S_{xy, k}\)</span> についても同様に <span class="arithmatex">\(S_{xy, k} = S_{xy, k-1} + (x_k - \bar{x}_{k-1})(y_k - \bar{y}_k)\)</span> が導かれる。<span class="arithmatex">\(\blacksquare\)</span></p>
 </li>
 </ol>
-</blockquote>
+</div>
 <h3 id="424">4.2.4 実装への射影：オーダー削減と疑似コード<a class="headerlink" href="#424" title="Permanent link">&para;</a></h3>
 <p>C#における <code>PearsonAccumulator</code> は、この定理を定数空間 <span class="arithmatex">\(O(1)\)</span> で実行するアキュムレータとして実装されている。</p>
 <div class="language-csharp highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1">// 【疑似コード】PearsonAccumulator による O(N)時間・O(1)空間アルゴリズム</span>

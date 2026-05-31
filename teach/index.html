@@ -1310,16 +1310,16 @@
 
 <h1 id="0">第0章 技術解説書インデックスおよび理論概要<a class="headerlink" href="#0" title="Permanent link">&para;</a></h1>
 <p>本インデックスは、<code>BMS Part Tuner</code> のコアロジックを構成する音響信号処理、離散数学、および時間軸シミュレーションの理論的背景について、大学レベルの応用数学・信号処理理論の枠組みに則り体系化した技術解説書の全体像を示すものである。</p>
-<blockquote>
-<p>[!NOTE]
-<strong>謝辞</strong>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>謝辞</strong>
 本システムにおける複雑なアルゴリズムの導出、ならびにこれらの高度な数理モデルの構築および実装の大部分は、<strong>Google AI Gemini 3.0 Pro</strong> および <strong>Gemini 3.5 Flash</strong> の膨大な計算力と論理的推論能力を多大に駆使することによって実現されました。開発者個人の力だけでは到底到達し得なかった領域であり、この場を借りて深い敬意と謝意を表します。</p>
-</blockquote>
+</div>
 <h2 id="01">0.1 ターゲット読者および前提知識<a class="headerlink" href="#01" title="Permanent link">&para;</a></h2>
 <p>本ドキュメント群は、単なるアプリケーションの使用方法の提示にとどまらず、「極限の処理性能がいかにして数理的・アルゴリズム的に導出されるか」に関心を持つアルゴリズムエンジニア、コンピュータサイエンスの研究者、およびハードウェア最適化のスペシャリストを対象とする。</p>
-<blockquote>
-<p>[!IMPORTANT]
-<strong>要求される前提知識</strong>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p><strong>要求される前提知識</strong>
 本解説書を読み進めるにあたり、以下の数学・アルゴリズム理論に関する基礎知識を前提とする。</p>
 <ul>
 <li><strong>線形代数学・微積分学</strong>: ベクトル演算、連続空間と離散空間の射影論。</li>
@@ -1327,8 +1327,10 @@
 <li><strong>計算量理論</strong>: <span class="arithmatex">\(\mathcal{O}\)</span>（ランダウの記号）を用いた時間・空間計算量の評価。</li>
 <li><strong>信号処理</strong>: フーリエ変換（FFT）、窓関数、畳み込み定理の基礎。</li>
 </ul>
-<p>[!NOTE]
-<strong>本書における主要な略称・用語</strong></p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>本書における主要な略称・用語</strong></p>
 <ul>
 <li><strong>GC</strong>: ガベージコレクション (Garbage Collection)</li>
 <li><strong>DOD</strong>: データ指向設計 (Data-Oriented Design)</li>
@@ -1337,7 +1339,7 @@
 <li><strong>JIT</strong>: Just-In-Time</li>
 <li><strong>Sweep-Line</strong>: 走査線アルゴリズム</li>
 </ul>
-</blockquote>
+</div>
 <h2 id="02-notation">0.2 本書で使用する数学記号（Notation）<a class="headerlink" href="#02-notation" title="Permanent link">&para;</a></h2>
 <p>本書の各章にわたり共通して使用される主要な数学記号とその定義を以下に示す。</p>
 <ul>
@@ -1446,6 +1448,7 @@
 <div class="arithmatex">\[
 \begin{aligned}
 \text{時間計算量} &amp;: \mathcal{O}(M \cdot N \log N + M \alpha(M) + L \log L) \\
+                 &amp;\approx \mathcal{O}(M \cdot N \log N) \\
 \text{空間計算量} &amp;: \mathcal{O}(1)
 \end{aligned}
 \]</div>

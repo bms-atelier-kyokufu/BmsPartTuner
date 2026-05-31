@@ -1068,13 +1068,13 @@
 
 <h1 id="1-bmsonbms">第1章 bmsonからBMSへの変換における離散格子量子化と彩色パッキング数理<a class="headerlink" href="#1-bmsonbms" title="Permanent link">&para;</a></h1>
 <p>本章では、オブジェクト指向型かつ制限のないタイムライン構造を持つ <code>bmson</code> フォーマットから、古典的でありながら強固な格子の制約構造を持つ <code>BMS</code> フォーマットへのダウンコンバートを実行する際、時間軸およびオブジェクト配置において発生する誤差を数学的に最小化する最適化理論を提案する。</p>
-<blockquote>
-<p>[!NOTE]
-<strong>本章における主要な略称・用語</strong>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>本章における主要な略称・用語</strong>
 - <strong>GC</strong>: ガベージコレクション (Garbage Collection)
 - <strong>LCM</strong>: 最小公倍数 (Least Common Multiple)
 - <strong>Sweep-Line</strong>: 走査線アルゴリズム</p>
-</blockquote>
+</div>
 <h2 id="11">1.1 変換問題の数理的定式化と形式の定義<a class="headerlink" href="#11" title="Permanent link">&para;</a></h2>
 <p>bmsonとBMSは、データを配置する空間の数学的定義が根底から異なる。</p>
 <h3 id="11-bmson">定義 1.1 (bmson のデータ空間)<a class="headerlink" href="#11-bmson" title="Permanent link">&para;</a></h3>
@@ -1096,18 +1096,20 @@ BMS上の任意の音符オブジェクトは、ある整数分割数（解像�
 <p>多重発音のチャンネル競合を回避するためには、「ノートが現在どのチャンネルを占有しているか」を追跡する状態管理が必要となる。
 素朴な実装では、ノートの処理ごとに <code>List&lt;ActiveNote&gt;</code> のようなオブジェクトをヒープ上に動的なインスタンス生成し、走査のたびに破棄することになる。しかし、総ノート数 <span class="arithmatex">\(M &gt; 10^5\)</span> の巨大譜面においてこの操作を行うと、数千万のメモリアロケーションとGCが誘発され、メモリ爆発と致命的な実行ストールを引き起こす。</p>
 <h2 id="13-proof">1.3 定理の提示と数学的証明 (Proof)<a class="headerlink" href="#13-proof" title="Permanent link">&para;</a></h2>
-<blockquote>
-<p>[!IMPORTANT]
-<strong>最適分割数 <span class="arithmatex">\(D^*\)</span> の定数時間探索</strong>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p><strong>最適分割数 <span class="arithmatex">\(D^*\)</span> の定数時間探索</strong>
 各小節におけるノートの相対位置集合を <span class="arithmatex">\(P = \{ p_1, p_2, \dots, p_k \} \subset [0, 1)\)</span> とする。
 許容誤差を <span class="arithmatex">\(\epsilon &gt; 0\)</span>（例えば <span class="arithmatex">\(10^{-6}\)</span>）としたとき、最適分割数 <span class="arithmatex">\(D^*\)</span> は以下の最適化問題の解である。</p>
 <div class="arithmatex">\[D^* = \min \left\{ D \in \mathcal{D}_{\text{valid}} \ \middle| \ \max_{p \in P} \left( \min_{s} \left| p - \frac{s}{D} \right| \right) \le \epsilon \right\} \quad \cdots (1.3)\]</div>
-<p>[!NOTE]
-<strong>導出と証明</strong></p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>導出と証明</strong></p>
 <p><span class="arithmatex">\(\mathcal{D}_{\text{valid}}\)</span> はBMS規格で許容される分割数の有限集合（通常は <span class="arithmatex">\(1 \le D \le 192\)</span> など）である。集合 <span class="arithmatex">\(P\)</span> の要素数 <span class="arithmatex">\(k\)</span> に対して、特定の <span class="arithmatex">\(D\)</span> が条件を満たすかの判定は <span class="arithmatex">\(O(k)\)</span> で可能である。
 素朴な探索では全 <span class="arithmatex">\(D\)</span> を試すため <span class="arithmatex">\(O(|\mathcal{D}_{\text{valid}}| \cdot k)\)</span> となるが、実用上は <span class="arithmatex">\(p_i\)</span> が有理数 <span class="arithmatex">\(q_i / r_i\)</span> として表される音楽理論上の制約に基づく性質を利用する。各 <span class="arithmatex">\(p_i\)</span> の既約分数の分母の集合を <span class="arithmatex">\(R = \{r_1, \dots, r_k\}\)</span> とすると、最適分割数 <span class="arithmatex">\(D^*\)</span> は <span class="arithmatex">\(R\)</span> の LCM に一致するか、その倍数となる。
 よって、ユークリッドの互除法を <span class="arithmatex">\(k-1\)</span> 回適用することで、時間計算量 <span class="arithmatex">\(O(k \log(\max R))\)</span> という実質的な定数時間で一意に <span class="arithmatex">\(D^*\)</span> を導出できる。<span class="arithmatex">\(\blacksquare\)</span></p>
-</blockquote>
+</div>
 <h3 id="132">1.3.2 グラフ彩色問題への射影と区間干渉の定義<a class="headerlink" href="#132" title="Permanent link">&para;</a></h3>
 <p>多重発音のチャンネル割当は、離散数学における「区間グラフの彩色問題」に射影される。</p>
 <p>各ノート <span class="arithmatex">\(i\)</span> の発音区間を、開始時刻 <span class="arithmatex">\(t_i\)</span> と波形長 <span class="arithmatex">\(L_i\)</span> を用いた半開区間 <span class="arithmatex">\(I_i = [t_i, t_i + L_i)\)</span> とする。
