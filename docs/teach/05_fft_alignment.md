@@ -25,7 +25,7 @@ $$R_{xy}(\tau) = \sum_{n=0}^{N-1} x[n] y[n + \tau] \quad \cdots (5.1)$$
 
 $$\tau_{\text{opt}} = \arg\max_{\tau} R_{xy}(\tau) \quad \cdots (5.2)$$
 
-## 5.2 課題：時間領域探索における計算量爆発のジレンマ (Why)
+## 5.2 課題：時間領域探索における計算量爆発のジレンマ
 
 前章のピアソン相関係数探索（式4.6）において、局所的な微小ズレ $\tau \in [-\tau_{\text{max}}, \tau_{\text{max}}]$ をSIMD命令で探索する手法を解説した。しかし、これには致命的な限界が存在する。
 
@@ -36,7 +36,7 @@ $$\tau_{\text{opt}} = \arg\max_{\tau} R_{xy}(\tau) \quad \cdots (5.2)$$
 
 この計算量 $O(N^2)$ の壁を突破し、どのようなズレであっても実用時間内にアライメントを完了させるためには、演算の空間（ドメイン）を時間から周波数へと写像する数学的変形が不可避となる。
 
-## 5.3 定理の提示と畳み込み定理による証明 (Proof)
+## 5.3 定理の提示と畳み込み定理による証明
 
 計算量を削減するため、信号を複素数平面上の周波数領域へと射影する。
 
@@ -140,8 +140,7 @@ $$N \ge \text{Length}(x) + \text{Length}(y) - 1 \quad \cdots (5.6)$$
 
 `FftAlignmentEngine.cs` において、入力を必ずこのサイズ $N$（通常は更に高速化のため $2$ の冪乗）にまで $0$ で埋める「ゼロパディング」という前処理が行われているのは、この数学的境界条件を保証し、計算誤差を論理的にゼロにするためである。
 
-## 5.6 参考文献 (References)
+## 5.6 参考文献
 
 - Bracewell, R. N. (1986). _The Fourier Transform and Its Applications_. McGraw-Hill.
 - Cooley, J. W., & Tukey, J. W. (1965). "An algorithm for the machine calculation of complex Fourier series". _Mathematics of Computation_, 19(90), 297-301.
-

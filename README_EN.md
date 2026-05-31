@@ -56,7 +56,7 @@ The algorithmic optimization details (Cascade Classifiers, SIMD, Lock-free Anti-
 
 ## Requirements
 
-- **OS**: Windows 10 / 11
+- **OS**: Windows 11
 - **RAM**: 12GB+ recommended (with at least 3GB of free space)
 - **CPU**: CPU with AVX2 instruction set support (Works without it, but performance will degrade)
 - **Runtime**: .NET 10.0 or later
