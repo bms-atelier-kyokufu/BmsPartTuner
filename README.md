@@ -27,7 +27,7 @@ AIを用いた楽曲制作やステム分離後の譜面構築プロセスで発
     - OS: Windows 11
     - ランタイム: [.NET 10.0 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/10.0) 以降がインストールされている必要があります。
 2. **ダウンロード**:
-    - [Releasesページ](https://github.com/bms-atelier-kyokufu/BmsPartTuner/releases) より、最新のZIPファイルをダウンロードします。
+    - [Releasesページ](https://github.com/bms-atelier-kyokufu/BmsPartTuner/releases/latest) より、最新のZIPファイルをダウンロードします。
 3. **実行**:
     - ダウンロードしたZIPファイルを任意のフォルダに展開し、`BmsPartTuner.exe` を実行してください。インストール不要でそのまま動作します。
 

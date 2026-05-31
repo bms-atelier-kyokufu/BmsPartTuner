@@ -27,7 +27,7 @@ By employing pure computer science and mathematical logic, it radically reduces 
     - OS: Windows 11
     - Runtime: [.NET 10.0 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/10.0) or later.
 2. **Download**:
-    - Grab the latest ZIP archive from the [Releases page](https://github.com/bms-atelier-kyokufu/BmsPartTuner/releases).
+    - Grab the latest ZIP archive from the [Releases page](https://github.com/bms-atelier-kyokufu/BmsPartTuner/releases/latest).
 3. **Run**:
     - Extract the ZIP file to any folder and launch `BmsPartTuner.exe`. No installation required!
 
