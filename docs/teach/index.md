@@ -97,6 +97,7 @@ $$
 $$
 \begin{aligned}
 \text{時間計算量} &: \mathcal{O}(M \cdot N \log N + M \alpha(M) + L \log L) \\
+                 &\approx \mathcal{O}(M \cdot N \log N) \\
 \text{空間計算量} &: \mathcal{O}(1)
 \end{aligned}
 $$
