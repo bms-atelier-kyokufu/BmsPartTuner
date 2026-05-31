@@ -23,7 +23,7 @@ AIを用いた楽曲制作やステム分離後の譜面構築プロセスで発
 ## インストール方法
 
 1. **必須要件の確認**:
-    - OS: Windows 10 / 11
+    - OS: Windows 11
     - ランタイム: [.NET 10.0 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/10.0) 以降がインストールされている必要があります。
 2. **ダウンロード**:
     - [Releasesページ](https://github.com/bms-atelier-kyokufu/BmsPartTuner/releases) より、最新のZIPファイルをダウンロードします。
@@ -74,4 +74,3 @@ BMS Part Tunerが数万個の音声ファイルを瞬時に処理できる最適
 
 _私たちは、クリエイターを単純作業から解放し、楽曲のクオリティアップという本来の創造的な作業に集中してもらうことを目指しています。
 「動作が軽く、管理しやすいデータ」を作ることは、プレイヤーへの配慮であると同時に、作品の完成度を高める重要な要素です。BMS Part Tunerは、その品質を支えるための信頼できるパートナーとなります。_
-

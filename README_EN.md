@@ -11,7 +11,7 @@
 
 ## About
 
-**BMS Part Tuner** is a high-performance desktop application designed to instantly merge and optimize duplicate audio stems within BMS and BMSON chart formats. 
+**BMS Part Tuner** is a high-performance desktop application designed to instantly merge and optimize duplicate audio stems within BMS and BMSON chart formats.
 By employing pure computer science and mathematical logic, it radically reduces the bloated file sizes typically generated during AI-driven music production or stem separation workflows. This allows creators to focus on their creative vision rather than managing heavy, unoptimized data.
 
 ## Features
@@ -23,12 +23,12 @@ By employing pure computer science and mathematical logic, it radically reduces 
 ## Installation
 
 1. **Prerequisites**:
-   - OS: Windows 10 / 11
-   - Runtime: [.NET 10.0 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/10.0) or later.
+    - OS: Windows 11
+    - Runtime: [.NET 10.0 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/10.0) or later.
 2. **Download**:
-   - Grab the latest ZIP archive from the [Releases page](https://github.com/bms-atelier-kyokufu/BmsPartTuner/releases).
+    - Grab the latest ZIP archive from the [Releases page](https://github.com/bms-atelier-kyokufu/BmsPartTuner/releases).
 3. **Run**:
-   - Extract the ZIP file to any folder and launch `BmsPartTuner.exe`. No installation required!
+    - Extract the ZIP file to any folder and launch `BmsPartTuner.exe`. No installation required!
 
 ## Usage
 
@@ -72,5 +72,5 @@ Bug reports and feature requests are welcome via our GitHub [Issues](https://git
 
 ---
 
-*Our goal is to free creators from tedious, repetitive tasks so they can focus on what truly matters: enhancing the quality of their music.
-Producing data that is lightweight and easy to manage is not just a courtesy to players; it is a crucial element that elevates the overall perfection of the work. We hope BMS Part Tuner serves as a reliable partner in supporting that quality.*
+_Our goal is to free creators from tedious, repetitive tasks so they can focus on what truly matters: enhancing the quality of their music.
+Producing data that is lightweight and easy to manage is not just a courtesy to players; it is a crucial element that elevates the overall perfection of the work. We hope BMS Part Tuner serves as a reliable partner in supporting that quality._
