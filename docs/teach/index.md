@@ -58,13 +58,13 @@
 
 | 処理フェーズ               | 素朴な実装の計算量                                                      | 本システムの計算量                                                           | 適用した数理・アルゴリズム (該当章)                         |
 | :------------------------- | :---------------------------------------------------------------------- | :--------------------------------------------------------------------------- | :---------------------------------------------------------- |
-| **無音トリミング**         | $\mathcal{O}(N \cdot W)$                                                | $\mathcal{O}(N)$                                                             | 局所エネルギーの累積和系列 (第3章)                          |
-| **ペアワイズ比較空間**     | $\mathcal{O}(M^2)$                                                      | $\mathcal{O}(M)$                                                             | LSH / SimHash (第6章)                                       |
-| **微小時間ズレ補正**       | $\mathcal{O}(N^2)$                                                      | $\mathcal{O}(N \log N)$                                                      | 畳み込み定理とFFT (第2章)                                   |
-| **同値類の構築**           | $\mathcal{O}(M^2)$                                                      | $\mathcal{O}(M \alpha(M))$                                                   | 経路圧縮を伴う Union-Find (第4章)                           |
-| **プレイアビリティ検証**   | $\mathcal{O}(L^2)$                                                      | $\mathcal{O}(L \log L)$                                                      | Sweep-Line アルゴリズム (第5章)                             |
-| **逆変換：最適格子量子化** | $\mathcal{O}(k \cdot \vert \mathcal{D}_{\text{valid}} \vert)$           | $\mathcal{O}(k \log(\max R))$                                                | ユークリッドの互除法による動的解像度決定 (第7章)            |
-| **逆変換：チャンネル彩色** | $\frac{\mathcal{O}(M^2) \text{ [時間]}}{\mathcal{O}(M) \text{ [空間]}}$ | $\frac{\mathcal{O}(M \log M) \text{ [時間]}}{\mathcal{O}(1) \text{ [空間]}}$ | 区間グラフの貪欲彩色 ＆ Array-Backed Pool (第7章)           |
+| **無音トリミング**         | $\mathcal{O}(N \cdot W)$                                                | $\mathcal{O}(N)$                                                             | 局所エネルギーの累積和系列 (第2章)                          |
+| **ペアワイズ比較空間**     | $\mathcal{O}(M^2)$                                                      | $\mathcal{O}(M)$                                                             | LSH / SimHash (第3章)                                       |
+| **微小時間ズレ補正**       | $\mathcal{O}(N^2)$                                                      | $\mathcal{O}(N \log N)$                                                      | 畳み込み定理とFFT (第5章)                                   |
+| **同値類の構築**           | $\mathcal{O}(M^2)$                                                      | $\mathcal{O}(M \alpha(M))$                                                   | 経路圧縮を伴う Union-Find (第6章)                           |
+| **プレイアビリティ検証**   | $\mathcal{O}(L^2)$                                                      | $\mathcal{O}(L \log L)$                                                      | Sweep-Line アルゴリズム (第7章)                             |
+| **逆変換：最適格子量子化** | $\mathcal{O}(k \cdot \vert \mathcal{D}_{\text{valid}} \vert)$           | $\mathcal{O}(k \log(\max R))$                                                | ユークリッドの互除法による動的解像度決定 (第1章)            |
+| **逆変換：チャンネル彩色** | $\frac{\mathcal{O}(M^2) \text{ [時間]}}{\mathcal{O}(M) \text{ [空間]}}$ | $\frac{\mathcal{O}(M \log M) \text{ [時間]}}{\mathcal{O}(1) \text{ [空間]}}$ | 区間グラフの貪欲彩色 ＆ Array-Backed Pool (第1章)           |
 | **並列I/Oと波形解析**      | $\mathcal{O}(M \cdot N) \text{ [空間]}$                                 | $\mathcal{O}(P \cdot N) \text{ [空間]}$                                      | `ArrayPool` と `Span<T>` によるゼロ・アロケーション (第8章) |
 
 ※表内の各変数の定義：
@@ -103,10 +103,10 @@ $$
 
 - **削減のメカニズム**:
     - **LSH および SimHash ハック**: 音声の総当り比較空間を $\mathcal{O}(M^2) \to \mathcal{O}(M)$ の線形オーダーへと確率的に圧縮する。ハミング距離は `XOR` および `POPCNT` 命令のわずか 2 クロックで算出される（第6章）。
-    - **FFT**: 2波形間のアライメント積和演算を $\mathcal{O}(N^2) \to \mathcal{O}(N \log N)$ へと削減する（第2章）。
-    - **Union-Find**: 抽出された重複ペアから同値群をまとめる処理を、$\mathcal{O}(M^2) \to \mathcal{O}(M \alpha(M))$ の実質的な線形時間で完了させる（第4章）。
-    - **Sweep-Line**: プレイフィールを完全保存する区間衝突検証、および逆変換時の多重発音彩色パッキングを、それぞれ $\mathcal{O}(L \log L)$ または $\mathcal{O}(M \log M)$ に抑制する（第5章、第7章）。
-    - **DOD / Array-Backed Pool**: チャンネル割当の状態管理を、動的アロケーションを廃した定数サイズのフラットな配列ポインタ操作に射影し、空間計算量を実質定数 $\mathcal{O}(1)$ まで圧縮。GCストールを物理的に排除する（第7章）。
+    - **FFT**: 2波形間のアライメント積和演算を $\mathcal{O}(N^2) \to \mathcal{O}(N \log N)$ へと削減する（第5章）。
+    - **Union-Find**: 抽出された重複ペアから同値群をまとめる処理を、$\mathcal{O}(M^2) \to \mathcal{O}(M \alpha(M))$ の実質的な線形時間で完了させる（第6章）。
+    - **Sweep-Line**: プレイフィールを完全保存する区間衝突検証、および逆変換時の多重発音彩色パッキングを、それぞれ $\mathcal{O}(L \log L)$ または $\mathcal{O}(M \log M)$ に抑制する（第7章、第1章）。
+    - **DOD / Array-Backed Pool**: チャンネル割当の状態管理を、動的アロケーションを廃した定数サイズのフラットな配列ポインタ操作に射影し、空間計算量を実質定数 $\mathcal{O}(1)$ まで圧縮。GCストールを物理的に排除する（第1章）。
 
 この直交するすべての数理の組み合わせ（ $\mathcal{O}(M^2 \cdot N^2 + L^2) \Longrightarrow \mathcal{O}(M \cdot N \log N + M \alpha(M) + L \log L)$ ）こそが、数時間におよぶ力技のバッチ処理をわずか数十秒のバックグラウンドタスクへと昇華させる「異次元のパフォーマンス」の真の論理的根拠である。
 
@@ -117,57 +117,80 @@ $$
 ```mermaid
 flowchart TB
     %% 1. グローバル起点
-    A["入力: 未最適化のBMS / bmson と音声ファイル"]
+    A["入力: 未最適化のBMS / bmson<br>と音声ファイル"]
 
     %% 2. 前処理フェーズ (bmsonの場合のみ)
     subgraph Phase4 ["前処理: 逆写像と格子・チャンネルパッキング"]
         direction TB
-        I("第7章: ユークリッド互除法による最適格子量子化")
-        J("第7章: 区間グラフ彩色 ＆ Array-Backed Pool によるGCフリーパッキング")
+        I("第1章: <br>ユークリッド互除法<br>による最適格子量子化")
+        J("第1章: <br>区間グラフ彩色 <br>＆<br>Array-Backed Pool <br>によるGCフリーパッキング")
         I --> J
     end
 
-    %% 3. 最適化パイプラインの定義
-    subgraph Phase1 ["フェーズ1: 信号の正規化と特徴抽出"]
+    %% 3. 並列実行・メモリプール基盤
+    subgraph Platform ["共通実行基盤: 並列処理とゼロ・アロケーションメモリ空間"]
         direction TB
-        B("第3章: 無音トリミングと短時間振幅包絡線")
-        C("第6章: LSH / SimHashによる特徴パッキング")
-        B --> C
+        K("第8章: <br>アムダールの法則による<br>タスク並列化 (Parallel.ForEach)")
+        L("第8章: <br>ArrayPool <br>＆ Span による<br>LOH断片化防止と<br>空間 O(1) 圧縮")
+        K <--> L
+
+        %% 4. 最適化パイプラインの定義 (基盤上で実行される)
+        subgraph Phase1 ["フェーズ1: 信号の正規化と特徴抽出"]
+            direction TB
+            B("第2章:<br> 無音トリミングと<br>短時間振幅包絡線")
+            C("第3章:<br> LSH /<br> SimHashによる<br>特徴パッキング")
+            B --> C
+        end
+
+        subgraph Phase2 ["フェーズ2: 並列比較と同値関係の抽出"]
+            direction TB
+            D("第4章: <br>SIMD超並列による<br>ピアソン相関係数")
+            E("第5章: <br>FFTアライメントによる<br>位相補正")
+            D --> E
+        end
+
+        subgraph Phase3 ["フェーズ3: グラフ縮約と論理検証"]
+            direction TB
+            F("第6章: <br>Union-Findによる<br>同値類グラフの構築")
+            G("第7章: <br>Sweep-Lineによる<br>プレイアビリティ<br>等価性証明")
+            F --> G
+        end
+
+        %% 内部ノードを直接繋ぐことでメインの縦軸（体幹）を形成
+        L -->|"バッファ借用 & <br>並列実行"| B
+        C -->|"ハッシュバケツ分割 & POPCNT比較"| D
+        E -->|"高相関ペアの抽出"| F
     end
 
-    subgraph Phase2 ["フェーズ2: 並列比較と同値関係の抽出"]
-        direction TB
-        D("第1章: SIMD超並列によるピアソン相関係数")
-        E("第2章: FFTアライメントによる位相補正")
-        D --> E
-    end
+    %% 5. フローの結合と合流ノード
+    MergeNode{"フォーマット共通化<br>(BMS統一)"}
 
-    subgraph Phase3 ["フェーズ3: グラフ縮約と論理検証"]
-        direction TB
-        F("第4章: Union-Findによる同値類グラフの構築")
-        G("第5章: Sweep-Lineによるプレイアビリティ等価性証明")
-        F --> G
-    end
-
-    %% 4. フローの結合
     A -->|"bmsonの場合"| I
-    A -->|"BMSの場合"| B
-    J -->|"ダウンコンバート済BMS"| B
+    A -->|"BMSの場合"| MergeNode
+    J -->|"ダウンコンバート済BMS"| MergeNode
 
-    C -->|"ハッシュバケツ分割 & POPCNT比較"| D
-    E -->|"高相関ペアの抽出"| F
+    MergeNode -->|"統合済ファイルリスト"| K
 
-    H["出力: 最適化済BMS と 統合音声 (代表元)"]
+    H["出力: 最適化済BMS と<br>統合音声 (代表元)"]
     G -->|"プレイアビリティ等価性確認済"| H
 
-    %% 5. 非類似・除外フロー (終端ノード)
-    Z["出力: 統合除外 (独立したWAVとしてそのまま保持)"]
-    C -.->|"ハミング距離が閾値超過"| Z
-    D -.->|"相関係数が閾値未満"| Z
-    E -.->|"アライメント後相関が閾値未満"| Z
-    G -.->|"同時発音による干渉検出"| Z
+    %% 6. 非類似・除外フロー (横へ逸れる分岐)
+    Z1["出力: 統合除外 (WAV保持)"]
+    Z2["出力: 統合除外 (WAV保持)"]
+    Z3["出力: 統合除外 (WAV保持)"]
+    Z4["出力: 統合除外 (WAV保持)"]
 
-    %% 6. スタイリング
+    C -.->|"ハミング距離超過"| Z1
+    D -.->|"相関係数未満"| Z2
+    E -.->|"アライメント後相関未満"| Z3
+    G -.->|"同時発音干渉"| Z4
+
+    style Z1 fill:#fafafa,stroke:#9e9e9e,stroke-dasharray: 5 5
+    style Z2 fill:#fafafa,stroke:#9e9e9e,stroke-dasharray: 5 5
+    style Z3 fill:#fafafa,stroke:#9e9e9e,stroke-dasharray: 5 5
+    style Z4 fill:#fafafa,stroke:#9e9e9e,stroke-dasharray: 5 5
+
+    %% 7. スタイリング
     style B fill:#e1f5fe,stroke:#01579b,stroke-width:2px
     style C fill:#e1f5fe,stroke:#01579b,stroke-width:2px
     style D fill:#e8f5e9,stroke:#1b5e20,stroke-width:2px
@@ -176,48 +199,50 @@ flowchart TB
     style G fill:#fff3e0,stroke:#e65100,stroke-width:2px
     style I fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
     style J fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    style K fill:#eceff1,stroke:#37474f,stroke-width:2px
+    style L fill:#eceff1,stroke:#37474f,stroke-width:2px
 ```
 
-## 0.5 理論と実装の対応マップ（Theory-to-Code Mapping）
+## 0.5 理論と実装の対応マップ
 
 抽象的な数学理論が、本プロジェクトの実際のコードベースにおいてどこに実装されているかを示す。ドキュメントを読み進めながら実際のソースコードを参照することで、理論と実践のギャップを埋めることができる。
 
 | 解説章    | 数学的理論 / アルゴリズム                   | 実装されている主要クラスとファイルパス                                           |
 | :-------- | :------------------------------------------ | :------------------------------------------------------------------------------- |
-| **第1章** | Welfordのオンライン漸化式、ピアソン相関係数 | `PearsonAccumulator` <br> Core/Audio/PearsonAccumulator.cs                       |
-| **第2章** | 畳み込み定理、高速フーリエ変換 (FFT)        | `FftAlignmentEngine` <br> Core/Audio/FftAlignmentEngine.cs                       |
-| **第3章** | 二乗エネルギーの累積和系列 (Prefix Sum)     | `AudioFeatureExtractor` <br> Core/Audio/AudioFeatureExtractor.cs                 |
-| **第4章** | 経路圧縮を伴う Union-Find、同値類           | `UnionFind` <br> Core/Optimization/UnionFind.cs                                  |
-| **第5章** | Sweep-Line アルゴリズム                     | `SimulationEngine` <br> Core/Optimization/SimulationEngine.cs                    |
-| **第6章** | LSH, SimHash                                | `FastWaveCompare` <br> Core/Audio/FastWaveCompare.cs                             |
-| **第7章** | ユークリッド互除法、区間グラフ彩色          | `BmsScoreGenerator` <br> Infrastructure/Bms/Bmson/BmsScoreGenerator.cs           |
+| **第1章** | ユークリッド互除法、区間グラフ彩色          | `BmsScoreGenerator` <br> Infrastructure/Bms/Bmson/BmsScoreGenerator.cs           |
+| **第2章** | 二乗エネルギーの累積和系列 (Prefix Sum)     | `AudioFeatureExtractor` <br> Core/Audio/AudioFeatureExtractor.cs                 |
+| **第3章** | LSH, SimHash                                | `FastWaveCompare` <br> Core/Audio/FastWaveCompare.cs                             |
+| **第4章** | Welfordのオンライン漸化式、ピアソン相関係数 | `PearsonAccumulator` <br> Core/Audio/PearsonAccumulator.cs                       |
+| **第5章** | 畳み込み定理、高速フーリエ変換 (FFT)        | `FftAlignmentEngine` <br> Core/Audio/FftAlignmentEngine.cs                       |
+| **第6章** | 経路圧縮を伴う Union-Find、同値類           | `UnionFind` <br> Core/Optimization/UnionFind.cs                                  |
+| **第7章** | Sweep-Line アルゴリズム                     | `SimulationEngine` <br> Core/Optimization/SimulationEngine.cs                    |
 | **第8章** | アムダールの法則、LOH、ゼロ・アロケーション | `ParallelAudioComparisonEngine` <br> Core/Audio/ParallelAudioComparisonEngine.cs |
 
 ## 0.6 各章の構成と解説対象の数理
 
 アーキテクチャの各コンポーネントを支える厳密な数学的証明と実装への射影について、詳細は以下の各章を参照されたい。
 
-- ### [第1章：音響信号の等価性判定とピアソン相関係数](01_audio_equivalence_and_pearson.md)
-    - **数理トピック**: 浮動小数点演算の桁落ちを防ぐ Welford のアルゴリズム（1パス漸化式計算）と、相関係数の数理的定義。
-    - **実装への射影**: `PearsonAccumulator` における定数空間 $\mathcal{O}(1)$ での逐次オンライン累積演算。
-- ### [第2章：周波数領域における時間アライメント](02_fft_alignment.md)
-    - **数理トピック**: 時間領域の $\mathcal{O}(N^2)$ 探索を、畳み込み定理を用いて周波数領域の $\mathcal{O}(N \log N)$ へと射影する数学的証明。
-    - **実装への射影**: `FftAlignmentEngine` でのゼロパディング境界条件処理と高速相互相関。
-- ### [第3章：短時間振幅包絡線と無音トリミングの数理](03_silence_trimming.md)
-    - **数理トピック**: ゼロクロス点での誤検知やポップノイズを防ぎつつ、二乗エネルギー累積和系列を用いて任意の窓幅を $\mathcal{O}(1)$ で評価する定数時間局所エネルギー計算。
-    - **実装への射影**: `AudioFeatureExtractor` における平方根回避の二乗比較最適化。
-- ### [第4章：Union-Find グラフ理論による音声定義の同値類分割](04_union_find.md)
-    - **数理トピック**: 類似関係の推移律の破れを「連結成分」として再定義し、経路圧縮とランク結合を用いてアッカーマン関数の逆関数 $\alpha(M)$ で同値類を構築する証明。
-    - **実装への射影**: `UnionFind` クラスでのオブジェクトインスタンス生成を排除した、高速フラットポインタ配列。
-- ### [第5章：時間軸シミュレーションエンジンとプレイアビリティ保存](05_simulation_engine.md)
-    - **数理トピック**: 単なる静的置換が招くコムフィルタ効果や同時発音数の限界を証明。Sweep-Lineを用いて、複雑な発音干渉を $\mathcal{O}(L \log L)$ で精密にシミュレート。
-    - **実装への射影**: `SimulationEngine` による最適化安全性検証。
-- ### [第6章：LSHと超並列SIMD演算による高速化数理（実装極限）](06_lsh_and_simd_limits.md)
-    - **数理トピック**: SimHash定理に基づき、数千次元の浮動小数点特徴量を単一の 64-bit 整数に詰め込み、近似相関距離を `XOR` ＋ `POPCNT` のハードウェア命令（$\mathcal{O}(1)$）に射影する離散代数。
-    - **実装への射影**: `FastWaveCompare` での `Vector256` 命令と、パイプラインハザードを防止する自動コンパイルループアンロール。
-- ### [第7章：bmsonからBMSへの逆変換における離散格子量子化と彩色パッキング数理](07_bmson_to_bms_conversion.md)
+- ### [第1章：bmsonからBMSへの逆変換における離散格子量子化と彩色パッキング数理](01_bmson_to_bms_conversion.md)
     - **数理トピック**: 連続時間座標をユークリッドの互除法により最適な離散格子へ射影する量子化数理、および多重発音の競合を区間グラフ彩色問題として解決する数理。
     - **実装への射影**: C#のGCオーバーヘッドを完全に無力化する、空間 $\mathcal{O}(1)$ のアロケーションフリーな **Array-Backed Pool** / Handle パターン（DOD）の実装。
+- ### [第2章：短時間振幅包絡線と無音トリミングの数理](02_silence_trimming.md)
+    - **数理トピック**: ゼロクロス点での誤検知やポップノイズを防ぎつつ、二乗エネルギー累積和系列を用いて任意の窓幅を $\mathcal{O}(1)$ で評価する定数時間局所エネルギー計算。
+    - **実装への射影**: `AudioFeatureExtractor` における平方根回避の二乗比較最適化。
+- ### [第3章：LSHと超並列SIMD演算による高速化数理（実装極限）](03_lsh_and_simd_limits.md)
+    - **数理トピック**: SimHash定理に基づき、数千次元の浮動小数点特徴量を単一の 64-bit 整数に詰め込み、近似相関距離を `XOR` ＋ `POPCNT` のハードウェア命令（$\mathcal{O}(1)$）に射影する離散代数。
+    - **実装への射影**: `FastWaveCompare` での `Vector256` 命令と、パイプラインハザードを防止する自動コンパイルループアンロール。
+- ### [第4章：音響信号の等価性判定とピアソン相関係数](04_audio_equivalence_and_pearson.md)
+    - **数理トピック**: 浮動小数点演算の桁落ちを防ぐ Welford のアルゴリズム（1パス漸化式計算）と、相関係数の数理的定義。
+    - **実装への射影**: `PearsonAccumulator` における定数空間 $\mathcal{O}(1)$ での逐次オンライン累積演算。
+- ### [第5章：周波数領域における時間アライメント](05_fft_alignment.md)
+    - **数理トピック**: 時間領域の $\mathcal{O}(N^2)$ 探索を、畳み込み定理を用いて周波数領域の $\mathcal{O}(N \log N)$ へと射影する数学的証明。
+    - **実装への射影**: `FftAlignmentEngine` でのゼロパディング境界条件処理と高速相互相関。
+- ### [第6章：Union-Find グラフ理論による音声定義の同値類分割](06_union_find.md)
+    - **数理トピック**: 類似関係の推移律の破れを「連結成分」として再定義し、経路圧縮とランク結合を用いてアッカーマン関数の逆関数 $\alpha(M)$ で同値類を構築する証明。
+    - **実装への射影**: `UnionFind` クラスでのオブジェクトインスタンス生成を排除した、高速フラットポインタ配列。
+- ### [第7章：時間軸シミュレーションエンジンとプレイアビリティ保存](07_simulation_engine.md)
+    - **数理トピック**: 単なる静的置換が招くコムフィルタ効果や同時発音数の限界を証明。Sweep-Lineを用いて、複雑な発音干渉を $\mathcal{O}(L \log L)$ で精密にシミュレート。
+    - **実装への射影**: `SimulationEngine` による最適化安全性検証。
 - ### [第8章：アムダールの法則とGCフリーなメモリ空間理論](08_parallelism_and_memory_pooling.md)
     - **数理トピック**: アムダールの法則によるタスク並列化（Thread-Level Parallelism）のスループット限界と、Large Object Heap (LOH) 断片化を回避するためのメモリプール理論。
     - **実装への射影**: `ParallelAudioComparisonEngine` における `ArrayPool<T>` と `Span<T>` を用いた、完全並列かつアロケーションゼロのI/O・解析パイプライン。
