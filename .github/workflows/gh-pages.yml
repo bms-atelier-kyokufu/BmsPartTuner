@@ -32,7 +32,7 @@ jobs:
           path: ~/.cache/pip
           restore-keys: |
             zensical-pip-${{ runner.os }}-
-      - run: pip install zensical
+      - run: pip install zensical markdown-gfm-admonition
       - name: Build docs
         run: zensical build -f mkdocs.yml
       - name: Deploy to GitHub Pages
