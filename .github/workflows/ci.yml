@@ -38,3 +38,7 @@ jobs:
       - name: Build
         # --no-incremental: 毎回フルビルドを行うことで、キャッシュによる「たまたま成功」を防ぐ
         run: dotnet build --configuration Release --no-restore --no-incremental
+
+      - name: Test
+        # --no-build: ビルド済みの成果物を再利用し、テスト実行のみを行う
+        run: dotnet test --configuration Release --no-build --verbosity normal
