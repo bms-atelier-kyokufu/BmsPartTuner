@@ -3,6 +3,8 @@ on:
   push:
     branches:
       - main
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 permissions:
   contents: write
 jobs:
@@ -24,13 +26,12 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: 3.x
-      - run: echo "cache_id=$(date --utc '+%V')" >> $GITHUB_ENV 
       - uses: actions/cache@v4
         with:
-          key: mkdocs-material-${{ env.cache_id }}
-          path: .cache
+          key: zensical-pip-${{ runner.os }}-${{ hashFiles('**/requirements*.txt') }}
+          path: ~/.cache/pip
           restore-keys: |
-            mkdocs-material-
+            zensical-pip-${{ runner.os }}-
       - run: pip install zensical
       - name: Build docs
         run: zensical build -f mkdocs.yml
