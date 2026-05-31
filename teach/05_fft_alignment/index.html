@@ -11,12 +11,12 @@
         <link rel="canonical" href="https://bms-atelier-kyokufu.github.io/BmsPartTuner/teach/05_fft_alignment/">
       
       
+        <link rel="prev" href="../04_audio_equivalence_and_pearson/">
       
       
-        
-          <link rel="alternate" href="../../" hreflang="ja">
-        
-          <link rel="alternate" href="../../en/" hreflang="en">
+        <link rel="next" href="../06_union_find/">
+      
+      
         
       
       
@@ -25,7 +25,7 @@
     
     
       
-        <title>第5章 周波数領域における時間アライメント - BMS Part Tuner</title>
+        <title>5. FFTを用いたタイムアライメント - BMS Part Tuner</title>
       
     
     
@@ -110,7 +110,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              第5章 周波数領域における時間アライメント
+              5. FFTを用いたタイムアライメント
             
           </span>
         </div>
@@ -146,32 +146,6 @@
     
       <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
     
-    
-      <div class="md-header__option">
-  <div class="md-select">
-    
-    <button class="md-header__button md-icon" aria-label="言語切り替え">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
-    </button>
-    <div class="md-select__inner">
-      <ul class="md-select__list">
-        
-          <li class="md-select__item">
-            <a href="../../" hreflang="ja" class="md-select__link">
-              日本語
-            </a>
-          </li>
-        
-          <li class="md-select__item">
-            <a href="../../en/" hreflang="en" class="md-select__link">
-              English
-            </a>
-          </li>
-        
-      </ul>
-    </div>
-  </div>
-</div>
     
     
       
@@ -268,13 +242,13 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../00_ARCHITECTURE_JP.md" class="md-tabs__link">
+      <a href="../../casual_guide/" class="md-tabs__link">
         
   
   
     
   
-  構造とアーキテクチャ
+  やさしい解説書
 
       </a>
     </li>
@@ -285,94 +259,21 @@
   
   
   
-  
-    <li class="md-tabs__item">
-      <a href="../../01_TECHNICAL_GUIDE_JP.md" class="md-tabs__link">
-        
+    
   
   
     
-  
-  テクニカルガイド
-
-      </a>
-    </li>
-  
-
-      
-        
-  
-  
-  
-  
-    <li class="md-tabs__item">
-      <a href="../../02_OPTIMIZATION_GUIDE_JP.md" class="md-tabs__link">
-        
-  
-  
     
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../" class="md-tabs__link">
+          
   
-  最適化レポート
+  
+  技術解説書
 
-      </a>
-    </li>
-  
-
-      
-        
-  
-  
-  
-  
-    <li class="md-tabs__item">
-      <a href="../../03_TEST_DESIGN_JP.md" class="md-tabs__link">
-        
-  
-  
+        </a>
+      </li>
     
-  
-  テスト設計
-
-      </a>
-    </li>
-  
-
-      
-        
-  
-  
-  
-  
-    <li class="md-tabs__item">
-      <a href="../../04_TEST_STRATEGY_JP.md" class="md-tabs__link">
-        
-  
-  
-    
-  
-  テスト戦略
-
-      </a>
-    </li>
-  
-
-      
-        
-  
-  
-  
-  
-    <li class="md-tabs__item">
-      <a href="../../COMMIT_MESSAGE_GUIDE_JP.md" class="md-tabs__link">
-        
-  
-  
-    
-  
-  コミット規約
-
-      </a>
-    </li>
   
 
       
@@ -455,14 +356,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../00_ARCHITECTURE_JP.md" class="md-nav__link">
+      <a href="../../casual_guide/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    構造とアーキテクチャ
+    やさしい解説書
   
 
     
@@ -479,17 +380,74 @@
       
   
   
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    技術解説書
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    技術解説書
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
   
   
     <li class="md-nav__item">
-      <a href="../../01_TECHNICAL_GUIDE_JP.md" class="md-nav__link">
+      <a href="../" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    テクニカルガイド
+    概要
   
 
     
@@ -501,22 +459,23 @@
     </li>
   
 
-    
-      
-      
+              
+            
+              
+                
   
   
   
   
     <li class="md-nav__item">
-      <a href="../../02_OPTIMIZATION_GUIDE_JP.md" class="md-nav__link">
+      <a href="../01_bmson_to_bms_conversion/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    最適化レポート
+    1. bmsonからBMSへの変換
   
 
     
@@ -528,22 +487,23 @@
     </li>
   
 
-    
-      
-      
+              
+            
+              
+                
   
   
   
   
     <li class="md-nav__item">
-      <a href="../../03_TEST_DESIGN_JP.md" class="md-nav__link">
+      <a href="../02_silence_trimming/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    テスト設計
+    2. 無音トリミング
   
 
     
@@ -555,22 +515,23 @@
     </li>
   
 
-    
-      
-      
+              
+            
+              
+                
   
   
   
   
     <li class="md-nav__item">
-      <a href="../../04_TEST_STRATEGY_JP.md" class="md-nav__link">
+      <a href="../03_lsh_and_simd_limits/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    テスト戦略
+    3. LSHとSIMDの限界
   
 
     
@@ -582,22 +543,23 @@
     </li>
   
 
-    
-      
-      
+              
+            
+              
+                
   
   
   
   
     <li class="md-nav__item">
-      <a href="../../COMMIT_MESSAGE_GUIDE_JP.md" class="md-nav__link">
+      <a href="../04_audio_equivalence_and_pearson/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    コミット規約
+    4. 音声の同値性とピアソンの積率相関係数
   
 
     
@@ -606,6 +568,329 @@
   
 
       </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    5. FFTを用いたタイムアライメント
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    5. FFTを用いたタイムアライメント
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="目次">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目次
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#51" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1 時間アライメント問題の数理的定式化
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5.1 時間アライメント問題の数理的定式化">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        定義 5.1 (離散相互相関関数)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#52-why" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2 課題：時間領域探索における計算量爆発のジレンマ (Why)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#53-proof" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.3 定理の提示と畳み込み定理による証明 (Proof)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5.3 定理の提示と畳み込み定理による証明 (Proof)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#52-dft" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        定義 5.2 (離散フーリエ変換: DFT)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tau_textopt" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        逆変換による最適シフト \(\tau_{\text{opt}}\) の導出
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#54" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.4 計算量削減の定量的評価と疑似コード
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5.4 計算量削減の定量的評価と疑似コード">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#541-on2-to-on-log-n" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.4.1 計算量の劇的な削減（\(O(N^2) \to O(N \log N)\)）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#542" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.4.2 実装への射影：疑似コード
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#55" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.5 誤差限界と境界条件（巡回畳み込みの回避）
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5.5 誤差限界と境界条件（巡回畳み込みの回避）">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ゼロパディングの数学的必要性
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#56-references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.6 参考文献 (References)
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../06_union_find/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    6. Union-Findによるグループ化
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../07_simulation_engine/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    7. 時間軸シミュレーションエンジン
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../08_parallelism_and_memory_pooling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    8. 並列処理とメモリプール
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
     </li>
   
 
