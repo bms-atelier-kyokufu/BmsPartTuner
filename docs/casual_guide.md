@@ -143,6 +143,10 @@ graph TD
         皿2 --> ゴミ箱
         ゴミ箱 --> GC((ゴミ収集車が来て<br>PCフリーズ！))
     end
+```
+
+```mermaid
+graph TD
     subgraph with_arraypool ["✨ BMS Part Tuner（ArrayPool）"]
         棚[最初からある『固定のメモリ』を使い回す]
         処理A --> 棚
