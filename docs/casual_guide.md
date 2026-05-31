@@ -311,7 +311,10 @@ graph TD
         音B1_old --> |ちょっとズラして比較| 比較1
         比較1 -.-> |数千回繰り返す...PCが悲鳴| 結果1[ズレを発見]
     end
+```
 
+```mermaid
+graph TD
     subgraph after  ["✨ FFTの魔法（周波数の世界へワープ）"]
         音A2_new[音A]
         音B2_new[音B]
@@ -366,6 +369,10 @@ graph LR
         音符B --- 音符C
         音符A & 音符B & 音符C -.-> Note1[数千万回の無駄なチェックが発生...]
     end
+```
+
+```mermaid
+graph LR
     subgraph after  ["✨ 監視カメラ（Sweep-Line）"]
         時間軸[時間 0秒 --> 100秒]
         音符A2_new[音符A 鳴ってる]
@@ -414,6 +421,10 @@ graph TD
         皿2 --> ゴミ箱
         ゴミ箱 --> GC((ゴミ収集車が来て<br>PCフリーズ！))
     end
+```
+
+```mermaid
+graph TD
     subgraph after [✨ BMS Part Tuner（ArrayPool）]
         棚[最初からある『固定のメモリ』を使い回す]
         処理A --> 棚
