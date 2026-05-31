@@ -21,18 +21,23 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="zensical-0.0.43">
     
     
       
-        <title>2. 無音トリミング - BMS Part Tuner</title>
+        <title>第2章 短時間振幅包絡線と無音トリミングの数理 - BMS Part Tuner</title>
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
       
         
-        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      <link rel="stylesheet" href="../../assets/stylesheets/modern/main.fba56155.min.css">
+      
+        
+          
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/modern/palette.dfe2e883.min.css">
       
       
 
@@ -46,12 +51,12 @@
         
         
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
-        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,500,500i,700,700i%7CJetBrains+Mono:400,400i,700,700i&amp;display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
       
     
     
-    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../..",location),__md_scope.pathname.endsWith("/")||(__md_scope=new URL(__md_scope.pathname+"/",location)),__md_hash=e=>[...e].reduce(((e,t)=>(e<<5)-e+t.charCodeAt(0)),0),__md_get=(e,t=localStorage,_=__md_scope)=>JSON.parse(t.getItem(_.pathname+"."+e)),__md_set=(e,t,_=localStorage,a=__md_scope)=>{try{_.setItem(a.pathname+"."+e,JSON.stringify(t))}catch(e){}},document.documentElement.setAttribute("data-platform",navigator.platform)</script>
     
       
 
@@ -72,7 +77,7 @@
     
     <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
-    <label class="md-overlay" for="__drawer"></label>
+    <label class="md-overlay" for="__drawer" aria-label="ナビゲーション"></label>
     <div data-md-component="skip">
       
         
@@ -92,12 +97,12 @@
   <nav class="md-header__inner md-grid" aria-label="ヘッダー">
     <a href="../.." title="BMS Part Tuner" class="md-header__button md-logo" aria-label="BMS Part Tuner" data-md-component="logo">
       
-  <img src="../../img/BmpPartTunerLogo_dark.svg" alt="logo">
+  <img src="../../img/BmpPartTunerLogo_dark.svg" alt="BMS Part Tuner">
 
     </a>
-    <label class="md-header__button md-icon" for="__drawer">
+    <label class="md-header__button md-icon" for="__drawer" aria-label="ナビゲーション">
       
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-menu" viewBox="0 0 24 24"><path d="M4 5h16M4 12h16M4 19h16"/></svg>
     </label>
     <div class="md-header__title" data-md-component="header-title">
       <div class="md-header__ellipsis">
@@ -109,7 +114,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              2. 無音トリミング
+              第2章 短時間振幅包絡線と無音トリミングの数理
             
           </span>
         </div>
@@ -149,59 +154,30 @@
     
       
       
-        <label class="md-header__button md-icon" for="__search">
+        <label class="md-header__button md-icon" for="__search" aria-label="検索">
           
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-search" viewBox="0 0 24 24"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>
         </label>
-        <div class="md-search" data-md-component="search" role="dialog">
-  <label class="md-search__overlay" for="__search"></label>
-  <div class="md-search__inner" role="search">
-    <form class="md-search__form" name="search">
-      <input type="text" class="md-search__input" name="query" aria-label="検索" placeholder="検索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
-      <label class="md-search__icon md-icon" for="__search">
-        
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
-        
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
-      </label>
-      <nav class="md-search__options" aria-label="検索">
-        
-        <button type="reset" class="md-search__icon md-icon" title="クリア" aria-label="クリア" tabindex="-1">
-          
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
-        </button>
-      </nav>
-      
-        <div class="md-search__suggest" data-md-component="search-suggest"></div>
-      
-    </form>
-    <div class="md-search__output">
-      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
-        <div class="md-search-result" data-md-component="search-result">
-          <div class="md-search-result__meta">
-            検索を初期化
-          </div>
-          <ol class="md-search-result__list" role="presentation"></ol>
-        </div>
-      </div>
-    </div>
-  </div>
+        <div class="md-search" data-md-component="search" role="dialog" aria-label="検索">
+  <button type="button" class="md-search__button">
+    検索
+  </button>
 </div>
       
     
-    
-      <div class="md-header__source">
+    <div class="md-header__source">
+      
         <a href="https://github.com/bms-atelier-kyokufu/BmsPartTuner" title="リポジトリへ" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2026 Fonticons, Inc.--><path fill="currentColor" d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
   </div>
   <div class="md-source__repository">
     GitHub
   </div>
 </a>
-      </div>
-    
+      
+    </div>
   </nav>
   
 </header>
@@ -225,9 +201,6 @@
       <a href="../.." class="md-tabs__link">
         
   
-  
-    
-  
   ホーム
 
       </a>
@@ -244,9 +217,6 @@
       <a href="../../casual_guide/" class="md-tabs__link">
         
   
-  
-    
-  
   やさしい解説書
 
       </a>
@@ -262,11 +232,13 @@
   
   
     
+      
+    
+    
     
       <li class="md-tabs__item md-tabs__item--active">
         <a href="../" class="md-tabs__link">
           
-  
   
   技術解説書
 
@@ -300,7 +272,7 @@
   <label class="md-nav__title" for="__drawer">
     <a href="../.." title="BMS Part Tuner" class="md-nav__button md-logo" aria-label="BMS Part Tuner" data-md-component="logo">
       
-  <img src="../../img/BmpPartTunerLogo_dark.svg" alt="logo">
+  <img src="../../img/BmpPartTunerLogo_dark.svg" alt="BMS Part Tuner">
 
     </a>
     BMS Part Tuner
@@ -310,7 +282,7 @@
       <a href="https://github.com/bms-atelier-kyokufu/BmsPartTuner" title="リポジトリへ" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2026 Fonticons, Inc.--><path fill="currentColor" d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
   </div>
   <div class="md-source__repository">
     GitHub
@@ -334,8 +306,7 @@
   <span class="md-ellipsis">
     
   
-    ホーム
-  
+  ホーム
 
     
   </span>
@@ -361,8 +332,7 @@
   <span class="md-ellipsis">
     
   
-    やさしい解説書
-  
+  やさしい解説書
 
     
   </span>
@@ -409,8 +379,7 @@
   <span class="md-ellipsis">
     
   
-    技術解説書
-  
+  技術解説書
 
     
   </span>
@@ -425,8 +394,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    技術解説書
-  
+  技術解説書
 
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
@@ -445,8 +413,7 @@
   <span class="md-ellipsis">
     
   
-    概要
-  
+  概要
 
     
   </span>
@@ -473,8 +440,7 @@
   <span class="md-ellipsis">
     
   
-    1. bmsonからBMSへの変換
-  
+  1. bmsonからBMSへの変換
 
     
   </span>
@@ -497,7 +463,7 @@
   
     <li class="md-nav__item md-nav__item--active">
       
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
       
       
         
@@ -510,8 +476,7 @@
   <span class="md-ellipsis">
     
   
-    2. 無音トリミング
-  
+  2. 無音トリミング
 
     
   </span>
@@ -521,15 +486,14 @@
           <span class="md-nav__icon md-icon"></span>
         </label>
       
-      <a href="./" class="md-nav__link md-nav__link--active">
+      <a href="././" class="md-nav__link md-nav__link--active">
         
   
   
   <span class="md-ellipsis">
     
   
-    2. 無音トリミング
-  
+  2. 無音トリミング
 
     
   </span>
@@ -539,6 +503,7 @@
       </a>
       
         
+
 
 <nav class="md-nav md-nav--secondary" aria-label="目次">
   
@@ -556,9 +521,9 @@
         <li class="md-nav__item">
   <a href="#21" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         2.1 振幅包絡線と無音区間の数理的定式化
-      
+      </span>
     </span>
   </a>
   
@@ -568,9 +533,9 @@
           <li class="md-nav__item">
   <a href="#21-rms" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         定義 2.1 (短時間局所エネルギーとRMS包絡線)
-      
+      </span>
     </span>
   </a>
   
@@ -579,9 +544,9 @@
           <li class="md-nav__item">
   <a href="#22" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         定義 2.2 (無音区間の境界閾値)
-      
+      </span>
     </span>
   </a>
   
@@ -595,9 +560,9 @@
         <li class="md-nav__item">
   <a href="#22-why" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         2.2 課題：ゼロクロス点での誤判定と計算量爆発 (Why)
-      
+      </span>
     </span>
   </a>
   
@@ -607,9 +572,9 @@
           <li class="md-nav__item">
   <a href="#221" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         2.2.1 素朴な絶対値判定の破綻
-      
+      </span>
     </span>
   </a>
   
@@ -618,9 +583,9 @@
           <li class="md-nav__item">
   <a href="#222-on-cdot-w" class="md-nav__link">
     <span class="md-ellipsis">
-      
-        2.2.2 畳み込みによる時間計算量 \(O(N \cdot W)\) の壁
-      
+      <span class="md-typeset">
+        2.2.2 畳み込みによる時間計算量 <span class="arithmatex">\(O(N \cdot W)\)</span> の壁
+      </span>
     </span>
   </a>
   
@@ -634,9 +599,9 @@
         <li class="md-nav__item">
   <a href="#23-proof" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         2.3 定理の提示と累積和による計算量削減の証明 (Proof)
-      
+      </span>
     </span>
   </a>
   
@@ -646,9 +611,9 @@
           <li class="md-nav__item">
   <a href="#23" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         定義 2.3 (エネルギーの累積和系列)
-      
+      </span>
     </span>
   </a>
   
@@ -662,9 +627,9 @@
         <li class="md-nav__item">
   <a href="#24" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         2.4 計算量削減の定量的評価と疑似コード
-      
+      </span>
     </span>
   </a>
   
@@ -674,9 +639,9 @@
           <li class="md-nav__item">
   <a href="#_1" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         計算量の変化
-      
+      </span>
     </span>
   </a>
   
@@ -685,9 +650,9 @@
           <li class="md-nav__item">
   <a href="#_2" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         実装への射影：疑似コード
-      
+      </span>
     </span>
   </a>
   
@@ -701,9 +666,9 @@
         <li class="md-nav__item">
   <a href="#25" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         2.5 誤差限界と境界条件（ポップノイズの回避）
-      
+      </span>
     </span>
   </a>
   
@@ -713,9 +678,9 @@
           <li class="md-nav__item">
   <a href="#_3" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         ゼロクロス点での切断の数学的必要性
-      
+      </span>
     </span>
   </a>
   
@@ -724,9 +689,9 @@
           <li class="md-nav__item">
   <a href="#_4" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         境界条件の補正
-      
+      </span>
     </span>
   </a>
   
@@ -740,9 +705,9 @@
         <li class="md-nav__item">
   <a href="#26-references" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         2.6 参考文献 (References)
-      
+      </span>
     </span>
   </a>
   
@@ -771,8 +736,7 @@
   <span class="md-ellipsis">
     
   
-    3. LSHとSIMDの限界
-  
+  3. LSHとSIMDの限界
 
     
   </span>
@@ -799,8 +763,7 @@
   <span class="md-ellipsis">
     
   
-    4. 音声の同値性とピアソンの積率相関係数
-  
+  4. 音声の同値性とピアソンの積率相関係数
 
     
   </span>
@@ -827,8 +790,7 @@
   <span class="md-ellipsis">
     
   
-    5. FFTを用いたタイムアライメント
-  
+  5. FFTを用いたタイムアライメント
 
     
   </span>
@@ -855,8 +817,7 @@
   <span class="md-ellipsis">
     
   
-    6. Union-Findによるグループ化
-  
+  6. Union-Findによるグループ化
 
     
   </span>
@@ -883,8 +844,7 @@
   <span class="md-ellipsis">
     
   
-    7. 時間軸シミュレーションエンジン
-  
+  7. 時間軸シミュレーションエンジン
 
     
   </span>
@@ -911,8 +871,7 @@
   <span class="md-ellipsis">
     
   
-    8. 並列処理とメモリプール
-  
+  8. 並列処理とメモリプール
 
     
   </span>
@@ -942,8 +901,22 @@
               
               <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
                 <div class="md-sidebar__scrollwrap">
+                  
+                    
+                    
+                    
+                      
+                    
+                    
+                      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+                      <div class="md-sidebar-button__wrapper">
+                        <label class="md-sidebar-button" for="__toc"></label>
+                      </div>
+                    
+                  
                   <div class="md-sidebar__inner">
                     
+
 
 <nav class="md-nav md-nav--secondary" aria-label="目次">
   
@@ -961,9 +934,9 @@
         <li class="md-nav__item">
   <a href="#21" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         2.1 振幅包絡線と無音区間の数理的定式化
-      
+      </span>
     </span>
   </a>
   
@@ -973,9 +946,9 @@
           <li class="md-nav__item">
   <a href="#21-rms" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         定義 2.1 (短時間局所エネルギーとRMS包絡線)
-      
+      </span>
     </span>
   </a>
   
@@ -984,9 +957,9 @@
           <li class="md-nav__item">
   <a href="#22" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         定義 2.2 (無音区間の境界閾値)
-      
+      </span>
     </span>
   </a>
   
@@ -1000,9 +973,9 @@
         <li class="md-nav__item">
   <a href="#22-why" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         2.2 課題：ゼロクロス点での誤判定と計算量爆発 (Why)
-      
+      </span>
     </span>
   </a>
   
@@ -1012,9 +985,9 @@
           <li class="md-nav__item">
   <a href="#221" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         2.2.1 素朴な絶対値判定の破綻
-      
+      </span>
     </span>
   </a>
   
@@ -1023,9 +996,9 @@
           <li class="md-nav__item">
   <a href="#222-on-cdot-w" class="md-nav__link">
     <span class="md-ellipsis">
-      
-        2.2.2 畳み込みによる時間計算量 \(O(N \cdot W)\) の壁
-      
+      <span class="md-typeset">
+        2.2.2 畳み込みによる時間計算量 <span class="arithmatex">\(O(N \cdot W)\)</span> の壁
+      </span>
     </span>
   </a>
   
@@ -1039,9 +1012,9 @@
         <li class="md-nav__item">
   <a href="#23-proof" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         2.3 定理の提示と累積和による計算量削減の証明 (Proof)
-      
+      </span>
     </span>
   </a>
   
@@ -1051,9 +1024,9 @@
           <li class="md-nav__item">
   <a href="#23" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         定義 2.3 (エネルギーの累積和系列)
-      
+      </span>
     </span>
   </a>
   
@@ -1067,9 +1040,9 @@
         <li class="md-nav__item">
   <a href="#24" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         2.4 計算量削減の定量的評価と疑似コード
-      
+      </span>
     </span>
   </a>
   
@@ -1079,9 +1052,9 @@
           <li class="md-nav__item">
   <a href="#_1" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         計算量の変化
-      
+      </span>
     </span>
   </a>
   
@@ -1090,9 +1063,9 @@
           <li class="md-nav__item">
   <a href="#_2" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         実装への射影：疑似コード
-      
+      </span>
     </span>
   </a>
   
@@ -1106,9 +1079,9 @@
         <li class="md-nav__item">
   <a href="#25" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         2.5 誤差限界と境界条件（ポップノイズの回避）
-      
+      </span>
     </span>
   </a>
   
@@ -1118,9 +1091,9 @@
           <li class="md-nav__item">
   <a href="#_3" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         ゼロクロス点での切断の数学的必要性
-      
+      </span>
     </span>
   </a>
   
@@ -1129,9 +1102,9 @@
           <li class="md-nav__item">
   <a href="#_4" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         境界条件の補正
-      
+      </span>
     </span>
   </a>
   
@@ -1145,9 +1118,9 @@
         <li class="md-nav__item">
   <a href="#26-references" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         2.6 参考文献 (References)
-      
+      </span>
     </span>
   </a>
   
@@ -1167,22 +1140,20 @@
               <article class="md-content__inner md-typeset">
                 
                   
-
-
   
   
 
 
 <h1 id="2">第2章 短時間振幅包絡線と無音トリミングの数理<a class="headerlink" href="#2" title="Permanent link">&para;</a></h1>
 <p>本章では、音響信号の先頭および末尾に存在する無音区間（あるいは聴覚上無視できるレベルのバックグラウンドノイズ）を検出し、情報の損失なしにトリミングするアルゴリズムの数理を解説する。 単純な振幅の絶対値判定が引き起こすゼロクロス点での誤検知という数学的破綻を指摘し、短時間局所エネルギーの包絡線計算を「累積和」によって <span class="arithmatex">\(O(N)\)</span> で高速化する手法、およびポップノイズを回避するための境界条件について証明を展開する。</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p><strong>本章における主要な略称・用語</strong></p>
+<blockquote>
+<p>[!NOTE]
+<strong>本章における主要な略称・用語</strong></p>
 <ul>
 <li><strong>RMS</strong>: 二乗平均平方根 (Root Mean Square)</li>
 <li><strong>ゼロクロス点</strong>: 信号の振幅の符号が反転する位置</li>
 </ul>
-</div>
+</blockquote>
 <h2 id="21">2.1 振幅包絡線と無音区間の数理的定式化<a class="headerlink" href="#21" title="Permanent link">&para;</a></h2>
 <p>無音トリミングを数学的に定義するため、信号の「局所的な大きさ（エネルギー）」を測る尺度を導入する。</p>
 <h3 id="21-rms">定義 2.1 (短時間局所エネルギーとRMS包絡線)<a class="headerlink" href="#21-rms" title="Permanent link">&para;</a></h3>
@@ -1207,22 +1178,20 @@
 <h3 id="23">定義 2.3 (エネルギーの累積和系列)<a class="headerlink" href="#23" title="Permanent link">&para;</a></h3>
 <p>信号の二乗系列 <span class="arithmatex">\(x_i^2\)</span> の累積和系列 <span class="arithmatex">\(C_k\)</span> を以下のように定義する。</p>
 <div class="arithmatex">\[C_k = \sum_{i=0}^{k-1} x_i^2 \quad \text{for } k = 1, 2, \dots, N \quad (C_0 = 0) \quad \cdots (2.4)\]</div>
-<div class="admonition tip">
-<p class="admonition-title">Important</p>
-<p><strong>定理 2.1 (累積和による区間エネルギーの定数時間計算)</strong>
+<blockquote>
+<p>[!IMPORTANT]
+<strong>定理 2.1 (累積和による区間エネルギーの定数時間計算)</strong>
 任意の時刻 <span class="arithmatex">\(t\)</span> における窓幅 <span class="arithmatex">\(W\)</span> の局所エネルギー <span class="arithmatex">\(E(t)\)</span> は、累積和系列 <span class="arithmatex">\(C_k\)</span> を用いて空間計算量 <span class="arithmatex">\(O(N)\)</span> を消費することで、各時刻につき定数時間 <span class="arithmatex">\(O(1)\)</span> で計算できる。</p>
 <div class="arithmatex">\[E(t) = C_{\min(t + \lfloor W/2 \rfloor + 1, N)} - C_{\max(t - \lfloor W/2 \rfloor, 0)} \quad \cdots (2.5)\]</div>
-</div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p><strong>証明</strong></p>
+<p>[!NOTE]
+<strong>証明</strong></p>
 <p>式(2.4)の定義より、<span class="arithmatex">\(C_b - C_a \ (b &gt; a)\)</span> は次のように展開できる。</p>
 <div class="arithmatex">\[C_b - C_a = \sum_{i=0}^{b-1} x_i^2 - \sum_{i=0}^{a-1} x_i^2 = \sum_{i=a}^{b-1} x_i^2\]</div>
 <p>式(2.1)の <span class="arithmatex">\(E(t)\)</span> における和の範囲は <span class="arithmatex">\(i = t - \lfloor W/2 \rfloor\)</span> から <span class="arithmatex">\(i = t + \lfloor W/2 \rfloor\)</span> までである。
 ここで <span class="arithmatex">\(a = t - \lfloor W/2 \rfloor\)</span>、 <span class="arithmatex">\(b = t + \lfloor W/2 \rfloor + 1\)</span> と置くと、</p>
 <div class="arithmatex">\[E(t) = \sum_{i=a}^{b-1} x_i^2 = C_b - C_a\]</div>
 <p>となり、累積和配列の2点の値の差分のみで任意の窓幅 <span class="arithmatex">\(W\)</span> の総和が求まることが示された。境界条件を満たすように <span class="arithmatex">\(\min, \max\)</span> を適用すれば式(2.5)を得る。 <span class="arithmatex">\(\blacksquare\)</span></p>
-</div>
+</blockquote>
 <h2 id="24">2.4 計算量削減の定量的評価と疑似コード<a class="headerlink" href="#24" title="Permanent link">&para;</a></h2>
 <h3 id="_1">計算量の変化<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h3>
 <ol>
@@ -1288,6 +1257,8 @@
 
 
 
+
+
                 
               </article>
             </div>
@@ -1298,7 +1269,7 @@
         
           <button type="button" class="md-top md-icon" data-md-component="top" hidden>
   
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-circle-arrow-up" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m16 12-4-4-4 4M12 16V8"/></svg>
   ページトップへ戻る
 </button>
         
@@ -1312,8 +1283,8 @@
   
   
     Made with
-    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
-      Material for MkDocs
+    <a href="https://zensical.org/" target="_blank" rel="noopener">
+      Zensical
     </a>
   
 </div>
@@ -1331,10 +1302,10 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u30b3\u30d4\u30fc\u3057\u307e\u3057\u305f", "clipboard.copy": "\u30af\u30ea\u30c3\u30d7\u30dc\u30fc\u30c9\u3078\u30b3\u30d4\u30fc", "search.result.more.one": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3082\u30461\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.more.other": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3042\u3068#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.none": "\u4f55\u3082\u898b\u3064\u304b\u308a\u307e\u305b\u3093\u3067\u3057\u305f", "search.result.one": "1\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.other": "#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.placeholder": "\u691c\u7d22\u30ad\u30fc\u30ef\u30fc\u30c9\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044", "search.result.term.missing": "\u691c\u7d22\u306b\u542b\u307e\u308c\u306a\u3044", "select.version": "\u30d0\u30fc\u30b8\u30e7\u30f3\u5207\u308a\u66ff\u3048"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate":null,"base":"../..","features":["navigation.tabs","navigation.sections","navigation.top","search.suggest","search.highlight","content.code.copy"],"search":"../../assets/javascripts/workers/search.e2d2d235.min.js","tags":null,"translations":{"clipboard.copied":"コピーしました","clipboard.copy":"クリップボードへコピー","search.result.more.one":"このページ内にもう1件見つかりました","search.result.more.other":"このページ内にあと#件見つかりました","search.result.none":"何も見つかりませんでした","search.result.one":"1件見つかりました","search.result.other":"#件見つかりました","search.result.placeholder":"検索キーワードを入力してください","search.result.term.missing":"検索に含まれない","select.version":"バージョン切り替え"},"version":null}</script>
     
     
-      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../assets/javascripts/bundle.6e5f0216.min.js"></script>
       
         <script src="../../javascripts/mathjax.js"></script>
       

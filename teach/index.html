@@ -14,25 +14,30 @@
         <link rel="prev" href="../casual_guide/">
       
       
-        <link rel="next" href="01_bmson_to_bms_conversion/">
+        <link rel="next" href="./01_bmson_to_bms_conversion/">
       
       
         
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="zensical-0.0.43">
     
     
       
-        <title>概要 - BMS Part Tuner</title>
+        <title>第0章 技術解説書インデックスおよび理論概要 - BMS Part Tuner</title>
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
       
         
-        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      <link rel="stylesheet" href="../assets/stylesheets/modern/main.fba56155.min.css">
+      
+        
+          
+        
+        <link rel="stylesheet" href="../assets/stylesheets/modern/palette.dfe2e883.min.css">
       
       
 
@@ -46,12 +51,12 @@
         
         
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
-        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,500,500i,700,700i%7CJetBrains+Mono:400,400i,700,700i&amp;display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
       
     
     
-    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("..",location),__md_scope.pathname.endsWith("/")||(__md_scope=new URL(__md_scope.pathname+"/",location)),__md_hash=e=>[...e].reduce(((e,t)=>(e<<5)-e+t.charCodeAt(0)),0),__md_get=(e,t=localStorage,_=__md_scope)=>JSON.parse(t.getItem(_.pathname+"."+e)),__md_set=(e,t,_=localStorage,a=__md_scope)=>{try{_.setItem(a.pathname+"."+e,JSON.stringify(t))}catch(e){}},document.documentElement.setAttribute("data-platform",navigator.platform)</script>
     
       
 
@@ -72,7 +77,7 @@
     
     <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
-    <label class="md-overlay" for="__drawer"></label>
+    <label class="md-overlay" for="__drawer" aria-label="ナビゲーション"></label>
     <div data-md-component="skip">
       
         
@@ -90,14 +95,14 @@
 
 <header class="md-header" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="ヘッダー">
-    <a href=".." title="BMS Part Tuner" class="md-header__button md-logo" aria-label="BMS Part Tuner" data-md-component="logo">
+    <a href="./.." title="BMS Part Tuner" class="md-header__button md-logo" aria-label="BMS Part Tuner" data-md-component="logo">
       
-  <img src="../img/BmpPartTunerLogo_dark.svg" alt="logo">
+  <img src="../img/BmpPartTunerLogo_dark.svg" alt="BMS Part Tuner">
 
     </a>
-    <label class="md-header__button md-icon" for="__drawer">
+    <label class="md-header__button md-icon" for="__drawer" aria-label="ナビゲーション">
       
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-menu" viewBox="0 0 24 24"><path d="M4 5h16M4 12h16M4 19h16"/></svg>
     </label>
     <div class="md-header__title" data-md-component="header-title">
       <div class="md-header__ellipsis">
@@ -109,7 +114,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              概要
+              第0章 技術解説書インデックスおよび理論概要
             
           </span>
         </div>
@@ -149,59 +154,30 @@
     
       
       
-        <label class="md-header__button md-icon" for="__search">
+        <label class="md-header__button md-icon" for="__search" aria-label="検索">
           
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-search" viewBox="0 0 24 24"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>
         </label>
-        <div class="md-search" data-md-component="search" role="dialog">
-  <label class="md-search__overlay" for="__search"></label>
-  <div class="md-search__inner" role="search">
-    <form class="md-search__form" name="search">
-      <input type="text" class="md-search__input" name="query" aria-label="検索" placeholder="検索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
-      <label class="md-search__icon md-icon" for="__search">
-        
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
-        
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
-      </label>
-      <nav class="md-search__options" aria-label="検索">
-        
-        <button type="reset" class="md-search__icon md-icon" title="クリア" aria-label="クリア" tabindex="-1">
-          
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
-        </button>
-      </nav>
-      
-        <div class="md-search__suggest" data-md-component="search-suggest"></div>
-      
-    </form>
-    <div class="md-search__output">
-      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
-        <div class="md-search-result" data-md-component="search-result">
-          <div class="md-search-result__meta">
-            検索を初期化
-          </div>
-          <ol class="md-search-result__list" role="presentation"></ol>
-        </div>
-      </div>
-    </div>
-  </div>
+        <div class="md-search" data-md-component="search" role="dialog" aria-label="検索">
+  <button type="button" class="md-search__button">
+    検索
+  </button>
 </div>
       
     
-    
-      <div class="md-header__source">
+    <div class="md-header__source">
+      
         <a href="https://github.com/bms-atelier-kyokufu/BmsPartTuner" title="リポジトリへ" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2026 Fonticons, Inc.--><path fill="currentColor" d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
   </div>
   <div class="md-source__repository">
     GitHub
   </div>
 </a>
-      </div>
-    
+      
+    </div>
   </nav>
   
 </header>
@@ -222,11 +198,8 @@
   
   
     <li class="md-tabs__item">
-      <a href=".." class="md-tabs__link">
+      <a href="./.." class="md-tabs__link">
         
-  
-  
-    
   
   ホーム
 
@@ -244,9 +217,6 @@
       <a href="../casual_guide/" class="md-tabs__link">
         
   
-  
-    
-  
   やさしい解説書
 
       </a>
@@ -262,11 +232,13 @@
   
   
     
+      
+    
+    
     
       <li class="md-tabs__item md-tabs__item--active">
-        <a href="./" class="md-tabs__link">
+        <a href="././" class="md-tabs__link">
           
-  
   
   技術解説書
 
@@ -298,9 +270,9 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="ナビゲーション" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href=".." title="BMS Part Tuner" class="md-nav__button md-logo" aria-label="BMS Part Tuner" data-md-component="logo">
+    <a href="./.." title="BMS Part Tuner" class="md-nav__button md-logo" aria-label="BMS Part Tuner" data-md-component="logo">
       
-  <img src="../img/BmpPartTunerLogo_dark.svg" alt="logo">
+  <img src="../img/BmpPartTunerLogo_dark.svg" alt="BMS Part Tuner">
 
     </a>
     BMS Part Tuner
@@ -310,7 +282,7 @@
       <a href="https://github.com/bms-atelier-kyokufu/BmsPartTuner" title="リポジトリへ" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2026 Fonticons, Inc.--><path fill="currentColor" d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
   </div>
   <div class="md-source__repository">
     GitHub
@@ -327,15 +299,14 @@
   
   
     <li class="md-nav__item">
-      <a href=".." class="md-nav__link">
+      <a href="./.." class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    ホーム
-  
+  ホーム
 
     
   </span>
@@ -361,8 +332,7 @@
   <span class="md-ellipsis">
     
   
-    やさしい解説書
-  
+  やさしい解説書
 
     
   </span>
@@ -409,8 +379,7 @@
   <span class="md-ellipsis">
     
   
-    技術解説書
-  
+  技術解説書
 
     
   </span>
@@ -425,8 +394,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    技術解説書
-  
+  技術解説書
 
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
@@ -441,7 +409,7 @@
   
     <li class="md-nav__item md-nav__item--active">
       
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
       
       
         
@@ -454,8 +422,7 @@
   <span class="md-ellipsis">
     
   
-    概要
-  
+  概要
 
     
   </span>
@@ -465,15 +432,14 @@
           <span class="md-nav__icon md-icon"></span>
         </label>
       
-      <a href="./" class="md-nav__link md-nav__link--active">
+      <a href="././" class="md-nav__link md-nav__link--active">
         
   
   
   <span class="md-ellipsis">
     
   
-    概要
-  
+  概要
 
     
   </span>
@@ -483,6 +449,7 @@
       </a>
       
         
+
 
 <nav class="md-nav md-nav--secondary" aria-label="目次">
   
@@ -500,9 +467,9 @@
         <li class="md-nav__item">
   <a href="#01" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         0.1 ターゲット読者および前提知識
-      
+      </span>
     </span>
   </a>
   
@@ -511,9 +478,9 @@
         <li class="md-nav__item">
   <a href="#02-notation" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         0.2 本書で使用する数学記号（Notation）
-      
+      </span>
     </span>
   </a>
   
@@ -522,9 +489,9 @@
         <li class="md-nav__item">
   <a href="#03" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         0.3 最最適化がもたらすシステム全体のインパクトと次元の呪い
-      
+      </span>
     </span>
   </a>
   
@@ -534,9 +501,9 @@
           <li class="md-nav__item">
   <a href="#031" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         0.3.1 各最適化フェーズにおける計算量削減効果
-      
+      </span>
     </span>
   </a>
   
@@ -545,9 +512,9 @@
           <li class="md-nav__item">
   <a href="#032" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         0.3.2 パイプライン統合時におけるトータル計算量の削減
-      
+      </span>
     </span>
   </a>
   
@@ -561,9 +528,9 @@
         <li class="md-nav__item">
   <a href="#04" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         0.4 処理アーキテクチャと数理理論のマッピング
-      
+      </span>
     </span>
   </a>
   
@@ -572,9 +539,9 @@
         <li class="md-nav__item">
   <a href="#05" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         0.5 理論と実装の対応マップ
-      
+      </span>
     </span>
   </a>
   
@@ -583,9 +550,9 @@
         <li class="md-nav__item">
   <a href="#06" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         0.6 各章の構成と解説対象の数理
-      
+      </span>
     </span>
   </a>
   
@@ -595,9 +562,9 @@
           <li class="md-nav__item">
   <a href="#1bmsonbms" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         第1章：bmsonからBMSへの逆変換における離散格子量子化と彩色パッキング数理
-      
+      </span>
     </span>
   </a>
   
@@ -606,9 +573,9 @@
           <li class="md-nav__item">
   <a href="#2" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         第2章：短時間振幅包絡線と無音トリミングの数理
-      
+      </span>
     </span>
   </a>
   
@@ -617,9 +584,9 @@
           <li class="md-nav__item">
   <a href="#3lshsimd" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         第3章：LSHと超並列SIMD演算による高速化数理（実装極限）
-      
+      </span>
     </span>
   </a>
   
@@ -628,9 +595,9 @@
           <li class="md-nav__item">
   <a href="#4" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         第4章：音響信号の等価性判定とピアソン相関係数
-      
+      </span>
     </span>
   </a>
   
@@ -639,9 +606,9 @@
           <li class="md-nav__item">
   <a href="#5" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         第5章：周波数領域における時間アライメント
-      
+      </span>
     </span>
   </a>
   
@@ -650,9 +617,9 @@
           <li class="md-nav__item">
   <a href="#6union-find" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         第6章：Union-Find グラフ理論による音声定義の同値類分割
-      
+      </span>
     </span>
   </a>
   
@@ -661,9 +628,9 @@
           <li class="md-nav__item">
   <a href="#7" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         第7章：時間軸シミュレーションエンジンとプレイアビリティ保存
-      
+      </span>
     </span>
   </a>
   
@@ -672,9 +639,9 @@
           <li class="md-nav__item">
   <a href="#8gc" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         第8章：アムダールの法則とGCフリーなメモリ空間理論
-      
+      </span>
     </span>
   </a>
   
@@ -688,9 +655,9 @@
         <li class="md-nav__item">
   <a href="#07" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         0.7 理論の実証およびベンチマーク評価
-      
+      </span>
     </span>
   </a>
   
@@ -700,9 +667,9 @@
           <li class="md-nav__item">
   <a href="#071" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         0.7.1 フルパイプライン実行における実測パフォーマンス
-      
+      </span>
     </span>
   </a>
   
@@ -711,9 +678,9 @@
           <li class="md-nav__item">
   <a href="#072" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         0.7.2 統計データに基づくアーキテクチャの堅牢性の論理的検証
-      
+      </span>
     </span>
   </a>
   
@@ -723,9 +690,9 @@
           <li class="md-nav__item">
   <a href="#mean-3018-s" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         平均実行時間 (Mean: 3.018 s)
-      
+      </span>
     </span>
   </a>
   
@@ -734,9 +701,9 @@
           <li class="md-nav__item">
   <a href="#stddev-0052-s-error-0059-s" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         標準偏差と誤差 (StdDev: 0.052 s / Error: 0.059 s)
-      
+      </span>
     </span>
   </a>
   
@@ -745,9 +712,9 @@
           <li class="md-nav__item">
   <a href="#_1" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         初回実行ペナルティと定常状態
-      
+      </span>
     </span>
   </a>
   
@@ -756,9 +723,9 @@
           <li class="md-nav__item">
   <a href="#allocated-33106-mb" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         メモリ空間 (Allocated: 331.06 MB)
-      
+      </span>
     </span>
   </a>
   
@@ -790,15 +757,14 @@
   
   
     <li class="md-nav__item">
-      <a href="01_bmson_to_bms_conversion/" class="md-nav__link">
+      <a href="./01_bmson_to_bms_conversion/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    1. bmsonからBMSへの変換
-  
+  1. bmsonからBMSへの変換
 
     
   </span>
@@ -818,15 +784,14 @@
   
   
     <li class="md-nav__item">
-      <a href="02_silence_trimming/" class="md-nav__link">
+      <a href="./02_silence_trimming/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    2. 無音トリミング
-  
+  2. 無音トリミング
 
     
   </span>
@@ -846,15 +811,14 @@
   
   
     <li class="md-nav__item">
-      <a href="03_lsh_and_simd_limits/" class="md-nav__link">
+      <a href="./03_lsh_and_simd_limits/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    3. LSHとSIMDの限界
-  
+  3. LSHとSIMDの限界
 
     
   </span>
@@ -874,15 +838,14 @@
   
   
     <li class="md-nav__item">
-      <a href="04_audio_equivalence_and_pearson/" class="md-nav__link">
+      <a href="./04_audio_equivalence_and_pearson/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    4. 音声の同値性とピアソンの積率相関係数
-  
+  4. 音声の同値性とピアソンの積率相関係数
 
     
   </span>
@@ -902,15 +865,14 @@
   
   
     <li class="md-nav__item">
-      <a href="05_fft_alignment/" class="md-nav__link">
+      <a href="./05_fft_alignment/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    5. FFTを用いたタイムアライメント
-  
+  5. FFTを用いたタイムアライメント
 
     
   </span>
@@ -930,15 +892,14 @@
   
   
     <li class="md-nav__item">
-      <a href="06_union_find/" class="md-nav__link">
+      <a href="./06_union_find/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    6. Union-Findによるグループ化
-  
+  6. Union-Findによるグループ化
 
     
   </span>
@@ -958,15 +919,14 @@
   
   
     <li class="md-nav__item">
-      <a href="07_simulation_engine/" class="md-nav__link">
+      <a href="./07_simulation_engine/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    7. 時間軸シミュレーションエンジン
-  
+  7. 時間軸シミュレーションエンジン
 
     
   </span>
@@ -986,15 +946,14 @@
   
   
     <li class="md-nav__item">
-      <a href="08_parallelism_and_memory_pooling/" class="md-nav__link">
+      <a href="./08_parallelism_and_memory_pooling/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    8. 並列処理とメモリプール
-  
+  8. 並列処理とメモリプール
 
     
   </span>
@@ -1024,8 +983,22 @@
               
               <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
                 <div class="md-sidebar__scrollwrap">
+                  
+                    
+                    
+                    
+                      
+                    
+                    
+                      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+                      <div class="md-sidebar-button__wrapper">
+                        <label class="md-sidebar-button" for="__toc"></label>
+                      </div>
+                    
+                  
                   <div class="md-sidebar__inner">
                     
+
 
 <nav class="md-nav md-nav--secondary" aria-label="目次">
   
@@ -1043,9 +1016,9 @@
         <li class="md-nav__item">
   <a href="#01" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         0.1 ターゲット読者および前提知識
-      
+      </span>
     </span>
   </a>
   
@@ -1054,9 +1027,9 @@
         <li class="md-nav__item">
   <a href="#02-notation" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         0.2 本書で使用する数学記号（Notation）
-      
+      </span>
     </span>
   </a>
   
@@ -1065,9 +1038,9 @@
         <li class="md-nav__item">
   <a href="#03" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         0.3 最最適化がもたらすシステム全体のインパクトと次元の呪い
-      
+      </span>
     </span>
   </a>
   
@@ -1077,9 +1050,9 @@
           <li class="md-nav__item">
   <a href="#031" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         0.3.1 各最適化フェーズにおける計算量削減効果
-      
+      </span>
     </span>
   </a>
   
@@ -1088,9 +1061,9 @@
           <li class="md-nav__item">
   <a href="#032" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         0.3.2 パイプライン統合時におけるトータル計算量の削減
-      
+      </span>
     </span>
   </a>
   
@@ -1104,9 +1077,9 @@
         <li class="md-nav__item">
   <a href="#04" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         0.4 処理アーキテクチャと数理理論のマッピング
-      
+      </span>
     </span>
   </a>
   
@@ -1115,9 +1088,9 @@
         <li class="md-nav__item">
   <a href="#05" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         0.5 理論と実装の対応マップ
-      
+      </span>
     </span>
   </a>
   
@@ -1126,9 +1099,9 @@
         <li class="md-nav__item">
   <a href="#06" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         0.6 各章の構成と解説対象の数理
-      
+      </span>
     </span>
   </a>
   
@@ -1138,9 +1111,9 @@
           <li class="md-nav__item">
   <a href="#1bmsonbms" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         第1章：bmsonからBMSへの逆変換における離散格子量子化と彩色パッキング数理
-      
+      </span>
     </span>
   </a>
   
@@ -1149,9 +1122,9 @@
           <li class="md-nav__item">
   <a href="#2" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         第2章：短時間振幅包絡線と無音トリミングの数理
-      
+      </span>
     </span>
   </a>
   
@@ -1160,9 +1133,9 @@
           <li class="md-nav__item">
   <a href="#3lshsimd" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         第3章：LSHと超並列SIMD演算による高速化数理（実装極限）
-      
+      </span>
     </span>
   </a>
   
@@ -1171,9 +1144,9 @@
           <li class="md-nav__item">
   <a href="#4" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         第4章：音響信号の等価性判定とピアソン相関係数
-      
+      </span>
     </span>
   </a>
   
@@ -1182,9 +1155,9 @@
           <li class="md-nav__item">
   <a href="#5" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         第5章：周波数領域における時間アライメント
-      
+      </span>
     </span>
   </a>
   
@@ -1193,9 +1166,9 @@
           <li class="md-nav__item">
   <a href="#6union-find" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         第6章：Union-Find グラフ理論による音声定義の同値類分割
-      
+      </span>
     </span>
   </a>
   
@@ -1204,9 +1177,9 @@
           <li class="md-nav__item">
   <a href="#7" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         第7章：時間軸シミュレーションエンジンとプレイアビリティ保存
-      
+      </span>
     </span>
   </a>
   
@@ -1215,9 +1188,9 @@
           <li class="md-nav__item">
   <a href="#8gc" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         第8章：アムダールの法則とGCフリーなメモリ空間理論
-      
+      </span>
     </span>
   </a>
   
@@ -1231,9 +1204,9 @@
         <li class="md-nav__item">
   <a href="#07" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         0.7 理論の実証およびベンチマーク評価
-      
+      </span>
     </span>
   </a>
   
@@ -1243,9 +1216,9 @@
           <li class="md-nav__item">
   <a href="#071" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         0.7.1 フルパイプライン実行における実測パフォーマンス
-      
+      </span>
     </span>
   </a>
   
@@ -1254,9 +1227,9 @@
           <li class="md-nav__item">
   <a href="#072" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         0.7.2 統計データに基づくアーキテクチャの堅牢性の論理的検証
-      
+      </span>
     </span>
   </a>
   
@@ -1266,9 +1239,9 @@
           <li class="md-nav__item">
   <a href="#mean-3018-s" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         平均実行時間 (Mean: 3.018 s)
-      
+      </span>
     </span>
   </a>
   
@@ -1277,9 +1250,9 @@
           <li class="md-nav__item">
   <a href="#stddev-0052-s-error-0059-s" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         標準偏差と誤差 (StdDev: 0.052 s / Error: 0.059 s)
-      
+      </span>
     </span>
   </a>
   
@@ -1288,9 +1261,9 @@
           <li class="md-nav__item">
   <a href="#_1" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         初回実行ペナルティと定常状態
-      
+      </span>
     </span>
   </a>
   
@@ -1299,9 +1272,9 @@
           <li class="md-nav__item">
   <a href="#allocated-33106-mb" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         メモリ空間 (Allocated: 331.06 MB)
-      
+      </span>
     </span>
   </a>
   
@@ -1331,24 +1304,22 @@
               <article class="md-content__inner md-typeset">
                 
                   
-
-
   
   
 
 
 <h1 id="0">第0章 技術解説書インデックスおよび理論概要<a class="headerlink" href="#0" title="Permanent link">&para;</a></h1>
 <p>本インデックスは、<code>BMS Part Tuner</code> のコアロジックを構成する音響信号処理、離散数学、および時間軸シミュレーションの理論的背景について、大学レベルの応用数学・信号処理理論の枠組みに則り体系化した技術解説書の全体像を示すものである。</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p><strong>謝辞</strong>
+<blockquote>
+<p>[!NOTE]
+<strong>謝辞</strong>
 本システムにおける複雑なアルゴリズムの導出、ならびにこれらの高度な数理モデルの構築および実装の大部分は、<strong>Google AI Gemini 3.0 Pro</strong> および <strong>Gemini 3.5 Flash</strong> の膨大な計算力と論理的推論能力を多大に駆使することによって実現されました。開発者個人の力だけでは到底到達し得なかった領域であり、この場を借りて深い敬意と謝意を表します。</p>
-</div>
+</blockquote>
 <h2 id="01">0.1 ターゲット読者および前提知識<a class="headerlink" href="#01" title="Permanent link">&para;</a></h2>
 <p>本ドキュメント群は、単なるアプリケーションの使用方法の提示にとどまらず、「極限の処理性能がいかにして数理的・アルゴリズム的に導出されるか」に関心を持つアルゴリズムエンジニア、コンピュータサイエンスの研究者、およびハードウェア最適化のスペシャリストを対象とする。</p>
-<div class="admonition tip">
-<p class="admonition-title">Important</p>
-<p><strong>要求される前提知識</strong>
+<blockquote>
+<p>[!IMPORTANT]
+<strong>要求される前提知識</strong>
 本解説書を読み進めるにあたり、以下の数学・アルゴリズム理論に関する基礎知識を前提とする。</p>
 <ul>
 <li><strong>線形代数学・微積分学</strong>: ベクトル演算、連続空間と離散空間の射影論。</li>
@@ -1356,10 +1327,8 @@
 <li><strong>計算量理論</strong>: <span class="arithmatex">\(\mathcal{O}\)</span>（ランダウの記号）を用いた時間・空間計算量の評価。</li>
 <li><strong>信号処理</strong>: フーリエ変換（FFT）、窓関数、畳み込み定理の基礎。</li>
 </ul>
-</div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p><strong>本書における主要な略称・用語</strong></p>
+<p>[!NOTE]
+<strong>本書における主要な略称・用語</strong></p>
 <ul>
 <li><strong>GC</strong>: ガベージコレクション (Garbage Collection)</li>
 <li><strong>DOD</strong>: データ指向設計 (Data-Oriented Design)</li>
@@ -1368,7 +1337,7 @@
 <li><strong>JIT</strong>: Just-In-Time</li>
 <li><strong>Sweep-Line</strong>: 走査線アルゴリズム</li>
 </ul>
-</div>
+</blockquote>
 <h2 id="02-notation">0.2 本書で使用する数学記号（Notation）<a class="headerlink" href="#02-notation" title="Permanent link">&para;</a></h2>
 <p>本書の各章にわたり共通して使用される主要な数学記号とその定義を以下に示す。</p>
 <ul>
@@ -1748,6 +1717,8 @@
 
 
 
+
+
                 
               </article>
             </div>
@@ -1758,7 +1729,7 @@
         
           <button type="button" class="md-top md-icon" data-md-component="top" hidden>
   
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-circle-arrow-up" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m16 12-4-4-4 4M12 16V8"/></svg>
   ページトップへ戻る
 </button>
         
@@ -1772,8 +1743,8 @@
   
   
     Made with
-    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
-      Material for MkDocs
+    <a href="https://zensical.org/" target="_blank" rel="noopener">
+      Zensical
     </a>
   
 </div>
@@ -1791,10 +1762,10 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u30b3\u30d4\u30fc\u3057\u307e\u3057\u305f", "clipboard.copy": "\u30af\u30ea\u30c3\u30d7\u30dc\u30fc\u30c9\u3078\u30b3\u30d4\u30fc", "search.result.more.one": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3082\u30461\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.more.other": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3042\u3068#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.none": "\u4f55\u3082\u898b\u3064\u304b\u308a\u307e\u305b\u3093\u3067\u3057\u305f", "search.result.one": "1\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.other": "#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.placeholder": "\u691c\u7d22\u30ad\u30fc\u30ef\u30fc\u30c9\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044", "search.result.term.missing": "\u691c\u7d22\u306b\u542b\u307e\u308c\u306a\u3044", "select.version": "\u30d0\u30fc\u30b8\u30e7\u30f3\u5207\u308a\u66ff\u3048"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate":null,"base":"..","features":["navigation.tabs","navigation.sections","navigation.top","search.suggest","search.highlight","content.code.copy"],"search":"../assets/javascripts/workers/search.e2d2d235.min.js","tags":null,"translations":{"clipboard.copied":"コピーしました","clipboard.copy":"クリップボードへコピー","search.result.more.one":"このページ内にもう1件見つかりました","search.result.more.other":"このページ内にあと#件見つかりました","search.result.none":"何も見つかりませんでした","search.result.one":"1件見つかりました","search.result.other":"#件見つかりました","search.result.placeholder":"検索キーワードを入力してください","search.result.term.missing":"検索に含まれない","select.version":"バージョン切り替え"},"version":null}</script>
     
     
-      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../assets/javascripts/bundle.6e5f0216.min.js"></script>
       
         <script src="../javascripts/mathjax.js"></script>
       

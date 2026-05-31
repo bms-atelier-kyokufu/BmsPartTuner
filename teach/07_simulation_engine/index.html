@@ -21,18 +21,23 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="zensical-0.0.43">
     
     
       
-        <title>7. 時間軸シミュレーションエンジン - BMS Part Tuner</title>
+        <title>第7章 時間軸シミュレーションエンジンとプレイアビリティ保存 - BMS Part Tuner</title>
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
       
         
-        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      <link rel="stylesheet" href="../../assets/stylesheets/modern/main.fba56155.min.css">
+      
+        
+          
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/modern/palette.dfe2e883.min.css">
       
       
 
@@ -46,12 +51,12 @@
         
         
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
-        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,500,500i,700,700i%7CJetBrains+Mono:400,400i,700,700i&amp;display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
       
     
     
-    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../..",location),__md_scope.pathname.endsWith("/")||(__md_scope=new URL(__md_scope.pathname+"/",location)),__md_hash=e=>[...e].reduce(((e,t)=>(e<<5)-e+t.charCodeAt(0)),0),__md_get=(e,t=localStorage,_=__md_scope)=>JSON.parse(t.getItem(_.pathname+"."+e)),__md_set=(e,t,_=localStorage,a=__md_scope)=>{try{_.setItem(a.pathname+"."+e,JSON.stringify(t))}catch(e){}},document.documentElement.setAttribute("data-platform",navigator.platform)</script>
     
       
 
@@ -72,7 +77,7 @@
     
     <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
-    <label class="md-overlay" for="__drawer"></label>
+    <label class="md-overlay" for="__drawer" aria-label="ナビゲーション"></label>
     <div data-md-component="skip">
       
         
@@ -92,12 +97,12 @@
   <nav class="md-header__inner md-grid" aria-label="ヘッダー">
     <a href="../.." title="BMS Part Tuner" class="md-header__button md-logo" aria-label="BMS Part Tuner" data-md-component="logo">
       
-  <img src="../../img/BmpPartTunerLogo_dark.svg" alt="logo">
+  <img src="../../img/BmpPartTunerLogo_dark.svg" alt="BMS Part Tuner">
 
     </a>
-    <label class="md-header__button md-icon" for="__drawer">
+    <label class="md-header__button md-icon" for="__drawer" aria-label="ナビゲーション">
       
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-menu" viewBox="0 0 24 24"><path d="M4 5h16M4 12h16M4 19h16"/></svg>
     </label>
     <div class="md-header__title" data-md-component="header-title">
       <div class="md-header__ellipsis">
@@ -109,7 +114,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              7. 時間軸シミュレーションエンジン
+              第7章 時間軸シミュレーションエンジンとプレイアビリティ保存
             
           </span>
         </div>
@@ -149,59 +154,30 @@
     
       
       
-        <label class="md-header__button md-icon" for="__search">
+        <label class="md-header__button md-icon" for="__search" aria-label="検索">
           
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-search" viewBox="0 0 24 24"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>
         </label>
-        <div class="md-search" data-md-component="search" role="dialog">
-  <label class="md-search__overlay" for="__search"></label>
-  <div class="md-search__inner" role="search">
-    <form class="md-search__form" name="search">
-      <input type="text" class="md-search__input" name="query" aria-label="検索" placeholder="検索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
-      <label class="md-search__icon md-icon" for="__search">
-        
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
-        
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
-      </label>
-      <nav class="md-search__options" aria-label="検索">
-        
-        <button type="reset" class="md-search__icon md-icon" title="クリア" aria-label="クリア" tabindex="-1">
-          
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
-        </button>
-      </nav>
-      
-        <div class="md-search__suggest" data-md-component="search-suggest"></div>
-      
-    </form>
-    <div class="md-search__output">
-      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
-        <div class="md-search-result" data-md-component="search-result">
-          <div class="md-search-result__meta">
-            検索を初期化
-          </div>
-          <ol class="md-search-result__list" role="presentation"></ol>
-        </div>
-      </div>
-    </div>
-  </div>
+        <div class="md-search" data-md-component="search" role="dialog" aria-label="検索">
+  <button type="button" class="md-search__button">
+    検索
+  </button>
 </div>
       
     
-    
-      <div class="md-header__source">
+    <div class="md-header__source">
+      
         <a href="https://github.com/bms-atelier-kyokufu/BmsPartTuner" title="リポジトリへ" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2026 Fonticons, Inc.--><path fill="currentColor" d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
   </div>
   <div class="md-source__repository">
     GitHub
   </div>
 </a>
-      </div>
-    
+      
+    </div>
   </nav>
   
 </header>
@@ -225,9 +201,6 @@
       <a href="../.." class="md-tabs__link">
         
   
-  
-    
-  
   ホーム
 
       </a>
@@ -244,9 +217,6 @@
       <a href="../../casual_guide/" class="md-tabs__link">
         
   
-  
-    
-  
   やさしい解説書
 
       </a>
@@ -262,11 +232,13 @@
   
   
     
+      
+    
+    
     
       <li class="md-tabs__item md-tabs__item--active">
         <a href="../" class="md-tabs__link">
           
-  
   
   技術解説書
 
@@ -300,7 +272,7 @@
   <label class="md-nav__title" for="__drawer">
     <a href="../.." title="BMS Part Tuner" class="md-nav__button md-logo" aria-label="BMS Part Tuner" data-md-component="logo">
       
-  <img src="../../img/BmpPartTunerLogo_dark.svg" alt="logo">
+  <img src="../../img/BmpPartTunerLogo_dark.svg" alt="BMS Part Tuner">
 
     </a>
     BMS Part Tuner
@@ -310,7 +282,7 @@
       <a href="https://github.com/bms-atelier-kyokufu/BmsPartTuner" title="リポジトリへ" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2026 Fonticons, Inc.--><path fill="currentColor" d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
   </div>
   <div class="md-source__repository">
     GitHub
@@ -334,8 +306,7 @@
   <span class="md-ellipsis">
     
   
-    ホーム
-  
+  ホーム
 
     
   </span>
@@ -361,8 +332,7 @@
   <span class="md-ellipsis">
     
   
-    やさしい解説書
-  
+  やさしい解説書
 
     
   </span>
@@ -409,8 +379,7 @@
   <span class="md-ellipsis">
     
   
-    技術解説書
-  
+  技術解説書
 
     
   </span>
@@ -425,8 +394,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    技術解説書
-  
+  技術解説書
 
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
@@ -445,8 +413,7 @@
   <span class="md-ellipsis">
     
   
-    概要
-  
+  概要
 
     
   </span>
@@ -473,8 +440,7 @@
   <span class="md-ellipsis">
     
   
-    1. bmsonからBMSへの変換
-  
+  1. bmsonからBMSへの変換
 
     
   </span>
@@ -501,8 +467,7 @@
   <span class="md-ellipsis">
     
   
-    2. 無音トリミング
-  
+  2. 無音トリミング
 
     
   </span>
@@ -529,8 +494,7 @@
   <span class="md-ellipsis">
     
   
-    3. LSHとSIMDの限界
-  
+  3. LSHとSIMDの限界
 
     
   </span>
@@ -557,8 +521,7 @@
   <span class="md-ellipsis">
     
   
-    4. 音声の同値性とピアソンの積率相関係数
-  
+  4. 音声の同値性とピアソンの積率相関係数
 
     
   </span>
@@ -585,8 +548,7 @@
   <span class="md-ellipsis">
     
   
-    5. FFTを用いたタイムアライメント
-  
+  5. FFTを用いたタイムアライメント
 
     
   </span>
@@ -613,8 +575,7 @@
   <span class="md-ellipsis">
     
   
-    6. Union-Findによるグループ化
-  
+  6. Union-Findによるグループ化
 
     
   </span>
@@ -637,7 +598,7 @@
   
     <li class="md-nav__item md-nav__item--active">
       
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
       
       
         
@@ -650,8 +611,7 @@
   <span class="md-ellipsis">
     
   
-    7. 時間軸シミュレーションエンジン
-  
+  7. 時間軸シミュレーションエンジン
 
     
   </span>
@@ -661,15 +621,14 @@
           <span class="md-nav__icon md-icon"></span>
         </label>
       
-      <a href="./" class="md-nav__link md-nav__link--active">
+      <a href="././" class="md-nav__link md-nav__link--active">
         
   
   
   <span class="md-ellipsis">
     
   
-    7. 時間軸シミュレーションエンジン
-  
+  7. 時間軸シミュレーションエンジン
 
     
   </span>
@@ -679,6 +638,7 @@
       </a>
       
         
+
 
 <nav class="md-nav md-nav--secondary" aria-label="目次">
   
@@ -696,9 +656,9 @@
         <li class="md-nav__item">
   <a href="#71" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         7.1 楽譜時間（パルス）と実時間（秒）の非線形写像の定式化
-      
+      </span>
     </span>
   </a>
   
@@ -708,9 +668,9 @@
           <li class="md-nav__item">
   <a href="#71-pulse-time" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         定義 7.1 (Pulse-Time 写像)
-      
+      </span>
     </span>
   </a>
   
@@ -719,9 +679,9 @@
           <li class="md-nav__item">
   <a href="#72" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         定義 7.2 (発音イベントとエネルギー密度)
-      
+      </span>
     </span>
   </a>
   
@@ -735,9 +695,9 @@
         <li class="md-nav__item">
   <a href="#72_1" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         7.2 課題：静的解析の限界と波形干渉のジレンマ
-      
+      </span>
     </span>
   </a>
   
@@ -746,9 +706,9 @@
         <li class="md-nav__item">
   <a href="#73-sweep-line-proof" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         7.3 定理の提示とSweep-Lineアルゴリズムによる証明 (Proof)
-      
+      </span>
     </span>
   </a>
   
@@ -757,9 +717,9 @@
         <li class="md-nav__item">
   <a href="#74" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         7.4 計算量削減の定量的評価と疑似コード
-      
+      </span>
     </span>
   </a>
   
@@ -769,9 +729,9 @@
           <li class="md-nav__item">
   <a href="#pulsetorealtimecalculator-simulationengine" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         実装への射影：PulseToRealTimeCalculator と SimulationEngine
-      
+      </span>
     </span>
   </a>
   
@@ -785,9 +745,9 @@
         <li class="md-nav__item">
   <a href="#75" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         7.5 プレイアビリティ等価定理と許容限界
-      
+      </span>
     </span>
   </a>
   
@@ -796,9 +756,9 @@
         <li class="md-nav__item">
   <a href="#76-references" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         7.6 参考文献 (References)
-      
+      </span>
     </span>
   </a>
   
@@ -827,8 +787,7 @@
   <span class="md-ellipsis">
     
   
-    8. 並列処理とメモリプール
-  
+  8. 並列処理とメモリプール
 
     
   </span>
@@ -858,8 +817,22 @@
               
               <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
                 <div class="md-sidebar__scrollwrap">
+                  
+                    
+                    
+                    
+                      
+                    
+                    
+                      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+                      <div class="md-sidebar-button__wrapper">
+                        <label class="md-sidebar-button" for="__toc"></label>
+                      </div>
+                    
+                  
                   <div class="md-sidebar__inner">
                     
+
 
 <nav class="md-nav md-nav--secondary" aria-label="目次">
   
@@ -877,9 +850,9 @@
         <li class="md-nav__item">
   <a href="#71" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         7.1 楽譜時間（パルス）と実時間（秒）の非線形写像の定式化
-      
+      </span>
     </span>
   </a>
   
@@ -889,9 +862,9 @@
           <li class="md-nav__item">
   <a href="#71-pulse-time" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         定義 7.1 (Pulse-Time 写像)
-      
+      </span>
     </span>
   </a>
   
@@ -900,9 +873,9 @@
           <li class="md-nav__item">
   <a href="#72" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         定義 7.2 (発音イベントとエネルギー密度)
-      
+      </span>
     </span>
   </a>
   
@@ -916,9 +889,9 @@
         <li class="md-nav__item">
   <a href="#72_1" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         7.2 課題：静的解析の限界と波形干渉のジレンマ
-      
+      </span>
     </span>
   </a>
   
@@ -927,9 +900,9 @@
         <li class="md-nav__item">
   <a href="#73-sweep-line-proof" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         7.3 定理の提示とSweep-Lineアルゴリズムによる証明 (Proof)
-      
+      </span>
     </span>
   </a>
   
@@ -938,9 +911,9 @@
         <li class="md-nav__item">
   <a href="#74" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         7.4 計算量削減の定量的評価と疑似コード
-      
+      </span>
     </span>
   </a>
   
@@ -950,9 +923,9 @@
           <li class="md-nav__item">
   <a href="#pulsetorealtimecalculator-simulationengine" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         実装への射影：PulseToRealTimeCalculator と SimulationEngine
-      
+      </span>
     </span>
   </a>
   
@@ -966,9 +939,9 @@
         <li class="md-nav__item">
   <a href="#75" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         7.5 プレイアビリティ等価定理と許容限界
-      
+      </span>
     </span>
   </a>
   
@@ -977,9 +950,9 @@
         <li class="md-nav__item">
   <a href="#76-references" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         7.6 参考文献 (References)
-      
+      </span>
     </span>
   </a>
   
@@ -999,8 +972,6 @@
               <article class="md-content__inner md-typeset">
                 
                   
-
-
   
   
 
@@ -1008,15 +979,15 @@
 <h1 id="7">第7章 時間軸シミュレーションエンジンとプレイアビリティ保存<a class="headerlink" href="#7" title="Permanent link">&para;</a></h1>
 <p>本章では、冗長な音声定義を単一の代表元へと統合した結果、ゲームプレイ時に「音が不自然に重なる」「発音タイミングが変わる」といったプレイフィール上の破綻が絶対に発生しないことを数学的・論理的に保証するためのシステムシミュレーション理論を解説する。
 単なる静的な定義置換が引き起こす干渉問題を排除し、楽譜時間から実時間への非線形写像、および Sweep-Line アルゴリズムを用いた区間代数によって、重複発音の検証計算量を <span class="arithmatex">\(O(M^2)\)</span> から <span class="arithmatex">\(O(M \log M)\)</span> へと削減する過程を証明する。</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p><strong>本章における主要な略称・用語</strong></p>
+<blockquote>
+<p>[!NOTE]
+<strong>本章における主要な略称・用語</strong></p>
 <ul>
 <li><strong>BPM</strong>: Beats Per Minute</li>
 <li><strong>JND</strong>: 最小可聴差異</li>
 <li><strong>Sweep-Line</strong>: 走査線アルゴリズム</li>
 </ul>
-</div>
+</blockquote>
 <h2 id="71">7.1 楽譜時間（パルス）と実時間（秒）の非線形写像の定式化<a class="headerlink" href="#71" title="Permanent link">&para;</a></h2>
 <p>BMSにおけるノート（音符）の配置は、一定のリズム間隔を示す「パルス」と呼ばれる離散的な座標系で行われる。これを物理的な音響波形のオーバーラップ検証に用いるためには、パルスから実時間（秒）への厳密な写像を構築する必要がある。</p>
 <h3 id="71-pulse-time">定義 7.1 (Pulse-Time 写像)<a class="headerlink" href="#71-pulse-time" title="Permanent link">&para;</a></h3>
@@ -1037,20 +1008,16 @@
 上記の破綻を防ぐには、「置換対象のノート群の実時間区間 <span class="arithmatex">\(I_i\)</span> と <span class="arithmatex">\(I_j\)</span> がオーバーラップしているか否か」を全イベントについてシミュレーションする必要がある。総ノート数を <span class="arithmatex">\(M\)</span> としたとき、すべてのペアを素朴に比較すると時間計算量は <span class="arithmatex">\(O(M^2)\)</span> となる。高難易度の譜面（<span class="arithmatex">\(M &gt; 10^5\)</span>）では数分間の計算ブロックが発生し、パイプラインのリアルタイム性を損なう。</p>
 <h2 id="73-sweep-line-proof">7.3 定理の提示とSweep-Lineアルゴリズムによる証明 (Proof)<a class="headerlink" href="#73-sweep-line-proof" title="Permanent link">&para;</a></h2>
 <p>Pulse-Time写像の単調性と、区間代数における Sweep-Line アルゴリズムを導入することで、シミュレーション計算量を劇的に削減する。</p>
-<div class="admonition tip">
-<p class="admonition-title">Important</p>
-<p><strong>定理 7.1 (Pulse-Time 写像の広義単調増加性と逆関数)</strong>
+<blockquote>
+<p>[!IMPORTANT]
+<strong>定理 7.1 (Pulse-Time 写像の広義単調増加性と逆関数)</strong>
 STOPイベントによる停留区間を除き、関数 <span class="arithmatex">\(T(p)\)</span> は広義単調増加である。
 すなわち、任意の <span class="arithmatex">\(p_1 &lt; p_2\)</span> に対して <span class="arithmatex">\(T(p_1) \le T(p_2)\)</span> が成り立つ。これにより、<span class="arithmatex">\(B\)</span> 個のBPM/STOP変化点を持つ区分線形関数 <span class="arithmatex">\(T(p)\)</span> の評価は、変化点の配列に対する二分探索を用いることで、任意の <span class="arithmatex">\(p\)</span> に対して <span class="arithmatex">\(O(\log B)\)</span> 時間で一意に計算可能である。</p>
-</div>
-<div class="admonition tip">
-<p class="admonition-title">Important</p>
-<p><strong>定理 7.2 (Sweep-Lineによる区間オーバーラップの高速検出)</strong>
+<p>[!IMPORTANT]
+<strong>定理 7.2 (Sweep-Lineによる区間オーバーラップの高速検出)</strong>
 総数 <span class="arithmatex">\(M\)</span> 個の発音イベント集合 <span class="arithmatex">\(E\)</span> におけるすべての区間交差（オーバーラップ）の検出は、時間計算量 <span class="arithmatex">\(O(M \log M)\)</span> で完了する。</p>
-</div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p><strong>証明</strong></p>
+<p>[!NOTE]
+<strong>証明</strong></p>
 <p>各発音イベント <span class="arithmatex">\(e_i\)</span> の実時間区間 <span class="arithmatex">\(I_i = [t_{\text{start}}^{(i)}, t_{\text{end}}^{(i)}]\)</span> に対して、2つの端点を生成する。</p>
 <ul>
 <li>始点イベント: <span class="arithmatex">\((t_{\text{start}}^{(i)}, \text{type: START}, \text{id}: i)\)</span></li>
@@ -1063,7 +1030,7 @@ Sweep-Line を時間 <span class="arithmatex">\(t=0\)</span> から順に進め�
 <li><code>END</code> イベントに遭遇した場合：「発音中リスト」からノート <span class="arithmatex">\(i\)</span> を削除する。</li>
 </ol>
 <p>この走査処理において、各イベントのリストへの追加・削除がそれぞれ1回ずつ行われるため、走査自体の時間計算量は <span class="arithmatex">\(O(M)\)</span> である。交差の列挙を含めても、ソートの計算量が支配的となるため、全体の時間計算量は <span class="arithmatex">\(O(M \log M)\)</span> となることが示された。<span class="arithmatex">\(\blacksquare\)</span></p>
-</div>
+</blockquote>
 <h2 id="74">7.4 計算量削減の定量的評価と疑似コード<a class="headerlink" href="#74" title="Permanent link">&para;</a></h2>
 <p>前述の証明により、譜面の全ノートのペアを検証する <span class="arithmatex">\(O(M^2)\)</span> の力技探索は排除され、ソートに基づいた <span class="arithmatex">\(O(M \log M)\)</span> 空間へと最適化された。</p>
 <h3 id="pulsetorealtimecalculator-simulationengine">実装への射影：PulseToRealTimeCalculator と SimulationEngine<a class="headerlink" href="#pulsetorealtimecalculator-simulationengine" title="Permanent link">&para;</a></h3>
@@ -1112,19 +1079,21 @@ Sweep-Line を時間 <span class="arithmatex">\(t=0\)</span> から順に進め�
 <p>このシミュレーションにより、置換対象となる音声が「タイムライン上でオーバーラップする」場合は安全のために最適化から除外される。</p>
 <h2 id="75">7.5 プレイアビリティ等価定理と許容限界<a class="headerlink" href="#75" title="Permanent link">&para;</a></h2>
 <p>最終的に、このシミュレーションエンジンが保証する「ゲームプレイの不変性」を数学的に定義する。</p>
-<div class="admonition tip">
-<p class="admonition-title">Important</p>
-<p><strong>定理 7.3 (プレイアビリティ等価定理)</strong>
+<blockquote>
+<p>[!IMPORTANT]
+<strong>定理 7.3 (プレイアビリティ等価定理)</strong>
 最適化前の譜面における時刻 <span class="arithmatex">\(t\)</span> での全発音エネルギー密度関数を <span class="arithmatex">\(\Phi_{\text{orig}}(t)\)</span>、最適化後のそれを <span class="arithmatex">\(\Phi_{\text{opt}}(t)\)</span> とする。
 SimulationEngine によって「干渉する同値類ノートを統合しない」という境界条件が守られる限り、任意の時刻 <span class="arithmatex">\(t\)</span> において以下の不等式が成立する。</p>
 <div class="arithmatex">\[\int_{t}^{t + \Delta t} |\Phi_{\text{orig}}(\tau) - \Phi_{\text{opt}}(\tau)| d\tau \le \delta \quad \cdots (7.2)\]</div>
 <p>ここで <span class="arithmatex">\(\delta\)</span> は人間の聴覚におけるJNDに基づく極微小な許容限界値である。</p>
-</div>
+</blockquote>
 <p>この定理により、BMS Part Tuner が行う最適化は単なるファイルサイズの削減に留まらず、「プレイヤーが体感する音響的エネルギーの総量と位相分布を数学的に完全保存している」ことが論理的に証明される。</p>
 <h2 id="76-references">7.6 参考文献 (References)<a class="headerlink" href="#76-references" title="Permanent link">&para;</a></h2>
 <ul>
 <li>Shamos, M. I., &amp; Hoey, D. (1976). "Geometric intersection problems". <em>17th Annual Symposium on Foundations of Computer Science (sfcs 1976)</em>. IEEE.</li>
 </ul>
+
+
 
 
 
@@ -1147,7 +1116,7 @@ SimulationEngine によって「干渉する同値類ノートを統合しない
         
           <button type="button" class="md-top md-icon" data-md-component="top" hidden>
   
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-circle-arrow-up" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m16 12-4-4-4 4M12 16V8"/></svg>
   ページトップへ戻る
 </button>
         
@@ -1161,8 +1130,8 @@ SimulationEngine によって「干渉する同値類ノートを統合しない
   
   
     Made with
-    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
-      Material for MkDocs
+    <a href="https://zensical.org/" target="_blank" rel="noopener">
+      Zensical
     </a>
   
 </div>
@@ -1180,10 +1149,10 @@ SimulationEngine によって「干渉する同値類ノートを統合しない
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u30b3\u30d4\u30fc\u3057\u307e\u3057\u305f", "clipboard.copy": "\u30af\u30ea\u30c3\u30d7\u30dc\u30fc\u30c9\u3078\u30b3\u30d4\u30fc", "search.result.more.one": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3082\u30461\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.more.other": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3042\u3068#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.none": "\u4f55\u3082\u898b\u3064\u304b\u308a\u307e\u305b\u3093\u3067\u3057\u305f", "search.result.one": "1\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.other": "#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.placeholder": "\u691c\u7d22\u30ad\u30fc\u30ef\u30fc\u30c9\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044", "search.result.term.missing": "\u691c\u7d22\u306b\u542b\u307e\u308c\u306a\u3044", "select.version": "\u30d0\u30fc\u30b8\u30e7\u30f3\u5207\u308a\u66ff\u3048"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate":null,"base":"../..","features":["navigation.tabs","navigation.sections","navigation.top","search.suggest","search.highlight","content.code.copy"],"search":"../../assets/javascripts/workers/search.e2d2d235.min.js","tags":null,"translations":{"clipboard.copied":"コピーしました","clipboard.copy":"クリップボードへコピー","search.result.more.one":"このページ内にもう1件見つかりました","search.result.more.other":"このページ内にあと#件見つかりました","search.result.none":"何も見つかりませんでした","search.result.one":"1件見つかりました","search.result.other":"#件見つかりました","search.result.placeholder":"検索キーワードを入力してください","search.result.term.missing":"検索に含まれない","select.version":"バージョン切り替え"},"version":null}</script>
     
     
-      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../assets/javascripts/bundle.6e5f0216.min.js"></script>
       
         <script src="../../javascripts/mathjax.js"></script>
       
