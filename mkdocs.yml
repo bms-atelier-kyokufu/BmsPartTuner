@@ -28,16 +28,6 @@ theme:
       toggle:
         icon: material/brightness-4
         name: Switch to light mode
-
-extra:
-  alternate:
-    - name: 日本語
-      link: ./
-      lang: ja
-    - name: English
-      link: ./en/
-      lang: en
-
 markdown_extensions:
   - toc:
       permalink: true
@@ -63,9 +53,14 @@ extra_javascript:
 
 nav:
   - ホーム: index.md
-  - 構造とアーキテクチャ: 00_ARCHITECTURE_JP.md
-  - テクニカルガイド: 01_TECHNICAL_GUIDE_JP.md
-  - 最適化レポート: 02_OPTIMIZATION_GUIDE_JP.md
-  - テスト設計: 03_TEST_DESIGN_JP.md
-  - テスト戦略: 04_TEST_STRATEGY_JP.md
-  - コミット規約: COMMIT_MESSAGE_GUIDE_JP.md
+  - やさしい解説書: casual_guide.md
+  - 技術解説書:
+      - 概要: teach/index.md
+      - 1. bmsonからBMSへの変換: teach/01_bmson_to_bms_conversion.md
+      - 2. 無音トリミング: teach/02_silence_trimming.md
+      - 3. LSHとSIMDの限界: teach/03_lsh_and_simd_limits.md
+      - 4. 音声の同値性とピアソンの積率相関係数: teach/04_audio_equivalence_and_pearson.md
+      - 5. FFTを用いたタイムアライメント: teach/05_fft_alignment.md
+      - 6. Union-Findによるグループ化: teach/06_union_find.md
+      - 7. 時間軸シミュレーションエンジン: teach/07_simulation_engine.md
+      - 8. 並列処理とメモリプール: teach/08_parallelism_and_memory_pooling.md

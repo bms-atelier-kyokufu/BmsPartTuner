@@ -25,10 +25,8 @@ jobs:
           restore-keys: |
             mkdocs-material-
       - run: pip install mkdocs-material
-      - name: Build Japanese docs
+      - name: Build docs
         run: mkdocs build -f mkdocs.yml
-      - name: Build English docs
-        run: mkdocs build -f mkdocs.en.yml
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
