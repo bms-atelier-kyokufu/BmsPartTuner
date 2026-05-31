@@ -16,6 +16,7 @@ on:
       - '**.sln'
       - '**.props'
   workflow_dispatch: # GitHub上で手動実行を可能にする
+  workflow_call: # gh-pages等の他ワークフローからの呼び出しを許可する
 
 jobs:
   build:
