@@ -1,5 +1,7 @@
 # BMS Part Tuner ドキュメント
 
+[![BMS Part Tuner Logo](./img/BmpPartTunerLogo_dark.svg)](https://github.com/bms-atelier-kyokufu/BmsPartTuner/)
+
 **BMS Part Tuner** のドキュメントサイトへようこそ。
 このツールは、数時間かかるはずの最適化処理を、純粋な計算機科学（Computer Science）の力によってわずか数秒で終わらせる「極限のサボり技術（最適化アルゴリズム）」の結晶です。
 
