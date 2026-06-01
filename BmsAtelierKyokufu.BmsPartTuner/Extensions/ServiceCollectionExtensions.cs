@@ -19,12 +19,15 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Extensions
             // Scrutorによるアセンブリスキャン自動登録
             services.Scan(scan => scan
                 .FromAssemblyOf<App>()
-                    // Services配下、およびUI.Services配下のクラスをSingletonとして登録（自身および実装するインターフェースとして）
+                    // Services配下、および各サブレイヤーのサービス実装クラスをSingletonとして登録（自身および実装するインターフェースとして）
                     .AddClasses(classes => classes.InNamespaces(
                             $"{baseNamespace}.Services",
                             $"{baseNamespace}.UI.Services",
-                            $"{baseNamespace}.Core.Services",
-                            $"{baseNamespace}.Infrastructure.Services"
+                            $"{baseNamespace}.Core.Interfaces.Common",
+                            $"{baseNamespace}.Core.Optimization",
+                            $"{baseNamespace}.Infrastructure.Common",
+                            $"{baseNamespace}.Infrastructure.Bms",
+                            $"{baseNamespace}.Infrastructure.Audio"
                         )
                         // 特殊な初期化が必要なクラスは除外
                         .Where(type => type != typeof(DragDropService) && type != typeof(WpfUIThreadDispatcher))
