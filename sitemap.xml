@@ -1,36 +1,36 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
       <url>
-        <loc>https://bms-atelier-kyokufu.github.io/BmsPartTuner/</loc>
+        <loc>https://app.kyokufu.blog/</loc>
       </url>
       <url>
-        <loc>https://bms-atelier-kyokufu.github.io/BmsPartTuner/casual_guide/</loc>
+        <loc>https://app.kyokufu.blog/casual_guide/</loc>
       </url>
       <url>
-        <loc>https://bms-atelier-kyokufu.github.io/BmsPartTuner/teach/</loc>
+        <loc>https://app.kyokufu.blog/teach/</loc>
       </url>
       <url>
-        <loc>https://bms-atelier-kyokufu.github.io/BmsPartTuner/teach/01_bmson_to_bms_conversion/</loc>
+        <loc>https://app.kyokufu.blog/teach/01_bmson_to_bms_conversion/</loc>
       </url>
       <url>
-        <loc>https://bms-atelier-kyokufu.github.io/BmsPartTuner/teach/02_silence_trimming/</loc>
+        <loc>https://app.kyokufu.blog/teach/02_silence_trimming/</loc>
       </url>
       <url>
-        <loc>https://bms-atelier-kyokufu.github.io/BmsPartTuner/teach/03_lsh_and_simd_limits/</loc>
+        <loc>https://app.kyokufu.blog/teach/03_lsh_and_simd_limits/</loc>
       </url>
       <url>
-        <loc>https://bms-atelier-kyokufu.github.io/BmsPartTuner/teach/04_audio_equivalence_and_pearson/</loc>
+        <loc>https://app.kyokufu.blog/teach/04_audio_equivalence_and_pearson/</loc>
       </url>
       <url>
-        <loc>https://bms-atelier-kyokufu.github.io/BmsPartTuner/teach/05_fft_alignment/</loc>
+        <loc>https://app.kyokufu.blog/teach/05_fft_alignment/</loc>
       </url>
       <url>
-        <loc>https://bms-atelier-kyokufu.github.io/BmsPartTuner/teach/06_union_find/</loc>
+        <loc>https://app.kyokufu.blog/teach/06_union_find/</loc>
       </url>
       <url>
-        <loc>https://bms-atelier-kyokufu.github.io/BmsPartTuner/teach/07_simulation_engine/</loc>
+        <loc>https://app.kyokufu.blog/teach/07_simulation_engine/</loc>
       </url>
       <url>
-        <loc>https://bms-atelier-kyokufu.github.io/BmsPartTuner/teach/08_parallelism_and_memory_pooling/</loc>
+        <loc>https://app.kyokufu.blog/teach/08_parallelism_and_memory_pooling/</loc>
       </url>
 </urlset>
