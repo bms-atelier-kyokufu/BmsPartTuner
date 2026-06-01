@@ -3,7 +3,6 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:converters="clr-namespace:BmsAtelierKyokufu.BmsPartTuner.UI.Converters"
-    StartupUri="UI/Views/Windows/MainWindow.xaml"
     ShutdownMode="OnMainWindowClose">
     <Application.Resources>
         <ResourceDictionary>
