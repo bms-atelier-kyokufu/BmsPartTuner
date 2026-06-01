@@ -27,14 +27,15 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Extensions
                             $"{baseNamespace}.Core.Optimization",
                             $"{baseNamespace}.Infrastructure.Common",
                             $"{baseNamespace}.Infrastructure.Bms",
-                            $"{baseNamespace}.Infrastructure.Audio"
+                            $"{baseNamespace}.Infrastructure.Audio",
+                            $"{baseNamespace}.UseCases"
                         )
                         // 特殊な初期化が必要なクラスは除外
                         .Where(type => type != typeof(DragDropService) && type != typeof(WpfUIThreadDispatcher))
                     ).AsSelfWithInterfaces()
                     .WithSingletonLifetime()
                     // ViewModels配下のクラスをTransientとして登録
-                    .AddClasses(classes => classes.InNamespaces($"{baseNamespace}.ViewModels"))
+                    .AddClasses(classes => classes.InNamespaces($"{baseNamespace}.UI.ViewModels"))
                     .AsSelf()
                     .WithTransientLifetime()
             );
