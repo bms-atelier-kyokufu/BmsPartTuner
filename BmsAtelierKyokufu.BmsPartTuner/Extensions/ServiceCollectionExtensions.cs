@@ -1,4 +1,4 @@
-﻿using BmsAtelierKyokufu.BmsPartTuner.UI.Services;
+using BmsAtelierKyokufu.BmsPartTuner.UI.Services;
 using BmsAtelierKyokufu.BmsPartTuner.UI.Views.Windows;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -19,9 +19,13 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Extensions
             // Scrutorによるアセンブリスキャン自動登録
             services.Scan(scan => scan
                 .FromAssemblyOf<App>()
-                    // Services配下のクラスをSingletonとして登録（自身および実装するインターフェースとして）
-                    // InNamespaces は前方一致のため、サブ名前空間（Common, Audio等）も全て含まれます。
-                    .AddClasses(classes => classes.InNamespaces($"{baseNamespace}.Services")
+                    // Services配下、およびUI.Services配下のクラスをSingletonとして登録（自身および実装するインターフェースとして）
+                    .AddClasses(classes => classes.InNamespaces(
+                            $"{baseNamespace}.Services",
+                            $"{baseNamespace}.UI.Services",
+                            $"{baseNamespace}.Core.Services",
+                            $"{baseNamespace}.Infrastructure.Services"
+                        )
                         // 特殊な初期化が必要なクラスは除外
                         .Where(type => type != typeof(DragDropService) && type != typeof(WpfUIThreadDispatcher))
                     ).AsSelfWithInterfaces()
