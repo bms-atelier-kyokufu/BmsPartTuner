@@ -7,7 +7,7 @@
 
 読者の目的や背景知識に合わせて、2つの主要なドキュメントルートを用意しています。
 
-GitHubレポジトリはこちら: [![GitHub](https://img.shields.io/badge/-GitHub-181717?style=flat-square&logo=github) bms-atelier-kyokufu/BmsPartTuner](https://github.com/bms-atelier-kyokufu/BmsPartTuner)
+GitHubレポジトリはこちら: <a href="https://github.com/bms-atelier-kyokufu/BmsPartTuner"><img src="https://img.shields.io/badge/-GitHub-181717?style=flat-square&logo=github" alt="GitHub" style="vertical-align: middle; display: inline;"> bms-atelier-kyokufu/BmsPartTuner</a>
 
 > [!NOTE]
 > **謝辞**
