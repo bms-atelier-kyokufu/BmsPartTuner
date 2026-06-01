@@ -1,4 +1,4 @@
-﻿using Microsoft.Win32;
+using Microsoft.Win32;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.UI.Services;
 
@@ -9,8 +9,8 @@ namespace BmsAtelierKyokufu.BmsPartTuner.UI.Services;
 public class ThemeService
 {
     private static readonly Logger<ThemeService> s_logger = new();
-    private const string LightThemePath = "/Themes/LightTheme.xaml";
-    private const string DarkThemePath = "/Themes/DarkTheme.xaml";
+    private const string LightThemePath = "/UI/Themes/LightTheme.xaml";
+    private const string DarkThemePath = "/UI/Themes/DarkTheme.xaml";
     private const string RegistryKeyPath = @"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize";
 
     /// <summary>
@@ -37,7 +37,7 @@ public class ThemeService
         {
             var mergedDictionaries = Application.Current.Resources.MergedDictionaries;
 
-            s_logger.WriteDebug( $"テーマ切り替え開始: {(isDark ? "Dark" : "Light")}");
+            s_logger.WriteDebug($"テーマ切り替え開始: {(isDark ? "Dark" : "Light")}");
 
             // 新しいテーマを読み込む
             var newTheme = new ResourceDictionary { Source = new Uri(themePath, UriKind.Relative) };
@@ -73,12 +73,12 @@ public class ThemeService
 
             ThemeChanged?.Invoke(this, isDark);
 
-            s_logger.WriteDebug( $"テーマを適用しました: {(isDark ? "Dark" : "Light")}");
+            s_logger.WriteDebug($"テーマを適用しました: {(isDark ? "Dark" : "Light")}");
         }
         catch (Exception ex)
         {
-            s_logger.WriteDebug( $"テーマの適用に失敗しました: {ex.Message}");
-            s_logger.WriteDebug( ex.StackTrace ?? string.Empty);
+            s_logger.WriteDebug($"テーマの適用に失敗しました: {ex.Message}");
+            s_logger.WriteDebug(ex.StackTrace ?? string.Empty);
         }
     }
 
@@ -95,7 +95,7 @@ public class ThemeService
         }
         catch (Exception ex)
         {
-            s_logger.WriteDebug( $"システムテーマの読み取りエラー: {ex}");
+            s_logger.WriteDebug($"システムテーマの読み取りエラー: {ex}");
             return false;
         }
     }
@@ -128,7 +128,7 @@ public class ThemeService
                     InvalidateVisualTree(window);
                 }
             }
-        }), System.Windows.Threading.DispatcherPriority.Render);
+        }), DispatcherPriority.Render);
     }
 
     /// <summary>
