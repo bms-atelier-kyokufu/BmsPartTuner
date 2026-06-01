@@ -1,4 +1,4 @@
-﻿using BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Audio;
+using BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Audio;
 namespace BmsAtelierKyokufu.BmsPartTuner.UI.ViewModels;
 
 /// <summary>
@@ -105,20 +105,37 @@ public partial class FileListViewModel : ObservableObject, IDisposable
     /// <summary>
     /// 指定されたパスのBMS/bmsonファイルを読み込み、リストとフィルタを初期化します。
     /// </summary>
-    public void LoadBmsFile(string bmsFilePath, string? bmsContent = null)
+    public async Task LoadBmsFileAsync(string bmsFilePath, string? bmsContent = null)
     {
-        s_logger.WriteDebug( $"=== FileListViewModel.LoadBmsFile Started for {Path.GetFileName(bmsFilePath)} ===");
+        s_logger.WriteDebug( $"=== FileListViewModel.LoadBmsFileAsync Started for {Path.GetFileName(bmsFilePath)} ===");
         var timerTotal = s_logger.StartTimer();
-        var timer = s_logger.StartTimer();
         try
         {
-            _bmsFileList = new BmsDefinitionManager(bmsFilePath, bmsContent);
-            var fileList = _bmsFileList.CreateFileList();
-            FileListItems = fileList;
-            s_logger.WriteDebug( $"BmsDefinitionManager construction and CreateFileList: {timer.Lap("BmsDefinitionManager construction and CreateFileList")} ms");
+            var (bmsFileList, fileList, instrumentGroups) = await Task.Run(() =>
+            {
+                var timer = s_logger.StartTimer();
+                var manager = new BmsDefinitionManager(bmsFilePath, bmsContent);
+                var list = manager.CreateFileList();
+                s_logger.WriteDebug( $"BmsDefinitionManager construction and CreateFileList: {timer.Lap("BmsDefinitionManager construction and CreateFileList")} ms");
 
-            InitializeInstrumentFilters(fileList);
-            s_logger.WriteDebug( $"FilterChips and InstrumentGroups generation: {timer.Lap("FilterChips and InstrumentGroups generation")} ms");
+                var chips = _filterService?.GenerateFilterChips(list) ?? [];
+                var groups = chips
+                    .Select(static c => new InstrumentNameDetectionService.InstrumentGroup
+                    {
+                        Name = c.Keyword,
+                        Count = c.Count,
+                        IsSelected = true
+                    })
+                    .ToList();
+                s_logger.WriteDebug( $"FilterChips and InstrumentGroups generation: {timer.Lap("FilterChips and InstrumentGroups generation")} ms");
+
+                return (manager, list, groups);
+            });
+
+            // UIスレッド上でプロパティを更新
+            _bmsFileList = bmsFileList;
+            FileListItems = fileList;
+            InstrumentGroups = new ObservableCollection<InstrumentNameDetectionService.InstrumentGroup>(instrumentGroups);
 
             if (_bmsFileList.MissingFiles.Count == 0 && fileList.Count > 0)
             {
@@ -130,7 +147,7 @@ public partial class FileListViewModel : ObservableObject, IDisposable
                 });
                 WeakReferenceMessenger.Default.Send(new FileListLoadedMessage(true, bmsFilePath, string.Empty));
             }
-            s_logger.WriteDebug( $"=== FileListViewModel.LoadBmsFile Finished: {timerTotal.Lap("Total")} ms ===");
+            s_logger.WriteDebug( $"=== FileListViewModel.LoadBmsFileAsync Finished: {timerTotal.Lap("Total")} ms ===");
         }
         catch (Exception ex)
         {
@@ -144,21 +161,7 @@ public partial class FileListViewModel : ObservableObject, IDisposable
         }
     }
 
-    private void InitializeInstrumentFilters(ObservableCollection<BmsAudioFile> fileList)
-    {
-        var chips = _filterService?.GenerateFilterChips(fileList) ?? [];
-
-        var instrumentGroups = chips
-            .Select(static c => new InstrumentNameDetectionService.InstrumentGroup
-            {
-                Name = c.Keyword,
-                Count = c.Count,
-                IsSelected = true
-            })
-            .ToList();
-
-        InstrumentGroups = new ObservableCollection<InstrumentNameDetectionService.InstrumentGroup>(instrumentGroups);
-    }
+    // InitializeInstrumentFiltersはTask.Run内部に統合されたため削除
 
     /// <summary>
     /// 楽器フィルタチップの選択状態を反転させます。

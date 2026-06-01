@@ -1,4 +1,4 @@
-﻿using BmsAtelierKyokufu.BmsPartTuner.UI.ViewModels;
+using BmsAtelierKyokufu.BmsPartTuner.UI.ViewModels;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.UI.Controllers;
 
@@ -71,6 +71,7 @@ public class AppController(
             return;
         }
 
+        _mainViewModel.HideResultCard();
         _mainViewModel.StatusMessage = "しきい値最適化シミュレーション開始...";
 
         var result = await _mainViewModel.Optimization.ExecuteThresholdOptimizationAsync(
@@ -139,12 +140,17 @@ public class AppController(
             WorkingBmsContent,
             selectedKeywords);
 
-        // 処理完了後、出力先のファイルでリストを再読み込み
         if (string.Equals(inputToUse, _mainViewModel.FileOperations.OutputPath, StringComparison.OrdinalIgnoreCase))
         {
             if (inputToUse != null && _fileSystemService.FileExists(inputToUse))
             {
-                _mainViewModel.BmsDefinitionManager.LoadBmsFile(inputToUse);
+                _mainViewModel.IsBusy = true;
+                _mainViewModel.IsGlobalProgressIndeterminate = true;
+                _mainViewModel.StatusMessage = "リストを再読み込み中...";
+                await _mainViewModel.BmsDefinitionManager.LoadBmsFileAsync(inputToUse);
+                _mainViewModel.IsGlobalProgressIndeterminate = false;
+                _mainViewModel.IsBusy = false;
+                _mainViewModel.StatusMessage = "準備完了";
             }
         }
         else
@@ -156,6 +162,14 @@ public class AppController(
 
     public void HandleInputPathChanged(string? path)
     {
+        // 入力パスが変更（または新規ファイル読み込み）されたタイミングでリザルトカードを隠す
+        _mainViewModel.HideResultCard();
+
+        _ = ProcessInputPathAsync(path);
+    }
+
+    private async Task ProcessInputPathAsync(string? path)
+    {
         if (path != null && _fileSystemService.FileExists(path))
         {
             var extension = Path.GetExtension(path);
@@ -164,13 +178,19 @@ public class AppController(
                 // すでにダウンコンバート済みの同じファイルなら再変換をスキップ
                 if (string.Equals(path, LastDownconvertedBmsonPath, StringComparison.OrdinalIgnoreCase) && WorkingBmsContent != null)
                 {
-                    _mainViewModel.BmsDefinitionManager.LoadBmsFile(path, WorkingBmsContent);
+                    _mainViewModel.IsBusy = true;
+                    _mainViewModel.IsGlobalProgressIndeterminate = true;
+                    _mainViewModel.StatusMessage = "リストを読み込み中...";
+                    await _mainViewModel.BmsDefinitionManager.LoadBmsFileAsync(path, WorkingBmsContent);
+                    _mainViewModel.IsGlobalProgressIndeterminate = false;
+                    _mainViewModel.IsBusy = false;
+                    _mainViewModel.StatusMessage = "準備完了";
                     return;
                 }
 
                 if (IsDownconverting) return;
 
-                _ = DownconvertBmsonAsync(path);
+                await DownconvertBmsonAsync(path);
             }
             else
             {
@@ -180,7 +200,14 @@ public class AppController(
                 WorkingBmsPath = path;
                 WorkingBmsContent = null;
                 LastDownconvertedBmsonPath = null; // 別のファイルが来たらクリア
-                _mainViewModel.BmsDefinitionManager.LoadBmsFile(path);
+
+                _mainViewModel.IsBusy = true;
+                _mainViewModel.IsGlobalProgressIndeterminate = true;
+                _mainViewModel.StatusMessage = "リストを読み込み中...";
+                await _mainViewModel.BmsDefinitionManager.LoadBmsFileAsync(path);
+                _mainViewModel.IsGlobalProgressIndeterminate = false;
+                _mainViewModel.IsBusy = false;
+                _mainViewModel.StatusMessage = "準備完了";
             }
         }
         else
@@ -211,13 +238,17 @@ public class AppController(
             {
                 Core.Audio.VirtualAudioRegistry.Clear();
                 Core.Audio.PointerAudioRegistry.Clear();
+                
+                _mainViewModel.IsGlobalProgressIndeterminate = true;
                 string bmsText = await _bmsonConversionService.GenerateBmsTextAsync(path, keyNotesOnly: false);
 
                 WorkingBmsPath = path;
                 WorkingBmsContent = bmsText;
                 LastDownconvertedBmsonPath = path; // 成功時にパスを記憶
 
-                _mainViewModel.BmsDefinitionManager.LoadBmsFile(path, bmsText);
+                _mainViewModel.StatusMessage = "リストを構築中...";
+                await _mainViewModel.BmsDefinitionManager.LoadBmsFileAsync(path, bmsText);
+                _mainViewModel.IsGlobalProgressIndeterminate = false;
             }
             _mainViewModel.ShowToast($"bmsonをダウンコンバートしました: {Path.GetFileName(path)}", "📁", false);
         }

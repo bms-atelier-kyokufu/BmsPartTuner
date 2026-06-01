@@ -1,4 +1,4 @@
-﻿using BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Audio;
+using BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Audio;
 using BmsAtelierKyokufu.BmsPartTuner.UI.Controllers;
 using BmsAtelierKyokufu.BmsPartTuner.UI.Services;
 namespace BmsAtelierKyokufu.BmsPartTuner.UI.ViewModels;
@@ -64,6 +64,24 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
     [ObservableProperty]
     public partial bool IsBusy { get; set; }
 
+    /// <summary>
+    /// グローバルなプログレスの進捗率（0〜100）。
+    /// </summary>
+    [ObservableProperty]
+    public partial int GlobalProgressValue { get; set; }
+
+    /// <summary>
+    /// グローバルなプログレスが不定状態（インジケーターぐるぐる状態）かどうか。
+    /// </summary>
+    [ObservableProperty]
+    public partial bool IsGlobalProgressIndeterminate { get; set; }
+
+    /// <summary>
+    /// グローバルなプログレスバーを表示するかどうか。
+    /// </summary>
+    [ObservableProperty]
+    public partial bool IsGlobalProgressVisible { get; set; }
+
     #region フォワードプロパティ
 
     // XAML側で直接子ViewModelのプロパティをバインドするように修正済み
@@ -127,6 +145,15 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
     private void CloseSettings()
     {
         IsSettingsOpen = false;
+    }
+
+    /// <summary>
+    /// 結果カードを閉じるコマンド。
+    /// </summary>
+    [RelayCommand]
+    private void HideResultCardCommand()
+    {
+        HideResultCard();
     }
 
     /// <summary>
@@ -269,7 +296,6 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
 
         if (e.PropertyName == nameof(FileOperations.InputPath))
         {
-            Notification.HideResultCard();
             Optimization.ProgressValue = 0;
             StatusMessage = "準備完了";
         }
@@ -292,9 +318,18 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
     private void OnOptimizationPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         ForwardPropertyChanged(e.PropertyName);
-        if (e.PropertyName == nameof(Optimization.IsPhysicalDeletionEnabled))
+        
+        if (e.PropertyName == nameof(Optimization.ProgressValue))
         {
-            // プロパティ変更通知は不要になったため削除
+            GlobalProgressValue = Optimization.ProgressValue;
+        }
+        else if (e.PropertyName == nameof(Optimization.IsProgressIndeterminate))
+        {
+            IsGlobalProgressIndeterminate = Optimization.IsProgressIndeterminate;
+        }
+        else if (e.PropertyName == nameof(Optimization.IsBusy))
+        {
+            IsGlobalProgressVisible = Optimization.IsBusy;
         }
     }
 

@@ -1,4 +1,4 @@
-﻿<Window
+<Window
     x:Class="BmsAtelierKyokufu.BmsPartTuner.UI.Views.Windows.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -26,6 +26,21 @@
 
     <!--  ルートグリッド: メインコンテンツ + サイドシートオーバーレイ  -->
     <Grid>
+        <!--  グローバルプログレスバー (ウィンドウ上部に固定)  -->
+        <ProgressBar
+            Height="4"
+            VerticalAlignment="Top"
+            Panel.ZIndex="1000"
+            Background="Transparent"
+            BorderThickness="0"
+            Foreground="{DynamicResource M3PrimaryBrush}"
+            IsIndeterminate="{Binding IsGlobalProgressIndeterminate}"
+            Maximum="100"
+            Minimum="0"
+            Value="{Binding GlobalProgressValue}"
+            Visibility="{Binding IsGlobalProgressVisible, Converter={StaticResource BooleanToVisibilityConverter}}" />
+
+        <!--  メイングリッド: 3カラムレイアウト  -->
         <!--  メイングリッド: 3カラムレイアウト  -->
         <Grid>
             <Grid.ColumnDefinitions>
@@ -319,20 +334,35 @@
                             <Border Style="{DynamicResource ResultCard}" Visibility="{Binding Notification.IsResultCardVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
                                 <StackPanel>
                                     <!--  ヘッダー  -->
-                                    <StackPanel Margin="0,0,0,16" Orientation="Horizontal">
-                                        <TextBlock
+                                    <Grid Margin="0,0,0,16">
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                                            <TextBlock
+                                                VerticalAlignment="Center"
+                                                FontSize="24"
+                                                Foreground="{DynamicResource M3PrimaryBrush}"
+                                                Text="{Binding Notification.ResultIcon}" />
+                                            <TextBlock
+                                                Margin="12,0,0,0"
+                                                VerticalAlignment="Center"
+                                                FontSize="15"
+                                                FontWeight="SemiBold"
+                                                Foreground="{DynamicResource M3OnSurfaceBrush}"
+                                                Text="最適化サマリー" />
+                                        </StackPanel>
+                                        <Button
+                                            HorizontalAlignment="Right"
                                             VerticalAlignment="Center"
-                                            FontSize="24"
-                                            Foreground="{DynamicResource M3PrimaryBrush}"
-                                            Text="{Binding Notification.ResultIcon}" />
-                                        <TextBlock
-                                            Margin="12,0,0,0"
-                                            VerticalAlignment="Center"
-                                            FontSize="15"
-                                            FontWeight="SemiBold"
-                                            Foreground="{DynamicResource M3OnSurfaceBrush}"
-                                            Text="最適化サマリー" />
-                                    </StackPanel>
+                                            Width="32"
+                                            Height="32"
+                                            Command="{Binding HideResultCardCommand}"
+                                            Style="{StaticResource M3IconButton}"
+                                            ToolTip="閉じる">
+                                            <TextBlock
+                                                FontSize="16"
+                                                Foreground="{DynamicResource M3OnSurfaceVariantBrush}"
+                                                Text="✕" />
+                                        </Button>
+                                    </Grid>
 
                                     <!--  推奨しきい値 (大見出し)  -->
                                     <TextBlock
@@ -436,7 +466,6 @@
                                 </StackPanel>
                             </Border>
 
-                            <!--  ステータス & プログレス  -->
                             <TextBlock
                                 x:Name="StatusLabel"
                                 Margin="0,20,0,12"
@@ -444,16 +473,6 @@
                                 Foreground="{DynamicResource M3OnSurfaceVariantBrush}"
                                 Text="{Binding Optimization.StatusMessage}"
                                 TextWrapping="Wrap" />
-                            <ProgressBar
-                                x:Name="DefinitionReductProgressBar"
-                                Height="8"
-                                Background="{DynamicResource M3PrimaryContainerBrush}"
-                                BorderThickness="0"
-                                Foreground="{DynamicResource M3PrimaryBrush}"
-                                IsIndeterminate="{Binding Optimization.IsProgressIndeterminate}"
-                                Maximum="100"
-                                Minimum="0"
-                                Value="{Binding Optimization.ProgressValue}" />
                         </StackPanel>
                     </ScrollViewer>
                 </Grid>
