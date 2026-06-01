@@ -147,14 +147,7 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
         IsSettingsOpen = false;
     }
 
-    /// <summary>
-    /// 結果カードを閉じるコマンド。
-    /// </summary>
-    [RelayCommand]
-    private void HideResultCardCommand()
-    {
-        HideResultCard();
-    }
+
 
     /// <summary>
     /// 外部プレイヤーでテスト再生を実行するコマンド。
@@ -396,6 +389,7 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
         Notification.ShowResultCard(threshold, summary, reduction, time, margin, isOptimization);
     }
 
+    [RelayCommand]
     public void HideResultCard()
     {
         Notification.HideResultCard();
