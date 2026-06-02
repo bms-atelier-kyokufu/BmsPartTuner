@@ -43,65 +43,92 @@ internal static class FastWaveCompare
     /// <param name="data2">比較先の音声データ。</param>
     /// <param name="threshold">ピアソン相関係数のしきい値（0.0-1.0）。</param>
     /// <returns>類似している場合true。</returns>
-    [ADRAnchor("ARCH-03", nameof(IsMatch))]
+    [ADRAnchor("ARCH-03", nameof(FastWaveCompare.IsMatch))]
     public static bool IsMatch(ICachedSoundData data1, ICachedSoundData data2, float threshold)
     {
-        // 【アーキテクチャ決定（ARCH-03）】
-        // 仮想関数呼び出しやアロケーション（GC圧）による速度低下を防ぐため、Pipelineパターンは非採用。
-        // 代わりに AggressiveInlining な private メソッド群を直列に呼ぶ手続き的構造で速度と見通しを両立。
-
-        // 1. キャッシュキーの構築（順序に依存しないペアキー）とキャッシュ探索
-        string name1 = data1.FilePath;
-        string name2 = data2.FilePath;
-        bool canCache = !string.IsNullOrEmpty(name1) && !string.IsNullOrEmpty(name2);
-        var key = canCache ? (string.CompareOrdinal(name1, name2) < 0 ? (name1, name2) : (name2, name1)) : default;
-
-        if (canCache && AudioRegistry.Instance.CorrelationCache.TryGetValue(key, out float cachedCorr))
-        {
-            return cachedCorr >= threshold;
-        }
-
-        // キャッシュ書き込みを伴う判定失敗時のユーティリティローカル関数
-        bool ReturnMismatch()
-        {
-            if (canCache) AudioRegistry.Instance.CorrelationCache[key] = MismatchScore;
-            return false;
-        }
-
-        // 2. 音声フォーマット（サンプリングレート、チャンネル数、ビット深度）の同一性検証
+        if (TryGetCachedResult(data1, data2, threshold, out bool isMatch, out var key))
+            return isMatch;
         if (!HasCompatibleFormat(data1, data2))
-        {
-            return ReturnMismatch();
-        }
+            return ReturnMismatch(key);
+        if (!TryGetActiveRegions(data1, data2, out var regions1, out var regions2))
+            return ReturnMismatch(key);
+        if (TryCheckSilenceMatch(data1, data2, regions1, regions2, out isMatch))
+            return ReturnMatchOrMismatch(key, isMatch);
 
-        // 3. 有効波形領域（ActiveRegions）の検証
-        var activeRegions1 = data1.GetActiveRegions();
-        var activeRegions2 = data2.GetActiveRegions();
-
-        if (activeRegions1 == null || activeRegions2 == null || activeRegions1.Length == 0 || activeRegions2.Length == 0)
-        {
-            return ReturnMismatch();
-        }
-
-        // 4. 無音判定（片方または両方が完全に無音である場合の一括判定）
-        if (TryCheckSilenceMatch(data1, data2, activeRegions1, activeRegions2, out bool isSilenceMatch))
-        {
-            if (canCache) AudioRegistry.Instance.CorrelationCache[key] = isSilenceMatch ? SilenceMatchScore : MismatchScore;
-            return isSilenceMatch;
-        }
-
-        // 5. 高速絞り込み（カスケード分類器群による先行枝刈り）
-        // 許容を超える長さの差、SimHash距離、またはスペクトル特徴の乖離がある場合は、重い相関演算を行わずに弾く
         if (ExceedsLengthDifference(data1, data2) ||
             IsMismatchedBySimHash(data1, data2) ||
             IsMismatchedBySpectralFeatures(data1, data2))
         {
-            return ReturnMismatch();
+            return ReturnMismatch(key);
         }
 
-        // 6. ピアソン相関係数を算出するための準備（短い方を基準に長い方の部分波形と比較）
-        // Lチャンネル(0)が有効ならLチャンネル、なければRチャンネル(1)を選択する
-        // 片方のチャンネルのみ評価する。通常BMSでは両方同じような音がなるので処理を省く
+        float correlation = CalculateCorrelationWithAlignment(data1, data2, regions1, regions2);
+        return ReturnResult(key, correlation, threshold);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static bool TryGetCachedResult(ICachedSoundData data1, ICachedSoundData data2, float threshold, out bool isMatch, out (string name1, string name2) key)
+    {
+        string name1 = data1.FilePath;
+        string name2 = data2.FilePath;
+        bool canCache = !string.IsNullOrEmpty(name1) && !string.IsNullOrEmpty(name2);
+        key = canCache ? (string.CompareOrdinal(name1, name2) < 0 ? (name1, name2) : (name2, name1)) : default;
+
+        if (canCache && AudioRegistry.Instance.CorrelationCache.TryGetValue(key, out float cachedCorr))
+        {
+            isMatch = cachedCorr >= threshold;
+            return true;
+        }
+
+        isMatch = false;
+        return false;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static bool ReturnMismatch((string name1, string name2) key)
+    {
+        if (key.name1 != null)
+        {
+            AudioRegistry.Instance.CorrelationCache[key] = MismatchScore;
+        }
+        return false;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static bool ReturnMatchOrMismatch((string name1, string name2) key, bool isMatch)
+    {
+        if (key.name1 != null)
+        {
+            AudioRegistry.Instance.CorrelationCache[key] = isMatch ? SilenceMatchScore : MismatchScore;
+        }
+        return isMatch;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static bool TryGetActiveRegions(
+        ICachedSoundData data1,
+        ICachedSoundData data2,
+        out IReadOnlyList<ActiveRegion>[] regions1,
+        out IReadOnlyList<ActiveRegion>[] regions2)
+    {
+        regions1 = data1.GetActiveRegions();
+        regions2 = data2.GetActiveRegions();
+        return regions1 != null && regions2 != null && regions1.Length > 0 && regions2.Length > 0;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static bool IsMismatchedByHeuristics(ICachedSoundData data1, ICachedSoundData data2)
+    {
+        return
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static float CalculateCorrelationWithAlignment(
+        ICachedSoundData data1,
+        ICachedSoundData data2,
+        IReadOnlyList<ActiveRegion>[] activeRegions1,
+        IReadOnlyList<ActiveRegion>[] activeRegions2)
+    {
         int targetChannel = (activeRegions1[LChannel] == null || activeRegions1[LChannel].Count == 0) ? RChannel : LChannel;
 
         var shorter = data1.TotalSamples < data2.TotalSamples ? data1 : data2;
@@ -113,12 +140,9 @@ internal static class FastWaveCompare
         var shorterSpan = shorter.GetRawSpan(targetChannel, 0, shorterFrames);
         var longerFullSpan = longer.GetRawSpan(targetChannel, 0, longerFrames);
 
-        // 7. アライメント（位相ズレ補正）を加味した最大ピアソン相関係数の計算
         var parameters = new WaveComparisonParameters(shorter, longer, targetChannel, shorterFrames, longerFrames, shorterSpan, longerFullSpan);
         var (correlation, offset) = CalculateMaxCorrelation(parameters);
 
-        // 8. 非重複領域のエネルギー検証
-        // 短いクリップが長いクリップの一部にのみ一致し、長いクリップの他の部分に無視できない音量が存在する場合は不一致とする
         if (shorterFrames < longerFrames)
         {
             if (HasSignificantNonOverlapEnergy(longerFullSpan, shorterFrames, longerFrames, offset))
@@ -127,8 +151,16 @@ internal static class FastWaveCompare
             }
         }
 
-        // 結果のキャッシュと最終判定
-        if (canCache) AudioRegistry.Instance.CorrelationCache[key] = correlation;
+        return correlation;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static bool ReturnResult((string name1, string name2) key, float correlation, float threshold)
+    {
+        if (key.name1 != null)
+        {
+            AudioRegistry.Instance.CorrelationCache[key] = correlation;
+        }
         return correlation >= threshold;
     }
 
