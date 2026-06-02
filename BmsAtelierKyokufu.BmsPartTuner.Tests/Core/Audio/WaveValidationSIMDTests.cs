@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
 {

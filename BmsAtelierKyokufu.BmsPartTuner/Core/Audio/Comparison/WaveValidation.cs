@@ -2,7 +2,7 @@ using System.Numerics;
 using MathNet.Numerics;
 using Vector = System.Numerics.Vector;
 
-namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
+namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio.Comparison;
 
 /// <summary>
 /// 音声波形の類似度を判定するための検証クラス（SIMD最適化版）。

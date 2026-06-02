@@ -161,7 +161,7 @@ public class AppController(
             }
             else
             {
-                Core.Audio.VirtualAudioRegistry.Clear();
+                VirtualAudioRegistry.Clear();
                 ClearProcessedAudioRegistryIfDirectoryChanged(path);
 
                 WorkingBmsPath = path;
@@ -179,8 +179,8 @@ public class AppController(
         }
         else
         {
-            Core.Audio.VirtualAudioRegistry.Clear();
-            Core.Audio.AudioRegistry.Instance.Clear();
+            VirtualAudioRegistry.Clear();
+            AudioRegistry.Instance.Clear();
 
             WorkingBmsPath = null;
             WorkingBmsContent = null;
@@ -203,7 +203,7 @@ public class AppController(
         {
             using (s_logger.MeasureTime("Total Flow (Downconvert + LoadBmsFile)"))
             {
-                Core.Audio.VirtualAudioRegistry.Clear();
+                Core.Audio.Virtual.VirtualAudioRegistry.Clear();
                 ClearProcessedAudioRegistryIfDirectoryChanged(path);
 
 

@@ -1,4 +1,4 @@
-namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
+namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio.Processing;
 
 /// <summary>
 /// オーディオファイルのキャッシュ管理を行います。

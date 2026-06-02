@@ -1,4 +1,4 @@
-﻿namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
+namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio.Comparison;
 /// <summary>
 /// 並列オーディオ比較エンジンの実行パラメーター。
 /// </summary>

@@ -1,4 +1,4 @@
-namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
+namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio.Comparison;
 
 /// <summary>
 /// ピアソン相関係数の計算に必要な中間累積統計量を保持するスタック専用構造体。

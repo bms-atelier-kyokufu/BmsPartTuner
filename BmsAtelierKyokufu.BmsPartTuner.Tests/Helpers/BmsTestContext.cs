@@ -1,7 +1,6 @@
 using System.IO;
 using System.Text;
 using BmsAtelierKyokufu.BmsPartTuner.Core;
-using BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
 
 [assembly: Xunit.CollectionBehavior(DisableTestParallelization = true)]
 

@@ -1,6 +1,6 @@
-﻿using System.Buffers.Binary;
+using System.Buffers.Binary;
 
-namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
+namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio.Virtual;
 
 /// <summary>
 /// メモリ上のPCMデータの一部を指し示し、アロケーションフリーでWAVバイナリとして読み出し可能なストリーム。

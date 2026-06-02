@@ -1,7 +1,7 @@
-﻿using MathNet.Numerics;
+using MathNet.Numerics;
 using MathNet.Numerics.IntegralTransforms;
 
-namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio
+namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio.Processing
 {
     /// <summary>
     /// 音声の特徴量（FFT、LSH、SimHash等）の抽出を担当する純粋なドメインサービス。

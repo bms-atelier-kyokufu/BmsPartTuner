@@ -20,7 +20,7 @@ public class NAudioPlayer : IAudioPlayer
         Stop(); // Ensure previous resources are cleaned up
 
         var fileName = Path.GetFileName(filePath);
-        if (Core.Audio.VirtualAudioRegistry.TryGetStream(fileName, out var stream))
+        if (VirtualAudioRegistry.TryGetStream(fileName, out var stream))
         {
             _memoryStreamToDispose = stream;
             _audioReader = new WaveFileReader(_memoryStreamToDispose);

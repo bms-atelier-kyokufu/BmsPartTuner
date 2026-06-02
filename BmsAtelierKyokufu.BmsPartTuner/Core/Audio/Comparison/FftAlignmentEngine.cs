@@ -1,7 +1,7 @@
-﻿using MathNet.Numerics;
+using MathNet.Numerics;
 using MathNet.Numerics.IntegralTransforms;
 
-namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
+namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio.Comparison;
 
 /// <summary>
 /// FFT畳み込み定理を用いたサブミリ秒アライメントのズレ量推定エンジン。

@@ -1,6 +1,4 @@
-﻿using BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
-
-namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio;
+﻿namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio;
 
 public class FftAlignmentEngineTests
 {

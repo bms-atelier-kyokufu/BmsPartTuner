@@ -1,4 +1,4 @@
-namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
+namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio.Virtual;
 
 /// <summary>
 /// メモリ上に実体を持つ仮想ファイルを表現するインターフェース。

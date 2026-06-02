@@ -1,6 +1,5 @@
 ﻿using System.IO;
 using System.Text;
-using BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
 using NAudio.Wave;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers

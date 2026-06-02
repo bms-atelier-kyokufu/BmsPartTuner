@@ -1,4 +1,4 @@
-namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
+namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio.Comparison;
 
 /// <summary>
 /// 有音区間の重なりを計算する際の中間累積統計量を保持するスタック専用構造体。

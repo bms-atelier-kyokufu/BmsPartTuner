@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.IO;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Helpers;
 using BmsAtelierKyokufu.BmsPartTuner.Models;
@@ -54,7 +54,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
             {
                 // Create in-memory wav file and register it in VirtualAudioRegistry
                 var data = BmsTestWavHelper.CreateSineWavBytes();
-                BmsPartTuner.Core.Audio.VirtualAudioRegistry.AddFile(filename, data);
+                VirtualAudioRegistry.AddFile(filename, data);
 
                 fileList.Add(new BmsAudioFile
                 {

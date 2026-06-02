@@ -30,6 +30,11 @@
   </ItemGroup>
   <ItemGroup>
     <Using Include="Xunit" />
+    <Using Include="BmsAtelierKyokufu.BmsPartTuner.Core.Audio" />
+    <Using Include="BmsAtelierKyokufu.BmsPartTuner.Core.Audio.Virtual" />
+    <Using Include="BmsAtelierKyokufu.BmsPartTuner.Core.Audio.Processing" />
+    <Using Include="BmsAtelierKyokufu.BmsPartTuner.Core.Audio.Processing.Pipeline" />
+    <Using Include="BmsAtelierKyokufu.BmsPartTuner.Core.Audio.Comparison" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="TestResults\" />

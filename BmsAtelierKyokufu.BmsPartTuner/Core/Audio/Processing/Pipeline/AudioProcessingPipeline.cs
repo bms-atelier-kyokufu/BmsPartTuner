@@ -1,4 +1,4 @@
-﻿namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio.Pipeline;
+namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio.Processing.Pipeline;
 
 /// <summary>
 /// 音声処理パイプライン。

@@ -1,6 +1,6 @@
 using System.Runtime.CompilerServices;
 
-namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
+namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio.Comparison;
 
 /// <summary>
 /// FastWaveCompare.CalculateMaxCorrelation の引数をカプセル化する readonly ref struct。

@@ -1,4 +1,4 @@
-namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
+namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio.Virtual;
 
 /// <summary>
 /// 音声比較における置換テーブル（Union-Find）と非マッチテーブル（Anti-Set）のスレッドセーフな状態管理を提供します。

@@ -1,7 +1,7 @@
 using System.Numerics;
 using System.Runtime.CompilerServices;
 
-namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
+namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio.Comparison;
 
 /// <summary>
 /// オンメモリキャッシュされた音声データの高速比較クラス。
@@ -14,6 +14,11 @@ internal static class FastWaveCompare
 {
     private const float MismatchScore = -2.0f;
     private const float SilenceMatchScore = 2.0f;
+    private const float PerfectCorrelation = 1.0f;
+    private const float ZeroCorrelation = 0.0f;
+    private const int LChannel = 0;
+    private const int RChannel = 1;
+
 
     /// <summary>
     /// 音響SimHash(256bit)のハミング距離の許容しきい値。
@@ -28,10 +33,6 @@ internal static class FastWaveCompare
     /// 平方根計算(Math.Sqrt)を回避してO(1)で高速判定するための二乗値での定義。
     /// </summary>
     private const float SpectralDistanceSquaredThreshold = 0.7744f; // 0.88f ^ 2
-    private const float PerfectCorrelation = 1.0f;
-    private const float ZeroCorrelation = 0.0f;
-    private const int LChannel = 0;
-    private const int RChannel = 1;
 
     /// <summary>
     /// キャッシュされた音声データ2個の高速比較を行います。
