@@ -58,7 +58,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
 
             // 期待値の基準レシオ（事前の実測値から定義）
             // 処理向上やハードの違いによる乖離を防ぐため、相対的な実行比率で判定
-            const double BaselineRatio = 200.0;
+            const double BaselineRatio = 100.0;//理想は62ぐらい
 
             _output.WriteLine($"[Perf] Calibration Time: {calibMs} ms (Sum: {calibSum})");
             _output.WriteLine($"[Perf] Benchmark Time: {benchMs} ms for {iterations} iterations");

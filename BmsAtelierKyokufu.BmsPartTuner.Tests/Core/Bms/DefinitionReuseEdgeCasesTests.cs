@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 using BmsAtelierKyokufu.BmsPartTuner.Models;
 using BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers;
@@ -207,7 +207,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
             var dr = new DefinitionReuse(fileList, audioCache);
 
             var progressReports = new List<int>();
-            var progress = new Progress<int>(p => progressReports.Add(p));
+            var progress = new SyncProgress<int>(p => progressReports.Add(p));
 
             // Act
             dr.ReductDefinition(
@@ -233,5 +233,11 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
 
         [System.Text.RegularExpressions.GeneratedRegex(@"#WAV\w{2}\s+", System.Text.RegularExpressions.RegexOptions.IgnoreCase)]
         private static partial System.Text.RegularExpressions.Regex WavDefinitionRegex();
+
+        private class SyncProgress<T>(Action<T> handler) : IProgress<T>
+        {
+            private readonly Action<T> _handler = handler;
+            public void Report(T value) => _handler(value);
+        }
     }
 }
