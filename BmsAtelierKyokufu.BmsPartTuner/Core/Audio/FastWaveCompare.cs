@@ -12,6 +12,11 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
 [ADRAnchor("M-01", nameof(FastWaveCompare))]
 internal static class FastWaveCompare
 {
+    private const float MismatchScore = -2.0f;
+    private const float SilenceMatchScore = 2.0f;
+    private const int SimHashHammingThreshold = 64;
+    private const float SpectralDistanceSquaredThreshold = 0.7744f; // 0.88f ^ 2
+
     /// <summary>
     /// キャッシュされた音声データ2個の高速比較を行います。
     /// 事前処理で波形を正規化し、SIMD最適化されたドット積演算によりピアソン相関係数を計算します。
@@ -33,10 +38,15 @@ internal static class FastWaveCompare
             return cachedCorr >= threshold;
         }
 
+        bool ReturnMismatch()
+        {
+            if (canCache) AudioRegistry.Instance.CorrelationCache[key] = MismatchScore;
+            return false;
+        }
+
         if (!HasCompatibleFormat(data1, data2))
         {
-            if (canCache) AudioRegistry.Instance.CorrelationCache[key] = -2.0f;
-            return false;
+            return ReturnMismatch();
         }
 
         var activeRegions1 = data1.GetActiveRegions();
@@ -44,32 +54,20 @@ internal static class FastWaveCompare
 
         if (activeRegions1 == null || activeRegions2 == null || activeRegions1.Length == 0 || activeRegions2.Length == 0)
         {
-            if (canCache) AudioRegistry.Instance.CorrelationCache[key] = -2.0f;
-            return false;
+            return ReturnMismatch();
         }
 
         if (TryCheckSilenceMatch(data1, data2, activeRegions1, activeRegions2, out bool isSilenceMatch))
         {
-            if (canCache) AudioRegistry.Instance.CorrelationCache[key] = isSilenceMatch ? 2.0f : -2.0f;
+            if (canCache) AudioRegistry.Instance.CorrelationCache[key] = isSilenceMatch ? SilenceMatchScore : MismatchScore;
             return isSilenceMatch;
         }
 
-        if (ExceedsLengthDifference(data1, data2))
+        if (ExceedsLengthDifference(data1, data2) ||
+            IsMismatchedBySimHash(data1, data2) ||
+            IsMismatchedBySpectralFeatures(data1, data2))
         {
-            if (canCache) AudioRegistry.Instance.CorrelationCache[key] = -2.0f;
-            return false;
-        }
-
-        if (IsMismatchedBySimHash(data1, data2))
-        {
-            if (canCache) AudioRegistry.Instance.CorrelationCache[key] = -2.0f;
-            return false;
-        }
-
-        if (IsMismatchedBySpectralFeatures(data1, data2))
-        {
-            if (canCache) AudioRegistry.Instance.CorrelationCache[key] = -2.0f;
-            return false;
+            return ReturnMismatch();
         }
 
         // Find first active channel to compute Pearson on (usually 0, but could be 1 if left is silent)
@@ -91,7 +89,7 @@ internal static class FastWaveCompare
         {
             if (HasSignificantNonOverlapEnergy(longerFullSpan, shorterFrames, longerFrames, offset))
             {
-                correlation = -2.0f;
+                correlation = MismatchScore;
             }
         }
 
@@ -172,7 +170,7 @@ internal static class FastWaveCompare
                 BitOperations.PopCount(s1[2] ^ s2[2]) +
                 BitOperations.PopCount(s1[3] ^ s2[3]);
 
-            if (hammingDistance > 64)
+            if (hammingDistance > SimHashHammingThreshold)
             {
                 return true;
             }
@@ -195,7 +193,7 @@ internal static class FastWaveCompare
                 distSq += diff * diff;
             }
 
-            if (distSq > 0.7744f) // 0.88f ^ 2
+            if (distSq > SpectralDistanceSquaredThreshold)
             {
                 return true;
             }
