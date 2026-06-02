@@ -1,4 +1,4 @@
-﻿using System.Windows.Media.Animation;
+using System.Windows.Media.Animation;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.UI.Views.Controls
 {
@@ -268,14 +268,14 @@ namespace BmsAtelierKyokufu.BmsPartTuner.UI.Views.Controls
         {
             if (ActualWidth > 0)
             {
-                // 最小値を0に制限（負の値にならないようにする）
-                _maxSlideDistance = Math.Max(0, ActualWidth - ThumbWidth - 10);
+                // BorderThickness（左右合計4px）を考慮して最大スライド距離を計算
+                _maxSlideDistance = Math.Max(0, ActualWidth - ThumbWidth - 4);
                 s_logger.WriteDebug($"CalculateMaxSlideDistance: ActualWidth={ActualWidth}, ThumbWidth={ThumbWidth}, MaxSlideDistance={_maxSlideDistance}");
 
                 // スライド不可能な場合の警告
                 if (_maxSlideDistance <= 0)
                 {
-                    s_logger.WriteDebug($"Warning: Not enough space to slide (need at least {ThumbWidth + 10}px, got {ActualWidth}px)");
+                    s_logger.WriteDebug($"Warning: Not enough space to slide (need at least {ThumbWidth + 4}px, got {ActualWidth}px)");
                 }
             }
             else
@@ -286,7 +286,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.UI.Views.Controls
                 {
                     if (ActualWidth > 0)
                     {
-                        _maxSlideDistance = Math.Max(0, ActualWidth - ThumbWidth - 10);
+                        _maxSlideDistance = Math.Max(0, ActualWidth - ThumbWidth - 4);
                         s_logger.WriteDebug($"CalculateMaxSlideDistance (delayed): ActualWidth={ActualWidth}, MaxSlideDistance={_maxSlideDistance}");
                     }
                 }), System.Windows.Threading.DispatcherPriority.Loaded);
