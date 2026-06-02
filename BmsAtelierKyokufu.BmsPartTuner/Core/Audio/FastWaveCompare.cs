@@ -28,6 +28,7 @@ internal static class FastWaveCompare
     /// <returns>類似している場合true。</returns>
     public static bool IsMatch(ICachedSoundData data1, ICachedSoundData data2, float threshold)
     {
+        // 1. キャッシュキーの構築（順序に依存しないペアキー）とキャッシュ探索
         string name1 = data1.FilePath;
         string name2 = data2.FilePath;
         bool canCache = !string.IsNullOrEmpty(name1) && !string.IsNullOrEmpty(name2);
@@ -38,17 +39,20 @@ internal static class FastWaveCompare
             return cachedCorr >= threshold;
         }
 
+        // キャッシュ書き込みを伴う判定失敗時のユーティリティローカル関数
         bool ReturnMismatch()
         {
             if (canCache) AudioRegistry.Instance.CorrelationCache[key] = MismatchScore;
             return false;
         }
 
+        // 2. 音声フォーマット（サンプリングレート、チャンネル数、ビット深度）の同一性検証
         if (!HasCompatibleFormat(data1, data2))
         {
             return ReturnMismatch();
         }
 
+        // 3. 有効波形領域（ActiveRegions）の検証
         var activeRegions1 = data1.GetActiveRegions();
         var activeRegions2 = data2.GetActiveRegions();
 
@@ -57,12 +61,15 @@ internal static class FastWaveCompare
             return ReturnMismatch();
         }
 
+        // 4. 無音判定（片方または両方が完全に無音である場合の一括判定）
         if (TryCheckSilenceMatch(data1, data2, activeRegions1, activeRegions2, out bool isSilenceMatch))
         {
             if (canCache) AudioRegistry.Instance.CorrelationCache[key] = isSilenceMatch ? SilenceMatchScore : MismatchScore;
             return isSilenceMatch;
         }
 
+        // 5. 高速絞り込み（カスケード分類器群による先行枝刈り）
+        // 許容を超える長さの差、SimHash距離、またはスペクトル特徴の乖離がある場合は、重い相関演算を行わずに弾く
         if (ExceedsLengthDifference(data1, data2) ||
             IsMismatchedBySimHash(data1, data2) ||
             IsMismatchedBySpectralFeatures(data1, data2))
@@ -70,8 +77,12 @@ internal static class FastWaveCompare
             return ReturnMismatch();
         }
 
-        // Find first active channel to compute Pearson on (usually 0, but could be 1 if left is silent)
-        int targetChannel = (activeRegions1[0] == null || activeRegions1[0].Count == 0) ? 1 : 0;
+        // 6. ピアソン相関係数を算出するための準備（短い方を基準に長い方の部分波形と比較）
+        // Lチャンネル(0)が有効ならLチャンネル、なければRチャンネル(1)を選択する
+        // 片方のチャンネルのみ評価する。通常BMSでは両方同じような音がなるので処理を省く
+        const int LChannel = 0;
+        const int RChannel = 1;
+        int targetChannel = (activeRegions1[LChannel] == null || activeRegions1[LChannel].Count == 0) ? RChannel : LChannel;
 
         var shorter = data1.TotalSamples < data2.TotalSamples ? data1 : data2;
         var longer = data1.TotalSamples < data2.TotalSamples ? data2 : data1;
@@ -82,9 +93,12 @@ internal static class FastWaveCompare
         var shorterSpan = shorter.GetRawSpan(targetChannel, 0, shorterFrames);
         var longerFullSpan = longer.GetRawSpan(targetChannel, 0, longerFrames);
 
+        // 7. アライメント（位相ズレ補正）を加味した最大ピアソン相関係数の計算
         var parameters = new WaveComparisonParameters(shorter, longer, targetChannel, shorterFrames, longerFrames, shorterSpan, longerFullSpan);
         var (correlation, offset) = CalculateMaxCorrelation(parameters);
 
+        // 8. 非重複領域のエネルギー検証
+        // 短いクリップが長いクリップの一部にのみ一致し、長いクリップの他の部分に無視できない音量が存在する場合は不一致とする
         if (shorterFrames < longerFrames)
         {
             if (HasSignificantNonOverlapEnergy(longerFullSpan, shorterFrames, longerFrames, offset))
@@ -93,6 +107,7 @@ internal static class FastWaveCompare
             }
         }
 
+        // 結果のキャッシュと最終判定
         if (canCache) AudioRegistry.Instance.CorrelationCache[key] = correlation;
         return correlation >= threshold;
     }
