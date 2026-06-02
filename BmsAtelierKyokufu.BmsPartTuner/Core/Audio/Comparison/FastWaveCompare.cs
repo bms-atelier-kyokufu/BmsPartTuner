@@ -43,8 +43,13 @@ internal static class FastWaveCompare
     /// <param name="data2">比較先の音声データ。</param>
     /// <param name="threshold">ピアソン相関係数のしきい値（0.0-1.0）。</param>
     /// <returns>類似している場合true。</returns>
+    [ADRAnchor("ARCH-03", nameof(IsMatch))]
     public static bool IsMatch(ICachedSoundData data1, ICachedSoundData data2, float threshold)
     {
+        // 【アーキテクチャ決定（ARCH-03）】
+        // 仮想関数呼び出しやアロケーション（GC圧）による速度低下を防ぐため、Pipelineパターンは非採用。
+        // 代わりに AggressiveInlining な private メソッド群を直列に呼ぶ手続き的構造で速度と見通しを両立。
+
         // 1. キャッシュキーの構築（順序に依存しないペアキー）とキャッシュ探索
         string name1 = data1.FilePath;
         string name2 = data2.FilePath;
