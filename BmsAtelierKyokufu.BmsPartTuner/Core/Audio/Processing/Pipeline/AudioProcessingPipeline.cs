@@ -25,20 +25,10 @@ internal sealed class AudioProcessingPipeline
     /// <param name="context">実行コンテキスト</param>
     public PreNormalizedSoundData Execute(AudioProcessingContext context)
     {
-        var timerTotal = s_logger.StartTimer();
-        var timerStep = s_logger.StartTimer();
-
         foreach (var step in _steps)
         {
-            timerStep.Lap(step.Name);
-
             step.Execute(context);
-
-            s_logger.WriteDebug($"{step.Name}: {timerStep.Lap(step.Name)} ms");
         }
-
-        long totalElapsed = timerTotal.Lap("Total");
-        s_logger.WriteDebug($"=== AudioProcessingPipeline completed in {totalElapsed} ms ===");
 
         return context.Result ?? throw new InvalidOperationException("Pipeline completed without producing a result.");
     }

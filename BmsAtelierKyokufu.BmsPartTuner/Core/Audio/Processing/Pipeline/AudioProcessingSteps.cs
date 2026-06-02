@@ -69,18 +69,19 @@ internal sealed class BuildResultStep : IAudioProcessingStep
 
     public void Execute(AudioProcessingContext context)
     {
-        if (context.FileInfo != null && context.Metrics != null && context.Features != null)
+        if (context.FileInfo != null && context.Metrics != null)
         {
+            var features = context.Features ?? new AudioFeatures([], [], null, null, null);
             var p = new PreNormalizedSoundDataParameters(
                 context.FileInfo,
                 context.Metrics,
-                context.Features
+                features
             );
             context.Result = new PreNormalizedSoundData(p);
         }
         else
         {
-            throw new InvalidOperationException("Missing required data to build PreNormalizedSoundData.");
+            throw new InvalidOperationException("Missing required data (FileInfo or Metrics) to build PreNormalizedSoundData.");
         }
     }
 }

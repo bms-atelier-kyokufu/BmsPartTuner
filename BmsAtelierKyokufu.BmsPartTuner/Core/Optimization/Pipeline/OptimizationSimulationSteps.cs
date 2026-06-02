@@ -1,4 +1,4 @@
-﻿namespace BmsAtelierKyokufu.BmsPartTuner.Core.Optimization.Pipeline;
+namespace BmsAtelierKyokufu.BmsPartTuner.Core.Optimization.Pipeline;
 
 /// <summary>
 /// 実際のファイル数を数え、有効なファイルのリストを作成するステップ。
@@ -67,7 +67,8 @@ internal sealed class PreloadAudioCacheStep : IAsyncOptimizationStep
         var (failedFiles, audioCache) = AudioCacheManager.PreloadAudioData(
             context.FileListItems,
             new Progress<int>(p => context.Progress?.Report(5 + (p / 20))), // 5-10%
-            NormalizationMode.None);
+            NormalizationMode.None,
+            extractFeatures: false);
 
         context.FailedFiles = failedFiles;
         context.AudioCache = audioCache;

@@ -19,11 +19,13 @@ internal sealed class AudioCacheManager
     /// <param name="fileList">ファイルリスト。</param>
     /// <param name="progress">進捗報告用のIProgress。</param>
     /// <param name="normalizationMode">正規化モード（デフォルト: None）。</param>
+    /// <param name="extractFeatures">特徴量抽出を行うかどうか。</param>
     /// <returns>読み込みに失敗したファイルパスのリストと、オーディオキャッシュのタプル。</returns>
     public static (List<string> FailedFiles, ConcurrentDictionary<string, ICachedSoundData> Cache) PreloadAudioData(
         IReadOnlyList<BmsAudioFile> fileList,
         IProgress<int>? progress,
-        NormalizationMode normalizationMode = Models.NormalizationMode.None)
+        NormalizationMode normalizationMode = Models.NormalizationMode.None,
+        bool extractFeatures = true)
     {
         s_logger.WriteDebug("=== PreloadAudioData Start ===");
         s_logger.WriteDebug($"Total files to preload: {fileList.Count}");
@@ -63,7 +65,7 @@ internal sealed class AudioCacheManager
             }, file =>
             {
                 var singleBatch = new[] { file };
-                var (batchSuccess, batchFail) = LoadBatch(singleBatch, normalizationMode, failedFiles, audioCache);
+                var (batchSuccess, batchFail) = LoadBatch(singleBatch, normalizationMode, failedFiles, audioCache, extractFeatures);
 
                 Interlocked.Add(ref successCount, batchSuccess);
                 Interlocked.Add(ref failCount, batchFail);
@@ -95,7 +97,7 @@ internal sealed class AudioCacheManager
                 MaxDegreeOfParallelism = Math.Min(4, Environment.ProcessorCount)
             }, batch =>
             {
-                var (batchSuccess, batchFail) = LoadBatch(batch, normalizationMode, failedFiles, audioCache);
+                var (batchSuccess, batchFail) = LoadBatch(batch, normalizationMode, failedFiles, audioCache, extractFeatures);
 
                 Interlocked.Add(ref successCount, batchSuccess);
                 Interlocked.Add(ref failCount, batchFail);
@@ -167,7 +169,8 @@ internal sealed class AudioCacheManager
         IReadOnlyList<BmsAudioFile> batch,
         NormalizationMode normalizationMode,
         ConcurrentBag<string> failedFiles,
-        ConcurrentDictionary<string, ICachedSoundData> audioCache)
+        ConcurrentDictionary<string, ICachedSoundData> audioCache,
+        bool extractFeatures)
     {
         int success = 0;
         int fail = 0;
@@ -183,7 +186,7 @@ internal sealed class AudioCacheManager
                 }
                 else
                 {
-                    var newCachedData = AudioProcessingService.LoadAndProcess(file.Name, normalizationMode);
+                    var newCachedData = AudioProcessingService.LoadAndProcess(file.Name, normalizationMode, extractFeatures);
                     audioCache[file.Name] = newCachedData;
                     AudioRegistry.Instance.Register(file.Name, newCachedData);
                     success++;

@@ -8,15 +8,20 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio
     [ADRAnchor("OPT-05", nameof(AudioProcessingService))]
     internal static class AudioProcessingService
     {
-        public static PreNormalizedSoundData LoadAndProcess(string path, NormalizationMode normalizationMode)
+        public static PreNormalizedSoundData LoadAndProcess(string path, NormalizationMode normalizationMode, bool extractFeatures = true)
         {
             var context = new AudioProcessingContext(path, normalizationMode);
             var pipeline = new AudioProcessingPipeline()
                 .AddStep(new LoadAndDeinterleaveStep())
                 .AddStep(new ApplyNormalizationStep())
-                .AddStep(new ExtractMetricsStep())
-                .AddStep(new ExtractFeaturesStep())
-                .AddStep(new BuildResultStep());
+                .AddStep(new ExtractMetricsStep());
+
+            if (extractFeatures)
+            {
+                pipeline.AddStep(new ExtractFeaturesStep());
+            }
+
+            pipeline.AddStep(new BuildResultStep());
 
             return pipeline.Execute(context);
         }
