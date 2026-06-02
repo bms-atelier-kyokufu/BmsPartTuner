@@ -62,7 +62,7 @@ internal static class FastWaveCompare
             return ReturnMismatch(key);
         }
 
-        float correlation = CalculateCorrelationWithAlignment(data1, data2, regions1, regions2);
+        float correlation = CalculateCorrelationWithAlignment(data1, data2, regions1);
         return ReturnResult(key, correlation, threshold);
     }
 
@@ -117,17 +117,10 @@ internal static class FastWaveCompare
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static bool IsMismatchedByHeuristics(ICachedSoundData data1, ICachedSoundData data2)
-    {
-        return
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static float CalculateCorrelationWithAlignment(
         ICachedSoundData data1,
         ICachedSoundData data2,
-        IReadOnlyList<ActiveRegion>[] activeRegions1,
-        IReadOnlyList<ActiveRegion>[] activeRegions2)
+        IReadOnlyList<ActiveRegion>[] activeRegions1)
     {
         int targetChannel = (activeRegions1[LChannel] == null || activeRegions1[LChannel].Count == 0) ? RChannel : LChannel;
 

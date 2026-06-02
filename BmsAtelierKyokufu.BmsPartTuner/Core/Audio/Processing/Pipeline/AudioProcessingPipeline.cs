@@ -7,7 +7,6 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio.Processing.Pipeline;
 [ADRAnchor("ARCH-01", nameof(AudioProcessingPipeline))]
 internal sealed class AudioProcessingPipeline
 {
-    private static readonly Logger<AudioProcessingPipeline> s_logger = new();
     private readonly List<IAudioProcessingStep> _steps = [];
 
     /// <summary>
