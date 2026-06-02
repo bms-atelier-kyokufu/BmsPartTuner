@@ -14,7 +14,19 @@ internal static class FastWaveCompare
 {
     private const float MismatchScore = -2.0f;
     private const float SilenceMatchScore = 2.0f;
+
+    /// <summary>
+    /// 音響SimHash(256bit)のハミング距離の許容しきい値。
+    /// 実測値(DiscoverHeuristicThreshold_SimHash256_R2_Relationshipテスト)に基づき、
+    /// 相関係数R >= 0.40 となる類似波形ペアがこの値(64)を超えない統計的境界から決定。
+    /// </summary>
     private const int SimHashHammingThreshold = 64;
+
+    /// <summary>
+    /// L2正規化された16次元パワースペクトル距離の二乗しきい値。
+    /// 実測された最大距離(約0.58)に50%の安全マージンを加えた値(0.88)の二乗値(0.7744f)。
+    /// 平方根計算(Math.Sqrt)を回避してO(1)で高速判定するための二乗値での定義。
+    /// </summary>
     private const float SpectralDistanceSquaredThreshold = 0.7744f; // 0.88f ^ 2
     private const float PerfectCorrelation = 1.0f;
     private const float ZeroCorrelation = 0.0f;
@@ -268,7 +280,7 @@ internal static class FastWaveCompare
             return (corr, offset);
         }
 
-        float[] paddedShorter = System.Buffers.ArrayPool<float>.Shared.Rent(parameters.LongerFrames);
+        float[] paddedShorter = ArrayPool<float>.Shared.Rent(parameters.LongerFrames);
         try
         {
             Array.Clear(paddedShorter, 0, parameters.LongerFrames);
@@ -278,7 +290,7 @@ internal static class FastWaveCompare
         }
         finally
         {
-            System.Buffers.ArrayPool<float>.Shared.Return(paddedShorter);
+            ArrayPool<float>.Shared.Return(paddedShorter);
         }
     }
 
