@@ -1,4 +1,4 @@
-﻿using BmsAtelierKyokufu.BmsPartTuner.Core.Validation;
+using BmsAtelierKyokufu.BmsPartTuner.Core.Validation;
 using ValidationResult = BmsAtelierKyokufu.BmsPartTuner.Core.Validation.ValidationResult;
 namespace BmsAtelierKyokufu.BmsPartTuner.Core.Optimization;
 
@@ -113,6 +113,9 @@ public class BmsOptimizationService : IBmsOptimizationService
 
         /// <summary>物理削除されたファイル数。</summary>
         public int DeletedFilesCount { get; set; }
+
+        /// <summary>メモリ使用量（バイト）。</summary>
+        public long MemoryUsedBytes { get; set; }
     }
 
     /// <summary>
@@ -155,6 +158,7 @@ public class BmsOptimizationService : IBmsOptimizationService
 
         var timerTotal = s_logger.StartTimer();
         var timer = s_logger.StartTimer();
+        long memoryBefore = GC.GetTotalMemory(false);
 
         // 音声データの事前ロード（キャッシュ構築）
         var (FailedFiles, Cache) = AudioCacheManager.PreloadAudioData(fileList, options.Progress);
@@ -180,7 +184,8 @@ public class BmsOptimizationService : IBmsOptimizationService
                 ProcessingTime = TimeSpan.FromMilliseconds(timerTotal.Lap("Total")),
                 Threshold = options.R2Threshold,
                 IsSuccess = false,
-                ErrorMessage = message
+                ErrorMessage = message,
+                MemoryUsedBytes = 0
             };
         }
 
@@ -218,6 +223,7 @@ public class BmsOptimizationService : IBmsOptimizationService
             s_logger.WriteDebug($"dr.ReductDefinition Task.Run total: {timer.Lap("dr.ReductDefinition Task.Run total")} ms");
 
             var totalElapsed = timerTotal.Lap("Total");
+            long memoryUsed = Math.Max(0, GC.GetTotalMemory(false) - memoryBefore);
             s_logger.WriteDebug($"=== ExecuteDefinitionReductionAsync: Complete ({totalElapsed}ms) ===");
 
             optimizedCount = dr.GetUniqueFileCount();
@@ -234,7 +240,8 @@ public class BmsOptimizationService : IBmsOptimizationService
                 ProcessingTime = TimeSpan.FromMilliseconds(totalElapsed),
                 Threshold = options.R2Threshold,
                 IsSuccess = true,
-                DeletedFilesCount = deletedFilesCount
+                DeletedFilesCount = deletedFilesCount,
+                MemoryUsedBytes = memoryUsed
             };
         }
         catch (FileNotFoundException ex)
@@ -305,12 +312,19 @@ public class BmsOptimizationService : IBmsOptimizationService
         {
             if (audioCache.TryGetValue(file.Name, out var cachedData))
             {
-                cachedData.Dispose();
+                // PointerSoundDataはセッション中に自動でライフサイクル管理されるためDisposeしない
+                // AudioRegistry.Instanceに登録済みのデータはキャッシュとして保持するためDisposeしない
+                if (cachedData is not Models.PointerSoundData &&
+                    !AudioRegistry.Instance.TryGet(file.Name, out _))
+                {
+                    cachedData.Dispose();
+                }
                 clearedCount++;
             }
         }
         s_logger.WriteDebug($"Cleared {clearedCount} cached audio files");
     }
+
 
     /// <summary>
     /// 削減処理によって未使用となった音源ファイルを物理的に削除します。

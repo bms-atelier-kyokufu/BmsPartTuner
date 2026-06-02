@@ -1,6 +1,7 @@
-﻿using System.IO;
+using System.IO;
 using System.Text;
 using BmsAtelierKyokufu.BmsPartTuner.Core;
+using BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
 
 [assembly: Xunit.CollectionBehavior(DisableTestParallelization = true)]
 
@@ -44,6 +45,8 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
             {
                 // Best effort cleanup; ignore errors (e.g., file in use)
             }
+            AudioRegistry.Instance.Clear();
+            VirtualAudioRegistry.Clear();
             _disposed = true;
             GC.SuppressFinalize(this);
         }

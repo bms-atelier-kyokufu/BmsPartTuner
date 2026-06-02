@@ -8,8 +8,10 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms.Bmson.Pipeline;
 /// コンテキストを初期化します。
 /// </remarks>
 [ADRAnchor("ARCH-01", nameof(BmsonConversionContext))]
-public sealed class BmsonConversionContext(string bmsonFilePath, bool keyNotesOnly) : IDisposable
+public sealed class BmsonConversionContext(string bmsonFilePath, bool keyNotesOnly, IProgress<int>? progress = null) : IDisposable
 {
+    private bool _disposed;
+
     /// <summary>
     /// 入力bmsonファイルのフルパス。
     /// </summary>
@@ -19,6 +21,11 @@ public sealed class BmsonConversionContext(string bmsonFilePath, bool keyNotesOn
     /// trueの場合、BGMレーンを無視して演奏ノーツのみを抽出する。
     /// </summary>
     public bool KeyNotesOnly { get; } = keyNotesOnly;
+
+    /// <summary>
+    /// 進捗を報告するためのオブジェクト（オプション）。
+    /// </summary>
+    public IProgress<int>? Progress { get; } = progress;
 
     /// <summary>
     /// パースされたBMSONデータ。
@@ -50,6 +57,8 @@ public sealed class BmsonConversionContext(string bmsonFilePath, bool keyNotesOn
     /// </summary>
     public void Dispose()
     {
+        if (_disposed) return;
         AudioSlicer?.Dispose();
+        _disposed = true;
     }
 }

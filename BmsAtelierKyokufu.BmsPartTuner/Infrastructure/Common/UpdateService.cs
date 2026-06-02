@@ -46,42 +46,42 @@ public class UpdateService : IUpdateService, IDisposable
     {
         try
         {
-            s_logger.WriteDebug( "=== Checking for updates ===");
+            s_logger.WriteDebug("=== Checking for updates ===");
 
             Version? currentVersion = Assembly.GetExecutingAssembly().GetName().Version;
-            s_logger.WriteDebug( $"Current version: {currentVersion}");
+            s_logger.WriteDebug($"Current version: {currentVersion}");
 
             GitHubRelease? releaseInfo = await GetLatestReleaseInfoAsync();
             if (releaseInfo == null)
             {
-                s_logger.WriteDebug( "Failed to get release info");
+                s_logger.WriteDebug("Failed to get release info");
                 return;
             }
 
             Version? latestVersion = ParseVersion(releaseInfo.TagName);
             if (latestVersion == null)
             {
-                s_logger.WriteDebug( $"Failed to parse version from tag: {releaseInfo.TagName}");
+                s_logger.WriteDebug($"Failed to parse version from tag: {releaseInfo.TagName}");
                 return;
             }
 
-            s_logger.WriteDebug( $"Latest version: {latestVersion}");
+            s_logger.WriteDebug($"Latest version: {latestVersion}");
 
             if (currentVersion != null && latestVersion > currentVersion)
             {
                 AvailableVersion = latestVersion;
-                s_logger.WriteDebug( $"New version available: {latestVersion}");
+                s_logger.WriteDebug($"New version available: {latestVersion}");
 
                 await DownloadInstallerAsync(releaseInfo);
             }
             else
             {
-                s_logger.WriteDebug( "Already up to date");
+                s_logger.WriteDebug("Already up to date");
             }
         }
         catch (Exception ex)
         {
-            s_logger.WriteDebug( $"Update check failed: {ex.Message}");
+            s_logger.WriteDebug($"Update check failed: {ex.Message}");
         }
     }
 
@@ -95,7 +95,7 @@ public class UpdateService : IUpdateService, IDisposable
             HttpResponseMessage response = await _httpClient.GetAsync(GitHubApiUrl);
             if (!response.IsSuccessStatusCode)
             {
-                s_logger.WriteDebug( $"GitHub API returned {response.StatusCode}");
+                s_logger.WriteDebug($"GitHub API returned {response.StatusCode}");
                 return null;
             }
 
@@ -108,7 +108,7 @@ public class UpdateService : IUpdateService, IDisposable
         }
         catch (Exception ex)
         {
-            s_logger.WriteDebug( $"Failed to fetch release info: {ex.Message}");
+            s_logger.WriteDebug($"Failed to fetch release info: {ex.Message}");
             return null;
         }
     }
@@ -126,13 +126,13 @@ public class UpdateService : IUpdateService, IDisposable
 
         if (installerAsset?.Name == null || string.IsNullOrEmpty(installerAsset.BrowserDownloadUrl))
         {
-            s_logger.WriteDebug( "No installer asset found in release");
+            s_logger.WriteDebug("No installer asset found in release");
             return;
         }
 
         try
         {
-            s_logger.WriteDebug( $"Downloading installer: {installerAsset.Name}");
+            s_logger.WriteDebug($"Downloading installer: {installerAsset.Name}");
 
             string tempPath = Path.Combine(Path.GetTempPath(), installerAsset.Name);
 
@@ -143,11 +143,11 @@ public class UpdateService : IUpdateService, IDisposable
             await response.Content.CopyToAsync(fileStream);
 
             _updateInstallerPath = tempPath;
-            s_logger.WriteDebug( $"Installer downloaded to: {tempPath}");
+            s_logger.WriteDebug($"Installer downloaded to: {tempPath}");
         }
         catch (Exception ex)
         {
-            s_logger.WriteDebug( $"Failed to download installer: {ex.Message}");
+            s_logger.WriteDebug($"Failed to download installer: {ex.Message}");
         }
     }
 
@@ -159,13 +159,13 @@ public class UpdateService : IUpdateService, IDisposable
     {
         if (!IsUpdateReady)
         {
-            s_logger.WriteDebug( "No update ready to install");
+            s_logger.WriteDebug("No update ready to install");
             return;
         }
 
         try
         {
-            s_logger.WriteDebug( $"Launching installer: {_updateInstallerPath}");
+            s_logger.WriteDebug($"Launching installer: {_updateInstallerPath}");
             Process.Start(new ProcessStartInfo
             {
                 FileName = _updateInstallerPath,
@@ -174,7 +174,7 @@ public class UpdateService : IUpdateService, IDisposable
         }
         catch (Exception ex)
         {
-            s_logger.WriteDebug( $"Failed to launch installer: {ex.Message}");
+            s_logger.WriteDebug($"Failed to launch installer: {ex.Message}");
         }
     }
 

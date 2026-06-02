@@ -64,6 +64,13 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
     [ObservableProperty]
     public partial bool IsBusy { get; set; }
 
+    partial void OnIsBusyChanged(bool value)
+    {
+        UpdateGlobalProgressVisibility();
+        NotifyCanExecuteReductionChanged();
+        NotifyCanExecuteThresholdOptimizationChanged();
+    }
+
     /// <summary>
     /// グローバルなプログレスの進捗率（0〜100）。
     /// </summary>
@@ -193,7 +200,7 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
         return _appController.ExecuteThresholdOptimizationAsync();
     }
 
-    private bool CanExecuteThresholdOptimization() => !Optimization.IsBusy;
+    private bool CanExecuteThresholdOptimization() => !Optimization.IsBusy && !IsBusy;
 
     [RelayCommand(CanExecute = nameof(CanExecuteReduction))]
     private async Task ExecuteReductionAsync()
@@ -206,7 +213,7 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
         await _appController.ExecuteReductionAsync();
     }
 
-    private bool CanExecuteReduction() => !Optimization.IsBusy && !_appController.IsDownconverting;
+    private bool CanExecuteReduction() => !Optimization.IsBusy && !_appController.IsDownconverting && !IsBusy;
 
     public void Receive(InputPathChangedMessage message)
     {
@@ -254,6 +261,10 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
         {
             dynamic result = message.Result;
 
+            long memoryBytes = 0;
+            try { memoryBytes = result.MemoryUsedBytes; } catch { }
+            var memoryMb = memoryBytes / 1024.0 / 1024.0;
+
             int displayThreshold = (int)Math.Round(message.Threshold * 100);
 
             Notification.ShowResultCard(
@@ -261,7 +272,7 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
                 resultFileCounts: $"{result.OriginalCount}件 → {result.OptimizedCount}件",
                 additionalInfo: $"削減率: {result.ReductionRate * 100:F1}%",
                 processingTime: $"{result.ProcessingTime.TotalSeconds:F1}秒",
-                memoryInfo: "-",
+                memoryInfo: $"{memoryMb:F1}MB",
                 isOptimization: false);
 
             ShowMessage($"処理完了: {Path.GetFileName(message.OutputPath)}");
@@ -311,7 +322,7 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
     private void OnOptimizationPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         ForwardPropertyChanged(e.PropertyName);
-        
+
         if (e.PropertyName == nameof(Optimization.ProgressValue))
         {
             GlobalProgressValue = Optimization.ProgressValue;
@@ -322,8 +333,13 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
         }
         else if (e.PropertyName == nameof(Optimization.IsBusy))
         {
-            IsGlobalProgressVisible = Optimization.IsBusy;
+            UpdateGlobalProgressVisibility();
         }
+    }
+
+    private void UpdateGlobalProgressVisibility()
+    {
+        IsGlobalProgressVisible = IsBusy || Optimization.IsBusy;
     }
 
     private void OnNotificationPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -365,6 +381,13 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
     public void NotifyCanExecuteReductionChanged()
     {
         OnPropertyChanged(nameof(CanExecuteReduction));
+        ExecuteReductionCommand.NotifyCanExecuteChanged();
+    }
+
+    public void NotifyCanExecuteThresholdOptimizationChanged()
+    {
+        OnPropertyChanged(nameof(CanExecuteThresholdOptimization));
+        ExecuteThresholdOptimizationCommand.NotifyCanExecuteChanged();
     }
 
     public Task ExecuteDefinitionReductionAfterConfirmationAsync()
@@ -390,6 +413,11 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
     }
 
     [RelayCommand]
+    private void HideResultCardInternal()
+    {
+        Notification.HideResultCard();
+    }
+
     public void HideResultCard()
     {
         Notification.HideResultCard();
@@ -442,8 +470,8 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
             _audioPreviewService?.Dispose();
 
             // Clear static registries on disposal to release static caches
-            Core.Audio.PointerAudioRegistry.Clear();
-            Core.Audio.VirtualAudioRegistry.Clear();
+            AudioRegistry.Instance.Dispose();
+            VirtualAudioRegistry.Clear();
         }
 
         _disposed = true;

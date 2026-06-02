@@ -42,11 +42,11 @@ public class BmsOptimizationUseCase(IBmsOptimizationService optimizationService)
 
         try
         {
-            var result = await _optimizationService.FindOptimalThresholdsAsync(
+            var result = await Task.Run(() => _optimizationService.FindOptimalThresholdsAsync(
                 files,
                 request.StartDefinition,
                 request.EndDefinition,
-                request.Progress);
+                request.Progress));
 
             if (result != null)
             {

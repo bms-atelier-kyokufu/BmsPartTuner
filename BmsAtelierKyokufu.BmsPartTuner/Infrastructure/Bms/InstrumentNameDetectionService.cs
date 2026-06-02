@@ -116,7 +116,7 @@ public partial class InstrumentNameDetectionService(
         }
         catch (Exception ex)
         {
-            s_logger.WriteDebug( $"ERROR: {ex.Message}");
+            s_logger.WriteDebug($"ERROR: {ex.Message}");
             return new InstrumentDetectionResult();
         }
     }
@@ -235,7 +235,7 @@ public partial class InstrumentNameDetectionService(
         }
         catch (Exception ex)
         {
-            s_logger.WriteDebug( $"ERROR: {ex.Message}");
+            s_logger.WriteDebug($"ERROR: {ex.Message}");
         }
 
         return string.Empty;
@@ -277,7 +277,7 @@ public partial class InstrumentNameDetectionService(
         }
         catch (Exception ex)
         {
-            s_logger.WriteDebug( $"ERROR: {ex.Message}");
+            s_logger.WriteDebug($"ERROR: {ex.Message}");
             return new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
         }
     }

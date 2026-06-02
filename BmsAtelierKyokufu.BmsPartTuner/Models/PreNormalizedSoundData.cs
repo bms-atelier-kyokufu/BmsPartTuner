@@ -1,4 +1,4 @@
-﻿using MathNet.Numerics;
+using MathNet.Numerics;
 namespace BmsAtelierKyokufu.BmsPartTuner.Models
 {
     /// <summary>
@@ -64,6 +64,8 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Models
 
         /// <summary>チャンネルごとのサンプル配列。</summary>
         public float[][]? SamplesPerChannel { get; }
+
+        private bool _disposed;
 
         /// <summary>チャンネルごとの有音区間リスト。</summary>
         public List<ActiveRegion>[]? NormalizedRegions { get; private set; } = p.Metrics.Regions;
@@ -182,7 +184,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Models
         /// <inheritdoc />
         public void Dispose()
         {
+            if (_disposed) return;
             NormalizedRegions = null;
+            _disposed = true;
             GC.SuppressFinalize(this);
         }
     }

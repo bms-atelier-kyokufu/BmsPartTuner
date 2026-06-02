@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Optimization;
 using BmsAtelierKyokufu.BmsPartTuner.Models;
@@ -13,6 +13,7 @@ public class BmsOptimizationServiceExceptionTests : IDisposable
 {
     private readonly BmsTestContext _context;
     private readonly BmsOptimizationService _service;
+    private bool _disposed;
 
     public BmsOptimizationServiceExceptionTests()
     {
@@ -22,7 +23,9 @@ public class BmsOptimizationServiceExceptionTests : IDisposable
 
     public void Dispose()
     {
+        if (_disposed) return;
         _context?.Dispose();
+        _disposed = true;
         GC.SuppressFinalize(this);
     }
 
@@ -237,7 +240,7 @@ public class BmsOptimizationServiceExceptionTests : IDisposable
         var signLshMask = new ulong[][] { [1UL], [1UL] };
         var baseData = new BaseAudioOptimizationData(samples, prefixSum, prefixSumSq, signLsh, signLshMask);
         var pointerData = new PointerSoundData("dummy_slice.wav", baseData, 0, 1);
-        PointerAudioRegistry.Register("dummy_slice.wav", pointerData);
+        AudioRegistry.Instance.Register("dummy_slice.wav", pointerData);
 
         // 2. 例外（入力ファイルなし）が発生するテストを実行
         await RunDefinitionReductionTestAsync(new()
@@ -254,6 +257,6 @@ public class BmsOptimizationServiceExceptionTests : IDisposable
 
         // 3. 例外による脱出後、レジストリがクリアされていることを検証
         Assert.False(VirtualAudioRegistry.TryGetFileSize("dummy_slice.wav", out _));
-        Assert.False(PointerAudioRegistry.TryGet("dummy_slice.wav", out _));
+        Assert.False(AudioRegistry.Instance.TryGet("dummy_slice.wav", out _));
     }
 }

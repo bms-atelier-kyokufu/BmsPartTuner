@@ -24,7 +24,7 @@ internal class DefinitionStatistics(
     {
         var stats = CalculateStatistics();
 
-        s_logger.WriteDebug( $$"""
+        s_logger.WriteDebug($$"""
             === Statistics ===
             Processing range: {{_startPoint}} - {{_endPoint}}
             Total definitions: {{stats.TotalDefinitions}}
@@ -43,7 +43,7 @@ internal class DefinitionStatistics(
     {
         var stats = CalculateStatistics();
 
-        s_logger.WriteDebug( $$"""
+        s_logger.WriteDebug($$"""
             === GetUniqueFileCount Detail ===
               Total in range: {{stats.TotalInRange}}
               Unique (self-ref): {{stats.UniqueFiles}}

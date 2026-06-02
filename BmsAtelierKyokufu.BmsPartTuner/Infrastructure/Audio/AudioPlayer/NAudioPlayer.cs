@@ -8,6 +8,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Audio.AudioPlayer;
 /// </summary>
 public class NAudioPlayer : IAudioPlayer
 {
+    private bool _disposed;
     private WaveOutEvent? _waveOut;
     private WaveStream? _audioReader;
     private Stream? _memoryStreamToDispose;
@@ -54,6 +55,7 @@ public class NAudioPlayer : IAudioPlayer
 
     public void Dispose()
     {
+        if (_disposed) return;
         GC.SuppressFinalize(this);
         if (_waveOut != null)
         {
@@ -67,5 +69,6 @@ public class NAudioPlayer : IAudioPlayer
 
         _memoryStreamToDispose?.Dispose();
         _memoryStreamToDispose = null;
+        _disposed = true;
     }
 }

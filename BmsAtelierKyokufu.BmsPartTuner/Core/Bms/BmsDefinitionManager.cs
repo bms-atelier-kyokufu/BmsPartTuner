@@ -34,7 +34,7 @@ public partial class BmsDefinitionManager(string bmsFilePath, string? bmsContent
     /// </summary>
     public ObservableCollection<BmsAudioFile> CreateFileList()
     {
-        s_logger.WriteDebug( $"=== BmsDefinitionManager.CreateFileList Started for {Path.GetFileName(_bmsFilePath)} ===");
+        s_logger.WriteDebug($"=== BmsDefinitionManager.CreateFileList Started for {Path.GetFileName(_bmsFilePath)} ===");
         var timerTotal = s_logger.StartTimer();
         var timer = s_logger.StartTimer();
         MissingFiles.Clear();
@@ -56,12 +56,12 @@ public partial class BmsDefinitionManager(string bmsFilePath, string? bmsContent
             }
             catch (Exception ex)
             {
-                s_logger.WriteDebug( $"Encoding/IO Error: {ex.Message}");
+                s_logger.WriteDebug($"Encoding/IO Error: {ex.Message}");
             }
         }
 
         var definitions = BmsManager.ParseWavDefinitions(lines);
-        s_logger.WriteDebug( $"  [CreateFileList] ParseWavDefinitions (count={definitions.Count}): {timer.Lap("ParseWavDefinitions")} ms");
+        s_logger.WriteDebug($"  [CreateFileList] ParseWavDefinitions (count={definitions.Count}): {timer.Lap("ParseWavDefinitions")} ms");
 
         bool isBase62 = definitions.Any(static d => LowerCaseRegex().IsMatch(d.def));
         int inputRadix = isBase62 ? AppConstants.Definition.RadixBase62 : AppConstants.Definition.RadixBase36;
@@ -76,7 +76,7 @@ public partial class BmsDefinitionManager(string bmsFilePath, string? bmsContent
 
             if (!VirtualAudioRegistry.TryGetFileSize(path, out _) && !File.Exists(fullPath))
             {
-                s_logger.WriteDebug( $"Missing file: {path}");
+                s_logger.WriteDebug($"Missing file: {path}");
                 MissingFiles.Add(path);
                 continue;
             }
@@ -102,18 +102,18 @@ public partial class BmsDefinitionManager(string bmsFilePath, string? bmsContent
                 InstrumentName = string.Empty
             });
         }
-        s_logger.WriteDebug( $"File resolution and existence checks: {timer.Lap("File resolution and existence checks")} ms");
+        s_logger.WriteDebug($"File resolution and existence checks: {timer.Lap("File resolution and existence checks")} ms");
 
         AssignInstrumentNames(tempList);
-        s_logger.WriteDebug( $"AssignInstrumentNames: {timer.Lap("AssignInstrumentNames")} ms");
+        s_logger.WriteDebug($"AssignInstrumentNames: {timer.Lap("AssignInstrumentNames")} ms");
 
         foreach (var file in tempList)
         {
             _fileList.Add(file);
         }
-        s_logger.WriteDebug( $"ObservableCollection.Add total: {timer.Lap("ObservableCollection.Add total")} ms");
+        s_logger.WriteDebug($"ObservableCollection.Add total: {timer.Lap("ObservableCollection.Add total")} ms");
 
-        s_logger.WriteDebug( $"=== BmsDefinitionManager.CreateFileList Finished: {timerTotal.Lap("Total")} ms ===");
+        s_logger.WriteDebug($"=== BmsDefinitionManager.CreateFileList Finished: {timerTotal.Lap("Total")} ms ===");
         return _fileList;
     }
 
@@ -138,7 +138,7 @@ public partial class BmsDefinitionManager(string bmsFilePath, string? bmsContent
         }
         catch (Exception ex)
         {
-            s_logger.WriteDebug( $"ERROR: {ex.Message}");
+            s_logger.WriteDebug($"ERROR: {ex.Message}");
         }
     }
 

@@ -104,9 +104,9 @@ public static partial class WaveValidation
         IReadOnlyList<ActiveRegion> regions2,
         ref PearsonOverlapStats stats)
     {
-        if (data1 is PreNormalizedSoundData pre1 && data2 is PreNormalizedSoundData pre2)
+        if (data1 is PreNormalizedSoundData && data2 is PreNormalizedSoundData)
         {
-            AccumulateOverlapStatsPrePre(pre1, pre2, channel, regions1, regions2, ref stats);
+            AccumulateOverlapStatsPrePre(regions1, regions2, ref stats);
         }
         else if (data1 is PointerSoundData ptr1 && data2 is PointerSoundData ptr2)
         {
@@ -120,9 +120,6 @@ public static partial class WaveValidation
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void AccumulateOverlapStatsPrePre(
-        PreNormalizedSoundData data1,
-        PreNormalizedSoundData data2,
-        int channel,
         IReadOnlyList<ActiveRegion> regions1,
         IReadOnlyList<ActiveRegion> regions2,
         ref PearsonOverlapStats stats)

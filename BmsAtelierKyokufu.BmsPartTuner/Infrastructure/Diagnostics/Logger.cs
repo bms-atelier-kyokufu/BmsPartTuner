@@ -236,6 +236,7 @@ public abstract class Logger
         private readonly string _tag, _scopeName;
         private readonly LogLevel _level;
         private readonly Stopwatch _sw;
+        private bool _disposed;
 
         /// <summary>
         /// インスタンスを初期化し、計測スコープを開始する。
@@ -252,7 +253,14 @@ public abstract class Logger
         /// <summary>
         /// スコープを終了し、経過時間を出力する。
         /// </summary>
-        public void Dispose() { _sw.Stop(); Log(_level, _tag, $"[End Scope] {_scopeName} took {_sw.ElapsedMilliseconds} ms"); }
+        public void Dispose()
+        {
+            if (_disposed) return;
+            _sw.Stop();
+            Log(_level, _tag, $"[End Scope] {_scopeName} took {_sw.ElapsedMilliseconds} ms");
+            _disposed = true;
+            GC.SuppressFinalize(this);
+        }
     }
 
     /// <summary>

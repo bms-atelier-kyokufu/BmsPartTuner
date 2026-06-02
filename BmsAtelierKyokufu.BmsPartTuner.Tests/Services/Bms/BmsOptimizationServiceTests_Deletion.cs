@@ -15,6 +15,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Services.Bms
     {
         private readonly BmsTestContext _context;
         private readonly BmsOptimizationService _service;
+        private bool _disposed;
 
         public BmsOptimizationServiceTests_Deletion()
         {
@@ -25,7 +26,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Services.Bms
 
         public void Dispose()
         {
+            if (_disposed) return;
             _context?.Dispose();
+            _disposed = true;
             GC.SuppressFinalize(this);
         }
 

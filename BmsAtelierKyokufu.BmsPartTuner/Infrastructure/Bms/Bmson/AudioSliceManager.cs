@@ -1,4 +1,4 @@
-﻿namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms.Bmson;
+namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms.Bmson;
 
 /// <summary>
 /// bmsonのノート情報に基づき、元の音声ファイル（ステムなど）を指定時間で切り出し、
@@ -21,6 +21,7 @@ public class AudioSliceManager(string bmsonDir, bool throwOnMissingFile = true) 
     // 楽器種別ごとの連番を管理する辞書
     private readonly ConcurrentDictionary<string, int> _instrumentCounters = new();
 
+    private bool _disposed;
     private readonly ConcurrentDictionary<string, Lazy<CachedAudioSource?>> _sourceCache = new(StringComparer.OrdinalIgnoreCase);
     private int _cacheHitCount = 0;
     private int _cacheMissCount = 0;
@@ -62,7 +63,7 @@ public class AudioSliceManager(string bmsonDir, bool throwOnMissingFile = true) 
 
         if (trimmedLengthBytes < lengthBytes)
         {
-            s_logger.WriteTrace( $"Trimmed silence: {sourceFileName} (offset={offsetSec:F2}s, duration={durationSec:F2}s) from {lengthBytes / 1024.0:F1}KB to {trimmedLengthBytes / 1024.0:F1}KB");
+            s_logger.WriteTrace($"Trimmed silence: {sourceFileName} (offset={offsetSec:F2}s, duration={durationSec:F2}s) from {lengthBytes / 1024.0:F1}KB to {trimmedLengthBytes / 1024.0:F1}KB");
         }
 
         // 4. トリミング後の真の長さを用いてキャッシュキーを作成
@@ -91,13 +92,13 @@ public class AudioSliceManager(string bmsonDir, bool throwOnMissingFile = true) 
                         startByte / 4,
                         trimmedLengthBytes / 4
                     );
-                    PointerAudioRegistry.Register(outputFileName, pointerData);
+                    AudioRegistry.Instance.Register(outputFileName, pointerData);
 
                     return outputFileName;
                 }
                 catch (Exception ex)
                 {
-                    s_logger.WriteError( $"スライス失敗: {sourceFileName}", ex);
+                    s_logger.WriteError($"スライス失敗: {sourceFileName}", ex);
                     return string.Empty;
                 }
             });
@@ -126,9 +127,11 @@ public class AudioSliceManager(string bmsonDir, bool throwOnMissingFile = true) 
 
     public void Dispose()
     {
+        if (_disposed) return;
         _sourceCache.Clear();
         _sliceCache.Clear();
         _requestCache.Clear();
+        _disposed = true;
         GC.SuppressFinalize(this);
     }
 

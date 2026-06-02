@@ -1,4 +1,4 @@
-﻿using System.Windows.Media.Animation;
+using System.Windows.Media.Animation;
 using BmsAtelierKyokufu.BmsPartTuner.UI.ViewModels;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.UI.Services;
@@ -161,9 +161,9 @@ public class ResultCardService : IUiElementService<ResultCardData>
             Threshold = $"36進数: {result.Base36Result.Threshold * 100:F0}%\n62進数: {result.Base62Result.Threshold * 100:F0}%",
 
             // サマリー: 削減後ファイル数（改行で分けて表示）
-            Summary = $"36進数: {result.Base36Result.Count}件\n62進数: {result.Base62Result.Count}件",
+            Summary = $"36進数: {result.Base36Result.Count}/{Core.AppConstants.Definition.MaxNumberBase36}件\n62進数: {result.Base62Result.Count}/{Core.AppConstants.Definition.MaxNumberBase62}件",
             // シミュレーション情報
-            Reduction = $"計測点: {result.SimulationData.Count}回",
+            Reduction = string.Empty,
             Time = $"{execTime:F1}秒",
             Margin = $"{memoryMb:F1}MB",
             IsOptimization = true

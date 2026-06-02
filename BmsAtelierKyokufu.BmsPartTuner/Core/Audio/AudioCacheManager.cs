@@ -5,7 +5,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
 /// 全オーディオデータをメモリにプリロードし、CPUコア数に応じたバッチ処理による並列ロードを行うことで、
 /// 効率的なメモリ管理とディスクI/Oの大幅な削減を実現します。
 /// </summary>
-internal class AudioCacheManager
+internal sealed class AudioCacheManager
 {
     private AudioCacheManager() { }
 
@@ -50,7 +50,7 @@ internal class AudioCacheManager
         }
 
         s_logger.WriteDebug($"Storage type detected as: {(isSsd ? "SSD (Full Parallel Mode)" : "HDD (Batch Mode)")}");
-        Logger.StartMemoryDiagnosis(); // 5秒後の強制レポート機能をオン
+
 
         var timer = s_logger.StartTimer();
 
@@ -78,7 +78,7 @@ internal class AudioCacheManager
                 int percentage = (int)((float)currentCount / totalFiles * AppConstants.Progress.PreloadComplete);
                 progress?.Report(percentage);
 
-                s_logger.CheckAndHaltIfDiagnosisTriggered("AudioCacheManager Parallel Loop", audioCache);
+
             });
         }
         else
@@ -111,7 +111,7 @@ internal class AudioCacheManager
                 progress?.Report(percentage);
 
                 // ループのたびに5秒経過していないかチェックし、経過していれば停止・レポート
-                s_logger.CheckAndHaltIfDiagnosisTriggered("AudioCacheManager Batch Loop", audioCache);
+
             });
         }
 
@@ -175,15 +175,17 @@ internal class AudioCacheManager
         {
             try
             {
-                if (PointerAudioRegistry.TryGet(file.Name, out var pointerData))
+                if (AudioRegistry.Instance.TryGet(file.Name, out var cachedData))
                 {
-                    audioCache[file.Name] = pointerData;
+                    // キャッシュヒット（PointerSoundData または PreNormalizedSoundData）
+                    audioCache[file.Name] = cachedData!;
                     success++;
                 }
                 else
                 {
-                    var cachedData = AudioProcessingService.LoadAndProcess(file.Name, normalizationMode);
-                    audioCache[file.Name] = cachedData;
+                    var newCachedData = AudioProcessingService.LoadAndProcess(file.Name, normalizationMode);
+                    audioCache[file.Name] = newCachedData;
+                    AudioRegistry.Instance.Register(file.Name, newCachedData);
                     success++;
                 }
             }

@@ -4,7 +4,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 /// BMSファイルの書き出し操作を担当する静的クラス。
 /// ファイルの書き込みをアトミックに行い、エンコーディング(Shift_JIS)を管理します。
 /// </summary>
-internal class BmsFileWriter
+internal sealed class BmsFileWriter
 {
     private BmsFileWriter() { }
 

@@ -1,4 +1,4 @@
-﻿using MathNet.Numerics;
+using MathNet.Numerics;
 namespace BmsAtelierKyokufu.BmsPartTuner.Models;
 
 /// <summary>
@@ -61,6 +61,7 @@ public class PointerSoundData(
     /// <inheritdoc />
     public ulong[]? SimHash256 => null;
 
+    private bool _disposed;
     private BaseAudioOptimizationData? _baseData = baseData;
     private readonly int _startSample = startSample;
     private readonly int _lengthSamples = lengthSamples;
@@ -132,8 +133,10 @@ public class PointerSoundData(
     /// <inheritdoc />
     public void Dispose()
     {
+        if (_disposed) return;
         _baseData = null;
         _regions = null;
+        _disposed = true;
         GC.SuppressFinalize(this);
     }
 

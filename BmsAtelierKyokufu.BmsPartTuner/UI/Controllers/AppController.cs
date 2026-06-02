@@ -15,6 +15,7 @@ public class AppController(
     private readonly IFileSystemService _fileSystemService = fileSystemService ?? throw new ArgumentNullException(nameof(fileSystemService));
     private readonly MainViewModel _mainViewModel = mainViewModel ?? throw new ArgumentNullException(nameof(mainViewModel));
     private static readonly Logger<AppController> s_logger = new();
+    private bool _suppressHideResultCard;
 
     public string? WorkingBmsPath { get; private set; }
     public string? WorkingBmsContent { get; private set; }
@@ -23,83 +24,43 @@ public class AppController(
 
     public async Task ExecuteThresholdOptimizationAsync()
     {
-        var inputPath = (WorkingBmsPath ?? _mainViewModel.FileOperations.InputPath)?.Trim('"') ?? string.Empty;
+        var inputPath = GetAndValidateInputPath();
+        if (string.IsNullOrEmpty(inputPath)) return;
 
-        if (string.IsNullOrWhiteSpace(inputPath))
-        {
-            _mainViewModel.ShowToast("入力BMS/BMSONファイルを先に読み込んでください", "⚠", isError: true);
-            _mainViewModel.StatusMessage = "入力ファイルが指定されていません";
-            return;
-        }
-
-        if (!_fileSystemService.FileExists(inputPath))
-        {
-            _mainViewModel.ShowToast($"入力ファイルが見つかりません: {Path.GetFileName(inputPath)}", "⚠", isError: true);
-            _mainViewModel.StatusMessage = "入力ファイルが存在しません";
-            _mainViewModel.BmsDefinitionManager.FileListItems.Clear();
-            return;
-        }
-
-        if (_mainViewModel.BmsDefinitionManager.BmsFileList == null)
-        {
-            _mainViewModel.ShowToast("BMS/BMSONファイルをまだ読み込んでいません。入力ファイルを選択してください", "⚠", isError: true);
-            _mainViewModel.StatusMessage = "ファイルリストが未読み込み";
-            return;
-        }
-
-        var fileListItems = _mainViewModel.BmsDefinitionManager.BmsFileList.GetFileList();
-        if (fileListItems == null || fileListItems.Count == 0)
-        {
-            _mainViewModel.ShowToast("ファイルリストが空です。BMS/BMSONファイルに定義が含まれているか確認してください", "⚠", isError: true);
-            _mainViewModel.StatusMessage = "ファイルリストが空";
-            return;
-        }
-
-        var files = new List<string>();
-        foreach (var wavFile in fileListItems)
-        {
-            if (!string.IsNullOrEmpty(wavFile.Name))
-            {
-                files.Add(wavFile.Name);
-            }
-        }
-
-        if (files.Count == 0)
-        {
-            _mainViewModel.ShowToast("有効なファイルパスが見つかりません", "⚠", isError: true);
-            _mainViewModel.StatusMessage = "有効なファイルパスなし";
-            return;
-        }
+        var files = GetFileListToOptimize();
+        if (files == null) return;
 
         _mainViewModel.HideResultCard();
-        _mainViewModel.StatusMessage = "しきい値最適化シミュレーション開始...";
+        SetBusyState(true, "しきい値最適化シミュレーション開始...");
 
-        var result = await _mainViewModel.Optimization.ExecuteThresholdOptimizationAsync(
-            files,
-            RadixConvert.ZZToInt(_mainViewModel.Optimization.DefinitionStart),
-            RadixConvert.ZZToInt(_mainViewModel.Optimization.DefinitionEnd));
+        int startDef = RadixConvert.ZZToInt(_mainViewModel.Optimization.DefinitionStart);
+        int endDef = RadixConvert.ZZToInt(_mainViewModel.Optimization.DefinitionEnd);
 
-        if (result != null)
+        var inputToUse = WorkingBmsPath ?? _mainViewModel.FileOperations.InputPath;
+
+        // OptimizationViewModelの_progressと上部グローバルプログレスバーを同期させる
+        _mainViewModel.Optimization.ProgressChanged += OnSimulationProgressChanged;
+
+        try
         {
-            var execTime = result.ExecutionTime.TotalSeconds;
-            var memoryMb = result.MemoryUsedBytes / 1024.0 / 1024.0;
+            var result = await _mainViewModel.Optimization.ExecuteThresholdOptimizationAsync(
+                inputToUse,
+                files,
+                startDef,
+                endDef);
 
-            _mainViewModel.ShowResultCard(
-                threshold: $"36進数: {result.Base36Result.Threshold * 100:F0}%\n62進数: {result.Base62Result.Threshold * 100:F0}%",
-                summary: $"36進数: {result.Base36Result.Count}件\n62進数: {result.Base62Result.Count}件",
-                reduction: $"計測点: {result.SimulationData.Count}回",
-                time: $"{execTime:F1}秒",
-                margin: $"{memoryMb:F1}MB",
-                isOptimization: true);
-
-            _mainViewModel.ShowToast($"最適化完了: Base36={result.Base36Result.Threshold * 100:F0}%, Base62={result.Base62Result.Threshold * 100:F0}%");
-            _mainViewModel.StatusMessage = $"最適化完了: Base36={result.Base36Result.Threshold * 100:F0}%, Base62={result.Base62Result.Threshold * 100:F0}%";
+            HandleOptimizationResult(result);
         }
-        else
+        finally
         {
-            _mainViewModel.ShowToast("最適化に失敗しました", "⚠", isError: true);
-            _mainViewModel.StatusMessage = "最適化に失敗しました";
+            _mainViewModel.Optimization.ProgressChanged -= OnSimulationProgressChanged;
+            SetBusyState(false, string.Empty);
         }
+    }
+
+    private void OnSimulationProgressChanged(object? sender, int percent)
+    {
+        _mainViewModel.GlobalProgressValue = percent;
     }
 
     public async Task ExecuteReductionAsync()
@@ -156,14 +117,20 @@ public class AppController(
         else
         {
             // 別名保存の場合は入力パスを切り替えて読み込み
+            _suppressHideResultCard = true;
             _mainViewModel.FileOperations.InputPath = _mainViewModel.FileOperations.OutputPath;
+            _suppressHideResultCard = false;
         }
     }
 
     public void HandleInputPathChanged(string? path)
     {
         // 入力パスが変更（または新規ファイル読み込み）されたタイミングでリザルトカードを隠す
-        _mainViewModel.HideResultCard();
+        // プログラムからの変更（削減後など）ではリザルトカードを消さない
+        if (!_suppressHideResultCard)
+        {
+            _mainViewModel.HideResultCard();
+        }
 
         _ = ProcessInputPathAsync(path);
     }
@@ -195,7 +162,7 @@ public class AppController(
             else
             {
                 Core.Audio.VirtualAudioRegistry.Clear();
-                Core.Audio.PointerAudioRegistry.Clear();
+                ClearProcessedAudioRegistryIfDirectoryChanged(path);
 
                 WorkingBmsPath = path;
                 WorkingBmsContent = null;
@@ -213,7 +180,7 @@ public class AppController(
         else
         {
             Core.Audio.VirtualAudioRegistry.Clear();
-            Core.Audio.PointerAudioRegistry.Clear();
+            Core.Audio.AudioRegistry.Instance.Clear();
 
             WorkingBmsPath = null;
             WorkingBmsContent = null;
@@ -237,10 +204,20 @@ public class AppController(
             using (s_logger.MeasureTime("Total Flow (Downconvert + LoadBmsFile)"))
             {
                 Core.Audio.VirtualAudioRegistry.Clear();
-                Core.Audio.PointerAudioRegistry.Clear();
-                
+                ClearProcessedAudioRegistryIfDirectoryChanged(path);
+
+
+                var progress = new Progress<int>(percent =>
+                {
+                    if (_mainViewModel.IsGlobalProgressIndeterminate)
+                    {
+                        _mainViewModel.IsGlobalProgressIndeterminate = false;
+                    }
+                    _mainViewModel.GlobalProgressValue = percent;
+                });
+
                 _mainViewModel.IsGlobalProgressIndeterminate = true;
-                string bmsText = await _bmsonConversionService.GenerateBmsTextAsync(path, keyNotesOnly: false);
+                string bmsText = await _bmsonConversionService.GenerateBmsTextAsync(path, keyNotesOnly: false, progress);
 
                 WorkingBmsPath = path;
                 WorkingBmsContent = bmsText;
@@ -271,5 +248,118 @@ public class AppController(
             _mainViewModel.NotifyCanExecuteReductionChanged();
         }
     }
+
+    private void ClearProcessedAudioRegistryIfDirectoryChanged(string? newPath)
+    {
+        try
+        {
+            var oldDir = !string.IsNullOrEmpty(WorkingBmsPath) ? Path.GetDirectoryName(Path.GetFullPath(WorkingBmsPath)) : null;
+            var newDir = !string.IsNullOrEmpty(newPath) ? Path.GetDirectoryName(Path.GetFullPath(newPath)) : null;
+            if (oldDir == null || newDir == null || !string.Equals(oldDir, newDir, StringComparison.OrdinalIgnoreCase))
+            {
+                Core.Audio.AudioRegistry.Instance.Clear();
+            }
+        }
+        catch
+        {
+            Core.Audio.AudioRegistry.Instance.Clear();
+        }
+    }
+
+    #region Refactored Helpers for ExecuteThresholdOptimizationAsync
+
+    private string GetAndValidateInputPath()
+    {
+        var inputPath = (WorkingBmsPath ?? _mainViewModel.FileOperations.InputPath)?.Trim('"') ?? string.Empty;
+
+        if (string.IsNullOrWhiteSpace(inputPath))
+        {
+            _mainViewModel.ShowToast("入力BMS/BMSONファイルを先に読み込んでください", "⚠", isError: true);
+            _mainViewModel.StatusMessage = "入力ファイルが指定されていません";
+            return string.Empty;
+        }
+
+        if (!_fileSystemService.FileExists(inputPath))
+        {
+            _mainViewModel.ShowToast($"入力ファイルが見つかりません: {Path.GetFileName(inputPath)}", "⚠", isError: true);
+            _mainViewModel.StatusMessage = "入力ファイルが存在しません";
+            _mainViewModel.BmsDefinitionManager.FileListItems.Clear();
+            return string.Empty;
+        }
+
+        return inputPath;
+    }
+
+    private List<string>? GetFileListToOptimize()
+    {
+        if (_mainViewModel.BmsDefinitionManager.BmsFileList == null)
+        {
+            _mainViewModel.ShowToast("BMS/BMSONファイルをまだ読み込んでいません。入力ファイルを選択してください", "⚠", isError: true);
+            _mainViewModel.StatusMessage = "ファイルリストが未読み込み";
+            return null;
+        }
+
+        var fileListItems = _mainViewModel.BmsDefinitionManager.BmsFileList.GetFileList();
+        if (fileListItems == null || fileListItems.Count == 0)
+        {
+            _mainViewModel.ShowToast("ファイルリストが空です。BMS/BMSONファイルに定義が含まれているか確認してください", "⚠", isError: true);
+            _mainViewModel.StatusMessage = "ファイルリストが空";
+            return null;
+        }
+
+        var files = new List<string>();
+        foreach (var wavFile in fileListItems)
+        {
+            if (!string.IsNullOrEmpty(wavFile.Name))
+            {
+                files.Add(wavFile.Name);
+            }
+        }
+
+        if (files.Count == 0)
+        {
+            _mainViewModel.ShowToast("有効なファイルパスが見つかりません", "⚠", isError: true);
+            _mainViewModel.StatusMessage = "有効なファイルパスなし";
+            return null;
+        }
+
+        return files;
+    }
+
+    private void SetBusyState(bool isBusy, string statusMessage)
+    {
+        _mainViewModel.StatusMessage = statusMessage;
+        _mainViewModel.IsBusy = isBusy;
+        _mainViewModel.IsGlobalProgressIndeterminate = false;
+        _mainViewModel.GlobalProgressValue = 0;
+    }
+
+    private void HandleOptimizationResult(OptimizationResult? result)
+    {
+        if (result != null)
+        {
+            var execTime = result.ExecutionTime.TotalSeconds;
+            var memoryMb = result.MemoryUsedBytes / 1024.0 / 1024.0;
+
+            _mainViewModel.ShowResultCard(
+                threshold: $"36進数: {result.Base36Result.Threshold * 100:F0}%\n62進数: {result.Base62Result.Threshold * 100:F0}%",
+                summary: $"36進数: {result.Base36Result.Count}/{Core.AppConstants.Definition.MaxNumberBase36}件\n62進数: {result.Base62Result.Count}/{Core.AppConstants.Definition.MaxNumberBase62}件",
+                reduction: string.Empty,
+                time: $"{execTime:F1}秒",
+                margin: $"{memoryMb:F1}MB",
+                isOptimization: true);
+
+            var toastMsg = $"最適化完了: Base36={result.Base36Result.Threshold * 100:F0}%, Base62={result.Base62Result.Threshold * 100:F0}%";
+            _mainViewModel.ShowToast(toastMsg);
+            _mainViewModel.StatusMessage = toastMsg;
+        }
+        else
+        {
+            _mainViewModel.ShowToast("最適化に失敗しました", "⚠", isError: true);
+            _mainViewModel.StatusMessage = "最適化に失敗しました";
+        }
+    }
+
+    #endregion
 }
 

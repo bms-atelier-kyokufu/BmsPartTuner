@@ -175,33 +175,38 @@ public class BmsScoreGenerator(
     }
     private Dictionary<long, YPositionData> _yDataMap = [];
 
-    public string GenerateBmsText()
+    public string GenerateBmsText(IProgress<int>? progress = null)
     {
         Logger.ClearAccumulated();
-        s_logger.WriteDebug( "Start GenerateBmsText");
+        s_logger.WriteDebug("Start GenerateBmsText");
         var timer = s_logger.StartTimer();
+
+        progress?.Report(5);
 
         // 0. Y座標データの事前計算 (次元 of 分離)
         PrecalculateYPositions();
-        s_logger.WriteDebug( $"PrecalculateYPositions: {timer.Lap("PrecalculateYPositions")} ms");
+        s_logger.WriteDebug($"PrecalculateYPositions: {timer.Lap("PrecalculateYPositions")} ms");
 
         // 音声ソースの投機的並列プリロード
+        progress?.Report(10);
         PreloadAudioSources();
-        s_logger.WriteDebug( $"  [BmsScoreGenerator] PreloadAudioSources (Parallel): {timer.Lap("PreloadAudioSources")} ms");
+        s_logger.WriteDebug($"  [BmsScoreGenerator] PreloadAudioSources (Parallel): {timer.Lap("PreloadAudioSources")} ms");
 
         // 1. Choose optimal radix based on total upper bound notes
+        progress?.Report(15);
         int totalNotesUpperBound = _bmson.SoundChannels?.Sum(static c => c.Notes?.Count ?? 0) ?? 0;
         _radix = totalNotesUpperBound <= MaxNumberBase36 ? RadixBase36 : RadixBase62;
 
-        ProcessSoundChannels();
-        s_logger.WriteDebug( $"ProcessSoundChannels: {timer.Lap("ProcessSoundChannels")} ms");
+        ProcessSoundChannels(progress);
+        s_logger.WriteDebug($"ProcessSoundChannels: {timer.Lap("ProcessSoundChannels")} ms");
         s_logger.PrintAccumulatedGrouped("AudioSliceManager Metrics (Grouped by Channel)", LogLevel.Debug);
 
         ProcessBpmEvents();
         ProcessStopEvents();
         ProcessBgaEvents();
         ProcessMeasureLengths();
-        s_logger.WriteDebug( $"Other events processing: {timer.Lap("OtherEventsProcessing")} ms");
+        progress?.Report(90);
+        s_logger.WriteDebug($"Other events processing: {timer.Lap("OtherEventsProcessing")} ms");
 
         var sb = new StringBuilder(262144);
 
@@ -214,7 +219,8 @@ public class BmsScoreGenerator(
         // 3. データブロック出力
         WriteDataBlocks(sb);
 
-        s_logger.WriteDebug( $"StringBuilder formatting: {timer.Lap("StringBuilderFormatting")} ms");
+        s_logger.WriteDebug($"StringBuilder formatting: {timer.Lap("StringBuilderFormatting")} ms");
+        progress?.Report(100);
         return sb.ToString();
     }
 
@@ -451,7 +457,7 @@ public class BmsScoreGenerator(
         });
     }
 
-    private void ProcessSoundChannels()
+    private void ProcessSoundChannels(IProgress<int>? progress = null)
     {
         if (_bmson.SoundChannels == null) return;
 
@@ -461,8 +467,19 @@ public class BmsScoreGenerator(
         var pendingNotes = new PendingNote[totalNotes * 2]; // *2 for LNs
         int[] sharedNoteIndex = [0];
 
+        int totalChannels = _bmson.SoundChannels.Count;
+        int processedChannels = 0;
+
         var options = new ParallelOptions { MaxDegreeOfParallelism = Math.Max(1, Environment.ProcessorCount / 2) };
-        Parallel.ForEach(_bmson.SoundChannels, options, ch => ProcessChannel(ch, pendingNotes, sharedNoteIndex));
+        Parallel.ForEach(_bmson.SoundChannels, options, ch =>
+        {
+            ProcessChannel(ch, pendingNotes, sharedNoteIndex);
+            if (progress != null)
+            {
+                int p = Interlocked.Increment(ref processedChannels);
+                progress.Report(15 + (int)(p * 75.0 / totalChannels));
+            }
+        });
 
         for (int i = 0; i < sharedNoteIndex[0]; i++)
         {

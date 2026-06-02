@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+using System.Reflection;
+using BmsAtelierKyokufu.BmsPartTuner.UI.Views.Windows;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Common
 {
@@ -55,7 +56,63 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Common
                 // ログ保存に失敗しても処理を続行
             }
 
-            // ユーザーへの通知
+            // ユーザーへの通知 (モダンなエラー報告ウィンドウを表示)
+            try
+            {
+                if (Application.Current?.Dispatcher != null)
+                {
+                    // すでにUIスレッド(Dispatcher)が動作している場合はそのスレッド上で表示
+                    if (Application.Current.Dispatcher.CheckAccess())
+                    {
+                        ShowCrashReportWindow(ex, logPath);
+                    }
+                    else
+                    {
+                        Application.Current.Dispatcher.Invoke(() => ShowCrashReportWindow(ex, logPath));
+                    }
+                }
+                else
+                {
+                    // WPFアプリケーションが存在しない、または起動前の場合はSTAスレッドを作成して表示
+                    ShowCrashReportWindowInNewThread(ex, logPath);
+                }
+            }
+            catch
+            {
+                // エラーウィンドウ自体の表示に失敗した場合は、従来のMessageBoxにフォールバック
+                FallbackToMessageBox(ex, logPath);
+            }
+        }
+
+        private static void ShowCrashReportWindow(Exception ex, string? logPath)
+        {
+            var window = new CrashReportWindow(ex, logPath);
+            window.ShowDialog();
+        }
+
+        private static void ShowCrashReportWindowInNewThread(Exception ex, string? logPath)
+        {
+            var thread = new Thread(() =>
+            {
+                try
+                {
+                    var window = new CrashReportWindow(ex, logPath);
+                    window.Closed += (s, e) => Dispatcher.CurrentDispatcher.BeginInvokeShutdown(DispatcherPriority.Normal);
+                    window.Show();
+                    Dispatcher.Run();
+                }
+                catch
+                {
+                    FallbackToMessageBox(ex, logPath);
+                }
+            });
+            thread.SetApartmentState(ApartmentState.STA);
+            thread.Start();
+            thread.Join(); // ウィンドウが閉じるまで待機
+        }
+
+        private static void FallbackToMessageBox(Exception ex, string? logPath)
+        {
             var message = "予期せぬエラーが発生しました。";
             if (logPath != null && File.Exists(logPath))
             {

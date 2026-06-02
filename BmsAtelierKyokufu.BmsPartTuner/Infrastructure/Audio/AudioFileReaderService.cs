@@ -6,7 +6,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Audio
     /// NAudio依存やファイルI/Oをこのクラスに集約します。
     /// </summary>
     [ADRAnchor("OPT-05", nameof(AudioFileReaderService))]
-    internal class AudioFileReaderService
+    internal sealed class AudioFileReaderService
     {
         private AudioFileReaderService() { }
         private static readonly Logger<AudioFileReaderService> s_logger = new();

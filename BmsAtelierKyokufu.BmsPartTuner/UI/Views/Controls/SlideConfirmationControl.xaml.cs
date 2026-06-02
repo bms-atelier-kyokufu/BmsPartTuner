@@ -15,7 +15,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.UI.Views.Controls
     [ExcludeFromCodeCoverage]
     public partial class SlideConfirmationControl : UserControl
     {
-    private static readonly Logger<SlideConfirmationControl> s_logger = new();
+        private static readonly Logger<SlideConfirmationControl> s_logger = new();
         #region 依存関係プロパティ
 
         /// <summary>

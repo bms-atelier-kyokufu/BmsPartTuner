@@ -1,4 +1,4 @@
-﻿using BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
+using BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Interfaces.Bms;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Optimization;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Validation;
@@ -125,7 +125,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.ViewModels
                 new FakeOptimizationService(),
                 new FakeOptimizationUseCase(),
                 null,
-                vm => vm.ExecuteThresholdOptimizationAsync(["a.wav", "b.wav"], 0, 10),
+                vm => vm.ExecuteThresholdOptimizationAsync("in.bms", ["a.wav", "b.wav"], 0, 10),
                 vm =>
                 {
                     Assert.False(vm.IsBusy);
@@ -144,7 +144,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.ViewModels
                 new FakeOptimizationService(),
                 new FakeOptimizationUseCase(),
                 vm => vm.ErrorOccurred += (_, msg) => error = msg,
-                vm => vm.ExecuteThresholdOptimizationAsync([], 0, 10),
+                vm => vm.ExecuteThresholdOptimizationAsync("in.bms", [], 0, 10),
                 vm =>
                 {
                     Assert.Equal("ファイルリストが空です", error);
@@ -189,7 +189,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.ViewModels
                 new ThrowingOptimizationService(),
                 new ThrowingOptimizationUseCase(),
                 vm => vm.ErrorOccurred += (_, msg) => error = msg,
-                vm => vm.ExecuteThresholdOptimizationAsync(["a.wav"], 0, 10),
+                vm => vm.ExecuteThresholdOptimizationAsync("in.bms", ["a.wav"], 0, 10),
                 vm => { Assert.False(vm.IsBusy); Assert.NotNull(error); }
             );
         }
@@ -202,7 +202,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.ViewModels
                 new FakeOptimizationService(),
                 new FakeOptimizationUseCase(),
                 vm => vm.PropertyChanged += (s, e) => { if (e.PropertyName == nameof(vm.IsBusy)) busyStates.Add(vm.IsBusy); },
-                vm => vm.ExecuteThresholdOptimizationAsync(["a.wav"], 0, 10),
+                vm => vm.ExecuteThresholdOptimizationAsync("in.bms", ["a.wav"], 0, 10),
                 vm => { Assert.Contains(true, busyStates); Assert.False(vm.IsBusy); }
             );
         }
@@ -215,7 +215,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.ViewModels
                 new FakeOptimizationService(),
                 new FakeOptimizationUseCase(),
                 vm => vm.PropertyChanged += (s, e) => { if (e.PropertyName == nameof(vm.ProgressValue)) progressValues.Add(vm.ProgressValue); },
-                vm => vm.ExecuteThresholdOptimizationAsync(["a.wav"], 0, 10),
+                vm => vm.ExecuteThresholdOptimizationAsync("in.bms", ["a.wav"], 0, 10),
                 vm => { Assert.NotEmpty(progressValues); Assert.Equal(100, vm.ProgressValue); }
             );
         }
@@ -239,7 +239,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.ViewModels
                 new NullReturningOptimizationService(),
                 new NullReturningOptimizationUseCase(),
                 null,
-                vm => vm.ExecuteThresholdOptimizationAsync(["a.wav"], 0, 10),
+                vm => vm.ExecuteThresholdOptimizationAsync("in.bms", ["a.wav"], 0, 10),
                 vm => Assert.False(vm.IsBusy)
             );
 

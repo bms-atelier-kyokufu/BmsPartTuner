@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 using BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers;
@@ -8,6 +8,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
     public class BmsDefinitionManagerTests : IDisposable
     {
         private readonly string _tempDir;
+        private bool _disposed;
 
         public BmsDefinitionManagerTests()
         {
@@ -17,11 +18,13 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
 
         public void Dispose()
         {
+            if (_disposed) return;
             VirtualAudioRegistry.Clear();
             if (Directory.Exists(_tempDir))
             {
                 Directory.Delete(_tempDir, true);
             }
+            _disposed = true;
             GC.SuppressFinalize(this);
         }
 

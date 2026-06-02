@@ -52,7 +52,7 @@ public class SettingsService
         }
         catch (Exception ex)
         {
-            s_logger.WriteDebug( $"設定ファイルの読み込みに失敗しました: {ex.Message}");
+            s_logger.WriteDebug($"設定ファイルの読み込みに失敗しました: {ex.Message}");
             _cachedSettings = new AppSettings();
         }
 
@@ -77,7 +77,7 @@ public class SettingsService
         }
         catch (Exception ex)
         {
-            s_logger.WriteDebug( $"設定ファイルの保存に失敗しました: {ex.Message}");
+            s_logger.WriteDebug($"設定ファイルの保存に失敗しました: {ex.Message}");
         }
     }
 

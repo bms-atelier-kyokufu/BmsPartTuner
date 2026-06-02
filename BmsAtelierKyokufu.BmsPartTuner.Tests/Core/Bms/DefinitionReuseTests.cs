@@ -17,6 +17,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
     public partial class DefinitionReuseTests : IDisposable
     {
         private readonly BmsTestContext _context;
+        private bool _disposed;
 
         public DefinitionReuseTests()
         {
@@ -25,7 +26,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
 
         public void Dispose()
         {
+            if (_disposed) return;
             _context.Dispose();
+            _disposed = true;
             GC.SuppressFinalize(this);
         }
 

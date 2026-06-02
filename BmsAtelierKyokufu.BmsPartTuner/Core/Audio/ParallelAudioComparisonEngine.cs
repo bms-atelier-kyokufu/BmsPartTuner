@@ -28,11 +28,11 @@ internal class ParallelAudioComparisonEngine(AudioComparisonParameters parameter
 
     #region フィールド
 
-    private readonly IReadOnlyList<BmsAudioFile> _fileList 
+    private readonly IReadOnlyList<BmsAudioFile> _fileList
         = parameters.FileList ?? throw new ArgumentNullException(nameof(parameters.FileList));
     private readonly int _startPoint = parameters.StartPoint;
     private readonly int _endPoint = parameters.EndPoint;
-    private readonly IReadOnlyDictionary<string, ICachedSoundData> _audioCache 
+    private readonly IReadOnlyDictionary<string, ICachedSoundData> _audioCache
         = parameters.AudioCache ?? throw new ArgumentNullException(nameof(parameters.AudioCache));
     private readonly ThreadSafeReplaceTable _tableManager = new(parameters.ReplaceTable, BuildFileSizeArray(parameters.FileList));
 

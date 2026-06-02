@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Text;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 using BmsAtelierKyokufu.BmsPartTuner.Models;
@@ -12,6 +12,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
     public class BmsFileRewriterTests : IDisposable
     {
         private readonly string _tempDir;
+        private bool _disposed;
 
         public BmsFileRewriterTests()
         {
@@ -21,6 +22,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
 
         public void Dispose()
         {
+            if (_disposed) return;
             if (Directory.Exists(_tempDir))
             {
                 try
@@ -29,6 +31,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
                 }
                 catch { /* クリーンアップエラーは無視 */ }
             }
+            _disposed = true;
             GC.SuppressFinalize(this);
         }
 

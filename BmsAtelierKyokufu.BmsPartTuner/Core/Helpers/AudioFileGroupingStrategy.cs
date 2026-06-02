@@ -6,7 +6,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Core.Helpers;
 /// キーワードフィルタ（楽器種別など）や、ファイルサイズとRMS値による分類を利用してグループ化を行い、巨大なグループは自動的に分割します。
 /// </summary>
 [ADRAnchor("OPT-09", nameof(AudioFileGroupingStrategy))]
-public class AudioFileGroupingStrategy
+public sealed class AudioFileGroupingStrategy
 {
     private AudioFileGroupingStrategy() { }
 

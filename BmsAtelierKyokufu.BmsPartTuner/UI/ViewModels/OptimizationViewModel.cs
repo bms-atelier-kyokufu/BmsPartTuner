@@ -1,4 +1,4 @@
-﻿using BmsAtelierKyokufu.BmsPartTuner.UI.Views.Controls;
+using BmsAtelierKyokufu.BmsPartTuner.UI.Views.Controls;
 using BmsAtelierKyokufu.BmsPartTuner.UseCases;
 using BmsAtelierKyokufu.BmsPartTuner.UseCases.Dto;
 namespace BmsAtelierKyokufu.BmsPartTuner.UI.ViewModels;
@@ -180,6 +180,11 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
     /// </summary>
     public event EventHandler<string>? WarningOccurred;
 
+    /// <summary>
+    /// 進捗率が更新された際に発生するイベント。
+    /// </summary>
+    public event EventHandler<int>? ProgressChanged;
+
     public OptimizationViewModel(IBmsOptimizationService optimizationService, IBmsOptimizationUseCase optimizationUseCase)
     {
         _optimizationService = optimizationService ?? throw new ArgumentNullException(nameof(optimizationService));
@@ -204,6 +209,8 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
 
             LoadingMessage = message;
             StatusMessage = message;
+
+            ProgressChanged?.Invoke(this, percent);
         });
     }
 
@@ -252,6 +259,7 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
     /// しきい値の最適化シミュレーションを実行します。
     /// </summary>
     public async Task<OptimizationResult?> ExecuteThresholdOptimizationAsync(
+        string? inputPath,
         List<string> files,
         int startDefinition,
         int endDefinition)
@@ -263,6 +271,7 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
         {
             var request = new ThresholdOptimizationRequest
             {
+                InputPath = inputPath,
                 BmsFileList = files,
                 StartDefinition = startDefinition,
                 EndDefinition = endDefinition,

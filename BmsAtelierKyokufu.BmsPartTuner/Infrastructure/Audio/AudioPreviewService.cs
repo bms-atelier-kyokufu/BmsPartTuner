@@ -9,6 +9,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Audio;
 /// </summary>
 public class AudioPreviewService(BmsPartTuner.UI.Services.IUIThreadDispatcher dispatcher, IAudioPlayerFactory? playerFactory = null) : IDisposable
 {
+    private bool _disposed;
     private IAudioPlayer? _currentPlayer;
     private CancellationTokenSource? _cancellationTokenSource;
     private readonly BmsPartTuner.UI.Services.IUIThreadDispatcher _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
@@ -88,7 +89,9 @@ public class AudioPreviewService(BmsPartTuner.UI.Services.IUIThreadDispatcher di
 
     public void Dispose()
     {
+        if (_disposed) return;
         StopCurrentPlayback();
+        _disposed = true;
         GC.SuppressFinalize(this);
     }
 

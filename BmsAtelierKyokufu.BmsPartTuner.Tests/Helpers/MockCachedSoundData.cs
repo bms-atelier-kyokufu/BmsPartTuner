@@ -45,6 +45,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
 
         private readonly ulong[][] _signLsh;
         private readonly ulong[][] _signLshMask;
+        private bool _disposed;
 
         public MockCachedSoundData(float[][] samplesPerChannel, int sampleRate, int bitsPerSample, string filePath = "test.wav")
         {
@@ -53,7 +54,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
                 throw new ArgumentException("Samples cannot be empty.");
             }
 
-            FilePath = filePath;
+            FilePath = filePath == "test.wav" ? $"test_{Guid.NewGuid():N}.wav" : filePath;
             SampleRate = sampleRate;
             BitsPerSample = bitsPerSample;
             SamplesPerChannel = samplesPerChannel;
@@ -122,12 +123,14 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
 
         public void Dispose()
         {
+            if (_disposed) return;
             for (int i = 0; i < Channels; i++)
             {
                 _signLsh[i] = [];
                 _signLshMask[i] = [];
             }
             SamplesPerChannel = null;
+            _disposed = true;
             GC.SuppressFinalize(this);
         }
 

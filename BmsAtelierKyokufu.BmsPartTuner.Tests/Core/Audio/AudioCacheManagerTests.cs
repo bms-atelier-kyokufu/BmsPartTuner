@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Text;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
 using BmsAtelierKyokufu.BmsPartTuner.Models;
@@ -13,6 +13,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
     public class AudioCacheManagerTests : IDisposable
     {
         private readonly string _tempDirectory;
+        private bool _disposed;
 
         public AudioCacheManagerTests()
         {
@@ -22,6 +23,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
 
         public void Dispose()
         {
+            if (_disposed) return;
             if (Directory.Exists(_tempDirectory))
             {
                 try
@@ -36,6 +38,8 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
                     // リソース管理のテスト失敗を示唆することが多い
                 }
             }
+            AudioRegistry.Instance.Clear();
+            _disposed = true;
             GC.SuppressFinalize(this);
         }
 

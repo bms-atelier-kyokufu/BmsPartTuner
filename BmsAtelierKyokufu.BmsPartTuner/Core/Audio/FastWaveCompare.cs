@@ -23,8 +23,19 @@ internal static class FastWaveCompare
     /// <returns>類似している場合true。</returns>
     public static bool IsMatch(ICachedSoundData data1, ICachedSoundData data2, float threshold)
     {
+        string name1 = data1.FilePath;
+        string name2 = data2.FilePath;
+        bool canCache = !string.IsNullOrEmpty(name1) && !string.IsNullOrEmpty(name2);
+        var key = canCache ? (string.CompareOrdinal(name1, name2) < 0 ? (name1, name2) : (name2, name1)) : default;
+
+        if (canCache && AudioRegistry.Instance.CorrelationCache.TryGetValue(key, out float cachedCorr))
+        {
+            return cachedCorr >= threshold;
+        }
+
         if (!HasCompatibleFormat(data1, data2))
         {
+            if (canCache) AudioRegistry.Instance.CorrelationCache[key] = -2.0f;
             return false;
         }
 
@@ -33,26 +44,31 @@ internal static class FastWaveCompare
 
         if (activeRegions1 == null || activeRegions2 == null || activeRegions1.Length == 0 || activeRegions2.Length == 0)
         {
+            if (canCache) AudioRegistry.Instance.CorrelationCache[key] = -2.0f;
             return false;
         }
 
         if (TryCheckSilenceMatch(data1, data2, activeRegions1, activeRegions2, out bool isSilenceMatch))
         {
+            if (canCache) AudioRegistry.Instance.CorrelationCache[key] = isSilenceMatch ? 2.0f : -2.0f;
             return isSilenceMatch;
         }
 
         if (ExceedsLengthDifference(data1, data2))
         {
+            if (canCache) AudioRegistry.Instance.CorrelationCache[key] = -2.0f;
             return false;
         }
 
         if (IsMismatchedBySimHash(data1, data2))
         {
+            if (canCache) AudioRegistry.Instance.CorrelationCache[key] = -2.0f;
             return false;
         }
 
         if (IsMismatchedBySpectralFeatures(data1, data2))
         {
+            if (canCache) AudioRegistry.Instance.CorrelationCache[key] = -2.0f;
             return false;
         }
 
@@ -71,14 +87,15 @@ internal static class FastWaveCompare
         var parameters = new WaveComparisonParameters(shorter, longer, targetChannel, shorterFrames, longerFrames, shorterSpan, longerFullSpan);
         var (correlation, offset) = CalculateMaxCorrelation(parameters);
 
-        if (correlation >= threshold && shorterFrames < longerFrames)
+        if (shorterFrames < longerFrames)
         {
             if (HasSignificantNonOverlapEnergy(longerFullSpan, shorterFrames, longerFrames, offset))
             {
-                return false;
+                correlation = -2.0f;
             }
         }
 
+        if (canCache) AudioRegistry.Instance.CorrelationCache[key] = correlation;
         return correlation >= threshold;
     }
 

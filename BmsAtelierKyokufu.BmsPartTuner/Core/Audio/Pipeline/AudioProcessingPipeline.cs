@@ -31,9 +31,9 @@ internal sealed class AudioProcessingPipeline
         foreach (var step in _steps)
         {
             timerStep.Lap(step.Name);
-            
+
             step.Execute(context);
-            
+
             s_logger.WriteDebug($"{step.Name}: {timerStep.Lap(step.Name)} ms");
         }
 

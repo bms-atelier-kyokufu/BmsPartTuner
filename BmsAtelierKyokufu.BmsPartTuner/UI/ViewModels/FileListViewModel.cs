@@ -107,7 +107,7 @@ public partial class FileListViewModel : ObservableObject, IDisposable
     /// </summary>
     public async Task LoadBmsFileAsync(string bmsFilePath, string? bmsContent = null)
     {
-        s_logger.WriteDebug( $"=== FileListViewModel.LoadBmsFileAsync Started for {Path.GetFileName(bmsFilePath)} ===");
+        s_logger.WriteDebug($"=== FileListViewModel.LoadBmsFileAsync Started for {Path.GetFileName(bmsFilePath)} ===");
         var timerTotal = s_logger.StartTimer();
         try
         {
@@ -116,7 +116,7 @@ public partial class FileListViewModel : ObservableObject, IDisposable
                 var timer = s_logger.StartTimer();
                 var manager = new BmsDefinitionManager(bmsFilePath, bmsContent);
                 var list = manager.CreateFileList();
-                s_logger.WriteDebug( $"BmsDefinitionManager construction and CreateFileList: {timer.Lap("BmsDefinitionManager construction and CreateFileList")} ms");
+                s_logger.WriteDebug($"BmsDefinitionManager construction and CreateFileList: {timer.Lap("BmsDefinitionManager construction and CreateFileList")} ms");
 
                 var chips = _filterService?.GenerateFilterChips(list) ?? [];
                 var groups = chips
@@ -127,7 +127,7 @@ public partial class FileListViewModel : ObservableObject, IDisposable
                         IsSelected = true
                     })
                     .ToList();
-                s_logger.WriteDebug( $"FilterChips and InstrumentGroups generation: {timer.Lap("FilterChips and InstrumentGroups generation")} ms");
+                s_logger.WriteDebug($"FilterChips and InstrumentGroups generation: {timer.Lap("FilterChips and InstrumentGroups generation")} ms");
 
                 return (manager, list, groups);
             });
@@ -147,7 +147,7 @@ public partial class FileListViewModel : ObservableObject, IDisposable
                 });
                 WeakReferenceMessenger.Default.Send(new FileListLoadedMessage(true, bmsFilePath, string.Empty));
             }
-            s_logger.WriteDebug( $"=== FileListViewModel.LoadBmsFileAsync Finished: {timerTotal.Lap("Total")} ms ===");
+            s_logger.WriteDebug($"=== FileListViewModel.LoadBmsFileAsync Finished: {timerTotal.Lap("Total")} ms ===");
         }
         catch (Exception ex)
         {

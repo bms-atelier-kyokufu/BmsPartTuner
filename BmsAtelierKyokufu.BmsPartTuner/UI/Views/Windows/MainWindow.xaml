@@ -354,7 +354,7 @@
                                             VerticalAlignment="Center"
                                             Width="32"
                                             Height="32"
-                                            Command="{Binding HideResultCardCommand}"
+                                            Command="{Binding HideResultCardInternalCommand}"
                                             Style="{StaticResource M3IconButton}"
                                             ToolTip="閉じる">
                                             <TextBlock
@@ -376,7 +376,7 @@
                                         Margin="0,0,0,16"
                                         FontSize="12"
                                         Foreground="{DynamicResource M3OutlineBrush}"
-                                        Text="推奨しきい値"
+                                        Text="{Binding Notification.ResultThresholdLabel}"
                                         TextAlignment="Center" />
 
                                     <Separator Margin="0,0,0,16" />

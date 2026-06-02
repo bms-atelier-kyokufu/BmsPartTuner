@@ -246,8 +246,8 @@ internal partial class BmsFileRewriter(
         // 未定義参照があればワーニングログを出力
         if (undefinedReferences.Count > 0)
         {
-            s_logger.WriteDebug( $"[BmsFileRewriter] WARNING: Found undefined WAV references in {Path.GetFileName(bmsFileName)}: {string.Join(", ", undefinedReferences)}");
-            s_logger.WriteDebug( "[BmsFileRewriter] These references were preserved as-is (non-destructive policy)");
+            s_logger.WriteDebug($"[BmsFileRewriter] WARNING: Found undefined WAV references in {Path.GetFileName(bmsFileName)}: {string.Join(", ", undefinedReferences)}");
+            s_logger.WriteDebug("[BmsFileRewriter] These references were preserved as-is (non-destructive policy)");
         }
         return sb.ToString();
     }
