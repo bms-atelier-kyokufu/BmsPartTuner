@@ -86,8 +86,10 @@ public class AudioSliceManager(string bmsonDir, bool throwOnMissingFile = true) 
                     VirtualAudioRegistry.AddFile(outputFileName, virtualFile);
 
                     // ポインタを生成し、レジストリに登録 (16bit stereo = 4 bytes per frame)
+                    // S2（物理ファイルロード後）と相関キャッシュのキー(FilePath)を一致させるため、仮想時点でもフルパスを指定する
+                    string fullFilePath = Path.Combine(_bmsonDir, outputFileName);
                     var pointerData = new PointerSoundData(
-                        outputFileName,
+                        fullFilePath,
                         source.DecodedData,
                         startByte / 4,
                         trimmedLengthBytes / 4
