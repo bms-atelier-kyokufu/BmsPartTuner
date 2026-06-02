@@ -14,13 +14,13 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
         public void Benchmark_FastWaveCompare_IsMatch()
         {
             // 1. テストデータの生成
-            int length = 44100; // 1秒分
+            const int length = 44100; // 1秒分
             float[] data1 = new float[length];
             float[] data2 = new float[length];
             for (int i = 0; i < length; i++)
             {
                 data1[i] = (float)Math.Sin(i * 0.05);
-                data2[i] = (float)Math.Sin(i * 0.05 + 0.01);
+                data2[i] = (float)Math.Sin((i * 0.05) + 0.01);
             }
 
             // MockCachedSoundDataのコンストラクタでfilePathを空文字にすることで、canCacheがfalseとなりキャッシュを無効化する。
@@ -46,7 +46,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
 
             // 3. ベンチマーク実行
             var benchSw = Stopwatch.StartNew();
-            int iterations = 2000;
+            const int iterations = 2000;
             bool lastResult = false;
             for (int i = 0; i < iterations; i++)
             {
@@ -56,10 +56,10 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
             long benchMs = benchSw.ElapsedMilliseconds;
 
             double actualRatio = (double)benchMs / calibMs;
-            
+
             // 期待値の基準レシオ（事前の実測値から定義）
             // 処理向上やハードの違いによる乖離を防ぐため、相対的な実行比率で判定
-            const double BaselineRatio = 62.3; 
+            const double BaselineRatio = 62.3;
 
             _output.WriteLine($"[Perf] Calibration Time: {calibMs} ms");
             _output.WriteLine($"[Perf] Benchmark Time: {benchMs} ms for {iterations} iterations");

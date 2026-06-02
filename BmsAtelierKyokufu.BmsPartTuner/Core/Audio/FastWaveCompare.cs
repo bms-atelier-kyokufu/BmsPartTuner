@@ -16,6 +16,10 @@ internal static class FastWaveCompare
     private const float SilenceMatchScore = 2.0f;
     private const int SimHashHammingThreshold = 64;
     private const float SpectralDistanceSquaredThreshold = 0.7744f; // 0.88f ^ 2
+    private const float PerfectCorrelation = 1.0f;
+    private const float ZeroCorrelation = 0.0f;
+    private const int LChannel = 0;
+    private const int RChannel = 1;
 
     /// <summary>
     /// キャッシュされた音声データ2個の高速比較を行います。
@@ -80,8 +84,6 @@ internal static class FastWaveCompare
         // 6. ピアソン相関係数を算出するための準備（短い方を基準に長い方の部分波形と比較）
         // Lチャンネル(0)が有効ならLチャンネル、なければRチャンネル(1)を選択する
         // 片方のチャンネルのみ評価する。通常BMSでは両方同じような音がなるので処理を省く
-        const int LChannel = 0;
-        const int RChannel = 1;
         int targetChannel = (activeRegions1[LChannel] == null || activeRegions1[LChannel].Count == 0) ? RChannel : LChannel;
 
         var shorter = data1.TotalSamples < data2.TotalSamples ? data1 : data2;
@@ -334,33 +336,33 @@ internal static class FastWaveCompare
             data1.Channels != data2.Channels ||
             data1.BitsPerSample != data2.BitsPerSample)
         {
-            return 0.0f;
+            return ZeroCorrelation;
         }
 
-        if (data1.TotalSamples != data2.TotalSamples) return 0.0f;
+        if (data1.TotalSamples != data2.TotalSamples) return ZeroCorrelation;
 
         var activeRegions1 = data1.GetActiveRegions();
         var activeRegions2 = data2.GetActiveRegions();
 
         if (activeRegions1 != null && activeRegions2 != null && activeRegions1.Length > 0 && activeRegions2.Length > 0)
         {
-            var regions1 = activeRegions1[0];
-            var regions2 = activeRegions2[0];
+            var regions1 = activeRegions1[LChannel];
+            var regions2 = activeRegions2[LChannel];
 
             // If both are entirely silent
             if ((regions1 == null || regions1.Count == 0) && (regions2 == null || regions2.Count == 0))
             {
-                return 1.0f;
+                return PerfectCorrelation;
             }
             // If only one is entirely silent
             if (regions1 == null || regions1.Count == 0 || regions2 == null || regions2.Count == 0)
             {
-                return 0.0f;
+                return ZeroCorrelation;
             }
 
-            return WaveValidation.CalculatePearsonForCachedDataSIMD(data1, data2, 0);
+            return WaveValidation.CalculatePearsonForCachedDataSIMD(data1, data2, LChannel);
         }
 
-        return 0.0f;
+        return ZeroCorrelation;
     }
 }
