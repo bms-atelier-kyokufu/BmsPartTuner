@@ -9,7 +9,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Infrastructure.Bms.Bmson;
 /// <summary>
 /// <see cref="BmsScoreGeneratorTests"/> の動作を検証するテストクラス。
 /// </summary>
-    public class BmsScoreGeneratorTests
+public class BmsScoreGeneratorTests
 {
     private static string GenerateBms(BmsonFormat bmson, string tempDir)
     {

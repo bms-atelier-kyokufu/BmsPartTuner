@@ -99,29 +99,31 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
 
         #region Priority S: Edge Case Tests (極端なケース)
 
-        public static TheoryData<ICachedSoundData> EdgeCaseAudioData =>
-        [
-            new MockCachedSoundData([[0.5f]], 44100, 16), // 極端に短い音声データ（1サンプル）
-            new MockCachedSoundData([new float[100]], 44100, 16) // 無音データ（すべてゼロ）
-        ];
-
         /// <summary>
         /// 極端な音声データ（極小または無音）でも例外なくシミュレーションが完了することを検証します。
         /// </summary>
-        [Theory]
-        [MemberData(nameof(EdgeCaseAudioData))]
-        public void RunParallelSimulation_EdgeCaseAudioData_HandlesGracefully(ICachedSoundData audioCacheData)
+        [Fact]
+        public void RunParallelSimulation_EdgeCaseAudioData_HandlesGracefully()
         {
-            var files = new (string, int, ICachedSoundData?)[]
+            var cases = new ICachedSoundData[]
             {
-                ("file1.wav", 1, audioCacheData),
-                ("file2.wav", 2, audioCacheData)
+                new MockCachedSoundData([[0.5f]], 44100, 16), // 極端に短い音声データ（1サンプル）
+                new MockCachedSoundData([new float[100]], 44100, 16) // 無音データ（すべてゼロ）
             };
 
-            var results = RunSimulation(files, 1, 2, 0.5f);
+            foreach (var audioCacheData in cases)
+            {
+                var files = new (string, int, ICachedSoundData?)[]
+                {
+                    ("file1.wav", 1, audioCacheData),
+                    ("file2.wav", 2, audioCacheData)
+                };
 
-            Assert.NotNull(results);
-            Assert.NotEmpty(results);
+                var results = RunSimulation(files, 1, 2, 0.5f);
+
+                Assert.NotNull(results);
+                Assert.NotEmpty(results);
+            }
         }
 
         /// <summary>

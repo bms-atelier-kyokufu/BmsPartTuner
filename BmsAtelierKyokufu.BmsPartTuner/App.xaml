@@ -10,8 +10,8 @@
             <converters:ValueToWidthConverter x:Key="ValueToWidthConverter" />
 
             <ResourceDictionary.MergedDictionaries>
-                <!--  Default Theme (Light) - must be loaded first  -->
-                <ResourceDictionary Source="/UI/Themes/LightTheme.xaml" />
+                <!--  Default Theme (Dark) - must be loaded first  -->
+                <ResourceDictionary Source="/UI/Themes/DarkTheme.xaml" />
                 <!--  Theme Resources will be dynamically switched in App constructor  -->
                 <ResourceDictionary Source="/UI/Themes/DesignTokens.xaml" />
                 <ResourceDictionary Source="/UI/Themes/Styles.xaml" />

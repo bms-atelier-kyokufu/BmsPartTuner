@@ -23,7 +23,7 @@ public class ValueToWidthConverterTests
     {
         object[] values = [value, maxWidth];
         object result = _converter.Convert(values, null!, null!, CultureInfo.InvariantCulture);
-        
+
         Assert.IsType<double>(result);
         Assert.Equal(expected, (double)result, 2);
     }

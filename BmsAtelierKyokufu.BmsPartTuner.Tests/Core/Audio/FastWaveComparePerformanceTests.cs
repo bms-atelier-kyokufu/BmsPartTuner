@@ -7,6 +7,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
     /// <summary>
     /// <see cref="FastWaveCompare"/> の実行パフォーマンスおよび性能退化を検証。
     /// </summary>
+    /// <remarks>
+    /// <see cref="FastWaveComparePerformanceTests"/> の新しいインスタンスを初期化します。
+    /// </remarks>
     /// <param name="output">テスト実行時の診断情報を出力するヘルパー。</param>
     public class FastWaveComparePerformanceTests(ITestOutputHelper output)
     {

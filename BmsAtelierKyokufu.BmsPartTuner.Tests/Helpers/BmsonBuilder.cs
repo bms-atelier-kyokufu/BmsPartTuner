@@ -110,7 +110,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
         public BmsonBuilder WithWav(string indexStr, string filename, bool createFile = true, bool writeToDisk = true)
         {
             _wavIndexMap[indexStr] = filename;
-            if (createFile)
+            if (createFile && writeToDisk)
             {
                 var path = Path.Combine(_context.TempDirectory, filename);
                 BmsTestWavHelper.CreateSilenceWavFile(path, 0.1, 2); // Use CreateSilenceWavFile or CreateDummyWavFile as appropriate

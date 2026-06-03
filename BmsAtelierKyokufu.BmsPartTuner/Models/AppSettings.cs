@@ -19,14 +19,14 @@ public record AppSettings
     /// ダークテーマを適用するかどうか。
     /// </summary>
     [JsonPropertyName("isDarkTheme")]
-    public bool IsDarkTheme { get; init; } = false;
+    public bool IsDarkTheme { get; init; } = true;
 
     /// <summary>
     /// システムテーマに追従するかどうか。
     /// <c>true</c> の場合、<see cref="IsDarkTheme"/> の値は無視されます。
     /// </summary>
     [JsonPropertyName("useSystemTheme")]
-    public bool UseSystemTheme { get; init; } = true;
+    public bool UseSystemTheme { get; init; } = false;
 
     /// <summary>
     /// 外部プレイヤーの追加引数。
