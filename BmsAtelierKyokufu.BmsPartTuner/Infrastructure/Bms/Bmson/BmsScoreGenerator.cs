@@ -12,15 +12,24 @@ public class BmsScoreGenerator(
     bool keyNotesOnly = false)
 {
     // 内部定数の隠匿
+    /// <summary>BMSで定義値を表現するために使われる36進数の基数。</summary>
     private const int RadixBase36 = 36;
+    /// <summary>拡張BMSなどで定義値を表現するために使われる62進数の基数。</summary>
     private const int RadixBase62 = 62;
+    /// <summary>36進数の表現限界である最大定義数（36進数で "ZZ" = 1295）。</summary>
     private const int MaxNumberBase36 = 1295;
+    /// <summary>休符または無音状態を表すデフォルトのBMSデータ値。</summary>
     private const string RestValue = "00";
 
+    /// <summary>TOTAL値（グルーブゲージの増加量）計算におけるデフォルトの百分率基準値。</summary>
     private const double DefaultPercentage = 100.0;
+    /// <summary>IIDX風TOTAL値計算における最小値の下限保証値。</summary>
     private const double MinimumFloor = 260.0;
+    /// <summary>IIDX公式TOTAL値計算用：分子のノーツ数に対する係数（7.605）。</summary>
     private const double IidxMultiplier = 7.605;
+    /// <summary>IIDX公式TOTAL値計算用：分母のノーツ数に対する係数（0.01）。</summary>
     private const double IidxNotesCoefficient = 0.01;
+    /// <summary>IIDX公式TOTAL値計算用：分母の定数項（6.5）。</summary>
     private const double IidxConstantTerm = 6.5;
 
     /// <summary>
@@ -511,27 +520,29 @@ public class BmsScoreGenerator(
 
     private void ProcessBlock(string channelName, List<BmsonNote> allNotes, NoteBlock block, double blockStartSec, double nextBlockStartSec, PendingNote[] pendingNotes, int[] sharedNoteIndex)
     {
-        // depth は「ブロック内でのインデックス」に代数的に等価
-        for (int depth = 0; depth < block.Count; depth++)
+        double nextSec = nextBlockStartSec;
+
+        // DP (動的計画法) による逆順走査: O(K^2) -> O(K)
+        for (int depth = block.Count - 1; depth >= 0; depth--)
         {
             int noteIndex = block.Start + depth;
             var n = allNotes[noteIndex];
 
-            if (_keyNotesOnly && n.X == 0) continue;
-
             double currentSec = _yDataMap[n.Y].TimeSec;
             double oSec = currentSec - blockStartSec;
-            double nextSec = nextBlockStartSec;
-            for (int k = depth + 1; k < block.Count; k++)
+            double dSec = nextSec - currentSec;
+
+            // 前のノートが現在のノートより前の時間（Yが小さい）場合のみ、次回伝搬する時間を更新する
+            if (depth > 0)
             {
-                var nextNote = allNotes[block.Start + k];
-                if (nextNote.Y > n.Y)
+                var prevNote = allNotes[block.Start + depth - 1];
+                if (prevNote.Y < n.Y)
                 {
-                    nextSec = _yDataMap[nextNote.Y].TimeSec;
-                    break;
+                    nextSec = currentSec;
                 }
             }
-            double dSec = nextSec - currentSec;
+
+            if (_keyNotesOnly && n.X == 0) continue;
 
             string sliceFile = _audioSliceManager.SliceAudio(channelName, oSec, dSec);
             if (string.IsNullOrEmpty(sliceFile)) continue;
