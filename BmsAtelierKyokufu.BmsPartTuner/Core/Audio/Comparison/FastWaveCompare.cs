@@ -1,5 +1,6 @@
 using System.Numerics;
 using System.Runtime.CompilerServices;
+using MathNet.Numerics;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio.Comparison;
 
@@ -217,12 +218,11 @@ internal static class FastWaveCompare
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static bool IsMismatchedBySimHash(ICachedSoundData data1, ICachedSoundData data2)
     {
-        if (data1 is IAudioStatisticalData stat1 && data2 is IAudioStatisticalData stat2 &&
-            stat1.SimHash256 != null && stat2.SimHash256 != null)
-        {
-            var s1 = stat1.SimHash256;
-            var s2 = stat2.SimHash256;
+        ulong[]? s1 = data1 is PreNormalizedSoundData p1 ? p1.SimHash256 : (data1 is IAudioStatisticalData stat1 ? stat1.SimHash256 : null);
+        ulong[]? s2 = data2 is PreNormalizedSoundData p2 ? p2.SimHash256 : (data2 is IAudioStatisticalData stat2 ? stat2.SimHash256 : null);
 
+        if (s1 != null && s2 != null)
+        {
             // 手動ループ展開により分岐命令を排除
             int hammingDistance =
                 BitOperations.PopCount(s1[0] ^ s2[0]) +
@@ -241,12 +241,12 @@ internal static class FastWaveCompare
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static bool IsMismatchedBySpectralFeatures(ICachedSoundData data1, ICachedSoundData data2)
     {
-        if (data1 is IAudioStatisticalData sStat1 && data2 is IAudioStatisticalData sStat2 &&
-            sStat1.SpectralFeatures != null && sStat2.SpectralFeatures != null)
+        float[]? v1 = data1 is PreNormalizedSoundData p1 ? p1.SpectralFeatures : (data1 is IAudioStatisticalData sStat1 ? sStat1.SpectralFeatures : null);
+        float[]? v2 = data2 is PreNormalizedSoundData p2 ? p2.SpectralFeatures : (data2 is IAudioStatisticalData sStat2 ? sStat2.SpectralFeatures : null);
+
+        if (v1 != null && v2 != null)
         {
             float distSq = 0;
-            var v1 = sStat1.SpectralFeatures;
-            var v2 = sStat2.SpectralFeatures;
             for (int i = 0; i < 16; i++)
             {
                 float diff = v1[i] - v2[i];
@@ -330,10 +330,12 @@ internal static class FastWaveCompare
         ICachedSoundData shorter, ICachedSoundData longer,
         int targetChannel, ReadOnlySpan<float> shorterSpan, ReadOnlySpan<float> longerFullSpan)
     {
-        if (shorter is IAudioStatisticalData sFft && longer is IAudioStatisticalData lFft &&
-            sFft.FftSpectrum?[targetChannel] != null && lFft.FftSpectrum?[targetChannel] != null)
+        Complex32[][]? sFft = shorter is PreNormalizedSoundData p1 ? p1.FftSpectrum : (shorter is IAudioStatisticalData sFftData ? sFftData.FftSpectrum : null);
+        Complex32[][]? lFft = longer is PreNormalizedSoundData p2 ? p2.FftSpectrum : (longer is IAudioStatisticalData lFftData ? lFftData.FftSpectrum : null);
+
+        if (sFft?[targetChannel] != null && lFft?[targetChannel] != null)
         {
-            return WaveValidation.CalculateAlignmentOffset(sFft.FftSpectrum[targetChannel], lFft.FftSpectrum[targetChannel]);
+            return WaveValidation.CalculateAlignmentOffset(sFft[targetChannel], lFft[targetChannel]);
         }
         return FftAlignmentEngine.CalculateAlignmentOffset(shorterSpan, longerFullSpan);
     }
