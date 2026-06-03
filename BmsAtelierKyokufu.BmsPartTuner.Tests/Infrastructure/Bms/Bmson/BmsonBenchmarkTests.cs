@@ -1,8 +1,9 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.IO;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 using BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms.Bmson;
 using BmsAtelierKyokufu.BmsPartTuner.Models.Bmson;
+using BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers;
 using Xunit.Abstractions;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Infrastructure.Bms.Bmson;
@@ -21,6 +22,8 @@ public class BmsonBenchmarkTests(ITestOutputHelper output)
     [Trait("Category", "Benchmark")]
     public void Benchmark_Downconvert_Performance()
     {
+        using var context = new BmsTestContext();
+
         // 1. ダミーの BmsonFormat を作成
         var bmson = new BmsonFormat
         {
@@ -28,57 +31,26 @@ public class BmsonBenchmarkTests(ITestOutputHelper output)
             {
                 Resolution = 240,
                 InitBpm = 130
-            }
-        };
-
-        // BPMイベントを100個ほど追加
-        for (int i = 1; i <= 100; i++)
-        {
-            bmson.BpmEvents.Add(new BmsonBpmEvent { Y = i * 1000, Bpm = 130 + (i % 10) });
-        }
-
-        // STOPイベントを50個ほど追加
-        for (int i = 1; i <= 50; i++)
-        {
-            bmson.StopEvents.Add(new BmsonStopEvent { Y = i * 2000, Duration = 240 });
-        }
-
-        // 小節線
-        for (int i = 1; i <= 200; i++)
-        {
-            bmson.Lines.Add(new BmsonLineEvent { Y = i * 960 });
-        }
-
-        // サウンドチャンネルを 10 個作成し、それぞれ 2000 ノートを配置
-        // すべて C = true とする（O(N^2)の最悪ケースをシミュレート）
-        for (int chIdx = 0; chIdx < 10; chIdx++)
-        {
-            var channel = new BmsonSoundChannel
+            },
+            BpmEvents = [.. Enumerable.Range(1, 100).Select(i => new BmsonBpmEvent { Y = i * 1000, Bpm = 130 + (i % 10) })],
+            StopEvents = [.. Enumerable.Range(1, 50).Select(i => new BmsonStopEvent { Y = i * 2000, Duration = 240 })],
+            Lines = [.. Enumerable.Range(1, 200).Select(i => new BmsonLineEvent { Y = i * 960 })],
+            SoundChannels = [.. Enumerable.Range(0, 10).Select(chIdx => new BmsonSoundChannel
             {
                 Name = $"bgm_{chIdx}.wav",
-                Notes = []
-            };
-
-            for (int noteIdx = 0; noteIdx < 10000; noteIdx++)
-            {
-                channel.Notes.Add(new BmsonNote
+                Notes = [.. Enumerable.Range(0, 10000).Select(noteIdx => new BmsonNote
                 {
                     X = 0, // BGM
                     Y = noteIdx * 10,
                     C = true
-                });
-            }
-
-            bmson.SoundChannels.Add(channel);
-        }
+                })]
+            })]
+        };
 
         // 2. 依存コンポーネントの作成
         var timeCalc = new PulseToBmsTimeCalculator(bmson.Info.Resolution, bmson.Lines);
         var realTimeCalc = new PulseToRealTimeCalculator(bmson.Info.Resolution, bmson.Info.InitBpm, bmson.BpmEvents, bmson.StopEvents);
-
-        // 実在しないパスを指定してファイルI/Oをスキップさせる
-        var tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-        var audioSlicer = new AudioSliceManager(tempDir, false);
+        var audioSlicer = new AudioSliceManager(context.TempDirectory, false);
 
         // 3. ベンチマーク実行
         var sw = Stopwatch.StartNew();
@@ -135,7 +107,8 @@ public class BmsonBenchmarkTests(ITestOutputHelper output)
         var timeCalc = new PulseToBmsTimeCalculator(bmson.Info.Resolution, bmson.Lines);
         var realTimeCalc = new PulseToRealTimeCalculator(bmson.Info.Resolution, bmson.Info.InitBpm, bmson.BpmEvents, bmson.StopEvents);
 
-        var tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        using var context = new BmsTestContext();
+        var tempDir = context.TempDirectory;
         var audioSlicer = new AudioSliceManager(tempDir, false);
 
         var generator = new BmsScoreGenerator(bmson, timeCalc, realTimeCalc, audioSlicer, false);

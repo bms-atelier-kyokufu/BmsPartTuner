@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 using System.Windows.Data;
 using BmsAtelierKyokufu.BmsPartTuner.UI.Converters;
 
@@ -12,64 +12,20 @@ public class ValueToWidthConverterTests
     private readonly ValueToWidthConverter _converter = new();
 
     /// <summary>
-    /// Convert において、条件 WithValidInputs の場合に ReturnsCalculatedWidth されることを検証します。
+    /// Convert の動作を検証します。
     /// </summary>
-    [Fact]
-    public void Convert_WithValidInputs_ReturnsCalculatedWidth()
+    [Theory]
+    [InlineData(0.75, 200.0, 150.0)]
+    [InlineData(1.5, 100.0, 100.0)] // Value > 1.0, should be clamped to 1.0
+    [InlineData(-0.5, 100.0, 0.0)] // Value < 0.0, should be clamped to 0.0
+    [InlineData("invalid", 100.0, 0.0)] // Invalid input should return 0.0
+    public void Convert_ReturnsExpectedWidth(object value, object maxWidth, double expected)
     {
-        // Arrange
-        object[] values = [0.75, 200.0];
-        const double expected = 150.0;
-
-        // Act
+        object[] values = [value, maxWidth];
         object result = _converter.Convert(values, null!, null!, CultureInfo.InvariantCulture);
-
-        // Assert
+        
         Assert.IsType<double>(result);
         Assert.Equal(expected, (double)result, 2);
-    }
-
-    /// <summary>
-    /// Convert において、条件 WithClampedValue の場合に ReturnsClampedWidth されることを検証します。
-    /// </summary>
-    [Fact]
-    public void Convert_WithClampedValue_ReturnsClampedWidth()
-    {
-        // Arrange
-        object[] values = [1.5, 100.0]; // Value > 1.0, should be clamped to 1.0
-        double expected = 100.0;
-
-        // Act
-        object result = _converter.Convert(values, null!, null!, CultureInfo.InvariantCulture);
-
-        // Assert
-        Assert.Equal(expected, (double)result, 2);
-
-        // Arrange
-        values = [-0.5, 100.0]; // Value < 0.0, should be clamped to 0.0
-        expected = 0.0;
-
-        // Act
-        result = _converter.Convert(values, null!, null!, CultureInfo.InvariantCulture);
-
-        // Assert
-        Assert.Equal(expected, (double)result, 2);
-    }
-
-    /// <summary>
-    /// Convert において、条件 WithInvalidInputs の場合に ReturnsZero されることを検証します。
-    /// </summary>
-    [Fact]
-    public void Convert_WithInvalidInputs_ReturnsZero()
-    {
-        // Arrange
-        object[] values = ["invalid", 100.0];
-
-        // Act
-        object result = _converter.Convert(values, null!, null!, CultureInfo.InvariantCulture);
-
-        // Assert
-        Assert.Equal(0.0, result);
     }
 
     /// <summary>

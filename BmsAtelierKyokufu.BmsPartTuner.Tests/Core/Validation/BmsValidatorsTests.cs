@@ -1,4 +1,4 @@
-﻿using BmsAtelierKyokufu.BmsPartTuner.Core.Validation;
+using BmsAtelierKyokufu.BmsPartTuner.Core.Validation;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Validation;
 
@@ -105,48 +105,20 @@ public class DefinitionRangeValidatorTests
     #region Range Validation Tests - 範囲チェック
 
     /// <summary>
-    /// 開始定義が最小値未満の場合、検証が失敗することを確認します。
+    /// 定義の範囲が不正な場合、検証が失敗することを確認します。
     /// </summary>
-    [Fact]
-    public void Validate_StartBelowMinimum_ReturnsFailure()
+    [Theory]
+    [InlineData("00", "ZZ", "開始定義は01以上にしてください")] // 開始が最小値未満
+    [InlineData("20", "10", "終了定義は開始定義より大きい値にしてください")] // 終了 < 開始
+    [InlineData("10", "10", "終了定義は開始定義より大きい値にしてください")] // 終了 == 開始
+    public void Validate_InvalidRange_ReturnsFailure(string start, string end, string expectedError)
     {
-        // "00" = 0 < 最小値1
-        DefinitionRange range = new("00", "ZZ");
+        DefinitionRange range = new(start, end);
 
         ValidationResult result = _validator.Validate(range);
 
         Assert.False(result.IsValid);
-        Assert.Contains("開始定義は01以上にしてください", result.GetFirstError());
-    }
-
-    /// <summary>
-    /// 終了定義が開始定義より小さい場合、検証が失敗することを確認します。
-    /// </summary>
-    [Fact]
-    public void Validate_EndGreaterThanStart_RequiredForSuccess()
-    {
-        // 終了 < 開始
-        DefinitionRange range = new("20", "10");
-
-        ValidationResult result = _validator.Validate(range);
-
-        Assert.False(result.IsValid);
-        Assert.Contains("終了定義は開始定義より大きい値にしてください", result.GetFirstError());
-    }
-
-    /// <summary>
-    /// 終了定義が開始定義と等しい場合、検証が失敗することを確認します。
-    /// </summary>
-    [Fact]
-    public void Validate_EndEqualsStart_ReturnsFailure()
-    {
-        // 終了 == 開始
-        DefinitionRange range = new("10", "10");
-
-        ValidationResult result = _validator.Validate(range);
-
-        Assert.False(result.IsValid);
-        Assert.Contains("終了定義は開始定義より大きい値にしてください", result.GetFirstError());
+        Assert.Contains(expectedError, result.GetFirstError());
     }
 
     #endregion

@@ -38,16 +38,6 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
             using (FileStream fs = new(bmsPath, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
                 // 3. Attempt to write
-                // Expect IOException because final move/replace will fail
-                // If implementation is NOT atomic (writes directly), the file would be truncated before exception if it wasn't locked.
-                // But since we locked it, direct write would fail immediately too.
-                // However, the test here is: Does it delete/corrupt the file?
-                // With the lock, even direct write can't corrupt it.
-                //
-                // To properly test atomic write, we need to fail *after* opening the file stream?
-                // Or we can rely on the fact that if we write to a *temp* file, that succeeds.
-                // Then the move fails.
-                // The original file should be untouched.
 
                 Assert.Throws<IOException>(() => BmsFileWriter.WriteBmsFile(bmsPath, newContent));
             }

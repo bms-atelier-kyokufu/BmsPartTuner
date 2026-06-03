@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Interfaces.Audio;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Interfaces.Bms;
 using BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Audio;
@@ -16,6 +16,72 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.UI.ViewModels
     /// </summary>
     public class MainViewModelTests
     {
+        private class MainViewModelTestFixture : IDisposable
+        {
+            public BmsTestContext Context { get; }
+            public string SettingsPath { get; }
+            public Mock<IBmsOptimizationService> OptimizationServiceMock { get; } = new();
+            public Mock<BmsAtelierKyokufu.BmsPartTuner.UseCases.IBmsOptimizationUseCase> OptimizationUseCaseMock { get; } = new();
+            public Mock<IBmsonConversionService> BmsonConversionServiceMock { get; } = new();
+            public Mock<BmsAtelierKyokufu.BmsPartTuner.Core.Interfaces.Common.IFileSystemService> FileSystemServiceMock { get; } = new();
+            public Mock<IUIThreadDispatcher> DispatcherMock { get; } = new();
+            public Mock<IAudioPlayerFactory> AudioPlayerFactoryMock { get; } = new();
+            public MainViewModel ViewModel { get; }
+
+            public MainViewModelTestFixture()
+            {
+                Context = new BmsTestContext();
+                SettingsPath = Path.Combine(Context.TempDirectory, "setting.json");
+
+                FileSystemServiceMock.Setup(f => f.FileExists(It.IsAny<string>())).Returns(true);
+                DispatcherMock.Setup(d => d.InvokeAsync(It.IsAny<Action>()))
+                    .Callback<Action>(action => action())
+                    .Returns(Task.CompletedTask);
+
+                var audioPreviewService = new AudioPreviewService(DispatcherMock.Object, AudioPlayerFactoryMock.Object);
+                var instrumentDetectionService = new InstrumentNameDetectionService();
+                var fileListViewModel = new FileListViewModel(audioPreviewService, instrumentDetectionService);
+                var filterService = new FileListFilterService();
+                var settingsService = new SettingsService(SettingsPath);
+                var themeServiceMock = new Mock<ThemeService>();
+                var licenseLoaderService = new LicenseLoaderService();
+
+                ViewModel = new MainViewModel(
+                    OptimizationServiceMock.Object,
+                    OptimizationUseCaseMock.Object,
+                    BmsonConversionServiceMock.Object,
+                    FileSystemServiceMock.Object,
+                    fileListViewModel,
+                    audioPreviewService,
+                    filterService,
+                    settingsService,
+                    themeServiceMock.Object,
+                    licenseLoaderService);
+            }
+
+            public void Dispose()
+            {
+                ViewModel.Dispose();
+                Context.Dispose();
+            }
+        }
+
+        private static string GetDummyBmsonContent()
+        {
+            return @"{
+                ""version"": ""1.0.0"",
+                ""info"": {
+                    ""title"": ""Test Chart"",
+                    ""init_bpm"": 120.0,
+                    ""resolution"": 240
+                },
+                ""lines"": [],
+                ""bpm_events"": [],
+                ""stop_events"": [],
+                ""sound_channels"": []
+            }";
+        }
+
         /// <summary>
         /// OnInputPathChanged において、条件 WithBmsonFile の場合に DownconvertsAndLoadsWorkingBmsPath されることを検証します。
         /// </summary>
@@ -25,76 +91,24 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.UI.ViewModels
             return WpfTestHelper.RunStaAsync(async () =>
             {
                 // Arrange
-                using var context = new BmsTestContext();
-                var bmsonPath = Path.Combine(context.TempDirectory, "test.bmson");
-                const string bmsonContent = @"{
-                    ""version"": ""1.0.0"",
-                    ""info"": {
-                        ""title"": ""Test Chart"",
-                        ""init_bpm"": 120.0,
-                        ""resolution"": 240
-                    },
-                    ""lines"": [],
-                    ""bpm_events"": [],
-                    ""stop_events"": [],
-                    ""sound_channels"": []
-                }";
-                File.WriteAllText(bmsonPath, bmsonContent);
-
-                var optimizationServiceMock = new Mock<IBmsOptimizationService>();
-                var optimizationUseCaseMock = new Mock<BmsAtelierKyokufu.BmsPartTuner.UseCases.IBmsOptimizationUseCase>();
-                var bmsonConversionServiceMock = new Mock<IBmsonConversionService>();
-                var fileSystemServiceMock = new Mock<BmsAtelierKyokufu.BmsPartTuner.Core.Interfaces.Common.IFileSystemService>();
-                fileSystemServiceMock.Setup(f => f.FileExists(It.IsAny<string>())).Returns(true);
-                var dispatcherMock = new Mock<BmsAtelierKyokufu.BmsPartTuner.UI.Services.IUIThreadDispatcher>();
-                var audioPlayerFactoryMock = new Mock<IAudioPlayerFactory>();
-
-                // Execute UI Dispatcher immediately
-                dispatcherMock.Setup(d => d.InvokeAsync(It.IsAny<Action>()))
-                    .Callback<Action>(action => action())
-                    .Returns(Task.CompletedTask);
-
-                var audioPreviewService = new AudioPreviewService(dispatcherMock.Object, audioPlayerFactoryMock.Object);
-                var instrumentDetectionService = new InstrumentNameDetectionService();
-                var fileListViewModel = new FileListViewModel(audioPreviewService, instrumentDetectionService);
-                var filterService = new FileListFilterService();
-
-                var settingsPath = Path.Combine(context.TempDirectory, "setting.json");
-                var settingsService = new SettingsService(settingsPath);
-                var themeServiceMock = new Mock<ThemeService>();
-                var licenseLoaderService = new LicenseLoaderService();
-
-                using var viewModel = new MainViewModel(
-                    optimizationServiceMock.Object,
-                    optimizationUseCaseMock.Object,
-                    bmsonConversionServiceMock.Object,
-                    fileSystemServiceMock.Object,
-                    fileListViewModel,
-                    audioPreviewService,
-                    filterService,
-                    settingsService,
-                    themeServiceMock.Object,
-                    licenseLoaderService);
+                using var fixture = new MainViewModelTestFixture();
+                var bmsonPath = Path.Combine(fixture.Context.TempDirectory, "test.bmson");
+                File.WriteAllText(bmsonPath, GetDummyBmsonContent());
 
                 // Act
-                viewModel.FileOperations.InputPath = bmsonPath;
+                fixture.ViewModel.FileOperations.InputPath = bmsonPath;
 
                 // Wait for downconversion task to run and finish
-                // Downconvert runs on Task.Run inside OnInputPathChanged. Since it's async void, we can check _isDownconverting state or wait briefly.
                 int elapsed = 0;
-                while (viewModel.IsBusy && elapsed < 5000)
+                while (fixture.ViewModel.IsBusy && elapsed < 5000)
                 {
                     await Task.Delay(50);
                     elapsed += 50;
                 }
 
                 // Assert
-                // Under Strategy B, InputPath remains showing the original .bmson file path
-                Assert.Equal(bmsonPath, viewModel.FileOperations.InputPath);
-
-                // Instead of checking for a physical file (which is no longer created),
-                // we assert that the downconversion completed successfully.
-                Assert.Equal("準備完了", viewModel.StatusMessage);
+                Assert.Equal(bmsonPath, fixture.ViewModel.FileOperations.InputPath);
+                Assert.Equal("準備完了", fixture.ViewModel.StatusMessage);
             });
         }
 
@@ -107,70 +121,23 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.UI.ViewModels
             return WpfTestHelper.RunStaAsync(async () =>
             {
                 // Arrange
-                using var context = new BmsTestContext();
-                var bmsonPath = Path.Combine(context.TempDirectory, "test.bmson");
-                const string bmsonContent = @"{
-                    ""version"": ""1.0.0"",
-                    ""info"": {
-                        ""title"": ""Test Chart"",
-                        ""init_bpm"": 120.0,
-                        ""resolution"": 240
-                    },
-                    ""lines"": [],
-                    ""bpm_events"": [],
-                    ""stop_events"": [],
-                    ""sound_channels"": []
-                }";
-                File.WriteAllText(bmsonPath, bmsonContent);
-
-                var optimizationServiceMock = new Mock<IBmsOptimizationService>();
-                var optimizationUseCaseMock = new Mock<BmsAtelierKyokufu.BmsPartTuner.UseCases.IBmsOptimizationUseCase>();
-                var bmsonConversionServiceMock = new Mock<IBmsonConversionService>();
-                var fileSystemServiceMock = new Mock<BmsAtelierKyokufu.BmsPartTuner.Core.Interfaces.Common.IFileSystemService>();
-                fileSystemServiceMock.Setup(f => f.FileExists(It.IsAny<string>())).Returns(true);
-                var dispatcherMock = new Mock<BmsAtelierKyokufu.BmsPartTuner.UI.Services.IUIThreadDispatcher>();
-                var audioPlayerFactoryMock = new Mock<IAudioPlayerFactory>();
-
-                // Execute UI Dispatcher immediately
-                dispatcherMock.Setup(d => d.InvokeAsync(It.IsAny<Action>()))
-                    .Callback<Action>(action => action())
-                    .Returns(Task.CompletedTask);
-
-                var audioPreviewService = new AudioPreviewService(dispatcherMock.Object, audioPlayerFactoryMock.Object);
-                var instrumentDetectionService = new InstrumentNameDetectionService();
-                var fileListViewModel = new FileListViewModel(audioPreviewService, instrumentDetectionService);
-                var filterService = new FileListFilterService();
-
-                var settingsPath = Path.Combine(context.TempDirectory, "setting.json");
-                var settingsService = new SettingsService(settingsPath);
-                var themeServiceMock = new Mock<ThemeService>();
-                var licenseLoaderService = new LicenseLoaderService();
-
-                using var viewModel = new MainViewModel(
-                    optimizationServiceMock.Object,
-                    optimizationUseCaseMock.Object,
-                    bmsonConversionServiceMock.Object,
-                    fileSystemServiceMock.Object,
-                    fileListViewModel,
-                    audioPreviewService,
-                    filterService,
-                    settingsService,
-                    themeServiceMock.Object,
-                    licenseLoaderService);
+                using var fixture = new MainViewModelTestFixture();
+                var bmsonPath = Path.Combine(fixture.Context.TempDirectory, "test.bmson");
+                File.WriteAllText(bmsonPath, GetDummyBmsonContent());
 
                 // Act
-                viewModel.FileOperations.InputPath = bmsonPath;
+                fixture.ViewModel.FileOperations.InputPath = bmsonPath;
 
                 // Wait for downconversion task to run and finish
                 int elapsed = 0;
-                while (viewModel.IsBusy && elapsed < 5000)
+                while (fixture.ViewModel.IsBusy && elapsed < 5000)
                 {
                     await Task.Delay(50);
                     elapsed += 50;
                 }
 
                 // Assert
-                var error = viewModel["InputPath"];
+                var error = fixture.ViewModel["InputPath"];
                 Assert.Equal(string.Empty, error);
             });
         }

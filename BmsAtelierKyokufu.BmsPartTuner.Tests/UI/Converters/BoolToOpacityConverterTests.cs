@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 using System.Windows.Data;
 using BmsAtelierKyokufu.BmsPartTuner.UI.Converters;
 
@@ -13,102 +13,31 @@ public class BoolToOpacityConverterTests
     private readonly CultureInfo _culture = CultureInfo.InvariantCulture;
 
     /// <summary>
-    /// Convert において、条件 True の場合に Returns0 されることを検証します。
+    /// Convert の動作を検証します。
     /// </summary>
-    [Fact]
-    public void Convert_True_Returns0_5()
+    [Theory]
+    [InlineData(true, 0.5)]
+    [InlineData(false, 1.0)]
+    [InlineData("invalid", 1.0)]
+    public void Convert_ReturnsExpectedDouble(object input, double expected)
     {
-        // Act
-        var result = _converter.Convert(true, typeof(double), null!, _culture);
-
-        // Assert
-        Assert.Equal(0.5, result);
+        var result = _converter.Convert(input, typeof(double), null!, _culture);
+        Assert.Equal(expected, (double)result);
     }
 
     /// <summary>
-    /// Convert において、条件 False の場合に Returns1 されることを検証します。
+    /// ConvertBack の動作を検証します。
     /// </summary>
-    [Fact]
-    public void Convert_False_Returns1_0()
+    [Theory]
+    [InlineData(0.5, true)]
+    [InlineData(0.5000001, true)]
+    [InlineData(1.0, false)]
+    [InlineData(0.0, false)]
+    public void ConvertBack_ReturnsExpectedBool(double input, bool expected)
     {
-        // Act
-        var result = _converter.Convert(false, typeof(double), null!, _culture);
-
-        // Assert
-        Assert.Equal(1.0, result);
-    }
-
-    /// <summary>
-    /// Convert において、条件 NonBool の場合に Returns1 されることを検証します。
-    /// </summary>
-    [Fact]
-    public void Convert_NonBool_Returns1_0()
-    {
-        // Act
-        var result = _converter.Convert("invalid", typeof(double), null!, _culture);
-
-        // Assert
-        Assert.Equal(1.0, result);
-    }
-
-    /// <summary>
-    /// ConvertBack において、条件 0 の場合に 5 されることを検証します。
-    /// </summary>
-    [Fact]
-    public void ConvertBack_0_5_ReturnsTrue()
-    {
-        // Act
-        var result = _converter.ConvertBack(0.5, typeof(bool), null!, _culture);
-
-        // Assert
+        var result = _converter.ConvertBack(input, typeof(bool), null!, _culture);
         Assert.IsType<bool>(result);
-        Assert.True((bool)result);
-    }
-
-    /// <summary>
-    /// ConvertBack において、条件 CloseTo0 の場合に 5 されることを検証します。
-    /// </summary>
-    [Fact]
-    public void ConvertBack_CloseTo0_5_ReturnsTrue()
-    {
-        // Arrange
-        // 0.5との差が0.01未満ならtrueとする想定
-        const double input = 0.5000001;
-
-        // Act
-        var result = _converter.ConvertBack(input, typeof(bool), null!, _culture);
-
-        // Assert
-        Assert.True((bool)result);
-    }
-
-    /// <summary>
-    /// ConvertBack において、条件 1 の場合に 0 されることを検証します。
-    /// </summary>
-    [Fact]
-    public void ConvertBack_1_0_ReturnsFalse()
-    {
-        // Act
-        var result = _converter.ConvertBack(1.0, typeof(bool), null!, _culture);
-
-        // Assert
-        Assert.False((bool)result);
-    }
-
-    /// <summary>
-    /// ConvertBack において、条件 OtherValue の場合に ReturnsFalse されることを検証します。
-    /// </summary>
-    [Fact]
-    public void ConvertBack_OtherValue_ReturnsFalse()
-    {
-        // Arrange
-        const double input = 0.0; // 0.5以外はfalse (通常表示 = 1.0 = false)
-
-        // Act
-        var result = _converter.ConvertBack(input, typeof(bool), null!, _culture);
-
-        // Assert
-        Assert.False((bool)result);
+        Assert.Equal(expected, (bool)result);
     }
 
     /// <summary>
@@ -117,10 +46,7 @@ public class BoolToOpacityConverterTests
     [Fact]
     public void ConvertBack_NonDouble_ReturnsBindingDoNothing()
     {
-        // Act
         var result = _converter.ConvertBack("invalid", typeof(bool), null!, _culture);
-
-        // Assert
         Assert.Equal(Binding.DoNothing, result);
     }
 }
