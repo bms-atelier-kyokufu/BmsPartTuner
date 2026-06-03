@@ -1,4 +1,4 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Optimization;
 using BmsAtelierKyokufu.BmsPartTuner.Models;
 using BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers;
@@ -432,7 +432,14 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
 
         private class SyncProgress<T>(Action<T> handler) : IProgress<T>
         {
-            public void Report(T value) => handler(value);
+            private readonly Lock _lock = new();
+            public void Report(T value)
+            {
+                lock (_lock)
+                {
+                    handler(value);
+                }
+            }
         }
     }
 }

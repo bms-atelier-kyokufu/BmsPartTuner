@@ -237,7 +237,14 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
         private class SyncProgress<T>(Action<T> handler) : IProgress<T>
         {
             private readonly Action<T> _handler = handler;
-            public void Report(T value) => _handler(value);
+            private readonly Lock _lock = new();
+            public void Report(T value)
+            {
+                lock (_lock)
+                {
+                    _handler(value);
+                }
+            }
         }
     }
 }
