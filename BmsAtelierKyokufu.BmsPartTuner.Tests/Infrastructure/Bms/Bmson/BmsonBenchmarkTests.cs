@@ -132,7 +132,7 @@ public class BmsonBenchmarkTests(ITestOutputHelper output)
             .Build();
 
         // サニタイズ（Y=0 の小節線挿入やソート）
-        bmson = BmsonSanitizer.Sanitize(bmson);
+        bmson = global::BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms.Bmson.Pipeline.BmsonSanitizeStep.Sanitize(bmson);
 
         var timeCalc = new PulseToBmsTimeCalculator(bmson.Info.Resolution, bmson.Lines);
         var realTimeCalc = new PulseToRealTimeCalculator(bmson.Info.Resolution, bmson.Info.InitBpm, bmson.BpmEvents, bmson.StopEvents);

@@ -13,7 +13,7 @@ public class BmsScoreGeneratorTests
 {
     private static string GenerateBms(BmsonFormat bmson, string tempDir)
     {
-        bmson = BmsonSanitizer.Sanitize(bmson);
+        bmson = global::BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms.Bmson.Pipeline.BmsonSanitizeStep.Sanitize(bmson);
 
         var timeCalc = new PulseToBmsTimeCalculator(bmson.Info.Resolution, bmson.Lines);
         var realTimeCalc = new PulseToRealTimeCalculator(bmson.Info.Resolution, bmson.Info.InitBpm, bmson.BpmEvents, bmson.StopEvents);

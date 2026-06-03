@@ -10,7 +10,7 @@ public class AudioSliceManager(string bmsonDir, bool throwOnMissingFile = true) 
     private static readonly Logger<AudioSliceManager> s_logger = new();
     private readonly string _bmsonDir = bmsonDir;
 
-    private static readonly byte[] WavHeaderTemplate = WavHeaderGenerator.CreateWavHeaderTemplate();
+    private static readonly byte[] WavHeaderTemplate = CreateWavHeaderTemplate();
 
     // key: "fileName|offsetSec|durationSec", value: "outputFileName.wav"
     private readonly ConcurrentDictionary<string, string> _requestCache = new();
@@ -74,36 +74,7 @@ public class AudioSliceManager(string bmsonDir, bool throwOnMissingFile = true) 
         var lazyVal = _sliceCache.GetOrAdd(cacheKey, _ =>
         {
             isNew = true;
-            return new Lazy<string>(() =>
-            {
-                Interlocked.Increment(ref _cacheMissCount);
-                string outputFileName = GenerateSliceFileName(sourceFileName);
-
-                try
-                {
-                    // 実バイト配列を作成せず、仮想ファイルを登録（遅延生成）
-                    var virtualFile = new SlicedVirtualFile(source.RawBytes, source.PcmOffset + startByte, trimmedLengthBytes, WavHeaderTemplate);
-                    VirtualAudioRegistry.AddFile(outputFileName, virtualFile);
-
-                    // ポインタを生成し、レジストリに登録 (16bit stereo = 4 bytes per frame)
-                    // S2（物理ファイルロード後）と相関キャッシュのキー(FilePath)を一致させるため、仮想時点でもフルパスを指定する
-                    string fullFilePath = Path.Combine(_bmsonDir, outputFileName);
-                    var pointerData = new PointerSoundData(
-                        fullFilePath,
-                        source.DecodedData,
-                        startByte / 4,
-                        trimmedLengthBytes / 4
-                    );
-                    AudioRegistry.Instance.Register(outputFileName, pointerData);
-
-                    return outputFileName;
-                }
-                catch (Exception ex)
-                {
-                    s_logger.WriteError($"スライス失敗: {sourceFileName}", ex);
-                    return string.Empty;
-                }
-            });
+            return new Lazy<string>(() => CreateAndRegisterSlice(source, sourceFileName, startByte, trimmedLengthBytes));
         });
 
         if (!isNew)
@@ -120,6 +91,40 @@ public class AudioSliceManager(string bmsonDir, bool throwOnMissingFile = true) 
         }
 
         return finalFileName;
+    }
+
+    /// <summary>
+    /// トリミングされた情報をもとに、新しいスライス仮想ファイルを作成し、レジストリに登録します。
+    /// </summary>
+    private string CreateAndRegisterSlice(CachedAudioSource source, string sourceFileName, int startByte, int trimmedLengthBytes)
+    {
+        Interlocked.Increment(ref _cacheMissCount);
+        string outputFileName = GenerateSliceFileName(sourceFileName);
+
+        try
+        {
+            // 実バイト配列を作成せず、仮想ファイルを登録（遅延生成）
+            var virtualFile = new SlicedVirtualFile(source.RawBytes, source.PcmOffset + startByte, trimmedLengthBytes, WavHeaderTemplate);
+            VirtualAudioRegistry.AddFile(outputFileName, virtualFile);
+
+            // ポインタを生成し、レジストリに登録 (16bit stereo = 4 bytes per frame)
+            // S2（物理ファイルロード後）と相関キャッシュのキー(FilePath)を一致させるため、仮想時点でもフルパスを指定する
+            string fullFilePath = Path.Combine(_bmsonDir, outputFileName);
+            var pointerData = new PointerSoundData(
+                fullFilePath,
+                source.DecodedData,
+                startByte / 4,
+                trimmedLengthBytes / 4
+            );
+            AudioRegistry.Instance.Register(outputFileName, pointerData);
+
+            return outputFileName;
+        }
+        catch (Exception ex)
+        {
+            s_logger.WriteError($"スライス失敗: {sourceFileName}", ex);
+            return string.Empty;
+        }
     }
 
     /// <summary>
@@ -147,6 +152,26 @@ public class AudioSliceManager(string bmsonDir, bool throwOnMissingFile = true) 
             string sourcePath = Path.Combine(_bmsonDir, name);
             if (!File.Exists(sourcePath))
             {
+                string? fallbackExt = null;
+                if (name.EndsWith(".wav", StringComparison.OrdinalIgnoreCase))
+                {
+                    fallbackExt = ".ogg";
+                }
+                else if (name.EndsWith(".ogg", StringComparison.OrdinalIgnoreCase))
+                {
+                    fallbackExt = ".wav";
+                }
+
+                if (fallbackExt != null)
+                {
+                    string fallbackPath = Path.Combine(_bmsonDir, Path.ChangeExtension(name, fallbackExt));
+                    if (File.Exists(fallbackPath))
+                    {
+                        sourcePath = fallbackPath;
+                        return new CachedAudioSource(sourcePath);
+                    }
+                }
+
                 if (throwOnMissingFile)
                 {
                     throw new FileNotFoundException($"音源ファイルが見つかりません: {name} (Path: {sourcePath})");
@@ -219,6 +244,33 @@ public class AudioSliceManager(string bmsonDir, bool throwOnMissingFile = true) 
         GetOrLoadAudioSource(sourceFileName);
     }
 
+    /// <summary>
+    /// WAVヘッダの不変フィールドを事前設定した44バイトのテンプレート配列を生成します。
+    /// </summary>
+    private static byte[] CreateWavHeaderTemplate()
+    {
+        byte[] template = new byte[44];
+        using (var ms = new MemoryStream(template))
+        using (var writer = new BinaryWriter(ms))
+        {
+            writer.Write("RIFF"u8);
+            writer.Write(0); // fileSize (36 + dataLengthBytes) のプレースホルダー
+            writer.Write("WAVE"u8);
+
+            writer.Write("fmt "u8);
+            writer.Write(16); // Subchunk1Size = 16 (PCM)
+            writer.Write((short)1); // AudioFormat = 1 (PCM)
+            writer.Write((short)2); // NumChannels = 2 (Stereo)
+            writer.Write(AppConstants.Audio.StandardSampleRate);
+            writer.Write(AppConstants.Audio.StandardSampleRate * 2 * 2); // ByteRate
+            writer.Write((short)4); // BlockAlign = 4
+            writer.Write((short)16); // BitsPerSample = 16
+
+            writer.Write("data"u8);
+            writer.Write(0); // dataLengthBytes のプレースホルダー
+        }
+        return template;
+    }
 }
 
 
