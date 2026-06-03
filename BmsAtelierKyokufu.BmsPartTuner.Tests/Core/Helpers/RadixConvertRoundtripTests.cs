@@ -3,10 +3,16 @@ using BmsAtelierKyokufu.BmsPartTuner.Core.Helpers;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Helpers
 {
+    /// <summary>
+    /// <see cref="RadixConvertRoundtripTests"/> の動作を検証するテストクラス。
+    /// </summary>
     public class RadixConvertRoundtripTests
     {
         #region Roundtrip Tests - 往復変換の一貫性
 
+        /// <summary>
+        /// テスト を検証します。
+        /// </summary>
         [Theory]
         [InlineData(0)]
         [InlineData(1)]
@@ -24,6 +30,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Helpers
             Assert.Equal(original, result);
         }
 
+        /// <summary>
+        /// テスト を検証します。
+        /// </summary>
         [Theory]
         [InlineData(0)]
         [InlineData(1)]
@@ -41,6 +50,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Helpers
             Assert.Equal(original, result);
         }
 
+        /// <summary>
+        /// テスト を検証します。
+        /// </summary>
         [Theory]
         [InlineData("00")]
         [InlineData("01")]
@@ -56,6 +68,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Helpers
             Assert.Equal(original, result);
         }
 
+        /// <summary>
+        /// テスト を検証します。
+        /// </summary>
         [Theory]
         [InlineData("00")]
         [InlineData("0z")]
@@ -75,6 +90,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Helpers
 
         #region AppConstants Integration - 定数との整合性
 
+        /// <summary>
+        /// IntToZZ において、条件 MaxDefinitionNumberBase36 の場合に ReturnsZZ されることを検証します。
+        /// </summary>
         [Fact]
         public void IntToZZ_MaxDefinitionNumberBase36_ReturnsZZ()
         {
@@ -88,6 +106,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Helpers
             Assert.Equal("ZZ", result);
         }
 
+        /// <summary>
+        /// IntToZZ において、条件 MaxDefinitionNumberBase62 の場合に Returnszz されることを検証します。
+        /// </summary>
         [Fact]
         public void IntToZZ_MaxDefinitionNumberBase62_Returnszz()
         {
@@ -101,6 +122,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Helpers
             Assert.Equal("zz", result);
         }
 
+        /// <summary>
+        /// ZZToInt において、条件 ZZ の場合に ReturnsMaxDefinitionNumberBase36 されることを検証します。
+        /// </summary>
         [Fact]
         public void ZZToInt_ZZ_ReturnsMaxDefinitionNumberBase36()
         {
@@ -111,6 +135,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Helpers
             Assert.Equal(AppConstants.Definition.MaxNumberBase36, result);
         }
 
+        /// <summary>
+        /// ZZToInt において、条件 zz の場合に ReturnsMaxDefinitionNumberBase62 されることを検証します。
+        /// </summary>
         [Fact]
         public void ZZToInt_zz_ReturnsMaxDefinitionNumberBase62()
         {
@@ -125,6 +152,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Helpers
 
         #region Edge Cases - エッジケース
 
+        /// <summary>
+        /// IntToZZ において、条件 Zero の場合に Returns00 されることを検証します。
+        /// </summary>
         [Fact]
         public void IntToZZ_Zero_Returns00()
         {
@@ -137,6 +167,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Helpers
             Assert.Equal("00", result62);
         }
 
+        /// <summary>
+        /// IntToZZ において、条件 MinDefinitionNumber の場合に Returns01 されることを検証します。
+        /// </summary>
         [Theory]
         [InlineData(AppConstants.Definition.RadixBase36)]
         [InlineData(AppConstants.Definition.RadixBase62)]
@@ -156,6 +189,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Helpers
 
         #region Performance Consideration - パフォーマンス考慮
 
+        /// <summary>
+        /// IntToZZ において、条件 LargeNumberOfConversions の場合に CompletesQuickly されることを検証します。
+        /// </summary>
         [Fact]
         public void IntToZZ_LargeNumberOfConversions_CompletesQuickly()
         {
@@ -174,6 +210,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Helpers
                 $"Expected < 100ms, but took {sw.ElapsedMilliseconds}ms");
         }
 
+        /// <summary>
+        /// ZZToInt において、条件 LargeNumberOfConversions の場合に CompletesQuickly されることを検証します。
+        /// </summary>
         [Fact]
         public void ZZToInt_LargeNumberOfConversions_CompletesQuickly()
         {

@@ -2,10 +2,16 @@
 using System.Windows;
 using BmsAtelierKyokufu.BmsPartTuner.UI.Converters;
 
-namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Converters;
+namespace BmsAtelierKyokufu.BmsPartTuner.Tests.UI.Converters;
 
+/// <summary>
+/// <see cref="StringNullOrEmptyConverterTests"/> の動作を検証するテストクラス。
+/// </summary>
 public class StringNullOrEmptyConverterTests
 {
+    /// <summary>
+    /// テスト を検証します。
+    /// </summary>
     [Theory]
     [InlineData(null, true)]
     [InlineData("", true)]
@@ -23,6 +29,9 @@ public class StringNullOrEmptyConverterTests
         Assert.Equal(expected, result);
     }
 
+    /// <summary>
+    /// ConvertBack において ReturnsUnsetValue の場合の挙動を検証します。
+    /// </summary>
     [Fact]
     public void ConvertBack_ReturnsUnsetValue()
     {

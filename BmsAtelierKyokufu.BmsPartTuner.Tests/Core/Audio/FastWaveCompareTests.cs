@@ -1,4 +1,4 @@
-﻿using BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers;
+using BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
 {
@@ -6,67 +6,151 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
     /// FastWaveCompare の動作検証テスト。
     /// 音声データの相関係数計算・一致判定の仕様を確認します。
     /// </summary>
+    /// <summary>
+    /// <see cref="FastWaveCompareTests"/> の動作を検証するテストクラス。
+    /// </summary>
     public class FastWaveCompareTests
     {
-        private static void RunIsMatchTest(float[] data1, float[] data2, float threshold, Action<bool> assertMatch, int channels = 1)
+        private static void RunWithSounds(float[] data1, float[] data2, Action<MockCachedSoundData, MockCachedSoundData> action, int channels = 1)
         {
             using var sound1 = BmsTestAudioHelper.CreatePreNormalizedSoundData(data1, channels);
             using var sound2 = BmsTestAudioHelper.CreatePreNormalizedSoundData(data2, channels);
-            assertMatch(FastWaveCompare.IsMatch(sound1, sound2, threshold));
+            action(sound1, sound2);
         }
 
-        private static void RunCorrelationTest(float[] data1, float[] data2, Action<float> assertCorrelation, int channels = 1)
+        private static void RunIsMatchTest(float[] data1, float[] data2, float threshold, Action<bool> assertMatch, int channels = 1) =>
+            RunWithSounds(data1, data2, (sound1, sound2) => assertMatch(FastWaveCompare.IsMatch(sound1, sound2, threshold)), channels);
+
+        private static void RunCorrelationTest(float[] data1, float[] data2, Action<float> assertCorrelation, int channels = 1) =>
+            RunWithSounds(data1, data2, (sound1, sound2) => assertCorrelation(FastWaveCompare.GetCorrelation(sound1, sound2)), channels);
+
+        private static MockCachedSoundData CreateMockSound(float[] data, int sampleRate = 44100, int bitDepth = 16) =>
+            new([data], sampleRate, bitDepth);
+
+        public static TheoryData<float[], float[], float, bool, string> GetIsMatchTestData()
         {
-            using var sound1 = BmsTestAudioHelper.CreatePreNormalizedSoundData(data1, channels);
-            using var sound2 = BmsTestAudioHelper.CreatePreNormalizedSoundData(data2, channels);
-            assertCorrelation(FastWaveCompare.GetCorrelation(sound1, sound2));
+            var data = new TheoryData<float[], float[], float, bool, string>();
+            var baseData4 = Enumerable.Range(1, 4).Select(i => i * 0.1f).ToArray();
+            var baseData2 = Enumerable.Range(1, 2).Select(i => i * 0.1f).ToArray();
+            var baseData3 = Enumerable.Range(1, 3).Select(i => i * 0.1f).ToArray();
+            var volumeData4 = Enumerable.Range(1, 4).Select(i => i * 0.05f).ToArray();
+            var invertedData4 = Enumerable.Range(1, 4).Select(i => -i * 0.1f).ToArray();
+
+            // ExactMatch (完全一致)
+            data.Add(baseData4, baseData4, 0.99f, true, "ExactMatch");
+
+            // DifferentLengths (長さ不一致)
+            data.Add(baseData2, baseData3, 0.1f, false, "DifferentLengths");
+
+            // Silence (無音)
+            data.Add(new float[4], new float[4], 0.9f, true, "Silence");
+
+            // NearSilence (ほぼ無音)
+            data.Add([1e-6f, -1e-6f], [1e-6f, -1e-6f], 0.99f, true, "NearSilence");
+
+            // VolumeDifference (音量差)
+            data.Add(baseData4, volumeData4, 0.99f, true, "VolumeDifference");
+
+            // InvertedPhase (逆位相)
+            data.Add(baseData4, invertedData4, 0.9f, false, "InvertedPhase");
+
+            // SmallDataNonSIMDPath (SIMD対象外の短いデータ)
+            data.Add(baseData2, baseData2, 0.99f, true, "SmallDataNonSIMDPath");
+
+            // WithNormalizedWaveform (ノーマライズ済み波形)
+            data.Add(baseData4, baseData4, 0.99f, true, "WithNormalizedWaveform");
+
+            // MinimalData (最小データ数)
+            data.Add([0.5f], [0.5f], 0.99f, true, "MinimalData");
+
+            return data;
         }
 
-        [Fact]
-        public void IsMatch_ExactMatch_ReturnsTrue() =>
-            RunIsMatchTest([0.1f, 0.2f, 0.3f, 0.4f], [0.1f, 0.2f, 0.3f, 0.4f], 0.99f, Assert.True);
-
-        [Fact]
-        public void IsMatch_DifferentLengths_ReturnsFalse() =>
-            RunIsMatchTest([0.1f, 0.2f], [0.1f, 0.2f, 0.3f], 0.1f, Assert.False);
-
-        [Fact]
-        public void IsMatch_Silence_HandlesGracefully() =>
-            RunIsMatchTest([0.0f, 0.0f, 0.0f, 0.0f], [0.0f, 0.0f, 0.0f, 0.0f], 0.9f, Assert.True);
-
-        [Fact]
-        public void IsMatch_NearSilence_HandlesGracefully() =>
-            RunIsMatchTest([1e-6f, -1e-6f], [1e-6f, -1e-6f], 0.99f, Assert.True);
-
-        [Fact]
-        public void IsMatch_VolumeDifference_ReturnsTrue() =>
-            RunIsMatchTest([0.1f, 0.2f, 0.3f, 0.4f], [0.05f, 0.1f, 0.15f, 0.2f], 0.99f, Assert.True);
-
-        [Fact]
-        public void IsMatch_InvertedPhase_ReturnsFalse() =>
-            RunIsMatchTest([0.1f, 0.2f, 0.3f, 0.4f], [-0.1f, -0.2f, -0.3f, -0.4f], 0.9f, Assert.False);
-
-        [Fact]
-        public void IsMatch_DifferentSampleRates_ReturnsFalse()
+        public static TheoryData<float[], float[], float, string> GetCorrelationTestData()
         {
-            // フォーマット不一致: サンプリングレートが異なる場合
+            var data = new TheoryData<float[], float[], float, string>();
+            var baseData = Enumerable.Range(1, 4).Select(i => i * 0.1f).ToArray();
+            var invertedData = Enumerable.Range(1, 4).Select(i => -i * 0.1f).ToArray();
+
+            data.Add(baseData, baseData, 1.0f, "ExactMatch");
+            data.Add(baseData, invertedData, -1.0f, "InvertedPhase");
+
+            return data;
+        }
+
+        public static TheoryData<float[], float[], float, float, string> GetCorrelationRangeTestData()
+        {
+            var data = new TheoryData<float[], float[], float, float, string>();
+
+            // SimilarButNotIdentical (類似しているが不完全一致)
+            var similar1 = Enumerable.Range(1, 8).Select(i => i * 0.1f).ToArray();
+            var similar2 = Enumerable.Range(1, 8).Select(i => (i * 0.1f) + (i % 2 == 1 ? 0.01f : -0.01f)).ToArray();
+            data.Add(similar1, similar2, 0.9f, 1.0f, "SimilarButNotIdentical");
+
+            // UncorrelatedData (無相関)
+            var uncorrelated1 = Enumerable.Range(0, 8).Select(i => i % 2 == 0 ? 1.0f : 0.0f).ToArray();
+            var uncorrelated2 = Enumerable.Range(0, 8).Select(i => i % 2 == 0 ? 0.0f : 1.0f).ToArray();
+            data.Add(uncorrelated1, uncorrelated2, -1.01f, 1.0f, "UncorrelatedData");
+
+            return data;
+        }
+
+        public static TheoryData<float[], string> GetIsMatchEdgeCaseTestData()
+        {
+            var data = new TheoryData<float[], string>
+            {
+                // ConstantValueData
+                { [.. Enumerable.Repeat(0.5f, 4)], "ConstantValueData" },
+
+                // LargeAmplitude
+                { [.. Enumerable.Repeat(1.0f, 4)], "LargeAmplitude" },
+
+                // TinyAmplitude
+                { [.. Enumerable.Range(1, 4).Select(i => i * 1e-7f)], "TinyAmplitude" },
+
+                // SpecialFloatValues
+                { [0.1f, float.NaN, 0.3f, 0.4f], "SpecialFloatValues" }
+            };
+
+            return data;
+        }
+
+        /// <summary>
+        /// 様々なしきい値・入力データの組み合わせにおける IsMatch の動作を検証します。
+        /// </summary>
+        [Theory]
+        [MemberData(nameof(GetIsMatchTestData))]
+        public void IsMatch_VariousScenarios_BehaveAsExpected(float[] data1, float[] data2, float threshold, bool expected, string scenario)
+        {
+            if (expected)
+                RunIsMatchTest(data1, data2, threshold, result => Assert.True(result, $"Scenario '{scenario}' failed."));
+            else
+                RunIsMatchTest(data1, data2, threshold, result => Assert.False(result, $"Scenario '{scenario}' failed."));
+        }
+
+        /// <summary>
+        /// フォーマット不一致（サンプリングレート、ビット深度の違い）により IsMatch が false を返すことを検証します。
+        /// </summary>
+        [Theory]
+        [InlineData(44100, 16, 48000, 16, "DifferentSampleRates")]
+        [InlineData(44100, 16, 44100, 24, "DifferentBitDepths")]
+        public void IsMatch_FormatMismatch_ReturnsFalse(int sr1, int bd1, int sr2, int bd2, string scenario)
+        {
             float[] data = [0.1f, 0.2f, 0.3f, 0.4f];
-
-            float[][] samples1 = [data];
-            var sound1 = new MockCachedSoundData(samples1, 44100, 16);
-
-            float[][] samples2 = [data];
-            var sound2 = new MockCachedSoundData(samples2, 48000, 16); // Different sample rate
-
-            Assert.False(FastWaveCompare.IsMatch(sound1, sound2, 0.1f));
+            using var sound1 = CreateMockSound(data, sampleRate: sr1, bitDepth: bd1);
+            using var sound2 = CreateMockSound(data, sampleRate: sr2, bitDepth: bd2);
+            Assert.False(FastWaveCompare.IsMatch(sound1, sound2, 0.1f), $"Scenario '{scenario}' failed.");
         }
 
+        /// <summary>
+        /// フォーマット不一致のステレオ・モノラルにおいて IsMatch が false を返すことを検証します。
+        /// </summary>
         [Fact]
         public void IsMatch_DifferentChannels_ReturnsFalse()
         {
             // フォーマット不一致: チャンネル数が異なる場合
-            float[] monoData = [0.1f, 0.2f, 0.3f, 0.4f];
-            float[] stereoData = [0.1f, 0.1f, 0.2f, 0.2f, 0.3f, 0.3f, 0.4f, 0.4f];
+            float[] monoData = [.. Enumerable.Range(1, 4).Select(i => i * 0.1f)];
+            float[] stereoData = [.. Enumerable.Range(1, 4).SelectMany(i => new[] { i * 0.1f, i * 0.1f })];
 
             using var monoSound = BmsTestAudioHelper.CreatePreNormalizedSoundData(monoData, channels: 1);
             using var stereoSound = BmsTestAudioHelper.CreatePreNormalizedSoundData(stereoData, channels: 2);
@@ -74,21 +158,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
             Assert.False(FastWaveCompare.IsMatch(monoSound, stereoSound, 0.1f));
         }
 
-        [Fact]
-        public void IsMatch_DifferentBitDepths_ReturnsFalse()
-        {
-            // フォーマット不一致: ビット深度が異なる場合
-            float[] data = [0.1f, 0.2f, 0.3f, 0.4f];
-
-            float[][] samples1 = [data];
-            var sound1 = new MockCachedSoundData(samples1, 44100, 16);
-
-            float[][] samples2 = [data];
-            var sound2 = new MockCachedSoundData(samples2, 44100, 24); // Different bit depth
-
-            Assert.False(FastWaveCompare.IsMatch(sound1, sound2, 0.1f));
-        }
-
+        /// <summary>
+        /// 空ファイルの入力において IsMatch 呼び出し時に例外がスローされることを検証します。
+        /// </summary>
         [Fact]
         public void IsMatch_EmptyFiles_ThrowsException()
         {
@@ -99,10 +171,12 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
             Assert.Throws<ArgumentException>(() => BmsTestAudioHelper.CreatePreNormalizedSoundData(emptyData));
         }
 
+        /// <summary>
+        /// SIMD分岐: 大きなデータで最適化パスをテスト
+        /// </summary>
         [Fact]
         public void IsMatch_LargeDataSIMDPath_WorksCorrectly()
         {
-            // SIMD分岐: 大きなデータで最適化パスをテスト
             // 通常、SIMD処理は4サンプル以上で動作するため、128サンプルのデータを用意
             float[] largeData = new float[128];
             for (int i = 0; i < largeData.Length; i++)
@@ -112,55 +186,49 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
             RunIsMatchTest(largeData, largeData, 0.99f, Assert.True);
         }
 
-        [Fact]
-        public void IsMatch_SmallDataNonSIMDPath_WorksCorrectly() =>
-            RunIsMatchTest([0.1f, 0.2f], [0.1f, 0.2f], 0.99f, Assert.True);
+        /// <summary>
+        /// 特定の相関係数の期待値を持つ入力における GetCorrelation の動作を検証します。
+        /// </summary>
+        [Theory]
+        [MemberData(nameof(GetCorrelationTestData))]
+        public void GetCorrelation_VariousScenarios_ReturnsExpectedCorrelation(float[] data1, float[] data2, float expected, string scenario)
+        {
+            RunCorrelationTest(data1, data2, correlation =>
+            {
+                Assert.True(correlation >= expected - 0.01f && correlation <= expected + 0.01f,
+                    $"Expected correlation near {expected} for scenario {scenario}, but got {correlation}");
+            });
+        }
 
-        [Fact]
-        public void GetCorrelation_ExactMatch_ReturnsOne() =>
-            RunCorrelationTest([0.1f, 0.2f, 0.3f, 0.4f], [0.1f, 0.2f, 0.3f, 0.4f], c => Assert.True(c >= 0.99f && c <= 1.01f));
-
+        /// <summary>
+        /// フォーマット不一致時の相関係数算出結果が 0.0 となることを検証します。
+        /// </summary>
         [Fact]
         public void GetCorrelation_FormatMismatch_ReturnsZero()
         {
             float[] data = [0.1f, 0.2f, 0.3f, 0.4f];
-
-            float[][] samples1 = [data];
-            var sound1 = new MockCachedSoundData(samples1, 44100, 16);
-
-            float[][] samples2 = [data];
-            var sound2 = new MockCachedSoundData(samples2, 48000, 16); // Different format
-
-            float correlation = FastWaveCompare.GetCorrelation(sound1, sound2);
-
-            Assert.Equal(0.0f, correlation);
+            using var sound1 = CreateMockSound(data, sampleRate: 44100);
+            using var sound2 = CreateMockSound(data, sampleRate: 48000);
+            Assert.Equal(0.0f, FastWaveCompare.GetCorrelation(sound1, sound2));
         }
 
+        /// <summary>
+        /// IsMatch において、条件 WithHighThreshold の場合に FiltersSimilarButNotIdentical されることを検証します。
+        /// </summary>
         [Fact]
-        public void GetCorrelation_InvertedPhase_ReturnsNegativeOne() =>
-            RunCorrelationTest([0.1f, 0.2f, 0.3f, 0.4f], [-0.1f, -0.2f, -0.3f, -0.4f], c => Assert.True(c <= -0.99f && c >= -1.01f));
+        public void IsMatch_WithHighThreshold_FiltersSimilarButNotIdentical() =>
+            RunWithSounds([0.1f, 0.2f, 0.3f, 0.4f], [0.1f, 0.2f, 0.3f, 0.35f], (sound1, sound2) =>
+            {
+                // High threshold should reject slightly different data
+                float correlation = FastWaveCompare.GetCorrelation(sound1, sound2);
+                bool matchesHighThreshold = FastWaveCompare.IsMatch(sound1, sound2, 0.99f);
+                bool matchesLowThreshold = FastWaveCompare.IsMatch(sound1, sound2, 0.90f);
 
-        [Fact]
-        public void IsMatch_WithNormalizedWaveform_UsesOptimizedPath() =>
-            RunIsMatchTest([0.1f, 0.2f, 0.3f, 0.4f], [0.1f, 0.2f, 0.3f, 0.4f], 0.99f, Assert.True);
-
-        [Fact]
-        public void IsMatch_WithHighThreshold_FiltersSimilarButNotIdentical()
-        {
-            float[] data1 = [0.1f, 0.2f, 0.3f, 0.4f];
-            float[] data2 = [0.1f, 0.2f, 0.3f, 0.35f]; // Slightly different
-
-            using var sound1 = BmsTestAudioHelper.CreatePreNormalizedSoundData(data1);
-            using var sound2 = BmsTestAudioHelper.CreatePreNormalizedSoundData(data2);
-
-            // High threshold should reject slightly different data
-            float correlation = FastWaveCompare.GetCorrelation(sound1, sound2);
-            bool matchesHighThreshold = FastWaveCompare.IsMatch(sound1, sound2, 0.99f);
-            bool matchesLowThreshold = FastWaveCompare.IsMatch(sound1, sound2, 0.90f);
-
-            // 閾値による振る舞いの違いを検証
-            Assert.True(correlation < 1.0f, "Correlation should be less than 1.0 for different data");
-        }
+                // 閾値による振る舞いの違いを検証
+                Assert.True(correlation < 1.0f, "Correlation should be less than 1.0 for different data");
+                Assert.False(matchesHighThreshold, "High threshold should reject slightly different data");
+                Assert.True(matchesLowThreshold, "Low threshold should accept slightly different data");
+            });
 
         #region Priority A: SIMD Fallback and Edge Case Tests
 
@@ -175,83 +243,22 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
         [InlineData(17)]  // 4の倍数+1
         public void IsMatch_NonMultipleOfFourLength_WorksCorrectly(int length)
         {
-            float[] data = new float[length];
-            for (int i = 0; i < length; i++)
+            float[] data = [.. Enumerable.Range(0, length).Select(i => (float)Math.Sin(i * 0.5) * 0.5f)];
+            RunWithSounds(data, data, (sound1, sound2) => Assert.True(FastWaveCompare.IsMatch(sound1, sound2, 0.99f)));
+        }
+
+        /// <summary>
+        /// 定数値、限界値、NaN/無限大などのエッジケース入力における IsMatch の動作を検証します。
+        /// </summary>
+        [Theory]
+        [MemberData(nameof(GetIsMatchEdgeCaseTestData))]
+        public void IsMatch_EdgeCases_NoExceptionThrown(float[] data, string scenario) =>
+            RunWithSounds(data, data, (sound1, sound2) =>
             {
-                data[i] = (float)Math.Sin(i * 0.5) * 0.5f;
-            }
-
-            using var sound1 = BmsTestAudioHelper.CreatePreNormalizedSoundData(data);
-            using var sound2 = BmsTestAudioHelper.CreatePreNormalizedSoundData(data);
-
-            Assert.True(FastWaveCompare.IsMatch(sound1, sound2, 0.99f));
-        }
-
-        /// <summary>
-        /// ヘッダーのみでデータ部が極小のWAVファイル相当의 テスト。
-        /// </summary>
-        [Fact]
-        public void IsMatch_MinimalData_HandlesGracefully()
-        {
-            // 最小限のデータ（1サンプル）
-            float[] minimalData = [0.5f];
-
-            using var sound1 = BmsTestAudioHelper.CreatePreNormalizedSoundData(minimalData);
-            using var sound2 = BmsTestAudioHelper.CreatePreNormalizedSoundData(minimalData);
-
-            // 1サンプルでも処理が完了すること
-            bool result = FastWaveCompare.IsMatch(sound1, sound2, 0.99f);
-            Assert.True(result);
-        }
-
-        /// <summary>
-        /// 定数値データ（分散0）の場合の検証。
-        /// 分散が0だと相関係数が計算不能になる可能性がある。
-        /// </summary>
-        [Fact]
-        public void IsMatch_ConstantValueData_HandlesGracefully()
-        {
-            // すべて同じ値（分散0）
-            float[] constantData = [0.5f, 0.5f, 0.5f, 0.5f];
-
-            using var sound1 = BmsTestAudioHelper.CreatePreNormalizedSoundData(constantData);
-            using var sound2 = BmsTestAudioHelper.CreatePreNormalizedSoundData(constantData);
-
-            // 例外をスローせずに完了すること
-            // 定数値の場合、正規化後にゼロベクトルになる可能性がある
-            var exception = Record.Exception(() => FastWaveCompare.IsMatch(sound1, sound2, 0.5f));
-            Assert.Null(exception);
-        }
-
-        /// <summary>
-        /// 非常に大きな振幅値のデータでのオーバーフロー検証。
-        /// </summary>
-        [Fact]
-        public void IsMatch_LargeAmplitude_NoOverflow()
-        {
-            float[] largeData = [1.0f, 1.0f, 1.0f, 1.0f];
-
-            using var sound1 = BmsTestAudioHelper.CreatePreNormalizedSoundData(largeData);
-            using var sound2 = BmsTestAudioHelper.CreatePreNormalizedSoundData(largeData);
-
-            var exception = Record.Exception(() => FastWaveCompare.IsMatch(sound1, sound2, 0.99f));
-            Assert.Null(exception);
-        }
-
-        /// <summary>
-        /// 非常に小さな振幅値のデータでのアンダーフロー検証。
-        /// </summary>
-        [Fact]
-        public void IsMatch_TinyAmplitude_NoUnderflow()
-        {
-            float[] tinyData = [1e-7f, 2e-7f, 3e-7f, 4e-7f];
-
-            using var sound1 = BmsTestAudioHelper.CreatePreNormalizedSoundData(tinyData);
-            using var sound2 = BmsTestAudioHelper.CreatePreNormalizedSoundData(tinyData);
-
-            var exception = Record.Exception(() => FastWaveCompare.IsMatch(sound1, sound2, 0.99f));
-            Assert.Null(exception);
-        }
+                // 例外をスローせずに完了すること
+                var exception = Record.Exception(() => FastWaveCompare.IsMatch(sound1, sound2, 0.5f));
+                Assert.True(exception == null, $"Scenario '{scenario}' threw an exception: {exception?.Message}");
+            });
 
         /// <summary>
         /// ステレオデータの左右チャンネルが異なる場合の検証。
@@ -259,31 +266,8 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
         [Fact]
         public void IsMatch_StereoWithDifferentChannels_ComparesCorrectly()
         {
-            // 左右で異なるデータを持つステレオ
-            float[] stereoData1 = [0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f, 0.7f, 0.8f];
-            float[] stereoData2 = [0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f, 0.7f, 0.8f];
-
-            using var sound1 = BmsTestAudioHelper.CreatePreNormalizedSoundData(stereoData1, channels: 2);
-            using var sound2 = BmsTestAudioHelper.CreatePreNormalizedSoundData(stereoData2, channels: 2);
-
-            Assert.True(FastWaveCompare.IsMatch(sound1, sound2, 0.99f));
-        }
-
-        /// <summary>
-        /// 無限大やNaNを含むデータの検証。
-        /// </summary>
-        [Fact]
-        public void IsMatch_SpecialFloatValues_HandlesGracefully()
-        {
-            // NaNを含むデータ
-            float[] dataWithNaN = [0.1f, float.NaN, 0.3f, 0.4f];
-
-            using var sound1 = BmsTestAudioHelper.CreatePreNormalizedSoundData(dataWithNaN);
-            using var sound2 = BmsTestAudioHelper.CreatePreNormalizedSoundData(dataWithNaN);
-
-            // 例外をスローせずに完了すること
-            var exception = Record.Exception(() => FastWaveCompare.IsMatch(sound1, sound2, 0.5f));
-            Assert.Null(exception);
+            var stereoData = Enumerable.Range(1, 8).Select(i => i * 0.1f).ToArray();
+            RunIsMatchTest(stereoData, stereoData, 0.99f, Assert.True, channels: 2);
         }
 
         /// <summary>
@@ -295,65 +279,35 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
         [InlineData(0.5f)]   // 中間値
         [InlineData(0.001f)] // 極小しきい値
         [InlineData(0.999f)] // 極大しきい値
-        public void IsMatch_ThresholdBoundaries_ProcessesCorrectly(float threshold)
-        {
-            float[] data = [0.1f, 0.2f, 0.3f, 0.4f];
-
-            using var sound1 = BmsTestAudioHelper.CreatePreNormalizedSoundData(data);
-            using var sound2 = BmsTestAudioHelper.CreatePreNormalizedSoundData(data);
-
-            // 同一データなので、しきい値に関係なく一致するはず
-            bool result = FastWaveCompare.IsMatch(sound1, sound2, threshold);
-
-            // しきい値が1.0以下であれば、完全一致データはtrue
-            if (threshold <= 1.0f)
+        public void IsMatch_ThresholdBoundaries_ProcessesCorrectly(float threshold) =>
+            RunWithSounds([0.1f, 0.2f, 0.3f, 0.4f], [0.1f, 0.2f, 0.3f, 0.4f], (sound1, sound2) =>
             {
-                Assert.True(result, $"Identical data should match at threshold {threshold}");
-            }
-        }
+                // 同一データなので、しきい値に関係なく一致するはず
+                bool result = FastWaveCompare.IsMatch(sound1, sound2, threshold);
+
+                // しきい値が1.0以下であれば、完全一致データはtrue
+                if (threshold <= 1.0f)
+                {
+                    Assert.True(result, $"Identical data should match at threshold {threshold}");
+                }
+            });
 
         #endregion
 
         #region Priority A: Correlation Coefficient Edge Cases
 
         /// <summary>
-        /// 相関係数が境界値付近のケース。
+        /// 特定の相関係数の範囲を持つ入力における GetCorrelation の動作を検証します。
         /// </summary>
-        [Fact]
-        public void GetCorrelation_SimilarButNotIdentical_ReturnsBetweenZeroAndOne()
+        [Theory]
+        [MemberData(nameof(GetCorrelationRangeTestData))]
+        public void GetCorrelation_RangeScenarios_ReturnsWithinExpectedRange(float[] data1, float[] data2, float min, float max, string scenario)
         {
-            // わずかにノイズを加えたデータ
-            float[] data1 = [0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f, 0.7f, 0.8f];
-            float[] data2 = [0.11f, 0.19f, 0.31f, 0.39f, 0.51f, 0.59f, 0.71f, 0.79f];
-
-            using var sound1 = BmsTestAudioHelper.CreatePreNormalizedSoundData(data1);
-            using var sound2 = BmsTestAudioHelper.CreatePreNormalizedSoundData(data2);
-
-            float correlation = FastWaveCompare.GetCorrelation(sound1, sound2);
-
-            // 相関係数は0と1の間（類似しているが同一ではない）
-            Assert.True(correlation > 0.9f && correlation < 1.0f,
-                $"Expected correlation between 0.9 and 1.0, but got {correlation}");
-        }
-
-        /// <summary>
-        /// 完全に無相関なデータの検証。
-        /// </summary>
-        [Fact]
-        public void GetCorrelation_UncorrelatedData_ReturnsLessThanOne()
-        {
-            // 直交するデータ（相関なし）
-            float[] data1 = [1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f];
-            float[] data2 = [0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f];
-
-            using var sound1 = BmsTestAudioHelper.CreatePreNormalizedSoundData(data1);
-            using var sound2 = BmsTestAudioHelper.CreatePreNormalizedSoundData(data2);
-
-            float correlation = FastWaveCompare.GetCorrelation(sound1, sound2);
-
-            // 直交データの相関係数は1.0未満であるべき
-            Assert.True(correlation < 1.0f,
-                $"Expected correlation less than 1.0 for orthogonal data, but got {correlation}");
+            RunCorrelationTest(data1, data2, correlation =>
+            {
+                Assert.True(correlation > min && correlation < max,
+                    $"Expected correlation between {min} and {max} for scenario {scenario}, but got {correlation}");
+            });
         }
 
         #endregion

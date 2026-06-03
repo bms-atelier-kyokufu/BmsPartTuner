@@ -9,6 +9,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
     {
         #region Edge Case Tests - エッジケーステスト
 
+        /// <summary>
+        /// ReductDefinition において、条件 WithExtremeThreshold の場合に 0 されることを検証します。
+        /// </summary>
         [Fact]
         public void ReductDefinition_WithExtremeThreshold_0_MergesAll()
         {
@@ -21,7 +24,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
                 (3, "sound3.wav")
             );
 
-            var bmsFile = _context.CreateBuilder()
+            var bmsFile = _context.CreateBuilder<BmsBuilder>()
                 .WithHeader("TITLE", "Threshold 0 Test")
                 .WithWav("01", "sound1.wav", createFile: false)
                 .WithWav("02", "sound2.wav", createFile: false)
@@ -52,6 +55,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
             Assert.True(uniqueCount <= 3, $"しきい値0.0で結合が行われるべき（実際: {uniqueCount}）");
         }
 
+        /// <summary>
+        /// ReductDefinition において、条件 WithExtremeThreshold の場合に 1 されることを検証します。
+        /// </summary>
         [Fact]
         public void ReductDefinition_WithExtremeThreshold_1_MergesNothing()
         {
@@ -63,7 +69,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
                 (2, "diff2.wav")
             );
 
-            var bmsFile = _context.CreateBuilder()
+            var bmsFile = _context.CreateBuilder<BmsBuilder>()
                 .WithHeader("TITLE", "Threshold 1 Test")
                 .WithWav("01", "diff1.wav", createFile: false)
                 .WithWav("02", "diff2.wav", createFile: false)
@@ -93,6 +99,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
             Assert.True(uniqueCount >= 1, "しきい値1.0では異なるファイルは結合されない");
         }
 
+        /// <summary>
+        /// ReductDefinition において、条件 WithEmptyBmsDefinitionManager の場合に ThrowsArgumentNullException されることを検証します。
+        /// </summary>
         [Fact]
         public void ReductDefinition_WithEmptyBmsDefinitionManager_ThrowsArgumentNullException()
         {
@@ -104,6 +113,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
             Assert.Throws<ArgumentNullException>(() => new DefinitionReuse(nullList!, audioCache));
         }
 
+        /// <summary>
+        /// ReductDefinition において、条件 WithSingleFile の場合に CompletesSuccessfully されることを検証します。
+        /// </summary>
         [Fact]
         public void ReductDefinition_WithSingleFile_CompletesSuccessfully()
         {
@@ -111,7 +123,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
             // Arrange: ファイルが1つだけの場合
             var fileList = BmsTestDefinitionHelper.CreateBmsDefinitionManagerWithMemoryWav(36, (1, "single.wav"));
 
-            var bmsFile = _context.CreateBuilder()
+            var bmsFile = _context.CreateBuilder<BmsBuilder>()
                 .WithHeader("TITLE", "Single File Test")
                 .WithWav("01", "single.wav", createFile: false)
                 .AddMainData(11, "01")
@@ -145,6 +157,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
 
         #region Keyword Selection Tests - キーワード選択テスト
 
+        /// <summary>
+        /// ReductDefinition において、条件 WithSelectedKeywords の場合に ProcessesOnlyMatchingFiles されることを検証します。
+        /// </summary>
         [Fact]
         public void ReductDefinition_WithSelectedKeywords_ProcessesOnlyMatchingFiles()
         {
@@ -157,7 +172,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
                 (3, "kick_light.wav")
             );
 
-            var bmsFile = _context.CreateBuilder()
+            var bmsFile = _context.CreateBuilder<BmsBuilder>()
                 .WithHeader("TITLE", "Keyword Test")
                 .WithWav("01", "kick_heavy.wav", createFile: false)
                 .WithWav("02", "snare_light.wav", createFile: false)
@@ -191,13 +206,16 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
 
         #region Progress Reporting Tests - 進捗報告テスト
 
+        /// <summary>
+        /// ReductDefinition において、条件 ReportsProgress の場合に FromZeroToHundred されることを検証します。
+        /// </summary>
         [Fact]
         public void ReductDefinition_ReportsProgress_FromZeroToHundred()
         {
             var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, BmsAtelierKyokufu.BmsPartTuner.Models.ICachedSoundData>();
             // Arrange
             var fileList = BmsTestDefinitionHelper.CreateBmsDefinitionManagerWithMemoryWav(36, (1, "progress.wav"));
-            var bmsFile = _context.CreateBuilder()
+            var bmsFile = _context.CreateBuilder<BmsBuilder>()
                 .WithHeader("TITLE", "Progress Test")
                 .WithWav("01", "progress.wav", createFile: false)
                 .AddMainData(11, "01")

@@ -1,11 +1,20 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Helpers;
 using BmsAtelierKyokufu.BmsPartTuner.Models;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
 {
+    /// <summary>
+    /// テスト用のオーディオデータおよびキャッシュの生成を支援するヘルパークラス。
+    /// </summary>
     public static class BmsTestAudioHelper
     {
+        /// <summary>
+        /// サンプルデータから、テスト用のノーマライズ済み音源データを生成します。
+        /// </summary>
+        /// <param name="samples">オーディオサンプルの配列。</param>
+        /// <param name="channels">チャンネル数（デフォルトは 1）。</param>
+        /// <returns>生成された <see cref="MockCachedSoundData"/>。</returns>
         public static MockCachedSoundData CreatePreNormalizedSoundData(float[] samples, int channels = 1)
         {
             float[][] samplesPerChannel = new float[channels][];
@@ -23,6 +32,14 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
             return new MockCachedSoundData(samplesPerChannel, 44100, 16);
         }
 
+        /// <summary>
+        /// 疑似キャッシュを割り当てた <see cref="BmsAudioFile"/> インスタンスを生成します。
+        /// </summary>
+        /// <param name="num">BMS内でのインデックス番号。</param>
+        /// <param name="samples">オーディオサンプルの配列。</param>
+        /// <param name="audioCache">キャッシュを格納するスレッドセーフな辞書。</param>
+        /// <param name="filenamePattern">ファイル名の命名パターン。</param>
+        /// <returns>初期化された <see cref="BmsAudioFile"/>。</returns>
         public static BmsAudioFile CreateAudioFileWithMockCache(
             int num,
             float[] samples,
@@ -48,12 +65,21 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
             return file;
         }
 
+        /// <summary>
+        /// シンプルなダミー用のキャッシュデータを生成します。
+        /// </summary>
+        /// <returns>生成された <see cref="MockCachedSoundData"/>。</returns>
         public static MockCachedSoundData CreateDummyCache()
         {
             float[][] samples = [[0.0f, 0.1f, 0.2f]];
             return new MockCachedSoundData(samples, 44100, 16);
         }
 
+        /// <summary>
+        /// 指定された周波数の正弦波からなるテスト用キャッシュデータを生成します。
+        /// </summary>
+        /// <param name="frequency">生成する正弦波の周波数。</param>
+        /// <returns>生成された <see cref="MockCachedSoundData"/>。</returns>
         public static MockCachedSoundData CreateDistinctCache(double frequency = 440.0)
         {
             float[][] samples = [new float[100]];

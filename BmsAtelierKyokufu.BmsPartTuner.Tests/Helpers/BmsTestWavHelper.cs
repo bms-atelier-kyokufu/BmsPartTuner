@@ -1,33 +1,62 @@
-﻿using System.IO;
+using System.IO;
 using System.Text;
 using NAudio.Wave;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
 {
+    /// <summary>
+    /// テスト用のWAVファイルや音声データの生成を行うヘルパークラス。
+    /// </summary>
     public static class BmsTestWavHelper
     {
-        public static void CreateDummyWavFile(string filePath, bool writeToDisk = true)
+        /// <summary>
+        /// 最小限のWAVヘッダーのみを持つダミーWAVファイルを作成します。
+        /// </summary>
+        /// <param name="filePath">作成するファイルの保存先パス。</param>
+        /// <param name="writeToDisk">ディスクへ書き出す場合は <c>true</c>、仮想メモリ上に登録する場合は <c>false</c>。</param>
+        /// <param name="durationSeconds">生成する無音データの長さ（秒）。</param>
+        /// <param name="isValid">有効なWAVファイルを生成する場合は <c>true</c>。無効なテキストファイルを生成する場合は <c>false</c>。</param>
+        public static void CreateDummyWavFile(string filePath, bool writeToDisk = true, int durationSeconds = 0, bool isValid = true)
         {
-            byte[] wavHeader = new byte[44];
+            if (!isValid)
+            {
+                if (writeToDisk)
+                {
+                    File.WriteAllText(filePath, "This is not a WAV file but has .wav extension.");
+                }
+                else
+                {
+                    VirtualAudioRegistry.AddFile(Path.GetFileName(filePath), Encoding.UTF8.GetBytes("This is not a WAV file but has .wav extension."));
+                }
+                return;
+            }
+
+            const int sampleRate = 44100;
+            const int channels = 1;
+            const short bitsPerSample = 16;
+            int dataSize = durationSeconds * sampleRate * channels * (bitsPerSample / 8);
+            int fileSize = 36 + dataSize;
+
+            byte[] wavHeader = new byte[44 + dataSize];
 
             // RIFF
             Encoding.ASCII.GetBytes("RIFF").CopyTo(wavHeader, 0);
-            BitConverter.GetBytes(36).CopyTo(wavHeader, 4); // ChunkSize (36 + data size 0)
+            BitConverter.GetBytes(fileSize).CopyTo(wavHeader, 4);
             Encoding.ASCII.GetBytes("WAVE").CopyTo(wavHeader, 8);
 
             // fmt
             Encoding.ASCII.GetBytes("fmt ").CopyTo(wavHeader, 12);
-            BitConverter.GetBytes(16).CopyTo(wavHeader, 16); // Subchunk1Size
-            BitConverter.GetBytes((short)1).CopyTo(wavHeader, 20); // AudioFormat (PCM)
-            BitConverter.GetBytes((short)1).CopyTo(wavHeader, 22); // NumChannels
-            BitConverter.GetBytes(44100).CopyTo(wavHeader, 24); // SampleRate
-            BitConverter.GetBytes(44100 * 2).CopyTo(wavHeader, 28); // ByteRate
-            BitConverter.GetBytes((short)2).CopyTo(wavHeader, 32); // BlockAlign
-            BitConverter.GetBytes((short)16).CopyTo(wavHeader, 34); // BitsPerSample
+            BitConverter.GetBytes(16).CopyTo(wavHeader, 16);
+            BitConverter.GetBytes((short)1).CopyTo(wavHeader, 20);
+            BitConverter.GetBytes((short)channels).CopyTo(wavHeader, 22);
+            BitConverter.GetBytes(sampleRate).CopyTo(wavHeader, 24);
+            BitConverter.GetBytes(sampleRate * channels * (bitsPerSample / 8)).CopyTo(wavHeader, 28);
+            BitConverter.GetBytes((short)(channels * (bitsPerSample / 8))).CopyTo(wavHeader, 32);
+            BitConverter.GetBytes(bitsPerSample).CopyTo(wavHeader, 34);
 
             // data
             Encoding.ASCII.GetBytes("data").CopyTo(wavHeader, 36);
-            BitConverter.GetBytes(0).CopyTo(wavHeader, 40); // Subchunk2Size
+            BitConverter.GetBytes(dataSize).CopyTo(wavHeader, 40);
 
             if (writeToDisk)
             {
@@ -39,6 +68,14 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
             }
         }
 
+        /// <summary>
+        /// 指定された条件の正弦波を含むWAVフォーマットのバイナリデータを生成します。
+        /// </summary>
+        /// <param name="sampleCount">生成するサンプルの個数。</param>
+        /// <param name="frequency">正弦波の周波数。</param>
+        /// <param name="amplitude">波形の振幅。</param>
+        /// <param name="channels">オーディオのチャンネル数。</param>
+        /// <returns>WAVフォーマットに準拠したバイト配列。</returns>
         public static byte[] CreateSineWavBytes(int sampleCount = 1000, double frequency = 440.0, double amplitude = 0.5, int channels = 1)
         {
             var samples = new float[sampleCount];
@@ -58,6 +95,16 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
             return ms.ToArray();
         }
 
+        /// <summary>
+        /// 正弦波を含むWAVファイルを生成します。
+        /// </summary>
+        /// <param name="filePath">ファイルの保存先パス。</param>
+        /// <param name="sampleCount">生成するサンプルの個数。</param>
+        /// <param name="frequency">正弦波の周波数。</param>
+        /// <param name="amplitude">波形の振幅。</param>
+        /// <param name="channels">オーディオのチャンネル数。</param>
+        /// <param name="writeToDisk">ディスクへ書き出す場合は <c>true</c>、仮想メモリ上に登録する場合は <c>false</c>。</param>
+        /// <returns>生成された（または登録された）ファイルのパス。</returns>
         public static string CreateSineWavFile(string filePath, int sampleCount = 1000, double frequency = 440.0, double amplitude = 0.5, int channels = 1, bool writeToDisk = true)
         {
             var bytes = CreateSineWavBytes(sampleCount, frequency, amplitude, channels);
@@ -74,6 +121,14 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
             return filePath;
         }
 
+        /// <summary>
+        /// 無音（サンプル値 0）のWAVファイルを生成します。
+        /// </summary>
+        /// <param name="filePath">ファイルの保存先パス。</param>
+        /// <param name="durationSeconds">再生時間（秒）。</param>
+        /// <param name="channels">オーディオのチャンネル数。</param>
+        /// <param name="writeToDisk">ディスクへ書き出す場合は <c>true</c>、仮想メモリ上に登録する場合は <c>false</c>。</param>
+        /// <returns>生成された（または登録された）ファイルのパス。</returns>
         public static string CreateSilenceWavFile(string filePath, double durationSeconds = 0.1, int channels = 1, bool writeToDisk = true)
         {
             const int sampleRate = 44100;
@@ -102,6 +157,13 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
             return filePath;
         }
 
+        /// <summary>
+        /// テスト用途で有効な音声を持つWAVファイルを生成します。オプションで異なる周波数の波形を生成可能です。
+        /// </summary>
+        /// <param name="filePath">ファイルの保存先パス。</param>
+        /// <param name="isDifferent">異なる周波数（880Hz）を生成する場合は <c>true</c>、通常（440Hz）は <c>false</c>。</param>
+        /// <param name="writeToDisk">ディスクへ書き出す場合は <c>true</c>、仮想メモリ上に登録する場合は <c>false</c>。</param>
+        /// <returns>生成された（または登録された）ファイルのパス。</returns>
         public static string CreateValidWavFile(string filePath, bool isDifferent = false, bool writeToDisk = true)
         {
             double frequency = isDifferent ? 880.0 : 440.0;

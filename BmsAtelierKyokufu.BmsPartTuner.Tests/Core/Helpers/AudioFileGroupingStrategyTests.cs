@@ -19,13 +19,16 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Helpers;
 /// - キーワードマッチングの大文字小文字区別なし
 /// </para>
 /// </summary>
+/// <summary>
+/// <see cref="AudioFileGroupingStrategyTests"/> の動作を検証するテストクラス。
+/// </summary>
 public class AudioFileGroupingStrategyTests
 {
     private readonly System.Collections.Concurrent.ConcurrentDictionary<string, BmsAtelierKyokufu.BmsPartTuner.Models.ICachedSoundData> audioCache = new();
 
     #region Helper Methods
 
-    private BmsAudioFile CreateWavFile(
+    private BmsAudioFile CreateBmsAudioFileEntry(
         string fileName,
         int numInteger,
         long fileSize = 1000,
@@ -58,6 +61,9 @@ public class AudioFileGroupingStrategyTests
 
     #region GroupFiles - Traditional Tests
 
+    /// <summary>
+    /// GroupFiles において、条件 EmptyList の場合に ReturnsEmptyGroups されることを検証します。
+    /// </summary>
     [Fact]
     public void GroupFiles_EmptyList_ReturnsEmptyGroups()
     {
@@ -71,6 +77,9 @@ public class AudioFileGroupingStrategyTests
         Assert.Empty(groups);
     }
 
+    /// <summary>
+    /// GroupFiles において、条件 NullList の場合に ReturnsEmptyGroups されることを検証します。
+    /// </summary>
     [Fact]
     public void GroupFiles_NullList_ReturnsEmptyGroups()
     {
@@ -78,15 +87,18 @@ public class AudioFileGroupingStrategyTests
         Assert.Throws<NullReferenceException>(() => AudioFileGroupingStrategy.GroupFiles(audioCache, null!, 1, 10));
     }
 
+    /// <summary>
+    /// GroupFiles において、条件 SameFileSize の場合に GroupsTogether されることを検証します。
+    /// </summary>
     [Fact]
     public void GroupFiles_SameFileSize_GroupsTogether()
     {
         // Arrange - 同じファイルサイズとRMS
         var files = new List<BmsAudioFile>
         {
-            CreateWavFile("file1.wav", 1, 1000, 0.5f),
-            CreateWavFile("file2.wav", 2, 1000, 0.5f),
-            CreateWavFile("file3.wav", 3, 1000, 0.5f)
+            CreateBmsAudioFileEntry("file1.wav", 1, 1000, 0.5f),
+            CreateBmsAudioFileEntry("file2.wav", 2, 1000, 0.5f),
+            CreateBmsAudioFileEntry("file3.wav", 3, 1000, 0.5f)
         };
 
         // Act
@@ -97,6 +109,9 @@ public class AudioFileGroupingStrategyTests
         Assert.Equal(3, groups[0].Count); // 3ファイル全て
     }
 
+    /// <summary>
+    /// GroupFiles において、条件 DifferentFileSize の場合に SeparatesGroups されることを検証します。
+    /// </summary>
     [Fact]
     public void GroupFiles_DifferentFileSize_SeparatesGroups()
     {
@@ -104,9 +119,9 @@ public class AudioFileGroupingStrategyTests
         // 実際の実装では、ファイルサイズが異なってもRMSグループキーで統合される可能性がある
         var files = new List<BmsAudioFile>
         {
-            CreateWavFile("file1.wav", 1, 1000, 0.1f),  // RMSを変えて確実に分離
-            CreateWavFile("file2.wav", 2, 2000, 0.5f),
-            CreateWavFile("file3.wav", 3, 3000, 0.9f)
+            CreateBmsAudioFileEntry("file1.wav", 1, 1000, 0.1f),  // RMSを変えて確実に分離
+            CreateBmsAudioFileEntry("file2.wav", 2, 2000, 0.5f),
+            CreateBmsAudioFileEntry("file3.wav", 3, 3000, 0.9f)
         };
 
         // Act
@@ -116,15 +131,18 @@ public class AudioFileGroupingStrategyTests
         Assert.True(groups.Count >= 1); // 少なくとも1グループ
     }
 
+    /// <summary>
+    /// GroupFiles において、条件 DifferentRms の場合に SeparatesGroups されることを検証します。
+    /// </summary>
     [Fact]
     public void GroupFiles_DifferentRms_SeparatesGroups()
     {
         // Arrange - 同じファイルサイズ、異なるRMS
         var files = new List<BmsAudioFile>
         {
-            CreateWavFile("file1.wav", 1, 1000, 0.1f),
-            CreateWavFile("file2.wav", 2, 1000, 0.5f),
-            CreateWavFile("file3.wav", 3, 1000, 0.9f)
+            CreateBmsAudioFileEntry("file1.wav", 1, 1000, 0.1f),
+            CreateBmsAudioFileEntry("file2.wav", 2, 1000, 0.5f),
+            CreateBmsAudioFileEntry("file3.wav", 3, 1000, 0.9f)
         };
 
         // Act
@@ -135,15 +153,18 @@ public class AudioFileGroupingStrategyTests
         Assert.True(groups.Count >= 1);
     }
 
+    /// <summary>
+    /// GroupFiles において、条件 OutsideRange の場合に ExcludesFiles されることを検証します。
+    /// </summary>
     [Fact]
     public void GroupFiles_OutsideRange_ExcludesFiles()
     {
         // Arrange
         var files = new List<BmsAudioFile>
         {
-            CreateWavFile("file1.wav", 1, 1000, 0.5f),
-            CreateWavFile("file2.wav", 5, 1000, 0.5f), // 範囲外
-            CreateWavFile("file3.wav", 10, 1000, 0.5f)
+            CreateBmsAudioFileEntry("file1.wav", 1, 1000, 0.5f),
+            CreateBmsAudioFileEntry("file2.wav", 5, 1000, 0.5f), // 範囲外
+            CreateBmsAudioFileEntry("file3.wav", 10, 1000, 0.5f)
         };
 
         // Act
@@ -156,15 +177,18 @@ public class AudioFileGroupingStrategyTests
         Assert.DoesNotContain(2, allIndices); // file3 (index 2) - 範囲外
     }
 
+    /// <summary>
+    /// GroupFiles において、条件 NoCachedData の場合に ExcludesFile されることを検証します。
+    /// </summary>
     [Fact]
     public void GroupFiles_NoCachedData_ExcludesFile()
     {
         // Arrange
         var files = new List<BmsAudioFile>
         {
-            CreateWavFile("file1.wav", 1, 1000, 0.5f),
-            CreateWavFile("file2.wav", 2, 1000, 0), // CachedDataなし
-            CreateWavFile("file3.wav", 3, 1000, 0.5f)
+            CreateBmsAudioFileEntry("file1.wav", 1, 1000, 0.5f),
+            CreateBmsAudioFileEntry("file2.wav", 2, 1000, 0), // CachedDataなし
+            CreateBmsAudioFileEntry("file3.wav", 3, 1000, 0.5f)
         };
 
         // Act
@@ -179,16 +203,19 @@ public class AudioFileGroupingStrategyTests
 
     #region GroupFiles - Keyword Filter Tests
 
+    /// <summary>
+    /// GroupFiles において、条件 WithKeywords の場合に SeparatesInstruments されることを検証します。
+    /// </summary>
     [Fact]
     public void GroupFiles_WithKeywords_SeparatesInstruments()
     {
         // Arrange
         var files = new List<BmsAudioFile>
         {
-            CreateWavFile("kick_01.wav", 1, 1000, 0.5f),
-            CreateWavFile("kick_02.wav", 2, 1000, 0.5f),
-            CreateWavFile("snare_01.wav", 3, 1000, 0.5f),
-            CreateWavFile("snare_02.wav", 4, 1000, 0.5f)
+            CreateBmsAudioFileEntry("kick_01.wav", 1, 1000, 0.5f),
+            CreateBmsAudioFileEntry("kick_02.wav", 2, 1000, 0.5f),
+            CreateBmsAudioFileEntry("snare_01.wav", 3, 1000, 0.5f),
+            CreateBmsAudioFileEntry("snare_02.wav", 4, 1000, 0.5f)
         };
         var keywords = new List<string> { "kick", "snare" };
 
@@ -199,15 +226,18 @@ public class AudioFileGroupingStrategyTests
         Assert.True(groups.Count >= 2); // 少なくとも2つのグループ（kick, snare）
     }
 
+    /// <summary>
+    /// GroupFiles において、条件 WithKeywords の場合に CaseInsensitive されることを検証します。
+    /// </summary>
     [Fact]
     public void GroupFiles_WithKeywords_CaseInsensitive()
     {
         // Arrange
         var files = new List<BmsAudioFile>
         {
-            CreateWavFile("KICK_01.wav", 1, 1000, 0.5f),
-            CreateWavFile("kick_02.wav", 2, 1000, 0.5f),
-            CreateWavFile("Kick_03.wav", 3, 1000, 0.5f)
+            CreateBmsAudioFileEntry("KICK_01.wav", 1, 1000, 0.5f),
+            CreateBmsAudioFileEntry("kick_02.wav", 2, 1000, 0.5f),
+            CreateBmsAudioFileEntry("Kick_03.wav", 3, 1000, 0.5f)
         };
         var keywords = new List<string> { "kick" };
 
@@ -219,15 +249,18 @@ public class AudioFileGroupingStrategyTests
         Assert.Equal(3, totalFiles); // 大文字小文字関係なく全てマッチ
     }
 
+    /// <summary>
+    /// GroupFiles において、条件 WithKeywords の場合に NoMatch されることを検証します。
+    /// </summary>
     [Fact]
     public void GroupFiles_WithKeywords_NoMatch_ExcludesFiles()
     {
         // Arrange
         var files = new List<BmsAudioFile>
         {
-            CreateWavFile("kick_01.wav", 1, 1000, 0.5f),
-            CreateWavFile("cymbal_01.wav", 2, 1000, 0.5f), // マッチしない
-            CreateWavFile("snare_01.wav", 3, 1000, 0.5f)
+            CreateBmsAudioFileEntry("kick_01.wav", 1, 1000, 0.5f),
+            CreateBmsAudioFileEntry("cymbal_01.wav", 2, 1000, 0.5f), // マッチしない
+            CreateBmsAudioFileEntry("snare_01.wav", 3, 1000, 0.5f)
         };
         var keywords = new List<string> { "kick", "snare" }; // cymbalは含まれない
 
@@ -239,14 +272,17 @@ public class AudioFileGroupingStrategyTests
         Assert.Equal(2, totalFiles); // cymbalは除外される
     }
 
+    /// <summary>
+    /// GroupFiles において、条件 WithEmptyKeywords の場合に UsesTraditionalGrouping されることを検証します。
+    /// </summary>
     [Fact]
     public void GroupFiles_WithEmptyKeywords_UsesTraditionalGrouping()
     {
         // Arrange
         var files = new List<BmsAudioFile>
         {
-            CreateWavFile("file1.wav", 1, 1000, 0.5f),
-            CreateWavFile("file2.wav", 2, 1000, 0.5f)
+            CreateBmsAudioFileEntry("file1.wav", 1, 1000, 0.5f),
+            CreateBmsAudioFileEntry("file2.wav", 2, 1000, 0.5f)
         };
         var emptyKeywords = new List<string>();
 
@@ -258,14 +294,17 @@ public class AudioFileGroupingStrategyTests
         Assert.Equal(2, groups[0].Count);
     }
 
+    /// <summary>
+    /// GroupFiles において、条件 WithNullKeywords の場合に UsesTraditionalGrouping されることを検証します。
+    /// </summary>
     [Fact]
     public void GroupFiles_WithNullKeywords_UsesTraditionalGrouping()
     {
         // Arrange
         var files = new List<BmsAudioFile>
         {
-            CreateWavFile("file1.wav", 1, 1000, 0.5f),
-            CreateWavFile("file2.wav", 2, 1000, 0.5f)
+            CreateBmsAudioFileEntry("file1.wav", 1, 1000, 0.5f),
+            CreateBmsAudioFileEntry("file2.wav", 2, 1000, 0.5f)
         };
 
         // Act
@@ -280,13 +319,16 @@ public class AudioFileGroupingStrategyTests
 
     #region Edge Cases
 
+    /// <summary>
+    /// GroupFiles において、条件 SingleFile の場合に ReturnsOneGroup されることを検証します。
+    /// </summary>
     [Fact]
     public void GroupFiles_SingleFile_ReturnsOneGroup()
     {
         // Arrange
         var files = new List<BmsAudioFile>
         {
-            CreateWavFile("file1.wav", 1, 1000, 0.5f)
+            CreateBmsAudioFileEntry("file1.wav", 1, 1000, 0.5f)
         };
 
         // Act
@@ -297,6 +339,9 @@ public class AudioFileGroupingStrategyTests
         Assert.Single(groups[0]);
     }
 
+    /// <summary>
+    /// GroupFiles において、条件 FileWithNullName の場合に HandlesGracefully されることを検証します。
+    /// </summary>
     [Fact]
     public void GroupFiles_FileWithNullName_HandlesGracefully()
     {
@@ -304,7 +349,7 @@ public class AudioFileGroupingStrategyTests
         var files = new List<BmsAudioFile>
         {
             new() { Name = null!, NumInteger = 1, FileSize = 1000 },
-            CreateWavFile("file2.wav", 2, 1000, 0.5f)
+            CreateBmsAudioFileEntry("file2.wav", 2, 1000, 0.5f)
         };
 
         // Act
@@ -314,14 +359,17 @@ public class AudioFileGroupingStrategyTests
         Assert.NotEmpty(groups);
     }
 
+    /// <summary>
+    /// GroupFiles において、条件 ZeroFileSize の場合に HandlesGracefully されることを検証します。
+    /// </summary>
     [Fact]
     public void GroupFiles_ZeroFileSize_HandlesGracefully()
     {
         // Arrange
         var files = new List<BmsAudioFile>
         {
-            CreateWavFile("file1.wav", 1, 0, 0.5f), // ファイルサイズ0
-            CreateWavFile("file2.wav", 2, 1000, 0.5f)
+            CreateBmsAudioFileEntry("file1.wav", 1, 0, 0.5f), // ファイルサイズ0
+            CreateBmsAudioFileEntry("file2.wav", 2, 1000, 0.5f)
         };
 
         // Act
@@ -331,14 +379,17 @@ public class AudioFileGroupingStrategyTests
         Assert.NotEmpty(groups);
     }
 
+    /// <summary>
+    /// GroupFiles において、条件 VeryHighRms の場合に HandlesGracefully されることを検証します。
+    /// </summary>
     [Fact]
     public void GroupFiles_VeryHighRms_HandlesGracefully()
     {
         // Arrange
         var files = new List<BmsAudioFile>
         {
-            CreateWavFile("file1.wav", 1, 1000, 10.0f), // 異常に高いRMS
-            CreateWavFile("file2.wav", 2, 1000, 0.5f)
+            CreateBmsAudioFileEntry("file1.wav", 1, 1000, 10.0f), // 異常に高いRMS
+            CreateBmsAudioFileEntry("file2.wav", 2, 1000, 0.5f)
         };
 
         // Act
@@ -352,15 +403,18 @@ public class AudioFileGroupingStrategyTests
 
     #region Group Size Tests
 
+    /// <summary>
+    /// GroupFiles において ReturnsNonEmptyGroups の場合の挙動を検証します。
+    /// </summary>
     [Fact]
     public void GroupFiles_ReturnsNonEmptyGroups()
     {
         // Arrange
         var files = new List<BmsAudioFile>
         {
-            CreateWavFile("file1.wav", 1, 1000, 0.5f),
-            CreateWavFile("file2.wav", 2, 1000, 0.5f),
-            CreateWavFile("file3.wav", 3, 2000, 0.5f)
+            CreateBmsAudioFileEntry("file1.wav", 1, 1000, 0.5f),
+            CreateBmsAudioFileEntry("file2.wav", 2, 1000, 0.5f),
+            CreateBmsAudioFileEntry("file3.wav", 3, 2000, 0.5f)
         };
 
         // Act
@@ -370,15 +424,18 @@ public class AudioFileGroupingStrategyTests
         Assert.All(groups, g => Assert.NotEmpty(g)); // 全てのグループが空でない
     }
 
+    /// <summary>
+    /// GroupFiles において、条件 GroupIndices の場合に AreValid されることを検証します。
+    /// </summary>
     [Fact]
     public void GroupFiles_GroupIndices_AreValid()
     {
         // Arrange
         var files = new List<BmsAudioFile>
         {
-            CreateWavFile("file1.wav", 1, 1000, 0.5f),
-            CreateWavFile("file2.wav", 2, 1000, 0.5f),
-            CreateWavFile("file3.wav", 3, 1000, 0.5f)
+            CreateBmsAudioFileEntry("file1.wav", 1, 1000, 0.5f),
+            CreateBmsAudioFileEntry("file2.wav", 2, 1000, 0.5f),
+            CreateBmsAudioFileEntry("file3.wav", 3, 1000, 0.5f)
         };
 
         // Act
@@ -389,15 +446,18 @@ public class AudioFileGroupingStrategyTests
         Assert.All(allIndices, idx => Assert.InRange(idx, 0, files.Count - 1));
     }
 
+    /// <summary>
+    /// GroupFiles において NoFilesDuplicated の場合の挙動を検証します。
+    /// </summary>
     [Fact]
     public void GroupFiles_NoFilesDuplicated()
     {
         // Arrange
         var files = new List<BmsAudioFile>
         {
-            CreateWavFile("file1.wav", 1, 1000, 0.5f),
-            CreateWavFile("file2.wav", 2, 1000, 0.5f),
-            CreateWavFile("file3.wav", 3, 2000, 0.5f)
+            CreateBmsAudioFileEntry("file1.wav", 1, 1000, 0.5f),
+            CreateBmsAudioFileEntry("file2.wav", 2, 1000, 0.5f),
+            CreateBmsAudioFileEntry("file3.wav", 3, 2000, 0.5f)
         };
 
         // Act

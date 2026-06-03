@@ -16,6 +16,9 @@ public class DefinitionRangeValidatorTests
     /// </summary>
     /// <param name="start">開始定義。</param>
     /// <param name="end">終了定義。</param>
+    /// <summary>
+    /// テスト を検証します。
+    /// </summary>
     [Theory]
     [InlineData("01", "ZZ")]     // 36進数の全範囲
     [InlineData("01", "zz")]     // 62進数の全範囲
@@ -58,6 +61,9 @@ public class DefinitionRangeValidatorTests
     /// </summary>
     /// <param name="start">開始定義。</param>
     /// <param name="end">終了定義。</param>
+    /// <summary>
+    /// Validate において、条件 InvalidStartLength の場合に ReturnsFailure されることを検証します。
+    /// </summary>
     [Theory]
     [InlineData("1", "ZZ")]       // 開始が1桁
     [InlineData("001", "ZZ")]    // 開始が3桁
@@ -77,6 +83,9 @@ public class DefinitionRangeValidatorTests
     /// </summary>
     /// <param name="start">開始定義。</param>
     /// <param name="end">終了定義。</param>
+    /// <summary>
+    /// Validate において、条件 InvalidEndLength の場合に ReturnsFailure されることを検証します。
+    /// </summary>
     [Theory]
     [InlineData("01", "Z")]       // 終了が1桁
     [InlineData("01", "ZZZ")]    // 終了が3桁
@@ -96,48 +105,20 @@ public class DefinitionRangeValidatorTests
     #region Range Validation Tests - 範囲チェック
 
     /// <summary>
-    /// 開始定義が最小値未満の場合、検証が失敗することを確認します。
+    /// 定義の範囲が不正な場合、検証が失敗することを確認します。
     /// </summary>
-    [Fact]
-    public void Validate_StartBelowMinimum_ReturnsFailure()
+    [Theory]
+    [InlineData("00", "ZZ", "開始定義は01以上にしてください")] // 開始が最小値未満
+    [InlineData("20", "10", "終了定義は開始定義より大きい値にしてください")] // 終了 < 開始
+    [InlineData("10", "10", "終了定義は開始定義より大きい値にしてください")] // 終了 == 開始
+    public void Validate_InvalidRange_ReturnsFailure(string start, string end, string expectedError)
     {
-        // "00" = 0 < 最小値1
-        DefinitionRange range = new("00", "ZZ");
+        DefinitionRange range = new(start, end);
 
         ValidationResult result = _validator.Validate(range);
 
         Assert.False(result.IsValid);
-        Assert.Contains("開始定義は01以上にしてください", result.GetFirstError());
-    }
-
-    /// <summary>
-    /// 終了定義が開始定義より小さい場合、検証が失敗することを確認します。
-    /// </summary>
-    [Fact]
-    public void Validate_EndGreaterThanStart_RequiredForSuccess()
-    {
-        // 終了 < 開始
-        DefinitionRange range = new("20", "10");
-
-        ValidationResult result = _validator.Validate(range);
-
-        Assert.False(result.IsValid);
-        Assert.Contains("終了定義は開始定義より大きい値にしてください", result.GetFirstError());
-    }
-
-    /// <summary>
-    /// 終了定義が開始定義と等しい場合、検証が失敗することを確認します。
-    /// </summary>
-    [Fact]
-    public void Validate_EndEqualsStart_ReturnsFailure()
-    {
-        // 終了 == 開始
-        DefinitionRange range = new("10", "10");
-
-        ValidationResult result = _validator.Validate(range);
-
-        Assert.False(result.IsValid);
-        Assert.Contains("終了定義は開始定義より大きい値にしてください", result.GetFirstError());
+        Assert.Contains(expectedError, result.GetFirstError());
     }
 
     #endregion
@@ -149,6 +130,9 @@ public class DefinitionRangeValidatorTests
     /// </summary>
     /// <param name="start">開始定義。</param>
     /// <param name="end">終了定義。</param>
+    /// <summary>
+    /// Validate において、条件 InvalidCharacters の場合に ReturnsFailure されることを検証します。
+    /// </summary>
     [Theory]
     [InlineData("!!", "ZZ")]     // 記号
     [InlineData("##", "ZZ")]     // 特殊文字
@@ -197,6 +181,9 @@ public class R2ThresholdValidatorTests
     /// </summary>
     /// <param name="input">入力文字列。</param>
     /// <param name="expectedInternal">期待される内部値。</param>
+    /// <summary>
+    /// テスト を検証します。
+    /// </summary>
     [Theory]
     [InlineData("0", 0.0f)]
     [InlineData("50", 0.5f)]
@@ -220,6 +207,9 @@ public class R2ThresholdValidatorTests
     /// </summary>
     /// <param name="input">入力文字列。</param>
     /// <param name="expectedInternal">期待される内部値。</param>
+    /// <summary>
+    /// テスト を検証します。
+    /// </summary>
     [Theory]
     [InlineData("0.0", 0.0f)]
     [InlineData("0.5", 0.5f)]
@@ -243,6 +233,9 @@ public class R2ThresholdValidatorTests
     /// </summary>
     /// <param name="input">入力文字列。</param>
     /// <param name="expectedInternal">期待される内部値。</param>
+    /// <summary>
+    /// ValidateWithValue において、条件 DecimalDisplayValue の場合に ConvertsCorrectly されることを検証します。
+    /// </summary>
     [Theory]
     [InlineData("50.5", 0.505f)]   // 1-100スケールの小数
     [InlineData("75.25", 0.7525f)]
@@ -263,6 +256,9 @@ public class R2ThresholdValidatorTests
     /// 空または空白の文字列が指定された場合、検証が失敗することを確認します。
     /// </summary>
     /// <param name="input">入力文字列。</param>
+    /// <summary>
+    /// ValidateWithValue において、条件 EmptyOrWhitespace の場合に ReturnsFailure されることを検証します。
+    /// </summary>
     [Theory]
     [InlineData("")]
     [InlineData("   ")]
@@ -279,6 +275,9 @@ public class R2ThresholdValidatorTests
     /// 範囲外の値が指定された場合、検証が失敗することを確認します。
     /// </summary>
     /// <param name="input">入力文字列。</param>
+    /// <summary>
+    /// テスト を検証します。
+    /// </summary>
     [Theory]
     [InlineData("-1")]
     [InlineData("-50")]
@@ -296,6 +295,9 @@ public class R2ThresholdValidatorTests
     /// 不正な形式の文字列が指定された場合、検証が失敗することを確認します。
     /// </summary>
     /// <param name="input">入力文字列。</param>
+    /// <summary>
+    /// ValidateWithValue において、条件 InvalidFormat の場合に ReturnsFailure されることを検証します。
+    /// </summary>
     [Theory]
     [InlineData("abc")]
     [InlineData("!@#")]
@@ -343,6 +345,9 @@ public class R2ThresholdValidatorTests
     /// 境界値が指定された場合、検証が成功することを確認します。
     /// </summary>
     /// <param name="input">入力文字列。</param>
+    /// <summary>
+    /// ValidateWithValue において、条件 BoundaryValues の場合に ReturnsSuccess されることを検証します。
+    /// </summary>
     [Theory]
     [InlineData("0")]      // 最小境界
     [InlineData("100")]    // 最大境界

@@ -9,6 +9,9 @@ using Xunit.Abstractions;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Scenarios;
 
+/// <summary>
+/// <see cref="BmsonOptimizationIntegrationTests"/> の動作を検証するテストクラス。
+/// </summary>
 public class BmsonOptimizationIntegrationTests
 {
     private static readonly JsonSerializerOptions Options = new() { PropertyNameCaseInsensitive = true };
@@ -20,17 +23,59 @@ public class BmsonOptimizationIntegrationTests
         Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
     }
 
+    #region Helper Methods
+
+    private static string GetTestDataPath(string subDir, string fileName)
+    {
+        string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TestData", "bmson_sample", subDir, fileName);
+        Assert.True(File.Exists(path), $"Test input file not found: {path}");
+        return path;
+    }
+
+    private static Dictionary<string, ICachedSoundData> LoadAudioCacheForBms(string bmsFilePath, IEnumerable<BmsAudioFile> fileList)
+    {
+        var audioCache = new Dictionary<string, ICachedSoundData>();
+        string bmsDir = Path.GetDirectoryName(bmsFilePath) ?? "";
+        foreach (var file in fileList)
+        {
+            if (file.NumInteger < 1 || file.NumInteger > 3843) continue;
+            string fullPath = Path.Combine(bmsDir, file.Name);
+            if (!File.Exists(fullPath)) continue;
+
+            if (!audioCache.ContainsKey(file.Name))
+            {
+                var data = AudioProcessingService.LoadAndProcess(fullPath, NormalizationMode.None);
+                audioCache[file.Name] = data;
+            }
+        }
+        return audioCache;
+    }
+
+    private static float GetMaxCorrelation(ICachedSoundData data1, ICachedSoundData data2, int targetChannel)
+    {
+        var shorter = data1.TotalSamples < data2.TotalSamples ? data1 : data2;
+        var longer = data1.TotalSamples < data2.TotalSamples ? data2 : data1;
+        int shorterFrames = shorter.TotalSamples / shorter.Channels;
+        int longerFrames = longer.TotalSamples / longer.Channels;
+        var shorterSpan = shorter.GetRawSpan(targetChannel, 0, shorterFrames);
+        var longerFullSpan = longer.GetRawSpan(targetChannel, 0, longerFrames);
+
+        var parameters = new WaveComparisonParameters(shorter, longer, targetChannel, shorterFrames, longerFrames, shorterSpan, longerFullSpan);
+        return FastWaveCompare.CalculateMaxCorrelation(parameters).Correlation;
+    }
+
+    #endregion
+
+    /// <summary>
+    /// DefinitionReuse において、条件 ShouldMatchV1 の場合に 0 されることを検証します。
+    /// </summary>
     [Fact]
     public void DefinitionReuse_ShouldMatchV1_0_0_0_Output()
     {
         // Arrange
-        string testDataDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TestData", "bmson_sample", "bms");
-        string bmsFilePath = Path.Combine(testDataDir, "bmson_base62.bms");
-        string expectedBmsFilePath = Path.Combine(testDataDir, "bmson_base62_optimized.bms");
-        string outputBmsFilePath = Path.Combine(testDataDir, "bmson_base62_test_output.bms");
-
-        Assert.True(File.Exists(bmsFilePath), $"Test input file not found: {bmsFilePath}");
-        Assert.True(File.Exists(expectedBmsFilePath), $"Expected output file not found: {expectedBmsFilePath}");
+        string bmsFilePath = GetTestDataPath("bms", "bmson_base62.bms");
+        string expectedBmsFilePath = GetTestDataPath("bms", "bmson_base62_optimized.bms");
+        string outputBmsFilePath = Path.Combine(Path.GetDirectoryName(bmsFilePath)!, "bmson_base62_test_output.bms");
 
         // Load files using BmsDefinitionManager
         var manager = new BmsDefinitionManager(bmsFilePath);
@@ -62,7 +107,6 @@ public class BmsonOptimizationIntegrationTests
         actualText = actualText.Replace("\r\n", "\n");
 
         // The file names and sequence should be identical to v1.0.0.0
-        // If there's a bug in comparison (like bypassing), the merge results will be different
         Assert.Equal(expectedText, actualText);
 
         // Cleanup
@@ -72,16 +116,17 @@ public class BmsonOptimizationIntegrationTests
         }
     }
 
+    /// <summary>
+    /// BmsonToBms において、条件 Optimization の場合に IntegrationTest されることを検証します。
+    /// </summary>
     [Fact]
     public void BmsonToBms_Optimization_IntegrationTest()
     {
         // Arrange
-        string bmsonDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TestData", "bmson_sample", "bmson");
-        string bmsonFilePath = Path.Combine(bmsonDir, "bmson.bmson");
+        string bmsonFilePath = GetTestDataPath("bmson", "bmson.bmson");
+        string bmsonDir = Path.GetDirectoryName(bmsonFilePath)!;
         string outputBmsFilePath = Path.Combine(bmsonDir, "bmson_test_output.bms");
         string optimizedBmsFilePath = Path.Combine(bmsonDir, "bmson_test_output_optimized.bms");
-
-        Assert.True(File.Exists(bmsonFilePath), $"Test input file not found: {bmsonFilePath}");
 
         // 1. bmson -> bms conversion
         string bmsonJson = File.ReadAllText(bmsonFilePath);
@@ -136,8 +181,6 @@ public class BmsonOptimizationIntegrationTests
 
         _output.WriteLine($"Generated WAV count: {wavCount}");
 
-        // In the original bmson_base62_optimized.bms there are exactly 29 WAVs defined.
-        // If our logic works without bugs (not over-merging), it should be in the ballpark of 29.
         Assert.InRange(wavCount, 10, 50);
 
         // Cleanup
@@ -145,17 +188,19 @@ public class BmsonOptimizationIntegrationTests
         if (File.Exists(optimizedBmsFilePath)) File.Delete(optimizedBmsFilePath);
     }
 
+    /// <summary>
+    /// OracleValidation において ShouldPass の場合の挙動を検証します。
+    /// </summary>
     [Fact]
     public void OracleValidation_ShouldPass()
     {
         // Arrange
-        string bmsonDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TestData", "bmson_sample", "bmson");
-        string bmsonFilePath = Path.Combine(bmsonDir, "bmson.bmson");
+        string bmsonFilePath = GetTestDataPath("bmson", "bmson.bmson");
+        string bmsonDir = Path.GetDirectoryName(bmsonFilePath)!;
         string oracleFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TestData", "bmson_sample", "oracle_bms_clef_decoy.json");
         string outputBmsFilePath = Path.Combine(bmsonDir, "oracle_test_output.bms");
         string optimizedBmsFilePath = Path.Combine(bmsonDir, "oracle_test_output_optimized.bms");
 
-        Assert.True(File.Exists(bmsonFilePath), $"Test input file not found: {bmsonFilePath}");
         Assert.True(File.Exists(oracleFilePath), $"Oracle file not found: {oracleFilePath}");
 
         // Load Oracle
@@ -237,7 +282,6 @@ public class BmsonOptimizationIntegrationTests
             _output.WriteLine(fail);
         }
 
-        // This assertion will FAIL initially, showing exactly which clusters failed.
         Assert.Empty(failedClusters);
 
         // Cleanup
@@ -245,33 +289,19 @@ public class BmsonOptimizationIntegrationTests
         if (File.Exists(optimizedBmsFilePath)) File.Delete(optimizedBmsFilePath);
     }
 
+    /// <summary>
+    /// DiscoverHeuristicThreshold において、条件 FFT16D の場合に R2 されることを検証します。
+    /// </summary>
     [Fact]
     public void DiscoverHeuristicThreshold_FFT16D_R2_Relationship()
     {
         // Arrange
-        string testDataDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TestData", "bmson_sample", "bms");
-        string bmsFilePath = Path.Combine(testDataDir, "bmson_base62.bms");
-        Assert.True(File.Exists(bmsFilePath), $"Test input file not found: {bmsFilePath}");
-
+        string bmsFilePath = GetTestDataPath("bms", "bmson_base62.bms");
         var manager = new BmsDefinitionManager(bmsFilePath);
         var fileList = manager.CreateFileList();
 
         // Cache all files
-        var audioCache = new Dictionary<string, ICachedSoundData>();
-        string bmsDir = Path.GetDirectoryName(bmsFilePath) ?? "";
-        foreach (var file in fileList)
-        {
-            if (file.NumInteger < 1 || file.NumInteger > 3843) continue;
-            string fullPath = Path.Combine(bmsDir, file.Name);
-            if (!File.Exists(fullPath)) continue;
-
-            if (!audioCache.ContainsKey(file.Name))
-            {
-                var data = BmsAtelierKyokufu.BmsPartTuner.Core.Audio.AudioProcessingService.LoadAndProcess(fullPath, NormalizationMode.None);
-                audioCache[file.Name] = data;
-            }
-        }
-
+        var audioCache = LoadAudioCacheForBms(bmsFilePath, fileList);
         var cachedList = audioCache.Values.ToList();
         _output.WriteLine($"Loaded {cachedList.Count} unique audio files.");
 
@@ -322,15 +352,7 @@ public class BmsonOptimizationIntegrationTests
                 int targetChannel = 0;
                 if (data1.GetActiveRegions()[0] == null || data1.GetActiveRegions()[0].Count == 0) targetChannel = 1;
 
-                var shorter = data1.TotalSamples < data2.TotalSamples ? data1 : data2;
-                var longer = data1.TotalSamples < data2.TotalSamples ? data2 : data1;
-                int shorterFrames = shorter.TotalSamples / shorter.Channels;
-                int longerFrames = longer.TotalSamples / longer.Channels;
-                var shorterSpan = shorter.GetRawSpan(targetChannel, 0, shorterFrames);
-                var longerFullSpan = longer.GetRawSpan(targetChannel, 0, longerFrames);
-
-                var parameters = new WaveComparisonParameters(shorter, longer, targetChannel, shorterFrames, longerFrames, shorterSpan, longerFullSpan);
-                float r = FastWaveCompare.CalculateMaxCorrelation(parameters).Correlation;
+                float r = GetMaxCorrelation(data1, data2, targetChannel);
 
                 var v1 = vectors[data1.FilePath];
                 var v2 = vectors[data2.FilePath];
@@ -363,33 +385,19 @@ public class BmsonOptimizationIntegrationTests
         _output.WriteLine($"Suggested Safe Distance Threshold (with 50% margin): {suggestedThreshold:F4}");
     }
 
+    /// <summary>
+    /// DiscoverHeuristicThreshold において、条件 SimHash256 の場合に R2 されることを検証します。
+    /// </summary>
     [Fact]
     public void DiscoverHeuristicThreshold_SimHash256_R2_Relationship()
     {
         // Arrange
-        string testDataDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TestData", "bmson_sample", "bms");
-        string bmsFilePath = Path.Combine(testDataDir, "bmson_base62.bms");
-        Assert.True(File.Exists(bmsFilePath), $"Test input file not found: {bmsFilePath}");
-
+        string bmsFilePath = GetTestDataPath("bms", "bmson_base62.bms");
         var manager = new BmsDefinitionManager(bmsFilePath);
         var fileList = manager.CreateFileList();
 
         // Cache all files
-        var audioCache = new Dictionary<string, ICachedSoundData>();
-        string bmsDir = Path.GetDirectoryName(bmsFilePath) ?? "";
-        foreach (var file in fileList)
-        {
-            if (file.NumInteger < 1 || file.NumInteger > 3843) continue;
-            string fullPath = Path.Combine(bmsDir, file.Name);
-            if (!File.Exists(fullPath)) continue;
-
-            if (!audioCache.ContainsKey(file.Name))
-            {
-                var data = AudioProcessingService.LoadAndProcess(fullPath, NormalizationMode.None);
-                audioCache[file.Name] = data;
-            }
-        }
-
+        var audioCache = LoadAudioCacheForBms(bmsFilePath, fileList);
         var cachedList = audioCache.Values.ToList();
         _output.WriteLine($"Loaded {cachedList.Count} unique audio files.");
 
@@ -411,15 +419,7 @@ public class BmsonOptimizationIntegrationTests
                 int targetChannel = 0;
                 if (data1.GetActiveRegions()[0] == null || data1.GetActiveRegions()[0].Count == 0) targetChannel = 1;
 
-                var shorter = data1.TotalSamples < data2.TotalSamples ? data1 : data2;
-                var longer = data1.TotalSamples < data2.TotalSamples ? data2 : data1;
-                int shorterFrames = shorter.TotalSamples / shorter.Channels;
-                int longerFrames = longer.TotalSamples / longer.Channels;
-                var shorterSpan = shorter.GetRawSpan(targetChannel, 0, shorterFrames);
-                var longerFullSpan = longer.GetRawSpan(targetChannel, 0, longerFrames);
-
-                var parameters = new WaveComparisonParameters(shorter, longer, targetChannel, shorterFrames, longerFrames, shorterSpan, longerFullSpan);
-                float r = FastWaveCompare.CalculateMaxCorrelation(parameters).Correlation;
+                float r = GetMaxCorrelation(data1, data2, targetChannel);
 
                 var s1 = stat1.SimHash256;
                 var s2 = stat2.SimHash256;

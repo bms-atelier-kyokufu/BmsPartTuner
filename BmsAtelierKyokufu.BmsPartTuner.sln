@@ -1,4 +1,4 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
 VisualStudioVersion = 18.1.11304.174
@@ -15,8 +15,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		BmsPartTuner.code-workspace = BmsPartTuner.code-workspace
 		GENERAL_CONCEPT_GUID.md = GENERAL_CONCEPT_GUID.md
 		LICENSE.md = LICENSE.md
+		mkdocs.yml = mkdocs.yml
 		package.json = package.json
 		README.md = README.md
+		README_EN.md = README_EN.md
+		run-benchmark.ps1 = run-benchmark.ps1
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BmsAtelierKyokufu.BmsPartTuner.Generators", "BmsAtelierKyokufu.BmsPartTuner.Generators\BmsAtelierKyokufu.BmsPartTuner.Generators.csproj", "{2835496B-2638-4808-9A38-651C622CB2EA}"
@@ -28,29 +31,21 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{
 		.agent\workflows\add-comment.prompt.md = .agent\workflows\add-comment.prompt.md
 		.agent\workflows\code-review.prompt.md = .agent\workflows\code-review.prompt.md
 		.agent\workflows\commit.prompt.md = .agent\workflows\commit.prompt.md
+		.agent\workflows\merge-code-reviews.ps1 = .agent\workflows\merge-code-reviews.ps1
 		.agent\workflows\phased-code-review.prompt.md = .agent\workflows\phased-code-review.prompt.md
 		.agent\workflows\pull-request.prompt.md = .agent\workflows\pull-request.prompt.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "rules", "rules", "{949F78AA-308F-417C-B604-C515A3E7C0FE}"
 	ProjectSection(SolutionItems) = preProject
+		.agent\rules\high-performance-codeing-guidelines.md = .agent\rules\high-performance-codeing-guidelines.md
 		.agent\rules\instructions.md = .agent\rules\instructions.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{0C5E049D-70BF-42A4-9870-5A8BCEB43DEC}"
 	ProjectSection(SolutionItems) = preProject
-		docs\00_ARCHITECTURE_EN.md = docs\00_ARCHITECTURE_EN.md
-		docs\00_ARCHITECTURE_JP.md = docs\00_ARCHITECTURE_JP.md
-		docs\01_TECHNICAL_GUIDE_EN.md = docs\01_TECHNICAL_GUIDE_EN.md
-		docs\01_TECHNICAL_GUIDE_JP.md = docs\01_TECHNICAL_GUIDE_JP.md
-		docs\02_OPTIMIZATION_GUIDE_EN.md = docs\02_OPTIMIZATION_GUIDE_EN.md
-		docs\02_OPTIMIZATION_GUIDE_JP.md = docs\02_OPTIMIZATION_GUIDE_JP.md
-		docs\03_TEST_DESIGN_JP.md = docs\03_TEST_DESIGN_JP.md
-		docs\04_TEST_STRATEGY_EN.md = docs\04_TEST_STRATEGY_EN.md
-		docs\04_TEST_STRATEGY_JP.md = docs\04_TEST_STRATEGY_JP.md
-		docs\COMMIT_MESSAGE_GUIDE_EN.md = docs\COMMIT_MESSAGE_GUIDE_EN.md
-		docs\COMMIT_MESSAGE_GUIDE_JP.md = docs\COMMIT_MESSAGE_GUIDE_JP.md
-		docs\PORTFOLIO_SUMMARY_EN.md = docs\PORTFOLIO_SUMMARY_EN.md
+		docs\casual_guide.md = docs\casual_guide.md
+		docs\index.md = docs\index.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "adr", "adr", "{815BE85F-822C-45A9-9189-1E12B25BCD5B}"
@@ -84,22 +79,30 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "arch", "arch", "{D1097E82-5
 	ProjectSection(SolutionItems) = preProject
 		docs\adr\arch\immutable_domain_models.md = docs\adr\arch\immutable_domain_models.md
 		docs\adr\arch\pipeline_architecture.md = docs\adr\arch\pipeline_architecture.md
+		docs\adr\arch\procedural_hotpath.md = docs\adr\arch\procedural_hotpath.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "img", "img", "{2CD22421-E81D-49CC-9003-8B35EB0D3B0E}"
 	ProjectSection(SolutionItems) = preProject
-		docs\img\00_Archtecture.svg = docs\img\00_Archtecture.svg
-		docs\img\02_Optimization-Implementation-Guide-Process-Flow_EN.svg = docs\img\02_Optimization-Implementation-Guide-Process-Flow_EN.svg
-		docs\img\02_Optimization-Implementation-Guide-Process-Flow_JP.svg = docs\img\02_Optimization-Implementation-Guide-Process-Flow_JP.svg
-		docs\img\02_Optimization-Implementation-Guide_EN.svg = docs\img\02_Optimization-Implementation-Guide_EN.svg
-		docs\img\02_Optimization-Implementation-Guide_JP.svg = docs\img\02_Optimization-Implementation-Guide_JP.svg
-		docs\img\Document-Hierarchy_EN.svg = docs\img\Document-Hierarchy_EN.svg
-		docs\img\Document-Hierarchy_JP.svg = docs\img\Document-Hierarchy_JP.svg
+		docs\img\BmpPartTunerLogo_dark.svg = docs\img\BmpPartTunerLogo_dark.svg
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tmp", "tmp", "{AF7011A1-6CCF-4186-B13C-B351691B0C2A}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "teach", "teach", "{FAEBC7A2-E9F2-406A-A8DE-4FE854A71A00}"
 	ProjectSection(SolutionItems) = preProject
-		tmp\.gitkeep = tmp\.gitkeep
+		docs\teach\01_bmson_to_bms_conversion.md = docs\teach\01_bmson_to_bms_conversion.md
+		docs\teach\02_silence_trimming.md = docs\teach\02_silence_trimming.md
+		docs\teach\03_lsh_and_simd_limits.md = docs\teach\03_lsh_and_simd_limits.md
+		docs\teach\04_audio_equivalence_and_pearson.md = docs\teach\04_audio_equivalence_and_pearson.md
+		docs\teach\05_fft_alignment.md = docs\teach\05_fft_alignment.md
+		docs\teach\06_union_find.md = docs\teach\06_union_find.md
+		docs\teach\07_simulation_engine.md = docs\teach\07_simulation_engine.md
+		docs\teach\08_parallelism_and_memory_pooling.md = docs\teach\08_parallelism_and_memory_pooling.md
+		docs\teach\index.md = docs\teach\index.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "javascripts", "javascripts", "{66E82DCA-53C1-49FA-AEB0-D3A14B0D58EE}"
+	ProjectSection(SolutionItems) = preProject
+		docs\javascripts\mathjax.js = docs\javascripts\mathjax.js
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BmsAtelierKyokufu.BmsPartTuner.Benchmarks", "BmsAtelierKyokufu.BmsPartTuner.Benchmarks\BmsAtelierKyokufu.BmsPartTuner.Benchmarks.csproj", "{DC8E6E6B-76AF-4EA8-A28B-F12C1A5E88EB}"
@@ -174,6 +177,8 @@ Global
 		{54CB78BE-CD11-4087-9564-25F790D622C4} = {815BE85F-822C-45A9-9189-1E12B25BCD5B}
 		{D1097E82-557E-415C-B786-F19767EEA9D3} = {815BE85F-822C-45A9-9189-1E12B25BCD5B}
 		{2CD22421-E81D-49CC-9003-8B35EB0D3B0E} = {0C5E049D-70BF-42A4-9870-5A8BCEB43DEC}
+		{FAEBC7A2-E9F2-406A-A8DE-4FE854A71A00} = {0C5E049D-70BF-42A4-9870-5A8BCEB43DEC}
+		{66E82DCA-53C1-49FA-AEB0-D3A14B0D58EE} = {0C5E049D-70BF-42A4-9870-5A8BCEB43DEC}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {98006178-2BC7-4073-A982-D86BCE76B4A3}

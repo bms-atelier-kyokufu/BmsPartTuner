@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.IO;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 using BmsAtelierKyokufu.BmsPartTuner.Models;
@@ -10,6 +10,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
     {
         #region Physical Deletion Tests - 物理削除テスト
 
+        /// <summary>
+        /// ReductDefinition において、条件 WithPhysicalDeletion の場合に DeletesUnusedFiles されることを検証します。
+        /// </summary>
         [Fact]
         public void ReductDefinition_WithPhysicalDeletion_DeletesUnusedFiles()
         {
@@ -26,7 +29,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
                 new() { Num = "03", NumInteger = 3, Name = unique, FileSize = new FileInfo(unique).Length }
             };
 
-            var bmsFile = _context.CreateBuilder()
+            var bmsFile = _context.CreateBuilder<BmsBuilder>()
                 .WithHeader("TITLE", "Physical Deletion Test")
                 .WithWav("01", "identical1.wav", createFile: false)
                 .WithWav("02", "identical2.wav", createFile: false)
@@ -59,6 +62,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
             Assert.True(File.Exists(unique), "ユニークファイルは削除されないべき");
         }
 
+        /// <summary>
+        /// ReductDefinition において、条件 WithPhysicalDeletionDisabled の場合に KeepsAllFiles されることを検証します。
+        /// </summary>
         [Fact]
         public void ReductDefinition_WithPhysicalDeletionDisabled_KeepsAllFiles()
         {
@@ -72,7 +78,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
                 new() { Num = "02", NumInteger = 2, Name = file2, FileSize = new FileInfo(file2).Length }
             };
 
-            var bmsFile = _context.CreateBuilder()
+            var bmsFile = _context.CreateBuilder<BmsBuilder>()
                 .WithHeader("TITLE", "No Deletion Test")
                 .WithWav("01", "keep1.wav", createFile: false)
                 .WithWav("02", "keep2.wav", createFile: false)
@@ -101,6 +107,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
             Assert.True(File.Exists(file2), "ファイル2は削除されないべき");
         }
 
+        /// <summary>
+        /// GetUnusedFilePaths において、条件 AfterReduction の場合に ReturnsCorrectList されることを検証します。
+        /// </summary>
         [Fact]
         public void GetUnusedFilePaths_AfterReduction_ReturnsCorrectList()
         {
@@ -114,7 +123,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
                 new() { Num = "02", NumInteger = 2, Name = file2, FileSize = new FileInfo(file2).Length }
             };
 
-            var bmsFile = _context.CreateBuilder()
+            var bmsFile = _context.CreateBuilder<BmsBuilder>()
                 .WithHeader("TITLE", "Unused List Test")
                 .WithWav("01", "used.wav", createFile: false)
                 .WithWav("02", "unused.wav", createFile: false)
@@ -144,6 +153,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
             Assert.Single(unusedFiles);
         }
 
+        /// <summary>
+        /// GetUnusedFilePaths において、条件 BeforeReduction の場合に ReturnsEmptyList されることを検証します。
+        /// </summary>
         [Fact]
         public void GetUnusedFilePaths_BeforeReduction_ReturnsEmptyList()
         {

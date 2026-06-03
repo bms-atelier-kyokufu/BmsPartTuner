@@ -1,4 +1,4 @@
-using BmsAtelierKyokufu.BmsPartTuner.Core;
+﻿using BmsAtelierKyokufu.BmsPartTuner.Core;
 
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core;
@@ -18,11 +18,17 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core;
 /// </para>
 /// </summary>
 
+/// <summary>
+/// <see cref="AppConstantsTests"/> の動作を検証するテストクラス。
+/// </summary>
 public class AppConstantsTests
 {
     #region Constant Value Tests
 
 
+    /// <summary>
+    /// Base36Limit において IsCorrectValue の場合の挙動を検証します。
+    /// </summary>
     [Fact]
 
     public void Base36Limit_IsCorrectValue()
@@ -32,6 +38,9 @@ public class AppConstantsTests
     }
 
 
+    /// <summary>
+    /// Base62Limit において IsCorrectValue の場合の挙動を検証します。
+    /// </summary>
     [Fact]
 
     public void Base62Limit_IsCorrectValue()
@@ -41,6 +50,9 @@ public class AppConstantsTests
     }
 
 
+    /// <summary>
+    /// MaxGroupSize において IsPositive の場合の挙動を検証します。
+    /// </summary>
     [Fact]
 
     public void MaxGroupSize_IsPositive()
@@ -51,6 +63,9 @@ public class AppConstantsTests
     }
 
 
+    /// <summary>
+    /// RmsQuantizationFactor において IsPositive の場合の挙動を検証します。
+    /// </summary>
     [Fact]
 
     public void RmsQuantizationFactor_IsPositive()
@@ -60,6 +75,9 @@ public class AppConstantsTests
     }
 
 
+    /// <summary>
+    /// MinBatchSize において IsPositive の場合の挙動を検証します。
+    /// </summary>
     [Fact]
 
     public void MinBatchSize_IsPositive()
@@ -69,6 +87,9 @@ public class AppConstantsTests
     }
 
 
+    /// <summary>
+    /// BatchSizeDivisor において IsPositive の場合の挙動を検証します。
+    /// </summary>
     [Fact]
 
     public void BatchSizeDivisor_IsPositive()
@@ -82,6 +103,9 @@ public class AppConstantsTests
     #region Progress Constants Tests
 
 
+    /// <summary>
+    /// ProgressValues において AreInAscendingOrder の場合の挙動を検証します。
+    /// </summary>
     [Fact]
 
     public void ProgressValues_AreInAscendingOrder()
@@ -94,6 +118,9 @@ public class AppConstantsTests
     }
 
 
+    /// <summary>
+    /// ProgressValues において AreInValidRange の場合の挙動を検証します。
+    /// </summary>
     [Fact]
 
     public void ProgressValues_AreInValidRange()
@@ -110,6 +137,9 @@ public class AppConstantsTests
     #region R2 Threshold Constants Tests
 
 
+    /// <summary>
+    /// R2ThresholdRange において IsValid の場合の挙動を検証します。
+    /// </summary>
     [Fact]
 
     public void R2ThresholdRange_IsValid()
@@ -120,6 +150,9 @@ public class AppConstantsTests
         Assert.Equal(1.0f, AppConstants.Threshold.Max);
     }
 
+    /// <summary>
+    /// R2ThresholdDisplay において IsValid の場合の挙動を検証します。
+    /// </summary>
     [Fact]
     public void R2ThresholdDisplay_IsValid()
     {
@@ -134,12 +167,18 @@ public class AppConstantsTests
 
     #region Supported Extensions Tests
 
+    /// <summary>
+    /// SupportedBmsExtensions において IsNotEmpty の場合の挙動を検証します。
+    /// </summary>
     [Fact]
     public void SupportedBmsExtensions_IsNotEmpty()
     {
         Assert.NotEmpty(AppConstants.Files.SupportedBmsExtensions);
     }
 
+    /// <summary>
+    /// SupportedBmsExtensions において ContainsDotPrefix の場合の挙動を検証します。
+    /// </summary>
     [Fact]
     public void SupportedBmsExtensions_ContainsDotPrefix()
     {
@@ -147,18 +186,27 @@ public class AppConstantsTests
         Assert.All(AppConstants.Files.SupportedBmsExtensions, ext => Assert.StartsWith(".", ext));
     }
 
+    /// <summary>
+    /// SupportedBmsExtensions において ContainsBms の場合の挙動を検証します。
+    /// </summary>
     [Fact]
     public void SupportedBmsExtensions_ContainsBms()
     {
         Assert.Contains(".bms", AppConstants.Files.SupportedBmsExtensions);
     }
 
+    /// <summary>
+    /// SupportedOutputBmsExtensions において IsNotEmpty の場合の挙動を検証します。
+    /// </summary>
     [Fact]
     public void SupportedOutputBmsExtensions_IsNotEmpty()
     {
         Assert.NotEmpty(AppConstants.Files.SupportedOutputBmsExtensions);
     }
 
+    /// <summary>
+    /// SupportedOutputBmsExtensions において ContainsDotPrefix の場合の挙動を検証します。
+    /// </summary>
     [Fact]
     public void SupportedOutputBmsExtensions_ContainsDotPrefix()
     {
@@ -166,12 +214,18 @@ public class AppConstantsTests
         Assert.All(AppConstants.Files.SupportedOutputBmsExtensions, ext => Assert.StartsWith(".", ext));
     }
 
+    /// <summary>
+    /// SupportedOutputBmsExtensions において ContainsBms の場合の挙動を検証します。
+    /// </summary>
     [Fact]
     public void SupportedOutputBmsExtensions_ContainsBms()
     {
         Assert.Contains(".bms", AppConstants.Files.SupportedOutputBmsExtensions);
     }
 
+    /// <summary>
+    /// SupportedOutputBmsExtensions において DoesNotContainBmson の場合の挙動を検証します。
+    /// </summary>
     [Fact]
     public void SupportedOutputBmsExtensions_DoesNotContainBmson()
     {
@@ -182,6 +236,9 @@ public class AppConstantsTests
 
     #region Default Value Tests
 
+    /// <summary>
+    /// DefaultDefinitionStart において IsValidFormat の場合の挙動を検証します。
+    /// </summary>
     [Fact]
     public void DefaultDefinitionStart_IsValidFormat()
     {
@@ -189,6 +246,9 @@ public class AppConstantsTests
         Assert.Equal(2, AppConstants.Definition.Start.Length);
     }
 
+    /// <summary>
+    /// DefaultDefinitionEnd において IsValidFormat の場合の挙動を検証します。
+    /// </summary>
     [Fact]
     public void DefaultDefinitionEnd_IsValidFormat()
     {
@@ -196,12 +256,18 @@ public class AppConstantsTests
         Assert.Equal(2, AppConstants.Definition.End.Length);
     }
 
+    /// <summary>
+    /// DefaultOutputFileName において HasValidExtension の場合の挙動を検証します。
+    /// </summary>
     [Fact]
     public void DefaultOutputFileName_HasValidExtension()
     {
         Assert.EndsWith(".bms", AppConstants.Files.DefaultOutputFileName);
     }
 
+    /// <summary>
+    /// OptimizedFileSuffix において IsNotEmpty の場合の挙動を検証します。
+    /// </summary>
     [Fact]
     public void OptimizedFileSuffix_IsNotEmpty()
     {
@@ -213,6 +279,9 @@ public class AppConstantsTests
 
     #region GetFileTypeName Tests
 
+    /// <summary>
+    /// テスト を検証します。
+    /// </summary>
     [Theory]
     [InlineData(".bms", "BMSファイル")]
     [InlineData(".bme", "BMEファイル")]
@@ -227,6 +296,9 @@ public class AppConstantsTests
         Assert.Equal(expectedName, result);
     }
 
+    /// <summary>
+    /// GetFileTypeName において、条件 CaseInsensitive の場合に ReturnsCorrectName されることを検証します。
+    /// </summary>
     [Theory]
     [InlineData(".BMS", "BMSファイル")]  // 大文字
     [InlineData(".Bms", "BMSファイル")]  // 混在
@@ -239,6 +311,9 @@ public class AppConstantsTests
         Assert.Equal(expectedName, result);
     }
 
+    /// <summary>
+    /// テスト を検証します。
+    /// </summary>
     [Theory]
     [InlineData(".txt")]
     [InlineData(".wav")]
@@ -256,6 +331,9 @@ public class AppConstantsTests
 
     #region Consistency Tests
 
+    /// <summary>
+    /// Base62Limit において IsGreaterThanBase36Limit の場合の挙動を検証します。
+    /// </summary>
     [Fact]
     public void Base62Limit_IsGreaterThanBase36Limit()
     {
@@ -263,6 +341,9 @@ public class AppConstantsTests
         Assert.True(AppConstants.Definition.MaxNumberBase62 > AppConstants.Definition.MaxNumberBase36);
     }
 
+    /// <summary>
+    /// MinBatchSize において IsSmallerThanMaxGroupSize の場合の挙動を検証します。
+    /// </summary>
     [Fact]
     public void MinBatchSize_IsSmallerThanMaxGroupSize()
     {

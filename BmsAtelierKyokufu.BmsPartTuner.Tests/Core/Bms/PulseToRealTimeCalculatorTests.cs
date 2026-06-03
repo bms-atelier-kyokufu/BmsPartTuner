@@ -3,8 +3,14 @@ using BmsAtelierKyokufu.BmsPartTuner.Models.Bmson;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms;
 
+/// <summary>
+/// <see cref="PulseToRealTimeCalculatorTests"/> の動作を検証するテストクラス。
+/// </summary>
 public class PulseToRealTimeCalculatorTests
 {
+    /// <summary>
+    /// GetTimeSec において、条件 ConstantBpm の場合に ReturnsCorrectTime されることを検証します。
+    /// </summary>
     [Fact]
     public void GetTimeSec_ConstantBpm_ReturnsCorrectTime()
     {
@@ -18,6 +24,9 @@ public class PulseToRealTimeCalculatorTests
         Assert.Equal(1.0, calc.GetTimeSec(480));
     }
 
+    /// <summary>
+    /// GetTimeSec において、条件 WithBpmChange の場合に CalculatesPiecewise されることを検証します。
+    /// </summary>
     [Fact]
     public void GetTimeSec_WithBpmChange_CalculatesPiecewise()
     {
@@ -38,6 +47,9 @@ public class PulseToRealTimeCalculatorTests
         Assert.Equal(2.0, calc.GetTimeSec(720)); // 480 + 240 -> 1.0 + 1.0
     }
 
+    /// <summary>
+    /// GetTimeSec において、条件 WithStop の場合に AppliesDelayAfterY されることを検証します。
+    /// </summary>
     [Fact]
     public void GetTimeSec_WithStop_AppliesDelayAfterY()
     {

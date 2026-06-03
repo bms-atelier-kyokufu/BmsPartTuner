@@ -8,8 +8,14 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
     /// ParallelAudioComparisonEngine の動作検証テスト。
     /// 並列処理による音声ファイルの比較・置換テーブル更新の仕様を確認します。
     /// </summary>
+    /// <summary>
+    /// <see cref="ParallelAudioComparisonEngineTests"/> の動作を検証するテストクラス。
+    /// </summary>
     public class ParallelAudioComparisonEngineTests
     {
+        /// <summary>
+        /// CompareGroups において、条件 IdenticalFiles の場合に UpdatesReplaceTable されることを検証します。
+        /// </summary>
         [Fact]
         public void CompareGroups_IdenticalFiles_UpdatesReplaceTable()
         {
@@ -44,6 +50,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
             Assert.Equal(3, replaceTable[3]);
         }
 
+        /// <summary>
+        /// CompareGroups において、条件 SimilarFiles の場合に UpdatesReplaceTable されることを検証します。
+        /// </summary>
         [Fact]
         public void CompareGroups_SimilarFiles_UpdatesReplaceTable()
         {
@@ -71,6 +80,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
             Assert.Equal(1, replaceTable[2]);
         }
 
+        /// <summary>
+        /// CompareGroups において、条件 DifferentFiles の場合に NoReplacement されることを検証します。
+        /// </summary>
         [Fact]
         public void CompareGroups_DifferentFiles_NoReplacement()
         {

@@ -5,39 +5,101 @@ using MathNet.Numerics.IntegralTransforms;
 namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
 {
     /// <summary>
-    /// テスト用のICachedSoundData実装。
-    /// 波形データから動的に特徴量を生成します。
+    /// テスト用の <see cref="ICachedSoundData"/> および <see cref="IAudioStatisticalData"/> 実装。
+    /// 波形データから動的に特徴量を生成し、キャッシュデータを模擬します。
     /// </summary>
     public class MockCachedSoundData : ICachedSoundData, IAudioStatisticalData
     {
+        /// <summary>
+        /// 音声ファイルのパス。
+        /// </summary>
         public string FilePath { get; }
+
+        /// <summary>
+        /// サンプリングレート（Hz）。
+        /// </summary>
         public int SampleRate { get; }
+
+        /// <summary>
+        /// チャンネル数。
+        /// </summary>
         public int Channels { get; }
+
+        /// <summary>
+        /// 量子化ビット数。
+        /// </summary>
         public int BitsPerSample { get; }
 
+        /// <summary>
+        /// 全サンプルの配列（テスト用として常に <c>null</c> を返します）。
+        /// </summary>
         public static float[]? Samples => null;
+
+        /// <summary>
+        /// チャンネルごとのサンプルデータ配列。
+        /// </summary>
         public float[][]? SamplesPerChannel { get; private set; }
 
+        /// <summary>
+        /// 正規化された有効な波形領域のリスト。
+        /// </summary>
         public List<ActiveRegion>[]? NormalizedRegions { get; }
 
+        /// <summary>
+        /// 合計サンプル数。
+        /// </summary>
         public int TotalSamples { get; }
+
+        /// <summary>
+        /// 全体のRMS（実効値）。
+        /// </summary>
         public float TotalRms { get; }
+
+        /// <summary>
+        /// ファイルサイズ（バイト）。
+        /// </summary>
         public long FileSize { get; }
+
+        /// <summary>
+        /// 曲頭の無音サンプル数。
+        /// </summary>
         public int StartSilenceSamples { get; }
 
+        /// <summary>
+        /// 曲頭の無音を除去した後の実質的なサンプル数。
+        /// </summary>
         public int EffectiveLength => TotalSamples > StartSilenceSamples * Channels
             ? TotalSamples - (StartSilenceSamples * Channels)
             : 0;
 
+        /// <summary>
+        /// 推定メモリ使用量（MB単位、テスト用として常に <c>0</c>）。
+        /// </summary>
         public double EstimatedMemoryMB => 0;
+
+        /// <summary>
+        /// 事前ノーマライズ処理が完了しているかどうか。
+        /// </summary>
         public bool IsPreNormalized => true;
 
-
+        /// <summary>
+        /// 波形のFFTスペクトルデータ。
+        /// </summary>
         public MathNet.Numerics.Complex32[][]? FftSpectrum { get; }
 
+        /// <summary>
+        /// スペクトル特徴量。
+        /// </summary>
         public float[]? SpectralFeatures => DisableCascadeClassifiers ? null : _spectralFeatures;
+
+        /// <summary>
+        /// 波形の256ビットSimHashシグネチャ。
+        /// </summary>
         public ulong[]? SimHash256 => DisableCascadeClassifiers ? null : _simHash256;
 
+        /// <summary>
+        /// 高速枝刈り用のカスケード分類器（SimHash/Lsh/SpectralFeatures）を無効化するかどうか。
+        /// </summary>
         public bool DisableCascadeClassifiers { get; set; } = false;
 
         private readonly float[]? _spectralFeatures;
@@ -47,6 +109,13 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
         private readonly ulong[][] _signLshMask;
         private bool _disposed;
 
+        /// <summary>
+        /// 指定されたサンプルデータとパラメータを使用して、<see cref="MockCachedSoundData"/> クラスの新しいインスタンスを初期化します。
+        /// </summary>
+        /// <param name="samplesPerChannel">チャンネルごとのサンプルデータ。</param>
+        /// <param name="sampleRate">サンプリングレート。</param>
+        /// <param name="bitsPerSample">量子化ビット数。</param>
+        /// <param name="filePath">音声ファイルの仮のパス。</param>
         public MockCachedSoundData(float[][] samplesPerChannel, int sampleRate, int bitsPerSample, string filePath = "test.wav")
         {
             if (samplesPerChannel == null || samplesPerChannel.Length == 0 || samplesPerChannel[0].Length == 0)
@@ -76,11 +145,13 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
             _simHash256 = GenerateSimHash256(FftSpectrum);
         }
 
+        /// <inheritdoc />
         public IReadOnlyList<ActiveRegion>[] GetActiveRegions()
         {
             return NormalizedRegions ?? [[], []];
         }
 
+        /// <inheritdoc />
         public ReadOnlySpan<float> GetRawSpan(int channel, int offset, int length)
         {
             if (channel < 0 || channel >= Channels) throw new ArgumentOutOfRangeException(nameof(channel));
@@ -113,14 +184,23 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
             return buffer;
         }
 
+        /// <inheritdoc />
         public double GetChannelSum(int channel) => throw new NotSupportedException();
+        /// <inheritdoc />
         public double GetChannelSumSq(int channel) => throw new NotSupportedException();
+        /// <inheritdoc />
         public double GetRangeSum(int channel, int offset, int length) => throw new NotSupportedException();
+        /// <inheritdoc />
         public double GetRangeSumSq(int channel, int offset, int length) => throw new NotSupportedException();
 
+        /// <inheritdoc />
         public ReadOnlySpan<ulong> GetLsh(int channel) => _signLsh[channel];
+        /// <inheritdoc />
         public ReadOnlySpan<ulong> GetLshMask(int channel) => _signLshMask[channel];
 
+        /// <summary>
+        /// リソースを解放し、配列参照を破棄します。
+        /// </summary>
         public void Dispose()
         {
             if (_disposed) return;

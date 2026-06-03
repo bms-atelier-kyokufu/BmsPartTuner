@@ -1,4 +1,4 @@
-using BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers;
+﻿using BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
 {
@@ -9,6 +9,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
     /// - 決定係数（R2）の計算精度
     /// - ピアソン相関係数の計算精度
     /// </para>
+    /// </summary>
+    /// <summary>
+    /// <see cref="WaveValidationTests"/> の動作を検証するテストクラス。
     /// </summary>
     public class WaveValidationTests
     {
@@ -102,6 +105,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
             return data;
         }
 
+        /// <summary>
+        /// CalculateRSquared において BehaviorTests の場合の挙動を検証します。
+        /// </summary>
         [Theory]
         [MemberData(nameof(GetRSquaredTestData))]
         public void CalculateRSquared_BehaviorTests(float[] wav1, float[] wav2, float minExpected, float maxExpected)
@@ -185,6 +191,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
             return data;
         }
 
+        /// <summary>
+        /// CalculatePearsonCorrelation において BehaviorTests の場合の挙動を検証します。
+        /// </summary>
         [Theory]
         [MemberData(nameof(GetPearsonTestData))]
         public void CalculatePearsonCorrelation_BehaviorTests(float[] wav1, float[] wav2, float minExpected, float maxExpected)
@@ -236,6 +245,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
             return data;
         }
 
+        /// <summary>
+        /// CalculatePearsonFromNormalized において BehaviorTests の場合の挙動を検証します。
+        /// </summary>
         [Theory]
         [MemberData(nameof(GetPearsonNormalizedTestData))]
         public void CalculatePearsonFromNormalized_BehaviorTests(float[] wav1, float[] wav2, float minExpected, float maxExpected)
@@ -244,6 +256,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
             Assert.InRange(correlation, minExpected, maxExpected);
         }
 
+        /// <summary>
+        /// CalculatePearsonFromNormalized において MatchesStandardPearson の場合の挙動を検証します。
+        /// </summary>
         [Fact]
         public void CalculatePearsonFromNormalized_MatchesStandardPearson()
         {

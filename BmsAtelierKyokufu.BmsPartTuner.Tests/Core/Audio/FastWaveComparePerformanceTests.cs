@@ -4,10 +4,20 @@ using Xunit.Abstractions;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
 {
+    /// <summary>
+    /// <see cref="FastWaveCompare"/> の実行パフォーマンスおよび性能退化を検証。
+    /// </summary>
+    /// <param name="output">テスト実行時の診断情報を出力するヘルパー。</param>
     public class FastWaveComparePerformanceTests(ITestOutputHelper output)
     {
         private readonly ITestOutputHelper _output = output;
 
+        /// <summary>
+        /// <see cref="FastWaveCompare.IsMatch"/> の波形比較処理能力のベンチマークテストを行い、性能退化を検証。
+        /// </summary>
+        /// <remarks>
+        /// 実行環境（CPUクロック、負荷状況）の違いによる影響を排除するため、特定の負荷処理（平方根計算）を基準とした相対実行時間比率（Ratio）を用いてアサーションを実行。
+        /// </remarks>
         [Fact]
         [Trait("Category", "Benchmark")]
         public void Benchmark_FastWaveCompare_IsMatch()

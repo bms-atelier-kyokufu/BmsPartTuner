@@ -3,8 +3,14 @@ using BmsAtelierKyokufu.BmsPartTuner.Models.Bmson;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms;
 
+/// <summary>
+/// <see cref="PulseToBmsTimeCalculatorTests"/> の動作を検証するテストクラス。
+/// </summary>
 public class PulseToBmsTimeCalculatorTests
 {
+    /// <summary>
+    /// GetMeasureNumber において、条件 WithStandardLines の場合に ReturnsCorrectMeasure されることを検証します。
+    /// </summary>
     [Fact]
     public void GetMeasureNumber_WithStandardLines_ReturnsCorrectMeasure()
     {
@@ -25,6 +31,9 @@ public class PulseToBmsTimeCalculatorTests
         Assert.Equal(2, calc.GetMeasureNumber(5000));
     }
 
+    /// <summary>
+    /// GetStepIndex において、条件 StandardMeasure の場合に CalculatesCorrectStep されることを検証します。
+    /// </summary>
     [Fact]
     public void GetStepIndex_StandardMeasure_CalculatesCorrectStep()
     {
@@ -47,6 +56,9 @@ public class PulseToBmsTimeCalculatorTests
         Assert.Equal(0, calc.GetStepIndex(960, 240));
     }
 
+    /// <summary>
+    /// GetMeterMultiplier において、条件 NonStandardMeasure の場合に ReturnsCorrectRatio されることを検証します。
+    /// </summary>
     [Fact]
     public void GetMeterMultiplier_NonStandardMeasure_ReturnsCorrectRatio()
     {

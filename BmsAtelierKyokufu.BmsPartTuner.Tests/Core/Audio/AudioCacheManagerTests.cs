@@ -1,5 +1,4 @@
 using System.IO;
-using System.Text;
 using BmsAtelierKyokufu.BmsPartTuner.Models;
 using BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers;
 
@@ -8,6 +7,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
     /// <summary>
     /// AudioCacheManager の動作検証テスト。
     /// 音声ファイルの読み込み・キャッシュ管理・リソース解放の仕様を確認します。
+    /// </summary>
+    /// <summary>
+    /// <see cref="AudioCacheManagerTests"/> の動作を検証するテストクラス。
     /// </summary>
     public class AudioCacheManagerTests : IDisposable
     {
@@ -45,45 +47,13 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
         private string CreateDummyWav(string fileName, bool isValid = true)
         {
             string path = Path.Combine(_tempDirectory, fileName);
-            if (isValid)
-            {
-                // テスト用の有効なWAVファイルを生成（PCM 44.1kHz mono 16bit, 1秒の無音）
-                using FileStream fs = new(path, FileMode.Create);
-                using BinaryWriter bw = new(fs);
-                const int sampleRate = 44100;
-                const int channels = 1;
-                const short bitsPerSample = 16;
-                const int dataSize = sampleRate * channels * (bitsPerSample / 8); // 1 second
-                const int fileSize = 36 + dataSize;
-
-                // RIFFヘッダー
-                bw.Write(Encoding.ASCII.GetBytes("RIFF"));
-                bw.Write(fileSize);
-                bw.Write(Encoding.ASCII.GetBytes("WAVE"));
-
-                // fmtチャンク
-                bw.Write(Encoding.ASCII.GetBytes("fmt "));
-                bw.Write(16); // chunk size
-                bw.Write((short)1); // PCM
-                bw.Write((short)channels);
-                bw.Write(sampleRate);
-                bw.Write(sampleRate * channels * (bitsPerSample / 8)); // byte rate
-                bw.Write((short)(channels * (bitsPerSample / 8))); // block align
-                bw.Write(bitsPerSample);
-
-                // dataチャンク
-                bw.Write(Encoding.ASCII.GetBytes("data"));
-                bw.Write(dataSize);
-                bw.Write(new byte[dataSize]); // 無音
-            }
-            else
-            {
-                // WAVファイルを模した無効なテキストファイルを生成
-                File.WriteAllText(path, "This is not a WAV file but has .wav extension.");
-            }
+            BmsTestWavHelper.CreateDummyWavFile(path, writeToDisk: true, durationSeconds: 1, isValid: isValid);
             return path;
         }
 
+        /// <summary>
+        /// PreloadAudioData において、条件 WithValidFile の場合に LoadsData されることを検証します。
+        /// </summary>
         [Fact]
         public void PreloadAudioData_WithValidFile_LoadsData()
         {
@@ -122,18 +92,30 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
             }
         }
 
+        /// <summary>
+        /// PreloadAudioData において、条件 WithMissingFile の場合に DoesNotCrash されることを検証します。
+        /// </summary>
         [Fact]
         public void PreloadAudioData_WithMissingFile_DoesNotCrash() =>
             RunPreloadFailureTest(_ => null, "missing.wav");
 
+        /// <summary>
+        /// PreloadAudioData において、条件 WithCorruptFile の場合に DoesNotCrash されることを検証します。
+        /// </summary>
         [Fact]
         public void PreloadAudioData_WithCorruptFile_DoesNotCrash() =>
             RunPreloadFailureTest(path => { CreateDummyWav(Path.GetFileName(path), isValid: false); return null; }, "corrupt.wav");
 
+        /// <summary>
+        /// PreloadAudioData において、条件 WithZeroByteFile の場合に DoesNotCrash されることを検証します。
+        /// </summary>
         [Fact]
         public void PreloadAudioData_WithZeroByteFile_DoesNotCrash() =>
             RunPreloadFailureTest(path => { File.Create(path).Dispose(); return null; }, "empty.wav");
 
+        /// <summary>
+        /// PreloadAudioData において、条件 WithLockedFile の場合に DoesNotCrash されることを検証します。
+        /// </summary>
         [Fact]
         public void PreloadAudioData_WithLockedFile_DoesNotCrash() =>
             RunPreloadFailureTest(path =>
@@ -142,6 +124,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
                 return new FileStream(path, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
             }, "locked.wav");
 
+        /// <summary>
+        /// PreloadAudioData において、条件 ResourceManagement の場合に VerifyHandlesClosed されることを検証します。
+        /// </summary>
         [Fact]
         public void PreloadAudioData_ResourceManagement_VerifyHandlesClosed()
         {
@@ -169,6 +154,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
             }
         }
 
+        /// <summary>
+        /// PointerSoundData において、条件 Dispose の場合に NullsOutReferences されることを検証します。
+        /// </summary>
         [Fact]
         public void PointerSoundData_Dispose_NullsOutReferences_AndThrowsObjectDisposedException()
         {
@@ -192,6 +180,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
             Assert.Throws<ObjectDisposedException>(() => pointerData.GetRawSpan(0, 0, 1));
         }
 
+        /// <summary>
+        /// PreNormalizedSoundData において、条件 Dispose の場合に NullsOutLshAndSamples されることを検証します。
+        /// </summary>
         [Fact]
         public void PreNormalizedSoundData_Dispose_NullsOutLshAndSamples()
         {

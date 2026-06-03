@@ -5,6 +5,9 @@ using BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
 {
+    /// <summary>
+    /// <see cref="BmsFileRewriterTests_Atomic"/> の動作を検証するテストクラス。
+    /// </summary>
     public class BmsFileRewriterTests_Atomic
     {
         public BmsFileRewriterTests_Atomic()
@@ -12,11 +15,14 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
         }
 
+        /// <summary>
+        /// WriteBmsFile において、条件 LockedTarget の場合に PreservesOriginalContent されることを検証します。
+        /// </summary>
         [Fact]
         public void WriteBmsFile_LockedTarget_PreservesOriginalContent()
         {
             var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, BmsAtelierKyokufu.BmsPartTuner.Models.ICachedSoundData>();
-            using var context = new BmsTestContext();
+            using var context = new BmsFamilyTestContext();
 
             string bmsPath = Path.Combine(context.TempDirectory, "atomic_test.bms");
             const string originalContent = "Original Content";
@@ -32,16 +38,6 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
             using (FileStream fs = new(bmsPath, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
                 // 3. Attempt to write
-                // Expect IOException because final move/replace will fail
-                // If implementation is NOT atomic (writes directly), the file would be truncated before exception if it wasn't locked.
-                // But since we locked it, direct write would fail immediately too.
-                // However, the test here is: Does it delete/corrupt the file?
-                // With the lock, even direct write can't corrupt it.
-                //
-                // To properly test atomic write, we need to fail *after* opening the file stream?
-                // Or we can rely on the fact that if we write to a *temp* file, that succeeds.
-                // Then the move fails.
-                // The original file should be untouched.
 
                 Assert.Throws<IOException>(() => BmsFileWriter.WriteBmsFile(bmsPath, newContent));
             }
@@ -56,10 +52,13 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
             Assert.Empty(tempFiles);
         }
 
+        /// <summary>
+        /// WriteBmsFile において、条件 Success の場合に WritesToTempAndMoves されることを検証します。
+        /// </summary>
         [Fact]
         public void WriteBmsFile_Success_WritesToTempAndMoves()
         {
-            using var context = new BmsTestContext();
+            using var context = new BmsFamilyTestContext();
 
             string bmsPath = Path.Combine(context.TempDirectory, "atomic_success.bms");
             const string content = "Success Content";
