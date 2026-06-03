@@ -21,13 +21,16 @@ internal sealed class LoadValidFilesStep : IAsyncOptimizationStep
             ? AppConstants.Definition.RadixBase62
             : AppConstants.Definition.RadixBase36;
 
+        int limit = (radix * radix) - 1;
+
         foreach (string filePath in context.FilePaths)
         {
             if (File.Exists(filePath))
             {
+                string numStr = fileNum <= limit ? RadixConvert.IntToZZ(fileNum, radix) : "XX";
                 BmsAudioFile wavFile = new()
                 {
-                    Num = RadixConvert.IntToZZ(fileNum, radix),
+                    Num = numStr,
                     NumInteger = fileNum,
                     Name = filePath,
                     FileSize = new FileInfo(filePath).Length
