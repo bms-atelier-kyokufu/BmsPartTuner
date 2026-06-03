@@ -58,7 +58,7 @@ public class AudioSliceManager(string bmsonDir, bool throwOnMissingFile = true) 
         }
 
         // 3. 末尾の無音部分をトリミングして、本当に必要な長さに切り詰める
-        int trimmedLengthBytes = SilenceTrimmer.TrimSilenceFromEnd(source.RawBytes, source.PcmOffset + startByte, lengthBytes);
+        int trimmedLengthBytes = SilenceTrimmer.TrimSilenceFromEnd(source.EnergyMap, startByte, lengthBytes);
         if (trimmedLengthBytes <= 0) return string.Empty;
 
         if (trimmedLengthBytes < lengthBytes)

@@ -1,4 +1,4 @@
-﻿using NAudio.Wave;
+using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms.Bmson;
@@ -12,6 +12,12 @@ public class CachedAudioSource
     public byte[] RawBytes { get; }
     public int PcmOffset { get; }
     public int PcmLength { get; }
+
+    /// <summary>
+    /// 無音トリミング用の固定長ブロックごとのエネルギーマップ
+    /// </summary>
+    public long[] EnergyMap { get; private set; } = [];
+    public const int EnergyMapWindowFrames = 256;
 
     private BaseAudioOptimizationData? _decodedData;
     private readonly Lock _lock = new();
@@ -144,6 +150,8 @@ public class CachedAudioSource
                                 PcmOffset = actualDataStart;
                                 PcmLength = dataLength;
 
+                                CalculateEnergyMap();
+
                                 long fastElapsed = timer.Lap($"{Path.GetFileName(path)}|CachedAudioSource Load FastPath");
                                 s_logger.WriteDebug($"[CachedAudioSource Load] {Path.GetFileName(path)} (FastPath Direct Load) loaded in {fastElapsed} ms");
                                 return;
@@ -244,6 +252,8 @@ public class CachedAudioSource
             RawBytes = finalPcmData;
             PcmOffset = 0;
             PcmLength = totalBytesWritten;
+
+            CalculateEnergyMap();
         }
 
         long elapsed = timer.Lap($"{Path.GetFileName(path)}|CachedAudioSource Load");
@@ -267,6 +277,41 @@ public class CachedAudioSource
             destination[destIdx] = (byte)val;
             destination[destIdx + 1] = (byte)(val >> 8);
         }
+    }
+
+    private void CalculateEnergyMap()
+    {
+        int frames = PcmLength / 4; // 16bit Stereo = 4 bytes per frame
+        int mapSize = (frames + EnergyMapWindowFrames - 1) / EnergyMapWindowFrames;
+        long[] map = new long[mapSize];
+
+        ReadOnlySpan<short> pcm = System.Runtime.InteropServices.MemoryMarshal.Cast<byte, short>(
+            new ReadOnlySpan<byte>(RawBytes, PcmOffset, PcmLength));
+
+        for (int i = 0; i < mapSize; i++)
+        {
+            int startFrame = i * EnergyMapWindowFrames;
+            int framesToProcess = Math.Min(EnergyMapWindowFrames, frames - startFrame);
+
+            if (framesToProcess == EnergyMapWindowFrames && System.Runtime.Intrinsics.X86.Avx2.IsSupported)
+            {
+                map[i] = SilenceTrimmer.CalculateEnergyAvx2(pcm.Slice(startFrame * 2, framesToProcess * 2));
+            }
+            else
+            {
+                long energy = 0;
+                int startSample = startFrame * 2;
+                int endSample = startSample + (framesToProcess * 2);
+                for (int s = startSample; s < endSample; s += 2)
+                {
+                    long l = pcm[s];
+                    long r = pcm[s + 1];
+                    energy += (l * l) + (r * r);
+                }
+                map[i] = energy;
+            }
+        }
+        EnergyMap = map;
     }
 }
 

@@ -1,5 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
+using System.Runtime.CompilerServices;
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
 namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms.Bmson;
@@ -22,57 +21,49 @@ public static class SilenceTrimmer
     }
 
     /// <summary>
-    /// O(1) の差分更新スライディングウィンドウを用いて、末尾の無音部分をトリミングします。
-    /// ゼロアロケーション（Span）と Native SIMD (AVX2) により極限最適化されています。
+    /// O(1) の EnergyMap を用いて、末尾の無音部分をトリミングします。
+    /// ゼロアロケーション（Span）と 縮小マップ事前計算により極限最適化されています。
     /// </summary>
     [ADRAnchor("M-06", nameof(SilenceTrimmer))]
-    public static int TrimSilenceFromEnd(byte[] data, int startOffset, int length)
+    public static int TrimSilenceFromEnd(long[] energyMap, int startOffset, int length)
     {
         const int frameSize = 4; // 16bit Stereo = 4 bytes per frame
         int totalFrames = length / frameSize;
 
         if (totalFrames <= WindowFrames) return length;
 
-        // Zero-Allocation: byte[] を境界チェックなしの short スパンにキャスト
-        var pcm = MemoryMarshal.Cast<byte, short>(data.AsSpan(startOffset, length));
+        const int windowMapSize = WindowFrames / CachedAudioSource.EnergyMapWindowFrames; // 例: 1024 / 256 = 4ブロック
 
-        long currentEnergy = 0;
-        int windowStartFrame = totalFrames - WindowFrames;
+        int startFrame = startOffset / frameSize;
+        int mapStartIndex = startFrame / CachedAudioSource.EnergyMapWindowFrames;
+        int mapTotalBlocks = totalFrames / CachedAudioSource.EnergyMapWindowFrames;
 
-        // 初期ウィンドウのエネルギー計算
-        if (Avx2.IsSupported && WindowFrames >= 16)
+        if (mapTotalBlocks <= windowMapSize) return length;
+
+        int trimBlocks = 0;
+        int currentBlockIndex = mapStartIndex + mapTotalBlocks - windowMapSize;
+
+        while (currentBlockIndex >= mapStartIndex)
         {
-            currentEnergy = CalculateEnergyAvx2(pcm.Slice(windowStartFrame * 2, WindowFrames * 2));
-        }
-        else
-        {
-            for (int i = 0; i < WindowFrames; i++)
+            long currentEnergy = 0;
+            // スライディングウィンドウではなく、固定窓（例: 4ブロック）の和を計算
+            // ブロック数が小さいためループ展開同等
+            for (int i = 0; i < windowMapSize; i++)
             {
-                currentEnergy += GetFrameEnergy(pcm, windowStartFrame + i);
+                currentEnergy += energyMap[currentBlockIndex + i];
             }
-        }
 
-        int trimFrames = 0;
-
-        // 後方探索 (O(1) のスライディングウィンドウ)
-        while (windowStartFrame > 0)
-        {
             if (currentEnergy >= E_threshold)
             {
                 break;
             }
 
-            trimFrames++;
-            windowStartFrame--;
-
-            // インライン展開される配列直アクセス
-            long outEnergy = GetFrameEnergy(pcm, windowStartFrame + WindowFrames);
-            long inEnergy = GetFrameEnergy(pcm, windowStartFrame);
-
-            currentEnergy = currentEnergy - outEnergy + inEnergy;
+            trimBlocks++;
+            currentBlockIndex--;
         }
 
-        return (totalFrames - trimFrames) * frameSize;
+        // ブロック単位（例: 256フレーム）でのトリミングとなるため安全マージンが確保される
+        return (mapTotalBlocks - trimBlocks) * CachedAudioSource.EnergyMapWindowFrames * frameSize;
     }
 
     [MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
@@ -86,7 +77,7 @@ public static class SilenceTrimmer
     }
 
     [MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-    private static long CalculateEnergyAvx2(ReadOnlySpan<short> pcm)
+    internal static long CalculateEnergyAvx2(ReadOnlySpan<short> pcm)
     {
         int length = pcm.Length;
         long totalEnergy = 0;
