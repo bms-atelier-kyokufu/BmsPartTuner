@@ -7,29 +7,39 @@ using BmsAtelierKyokufu.BmsPartTuner.Core;
 namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
 {
     /// <summary>
-    /// A helper class to manage temporary BMS file environment for testing.
-    /// It creates a temporary directory and cleans it up upon disposal.
+    /// テスト用の一時的なBMSファイル環境を管理するヘルパークラス。
+    /// 一時ディレクトリを作成し、破棄（Dispose）時に自動的にクリーンアップを行います。
     /// </summary>
     public class BmsTestContext : IDisposable
     {
         private bool _disposed;
 
+        /// <summary>
+        /// <see cref="BmsTestContext"/> クラスの新しいインスタンスを初期化し、一時ディレクトリを作成します。
+        /// </summary>
         public BmsTestContext()
         {
             TempDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
             Directory.CreateDirectory(TempDirectory);
         }
 
+        /// <summary>
+        /// テスト用の一時ディレクトリのパス。
+        /// </summary>
         public string TempDirectory { get; }
 
         /// <summary>
-        /// Creates a new BmsFileBuilder linked to this context.
+        /// このコンテキストに関連付けられた新しい <see cref="BmsFileBuilder"/> インスタンスを作成します。
         /// </summary>
+        /// <returns>BMSファイルの流れるような構築を行うビルダーインスタンス。</returns>
         public BmsFileBuilder CreateBuilder()
         {
             return new BmsFileBuilder(this);
         }
 
+        /// <summary>
+        /// 一時ディレクトリの削除および各種オーディオリソースの登録解除を行い、リソースを解放します。
+        /// </summary>
         public void Dispose()
         {
             if (_disposed) return;
@@ -42,7 +52,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
             }
             catch
             {
-                // Best effort cleanup; ignore errors (e.g., file in use)
+                // ベストエフォートでのクリーンアップ。ファイル使用中等のエラーは無視します。
             }
             AudioRegistry.Instance.Clear();
             VirtualAudioRegistry.Clear();
@@ -52,8 +62,12 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
     }
 
     /// <summary>
-    /// Fluent builder for constructing BMS files and associated dummy assets.
+    /// BMSファイルおよび関連するダミーアセットを流れるように構築するためのビルダー。
     /// </summary>
+    /// <remarks>
+    /// コンストラクタでテストコンテキストを受け取ります。
+    /// </remarks>
+    /// <param name="context">関連付ける <see cref="BmsTestContext"/>。</param>
     public class BmsFileBuilder(BmsTestContext context)
     {
         private readonly BmsTestContext _context = context;
@@ -62,12 +76,15 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
         private readonly StringBuilder _mainData = new();
         private Encoding _encoding = Encoding.UTF8;
 
-        // Base36 characters for index generation
+        // Base36 文字列（BMS定義インデックス生成用）
         private const string Base36Chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
         /// <summary>
-        /// Adds a header field.
+        /// ヘッダーフィールドを追加します。
         /// </summary>
+        /// <param name="key">キー名。</param>
+        /// <param name="value">値。</param>
+        /// <returns>このビルダーのインスタンス。</returns>
         public BmsFileBuilder WithHeader(string key, string value)
         {
             _headerContent.AppendLine($"#{key} {value}");
@@ -75,12 +92,13 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
         }
 
         /// <summary>
-        /// Defines a WAV file definition (e.g., #WAV01 filename.wav) and creates a dummy file.
+        /// WAVファイルの定義（例: #WAV01 filename.wav）を追加し、必要に応じてダミーファイルを作成します。
         /// </summary>
-        /// <param name="index">The integer index (e.g., 1 -> 01, 36 -> 10).</param>
-        /// <param name="filename">The filename of the wav.</param>
-        /// <param name="createFile">If true, creates a dummy file. If false, assumes file already exists.</param>
-        /// <param name="writeToDisk">If true, writes the dummy WAV file to disk. If false, registers it only in VirtualAudioRegistry.</param>
+        /// <param name="index">整数値インデックス（例: 1 -> 01, 36 -> 10）。</param>
+        /// <param name="filename">WAVファイルのファイル名。</param>
+        /// <param name="createFile">ダミーファイルを生成するかどうか。</param>
+        /// <param name="writeToDisk">ディスクに書き出すかどうか。偽の場合は仮想レジストリ登録のみ。</param>
+        /// <returns>このビルダーのインスタンス。</returns>
         public BmsFileBuilder WithWav(int index, string filename, bool createFile = true, bool writeToDisk = true)
         {
             string indexStr = ToBmsIndex(index);
@@ -93,12 +111,13 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
         }
 
         /// <summary>
-        /// Defines a WAV file definition with a custom string index (e.g., for "ZZ" or larger if manually specified).
+        /// カスタムインデックス文字列（例: "ZZ" など）を使用してWAVファイルの定義を追加し、必要に応じてダミーファイルを作成します。
         /// </summary>
-        /// <param name="indexStr">The custom index string.</param>
-        /// <param name="filename">The filename of the wav.</param>
-        /// <param name="createFile">If true, creates a dummy file. If false, assumes file already exists.</param>
-        /// <param name="writeToDisk">If true, writes the dummy WAV file to disk. If false, registers it only in VirtualAudioRegistry.</param>
+        /// <param name="indexStr">カスタムインデックス文字列。</param>
+        /// <param name="filename">WAVファイルのファイル名。</param>
+        /// <param name="createFile">ダミーファイルを生成するかどうか。</param>
+        /// <param name="writeToDisk">ディスクに書き出すかどうか。偽の場合は仮想レジストリ登録のみ。</param>
+        /// <returns>このビルダーのインスタンス。</returns>
         public BmsFileBuilder WithWav(string indexStr, string filename, bool createFile = true, bool writeToDisk = true)
         {
             _wavDefinitions.AppendLine($"#WAV{indexStr} {filename}");
@@ -109,13 +128,13 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
             return this;
         }
 
-
         /// <summary>
-        /// Adds main data to the BMS file.
+        /// BMSファイルにメインデータ（配置データ）を追加します。
         /// </summary>
-        /// <param name="measure">The measure number (0-999).</param>
-        /// <param name="channel">The channel number (e.g., 11 for BGM).</param>
-        /// <param name="data">The data string (e.g., "01020102").</param>
+        /// <param name="measure">小節番号 (0〜999)。</param>
+        /// <param name="channel">チャンネル番号（例: BGMの場合は 11）。</param>
+        /// <param name="data">データ文字列（例: "01020102"）。</param>
+        /// <returns>このビルダーのインスタンス。</returns>
         public BmsFileBuilder AddMainData(int measure, int channel, string data)
         {
             _mainData.AppendLine($"#{measure:D3}{channel:D2}:{data}");
@@ -123,16 +142,21 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
         }
 
         /// <summary>
-        /// Adds main data assuming measure 1 (001) for convenience.
+        /// メジャー番号 1 (001) を前提として、BMSファイルにメインデータ（配置データ）を追加します。
         /// </summary>
+        /// <param name="channel">チャンネル番号。</param>
+        /// <param name="data">データ文字列。</param>
+        /// <returns>このビルダーのインスタンス。</returns>
         public BmsFileBuilder AddMainData(int channel, string data)
         {
             return AddMainData(1, channel, data);
         }
 
         /// <summary>
-        /// Sets the encoding for the generated file.
+        /// 生成するファイルの文字エンコーディングを設定します。
         /// </summary>
+        /// <param name="encoding">適用するエンコーディング。</param>
+        /// <returns>このビルダーのインスタンス。</returns>
         public BmsFileBuilder WithEncoding(Encoding encoding)
         {
             _encoding = encoding;
@@ -140,8 +164,10 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
         }
 
         /// <summary>
-        /// Adds random noise or invalid lines to the file content.
+        /// ランダムなノイズや無効な行をファイルコンテンツに追加します。
         /// </summary>
+        /// <param name="noise">追加するノイズ文字列。</param>
+        /// <returns>このビルダーのインスタンス。</returns>
         public BmsFileBuilder AddNoise(string noise)
         {
             _mainData.AppendLine(noise);
@@ -149,10 +175,10 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
         }
 
         /// <summary>
-        /// Builds the BMS file and writes it to the temporary directory.
+        /// BMSファイルを構築し、一時ディレクトリに書き出します。
         /// </summary>
-        /// <param name="filename">The name of the BMS file to create.</param>
-        /// <returns>The full path to the created BMS file.</returns>
+        /// <param name="filename">作成するBMSファイルのファイル名。</param>
+        /// <returns>作成されたBMSファイルのフルパス。</returns>
         public string Build(string filename)
         {
             var path = Path.Combine(_context.TempDirectory, filename);
@@ -178,7 +204,6 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
             string result = "";
             int target = index;
 
-            // Handle 0 specifically if needed, but usually 00.
             if (target == 0) return AppConstants.Definition.End;
 
             while (target > 0)
@@ -187,7 +212,6 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
                 target /= 36;
             }
 
-            // Pad to at least 2 chars
             if (result.Length < 2)
             {
                 result = result.PadLeft(2, '0');

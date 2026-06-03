@@ -1,4 +1,4 @@
-using BmsAtelierKyokufu.BmsPartTuner.Core;
+﻿using BmsAtelierKyokufu.BmsPartTuner.Core;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 using BmsAtelierKyokufu.BmsPartTuner.Models;
 using BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers;
@@ -14,12 +14,18 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
     /// - 境界値処理
     /// </para>
     /// </summary>
+    /// <summary>
+    /// <see cref="DefinitionRangeManagerTests"/> の動作を検証するテストクラス。
+    /// </summary>
     public class DefinitionRangeManagerTests
     {
 
 
         #region Constructor Tests
 
+        /// <summary>
+        /// Constructor において、条件 WithValidBmsDefinitionManager の場合に InitializesCorrectly されることを検証します。
+        /// </summary>
         [Fact]
         public void Constructor_WithValidBmsDefinitionManager_InitializesCorrectly()
         {
@@ -34,6 +40,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
             Assert.Equal(AppConstants.Definition.MaxNumberBase62, manager.EndPoint);
         }
 
+        /// <summary>
+        /// Constructor において、条件 WithEmptyBmsDefinitionManager の場合に InitializesWithDefaults されることを検証します。
+        /// </summary>
         [Fact]
         public void Constructor_WithEmptyBmsDefinitionManager_InitializesWithDefaults()
         {
@@ -48,6 +57,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
             Assert.Equal(AppConstants.Definition.MaxNumberBase62, manager.EndPoint);
         }
 
+        /// <summary>
+        /// Constructor において、条件 WithNullBmsDefinitionManager の場合に ThrowsArgumentNullException されることを検証します。
+        /// </summary>
         [Fact]
         public void Constructor_WithNullBmsDefinitionManager_ThrowsArgumentNullException()
         {
@@ -149,6 +161,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
             return data;
         }
 
+        /// <summary>
+        /// DetermineProcessingRange において BehaviorTests の場合の挙動を検証します。
+        /// </summary>
         [Theory]
         [MemberData(nameof(GetDetermineProcessingRangeTestData))]
         public void DetermineProcessingRange_BehaviorTests(int[] fileListNumbers, int defStart, int defEnd, int expectedStart, int expectedEnd)
@@ -171,6 +186,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
 
         #region DetermineProcessingRange Tests - 複数回呼び出し
 
+        /// <summary>
+        /// DetermineProcessingRange において、条件 CalledMultipleTimes の場合に UpdatesCorrectly されることを検証します。
+        /// </summary>
         [Fact]
         public void DetermineProcessingRange_CalledMultipleTimes_UpdatesCorrectly()
         {

@@ -1,4 +1,4 @@
-﻿using System.Windows;
+using System.Windows;
 using System.Windows.Threading;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
@@ -10,6 +10,11 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
     /// </summary>
     public static class WpfTestHelper
     {
+        /// <summary>
+        /// STA（Single Thread Apartment）スレッド上で非同期のテストボディを実行し、WPF Application/Dispatcher が必要なコードの動作を模擬します。
+        /// </summary>
+        /// <param name="testBody">実行する非同期のテスト処理。</param>
+        /// <returns>テストの実行を表す <see cref="Task"/>。</returns>
         public static Task RunStaAsync(Func<Task> testBody)
         {
             ArgumentNullException.ThrowIfNull(testBody);

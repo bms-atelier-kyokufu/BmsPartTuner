@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 using BmsAtelierKyokufu.BmsPartTuner.Models;
 using BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers;
@@ -9,6 +9,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
     {
         #region Edge Case Tests - エッジケーステスト
 
+        /// <summary>
+        /// ReductDefinition において、条件 WithExtremeThreshold の場合に 0 されることを検証します。
+        /// </summary>
         [Fact]
         public void ReductDefinition_WithExtremeThreshold_0_MergesAll()
         {
@@ -52,6 +55,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
             Assert.True(uniqueCount <= 3, $"しきい値0.0で結合が行われるべき（実際: {uniqueCount}）");
         }
 
+        /// <summary>
+        /// ReductDefinition において、条件 WithExtremeThreshold の場合に 1 されることを検証します。
+        /// </summary>
         [Fact]
         public void ReductDefinition_WithExtremeThreshold_1_MergesNothing()
         {
@@ -93,6 +99,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
             Assert.True(uniqueCount >= 1, "しきい値1.0では異なるファイルは結合されない");
         }
 
+        /// <summary>
+        /// ReductDefinition において、条件 WithEmptyBmsDefinitionManager の場合に ThrowsArgumentNullException されることを検証します。
+        /// </summary>
         [Fact]
         public void ReductDefinition_WithEmptyBmsDefinitionManager_ThrowsArgumentNullException()
         {
@@ -104,6 +113,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
             Assert.Throws<ArgumentNullException>(() => new DefinitionReuse(nullList!, audioCache));
         }
 
+        /// <summary>
+        /// ReductDefinition において、条件 WithSingleFile の場合に CompletesSuccessfully されることを検証します。
+        /// </summary>
         [Fact]
         public void ReductDefinition_WithSingleFile_CompletesSuccessfully()
         {
@@ -145,6 +157,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
 
         #region Keyword Selection Tests - キーワード選択テスト
 
+        /// <summary>
+        /// ReductDefinition において、条件 WithSelectedKeywords の場合に ProcessesOnlyMatchingFiles されることを検証します。
+        /// </summary>
         [Fact]
         public void ReductDefinition_WithSelectedKeywords_ProcessesOnlyMatchingFiles()
         {
@@ -191,6 +206,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
 
         #region Progress Reporting Tests - 進捗報告テスト
 
+        /// <summary>
+        /// ReductDefinition において、条件 ReportsProgress の場合に FromZeroToHundred されることを検証します。
+        /// </summary>
         [Fact]
         public void ReductDefinition_ReportsProgress_FromZeroToHundred()
         {

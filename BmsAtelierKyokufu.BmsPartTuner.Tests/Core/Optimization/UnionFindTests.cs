@@ -1,4 +1,4 @@
-using BmsAtelierKyokufu.BmsPartTuner.Core.Optimization;
+﻿using BmsAtelierKyokufu.BmsPartTuner.Core.Optimization;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
 {
@@ -6,8 +6,14 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
     /// UnionFind の動作検証テスト。
     /// 代表値（ルート）検索、統合、経路圧縮、スレッドセーフティなどを検証します。
     /// </summary>
+    /// <summary>
+    /// <see cref="UnionFindTests"/> の動作を検証するテストクラス。
+    /// </summary>
     public class UnionFindTests
     {
+        /// <summary>
+        /// FindRoot において、条件 DirectParent の場合に ReturnsParent されることを検証します。
+        /// </summary>
         [Fact]
         public void FindRoot_DirectParent_ReturnsParent()
         {
@@ -20,6 +26,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
             Assert.Equal(1, root);
         }
 
+        /// <summary>
+        /// FindRoot において、条件 TransitiveParent の場合に ReturnsRoot されることを検証します。
+        /// </summary>
         [Fact]
         public void FindRoot_TransitiveParent_ReturnsRoot()
         {
@@ -33,6 +42,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
             Assert.Equal(1, root);
         }
 
+        /// <summary>
+        /// FindRoot において、条件 Uninitialized の場合に ReturnsSelf されることを検証します。
+        /// </summary>
         [Fact]
         public void FindRoot_Uninitialized_ReturnsSelf()
         {
@@ -43,6 +55,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
             Assert.Equal(5, root);
         }
 
+        /// <summary>
+        /// UpdateReplaceTable において MergesSetsCorrectly の場合の挙動を検証します。
+        /// </summary>
         [Fact]
         public void UpdateReplaceTable_MergesSetsCorrectly()
         {
@@ -56,6 +71,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
             Assert.Equal(2, root2); // より小さい方がルートになる
         }
 
+        /// <summary>
+        /// UpdateReplaceTable において、条件 TransitiveMerge の場合に WorksCorrectly されることを検証します。
+        /// </summary>
         [Fact]
         public void UpdateReplaceTable_TransitiveMerge_WorksCorrectly()
         {
@@ -71,6 +89,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
             Assert.Equal(root2, root4);
         }
 
+        /// <summary>
+        /// UpdateReplaceTable において、条件 AlreadyMerged の場合に NoChange されることを検証します。
+        /// </summary>
         [Fact]
         public void UpdateReplaceTable_AlreadyMerged_NoChange()
         {
@@ -86,6 +107,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
             Assert.Equal(rootBefore, rootAfter);
         }
 
+        /// <summary>
+        /// UpdateReplaceTable において、条件 MultipleGroups の場合に MaintainsSeparation されることを検証します。
+        /// </summary>
         [Fact]
         public void UpdateReplaceTable_MultipleGroups_MaintainsSeparation()
         {
@@ -116,6 +140,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
             Assert.NotEqual(root1, root10); // 異なるグループ
         }
 
+        /// <summary>
+        /// UpdateReplaceTable において、条件 ConcurrentAccess の場合に MaintainsConsistency されることを検証します。
+        /// </summary>
         [Fact]
         public void UpdateReplaceTable_ConcurrentAccess_MaintainsConsistency()
         {
@@ -144,6 +171,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
             }
         }
 
+        /// <summary>
+        /// UpdateReplaceTable において、条件 RaceCondition の場合に NoDeadlock されることを検証します。
+        /// </summary>
         [Fact]
         public async Task UpdateReplaceTable_RaceCondition_NoDeadlock()
         {

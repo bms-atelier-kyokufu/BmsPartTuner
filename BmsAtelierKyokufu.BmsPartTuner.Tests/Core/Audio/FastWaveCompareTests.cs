@@ -6,6 +6,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
     /// FastWaveCompare の動作検証テスト。
     /// 音声データの相関係数計算・一致判定の仕様を確認します。
     /// </summary>
+    /// <summary>
+    /// <see cref="FastWaveCompareTests"/> の動作を検証するテストクラス。
+    /// </summary>
     public class FastWaveCompareTests
     {
         private static void RunIsMatchTest(float[] data1, float[] data2, float threshold, Action<bool> assertMatch, int channels = 1)
@@ -22,30 +25,51 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
             assertCorrelation(FastWaveCompare.GetCorrelation(sound1, sound2));
         }
 
+        /// <summary>
+        /// IsMatch において、条件 ExactMatch の場合に ReturnsTrue されることを検証します。
+        /// </summary>
         [Fact]
         public void IsMatch_ExactMatch_ReturnsTrue() =>
             RunIsMatchTest([0.1f, 0.2f, 0.3f, 0.4f], [0.1f, 0.2f, 0.3f, 0.4f], 0.99f, Assert.True);
 
+        /// <summary>
+        /// IsMatch において、条件 DifferentLengths の場合に ReturnsFalse されることを検証します。
+        /// </summary>
         [Fact]
         public void IsMatch_DifferentLengths_ReturnsFalse() =>
             RunIsMatchTest([0.1f, 0.2f], [0.1f, 0.2f, 0.3f], 0.1f, Assert.False);
 
+        /// <summary>
+        /// IsMatch において、条件 Silence の場合に HandlesGracefully されることを検証します。
+        /// </summary>
         [Fact]
         public void IsMatch_Silence_HandlesGracefully() =>
             RunIsMatchTest([0.0f, 0.0f, 0.0f, 0.0f], [0.0f, 0.0f, 0.0f, 0.0f], 0.9f, Assert.True);
 
+        /// <summary>
+        /// IsMatch において、条件 NearSilence の場合に HandlesGracefully されることを検証します。
+        /// </summary>
         [Fact]
         public void IsMatch_NearSilence_HandlesGracefully() =>
             RunIsMatchTest([1e-6f, -1e-6f], [1e-6f, -1e-6f], 0.99f, Assert.True);
 
+        /// <summary>
+        /// IsMatch において、条件 VolumeDifference の場合に ReturnsTrue されることを検証します。
+        /// </summary>
         [Fact]
         public void IsMatch_VolumeDifference_ReturnsTrue() =>
             RunIsMatchTest([0.1f, 0.2f, 0.3f, 0.4f], [0.05f, 0.1f, 0.15f, 0.2f], 0.99f, Assert.True);
 
+        /// <summary>
+        /// IsMatch において、条件 InvertedPhase の場合に ReturnsFalse されることを検証します。
+        /// </summary>
         [Fact]
         public void IsMatch_InvertedPhase_ReturnsFalse() =>
             RunIsMatchTest([0.1f, 0.2f, 0.3f, 0.4f], [-0.1f, -0.2f, -0.3f, -0.4f], 0.9f, Assert.False);
 
+        /// <summary>
+        /// IsMatch において、条件 DifferentSampleRates の場合に ReturnsFalse されることを検証します。
+        /// </summary>
         [Fact]
         public void IsMatch_DifferentSampleRates_ReturnsFalse()
         {
@@ -61,6 +85,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
             Assert.False(FastWaveCompare.IsMatch(sound1, sound2, 0.1f));
         }
 
+        /// <summary>
+        /// IsMatch において、条件 DifferentChannels の場合に ReturnsFalse されることを検証します。
+        /// </summary>
         [Fact]
         public void IsMatch_DifferentChannels_ReturnsFalse()
         {
@@ -74,6 +101,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
             Assert.False(FastWaveCompare.IsMatch(monoSound, stereoSound, 0.1f));
         }
 
+        /// <summary>
+        /// IsMatch において、条件 DifferentBitDepths の場合に ReturnsFalse されることを検証します。
+        /// </summary>
         [Fact]
         public void IsMatch_DifferentBitDepths_ReturnsFalse()
         {
@@ -89,6 +119,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
             Assert.False(FastWaveCompare.IsMatch(sound1, sound2, 0.1f));
         }
 
+        /// <summary>
+        /// IsMatch において、条件 EmptyFiles の場合に ThrowsException されることを検証します。
+        /// </summary>
         [Fact]
         public void IsMatch_EmptyFiles_ThrowsException()
         {
@@ -99,6 +132,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
             Assert.Throws<ArgumentException>(() => BmsTestAudioHelper.CreatePreNormalizedSoundData(emptyData));
         }
 
+        /// <summary>
+        /// IsMatch において、条件 LargeDataSIMDPath の場合に WorksCorrectly されることを検証します。
+        /// </summary>
         [Fact]
         public void IsMatch_LargeDataSIMDPath_WorksCorrectly()
         {
@@ -112,14 +148,23 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
             RunIsMatchTest(largeData, largeData, 0.99f, Assert.True);
         }
 
+        /// <summary>
+        /// IsMatch において、条件 SmallDataNonSIMDPath の場合に WorksCorrectly されることを検証します。
+        /// </summary>
         [Fact]
         public void IsMatch_SmallDataNonSIMDPath_WorksCorrectly() =>
             RunIsMatchTest([0.1f, 0.2f], [0.1f, 0.2f], 0.99f, Assert.True);
 
+        /// <summary>
+        /// GetCorrelation において、条件 ExactMatch の場合に ReturnsOne されることを検証します。
+        /// </summary>
         [Fact]
         public void GetCorrelation_ExactMatch_ReturnsOne() =>
             RunCorrelationTest([0.1f, 0.2f, 0.3f, 0.4f], [0.1f, 0.2f, 0.3f, 0.4f], c => Assert.True(c >= 0.99f && c <= 1.01f));
 
+        /// <summary>
+        /// GetCorrelation において、条件 FormatMismatch の場合に ReturnsZero されることを検証します。
+        /// </summary>
         [Fact]
         public void GetCorrelation_FormatMismatch_ReturnsZero()
         {
@@ -136,14 +181,23 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
             Assert.Equal(0.0f, correlation);
         }
 
+        /// <summary>
+        /// GetCorrelation において、条件 InvertedPhase の場合に ReturnsNegativeOne されることを検証します。
+        /// </summary>
         [Fact]
         public void GetCorrelation_InvertedPhase_ReturnsNegativeOne() =>
             RunCorrelationTest([0.1f, 0.2f, 0.3f, 0.4f], [-0.1f, -0.2f, -0.3f, -0.4f], c => Assert.True(c <= -0.99f && c >= -1.01f));
 
+        /// <summary>
+        /// IsMatch において、条件 WithNormalizedWaveform の場合に UsesOptimizedPath されることを検証します。
+        /// </summary>
         [Fact]
         public void IsMatch_WithNormalizedWaveform_UsesOptimizedPath() =>
             RunIsMatchTest([0.1f, 0.2f, 0.3f, 0.4f], [0.1f, 0.2f, 0.3f, 0.4f], 0.99f, Assert.True);
 
+        /// <summary>
+        /// IsMatch において、条件 WithHighThreshold の場合に FiltersSimilarButNotIdentical されることを検証します。
+        /// </summary>
         [Fact]
         public void IsMatch_WithHighThreshold_FiltersSimilarButNotIdentical()
         {
@@ -207,6 +261,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
         /// <summary>
         /// 定数値データ（分散0）の場合の検証。
         /// 分散が0だと相関係数が計算不能になる可能性がある。
+        /// </summary>
+        /// <summary>
+        /// IsMatch において、条件 ConstantValueData の場合に HandlesGracefully されることを検証します。
         /// </summary>
         [Fact]
         public void IsMatch_ConstantValueData_HandlesGracefully()

@@ -11,6 +11,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
     /// BmsOptimizationService の動作検証テスト。
     /// 特にファイルの削除ロジックと定義削減の整合性を確認します。
     /// </summary>
+    /// <summary>
+    /// <see cref="BmsOptimizationServiceTests_Deletion"/> の動作を検証するテストクラス。
+    /// </summary>
     public class BmsOptimizationServiceTests_Deletion : IDisposable
     {
         private readonly BmsTestContext _context;
@@ -57,6 +60,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
             assertResult(result, _context.TempDirectory);
         }
 
+        /// <summary>
+        /// ExecuteDefinitionReductionAsync において、条件 DeletionEnabled の場合に DeletesUnusedFiles されることを検証します。
+        /// </summary>
         [Fact]
         public Task ExecuteDefinitionReductionAsync_DeletionEnabled_DeletesUnusedFiles() =>
             RunDeletionTestAsync(
@@ -80,6 +86,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
                     Assert.False(File.Exists(Path.Combine(dir, "unused.wav")));
                 });
 
+        /// <summary>
+        /// ExecuteDefinitionReductionAsync において、条件 DeletionDisabled の場合に KeepsUnusedFiles されることを検証します。
+        /// </summary>
         [Fact]
         public Task ExecuteDefinitionReductionAsync_DeletionDisabled_KeepsUnusedFiles() =>
             RunDeletionTestAsync(
@@ -103,6 +112,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
                     Assert.True(File.Exists(Path.Combine(dir, "unused.wav")));
                 });
 
+        /// <summary>
+        /// ExecuteDefinitionReductionAsync において、条件 MultipleDuplicates の場合に DeletesAllUnused されることを検証します。
+        /// </summary>
         [Fact]
         public Task ExecuteDefinitionReductionAsync_MultipleDuplicates_DeletesAllUnused() =>
             RunDeletionTestAsync(
@@ -129,6 +141,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
                     Assert.True(result.DeletedFilesCount >= 1);
                 });
 
+        /// <summary>
+        /// ExecuteDefinitionReductionAsync において、条件 DifferentFrequency の場合に NotMerged されることを検証します。
+        /// </summary>
         [Fact]
         public Task ExecuteDefinitionReductionAsync_DifferentFrequency_NotMerged() =>
             RunDeletionTestAsync(
@@ -152,6 +167,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
                     Assert.True(File.Exists(Path.Combine(dir, "high_freq.wav")));
                 });
 
+        /// <summary>
+        /// ExecuteDefinitionReductionAsync において、条件 LowThreshold の場合に MergesSimilarFiles されることを検証します。
+        /// </summary>
         [Fact]
         public Task ExecuteDefinitionReductionAsync_LowThreshold_MergesSimilarFiles() =>
             RunDeletionTestAsync(

@@ -10,6 +10,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
     {
         #region Physical Deletion Tests - 物理削除テスト
 
+        /// <summary>
+        /// ReductDefinition において、条件 WithPhysicalDeletion の場合に DeletesUnusedFiles されることを検証します。
+        /// </summary>
         [Fact]
         public void ReductDefinition_WithPhysicalDeletion_DeletesUnusedFiles()
         {
@@ -59,6 +62,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
             Assert.True(File.Exists(unique), "ユニークファイルは削除されないべき");
         }
 
+        /// <summary>
+        /// ReductDefinition において、条件 WithPhysicalDeletionDisabled の場合に KeepsAllFiles されることを検証します。
+        /// </summary>
         [Fact]
         public void ReductDefinition_WithPhysicalDeletionDisabled_KeepsAllFiles()
         {
@@ -101,6 +107,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
             Assert.True(File.Exists(file2), "ファイル2は削除されないべき");
         }
 
+        /// <summary>
+        /// GetUnusedFilePaths において、条件 AfterReduction の場合に ReturnsCorrectList されることを検証します。
+        /// </summary>
         [Fact]
         public void GetUnusedFilePaths_AfterReduction_ReturnsCorrectList()
         {
@@ -144,6 +153,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
             Assert.Single(unusedFiles);
         }
 
+        /// <summary>
+        /// GetUnusedFilePaths において、条件 BeforeReduction の場合に ReturnsEmptyList されることを検証します。
+        /// </summary>
         [Fact]
         public void GetUnusedFilePaths_BeforeReduction_ReturnsEmptyList()
         {

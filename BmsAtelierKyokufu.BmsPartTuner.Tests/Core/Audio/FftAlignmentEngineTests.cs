@@ -1,5 +1,8 @@
 ﻿namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio;
 
+/// <summary>
+/// <see cref="FftAlignmentEngineTests"/> の動作を検証するテストクラス。
+/// </summary>
 public class FftAlignmentEngineTests
 {
     private static float[] GenerateSineWave(int length, float frequency, float sampleRate)
@@ -12,6 +15,9 @@ public class FftAlignmentEngineTests
         return wave;
     }
 
+    /// <summary>
+    /// CalculateAlignmentOffset において、条件 IdenticalSignals の場合に ReturnsZero されることを検証します。
+    /// </summary>
     [Fact]
     public void CalculateAlignmentOffset_IdenticalSignals_ReturnsZero()
     {
@@ -26,6 +32,9 @@ public class FftAlignmentEngineTests
         Assert.Equal(0, offset);
     }
 
+    /// <summary>
+    /// CalculateAlignmentOffset において、条件 DelayedSignal の場合に ReturnsNegativeOffset されることを検証します。
+    /// </summary>
     [Fact]
     public void CalculateAlignmentOffset_DelayedSignal_ReturnsNegativeOffset()
     {
@@ -44,6 +53,9 @@ public class FftAlignmentEngineTests
         Assert.Equal(-10, offset);
     }
 
+    /// <summary>
+    /// CalculateAlignmentOffset において、条件 AdvancedSignal の場合に ReturnsPositiveOffset されることを検証します。
+    /// </summary>
     [Fact]
     public void CalculateAlignmentOffset_AdvancedSignal_ReturnsPositiveOffset()
     {

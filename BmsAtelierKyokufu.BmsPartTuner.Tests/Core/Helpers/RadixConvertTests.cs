@@ -1,4 +1,4 @@
-using BmsAtelierKyokufu.BmsPartTuner.Core;
+﻿using BmsAtelierKyokufu.BmsPartTuner.Core;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Helpers;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Helpers
@@ -11,12 +11,18 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Helpers
     /// ここではそれぞれの基数変換が正しく行われるか検証します。
     /// </para>
     /// </summary>
+    /// <summary>
+    /// <see cref="RadixConvertTests"/> の動作を検証するテストクラス。
+    /// </summary>
     public class RadixConvertTests
     {
         #region IntToZZ Tests - 10進数から文字列への変換
 
         #region 36進数変換 (Base36)
 
+        /// <summary>
+        /// テスト を検証します。
+        /// </summary>
         [Theory]
         [InlineData(0, "00")]      // 最小値
         [InlineData(1, "01")]      // 最小有効値
@@ -35,6 +41,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Helpers
             Assert.Equal(expected, result);
         }
 
+        /// <summary>
+        /// IntToZZ において、条件 DefaultRadix の場合に UsesBase36 されることを検証します。
+        /// </summary>
         [Fact]
         public void IntToZZ_DefaultRadix_UsesBase36()
         {
@@ -49,6 +58,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Helpers
 
         #region 62進数変換 (Base62)
 
+        /// <summary>
+        /// テスト を検証します。
+        /// </summary>
         [Theory]
         [InlineData(0, "00")]      // 最小値
         [InlineData(35, "0Z")]     // 大文字アルファベット最大
@@ -70,6 +82,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Helpers
 
         #region 無効な基数
 
+        /// <summary>
+        /// テスト を検証します。
+        /// </summary>
         [Theory]
         [InlineData(0)]    // 無効
         [InlineData(10)]   // 無効
@@ -93,6 +108,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Helpers
 
         #region IntToZZ - 範囲外入力テスト
 
+        /// <summary>
+        /// IntToZZ において、条件 NegativeValue の場合に ThrowsArgumentOutOfRangeException されることを検証します。
+        /// </summary>
         [Theory]
         [InlineData(-1, AppConstants.Definition.RadixBase36)]
         [InlineData(-100, AppConstants.Definition.RadixBase36)]
@@ -107,6 +125,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Helpers
             Assert.Contains("負の値", ex.Message);
         }
 
+        /// <summary>
+        /// テスト を検証します。
+        /// </summary>
         [Theory]
         [InlineData(1296, AppConstants.Definition.RadixBase36)]  // ZZ의 次 (36^2)
         [InlineData(2000, AppConstants.Definition.RadixBase36)]

@@ -6,6 +6,9 @@ using BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Infrastructure.Bms.Bmson;
 
+/// <summary>
+/// <see cref="BmsScoreGeneratorTests"/> の動作を検証するテストクラス。
+/// </summary>
 public class BmsScoreGeneratorTests
 {
     private static BmsonFormat CreateBaseBmson()
@@ -26,6 +29,9 @@ public class BmsScoreGeneratorTests
         };
     }
 
+    /// <summary>
+    /// GenerateBmsText において、条件 ChordNotes の場合に PushedToBgmChannel されることを検証します。
+    /// </summary>
     [Fact]
     public void GenerateBmsText_ChordNotes_PushedToBgmChannel()
     {
@@ -73,6 +79,9 @@ public class BmsScoreGeneratorTests
         }
     }
 
+    /// <summary>
+    /// GenerateBmsText において、条件 LongNote の場合に PlacedOnLnChannel されることを検証します。
+    /// </summary>
     [Fact]
     public void GenerateBmsText_LongNote_PlacedOnLnChannel()
     {
@@ -118,6 +127,9 @@ public class BmsScoreGeneratorTests
         }
     }
 
+    /// <summary>
+    /// GenerateBmsText において、条件 DuplicateBpmEvents の場合に MergedAndRounded されることを検証します。
+    /// </summary>
     [Fact]
     public void GenerateBmsText_DuplicateBpmEvents_MergedAndRounded()
     {
@@ -165,6 +177,9 @@ public class BmsScoreGeneratorTests
         }
     }
 
+    /// <summary>
+    /// GenerateBmsText において、条件 TotalValue の場合に ApproachB されることを検証します。
+    /// </summary>
     [Fact]
     public void GenerateBmsText_TotalValue_ApproachB()
     {

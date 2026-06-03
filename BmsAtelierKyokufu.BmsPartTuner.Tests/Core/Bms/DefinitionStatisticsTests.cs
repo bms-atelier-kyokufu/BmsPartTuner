@@ -1,4 +1,4 @@
-using BmsAtelierKyokufu.BmsPartTuner.Core;
+﻿using BmsAtelierKyokufu.BmsPartTuner.Core;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 using BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers;
 
@@ -11,6 +11,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
     /// - ユニークファイル数の計算
     /// - 統計情報の正確性
     /// </para>
+    /// </summary>
+    /// <summary>
+    /// <see cref="DefinitionStatisticsTests"/> の動作を検証するテストクラス。
     /// </summary>
     public class DefinitionStatisticsTests
     {
@@ -25,6 +28,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
 
         #region Constructor Tests
 
+        /// <summary>
+        /// Constructor において、条件 WithValidParameters の場合に CreatesInstance されることを検証します。
+        /// </summary>
         [Fact]
         public void Constructor_WithValidParameters_CreatesInstance()
         {
@@ -37,6 +43,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
             Assert.NotNull(stats);
         }
 
+        /// <summary>
+        /// Constructor において、条件 WithNullBmsDefinitionManager の場合に ThrowsArgumentNullException されることを検証します。
+        /// </summary>
         [Fact]
         public void Constructor_WithNullBmsDefinitionManager_ThrowsArgumentNullException()
         {
@@ -46,6 +55,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
                 new DefinitionStatistics(null!, replaces, 1, 10));
         }
 
+        /// <summary>
+        /// Constructor において、条件 WithNullReplaces の場合に ThrowsArgumentNullException されることを検証します。
+        /// </summary>
         [Fact]
         public void Constructor_WithNullReplaces_ThrowsArgumentNullException()
         {
@@ -142,6 +154,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
             return data;
         }
 
+        /// <summary>
+        /// GetUniqueFileCount において BehaviorTests の場合の挙動を検証します。
+        /// </summary>
         [Theory]
         [MemberData(nameof(GetUniqueFileCountTestData))]
         public void GetUniqueFileCount_BehaviorTests(int[] fileListNumbers, int[][] replacesMap, int start, int end, int expectedCount)
@@ -168,6 +183,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
 
         #region LogStatistics Tests
 
+        /// <summary>
+        /// LogStatistics において DoesNotThrow の場合の挙動を検証します。
+        /// </summary>
         [Fact]
         public void LogStatistics_DoesNotThrow()
         {

@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using System.Text;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 using BmsAtelierKyokufu.BmsPartTuner.Models;
@@ -8,6 +8,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
     /// <summary>
     /// BmsFileRewriter の動作検証テスト。
     /// 定義の置換・並べ替え・BMSファイルの書き換え処理を確認します。
+    /// </summary>
+    /// <summary>
+    /// <see cref="BmsFileRewriterTests"/> の動作を検証するテストクラス。
     /// </summary>
     public class BmsFileRewriterTests : IDisposable
     {
@@ -46,6 +49,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
             };
         }
 
+        /// <summary>
+        /// ReplaceAndAlignBmsFile において CorrectlyRenamesAndSortsDefinitions の場合の挙動を検証します。
+        /// </summary>
         [Fact]
         public void ReplaceAndAlignBmsFile_CorrectlyRenamesAndSortsDefinitions()
         {
@@ -85,6 +91,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
             Assert.Contains("#00111:020301", result);
         }
 
+        /// <summary>
+        /// ReplaceAndAlignBmsFile において HandlesReplacementsCorrectly の場合の挙動を検証します。
+        /// </summary>
         [Fact]
         public void ReplaceAndAlignBmsFile_HandlesReplacementsCorrectly()
         {
@@ -129,6 +138,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
             Assert.DoesNotContain(rewriter.KeptFiles, f => f.Name.EndsWith("kick2.wav"));
         }
 
+        /// <summary>
+        /// WriteBmsFile において、条件 AtomicWrite の場合に CleansUpOnFailure されることを検証します。
+        /// </summary>
         [Fact]
         public void WriteBmsFile_AtomicWrite_CleansUpOnFailure()
         {
@@ -148,6 +160,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
             Assert.Equal(content, File.ReadAllText(outputPath, Encoding.GetEncoding("shift_jis")));
         }
 
+        /// <summary>
+        /// ReplaceAndAlignBmsFile において PreservesUndefinedDefinitions の場合の挙動を検証します。
+        /// </summary>
         [Fact]
         public void ReplaceAndAlignBmsFile_PreservesUndefinedDefinitions()
         {

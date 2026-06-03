@@ -1,4 +1,4 @@
-using BmsAtelierKyokufu.BmsPartTuner.Core.Validation;
+﻿using BmsAtelierKyokufu.BmsPartTuner.Core.Validation;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Validation;
 
@@ -16,6 +16,9 @@ public class DefinitionRangeValidatorTests
     /// </summary>
     /// <param name="start">開始定義。</param>
     /// <param name="end">終了定義。</param>
+    /// <summary>
+    /// テスト を検証します。
+    /// </summary>
     [Theory]
     [InlineData("01", "ZZ")]     // 36進数の全範囲
     [InlineData("01", "zz")]     // 62進数の全範囲
@@ -58,6 +61,9 @@ public class DefinitionRangeValidatorTests
     /// </summary>
     /// <param name="start">開始定義。</param>
     /// <param name="end">終了定義。</param>
+    /// <summary>
+    /// Validate において、条件 InvalidStartLength の場合に ReturnsFailure されることを検証します。
+    /// </summary>
     [Theory]
     [InlineData("1", "ZZ")]       // 開始が1桁
     [InlineData("001", "ZZ")]    // 開始が3桁
@@ -77,6 +83,9 @@ public class DefinitionRangeValidatorTests
     /// </summary>
     /// <param name="start">開始定義。</param>
     /// <param name="end">終了定義。</param>
+    /// <summary>
+    /// Validate において、条件 InvalidEndLength の場合に ReturnsFailure されることを検証します。
+    /// </summary>
     [Theory]
     [InlineData("01", "Z")]       // 終了が1桁
     [InlineData("01", "ZZZ")]    // 終了が3桁
@@ -149,6 +158,9 @@ public class DefinitionRangeValidatorTests
     /// </summary>
     /// <param name="start">開始定義。</param>
     /// <param name="end">終了定義。</param>
+    /// <summary>
+    /// Validate において、条件 InvalidCharacters の場合に ReturnsFailure されることを検証します。
+    /// </summary>
     [Theory]
     [InlineData("!!", "ZZ")]     // 記号
     [InlineData("##", "ZZ")]     // 特殊文字
@@ -197,6 +209,9 @@ public class R2ThresholdValidatorTests
     /// </summary>
     /// <param name="input">入力文字列。</param>
     /// <param name="expectedInternal">期待される内部値。</param>
+    /// <summary>
+    /// テスト を検証します。
+    /// </summary>
     [Theory]
     [InlineData("0", 0.0f)]
     [InlineData("50", 0.5f)]
@@ -220,6 +235,9 @@ public class R2ThresholdValidatorTests
     /// </summary>
     /// <param name="input">入力文字列。</param>
     /// <param name="expectedInternal">期待される内部値。</param>
+    /// <summary>
+    /// テスト を検証します。
+    /// </summary>
     [Theory]
     [InlineData("0.0", 0.0f)]
     [InlineData("0.5", 0.5f)]
@@ -243,6 +261,9 @@ public class R2ThresholdValidatorTests
     /// </summary>
     /// <param name="input">入力文字列。</param>
     /// <param name="expectedInternal">期待される内部値。</param>
+    /// <summary>
+    /// ValidateWithValue において、条件 DecimalDisplayValue の場合に ConvertsCorrectly されることを検証します。
+    /// </summary>
     [Theory]
     [InlineData("50.5", 0.505f)]   // 1-100スケールの小数
     [InlineData("75.25", 0.7525f)]
@@ -263,6 +284,9 @@ public class R2ThresholdValidatorTests
     /// 空または空白の文字列が指定された場合、検証が失敗することを確認します。
     /// </summary>
     /// <param name="input">入力文字列。</param>
+    /// <summary>
+    /// ValidateWithValue において、条件 EmptyOrWhitespace の場合に ReturnsFailure されることを検証します。
+    /// </summary>
     [Theory]
     [InlineData("")]
     [InlineData("   ")]
@@ -279,6 +303,9 @@ public class R2ThresholdValidatorTests
     /// 範囲外の値が指定された場合、検証が失敗することを確認します。
     /// </summary>
     /// <param name="input">入力文字列。</param>
+    /// <summary>
+    /// テスト を検証します。
+    /// </summary>
     [Theory]
     [InlineData("-1")]
     [InlineData("-50")]
@@ -296,6 +323,9 @@ public class R2ThresholdValidatorTests
     /// 不正な形式の文字列が指定された場合、検証が失敗することを確認します。
     /// </summary>
     /// <param name="input">入力文字列。</param>
+    /// <summary>
+    /// ValidateWithValue において、条件 InvalidFormat の場合に ReturnsFailure されることを検証します。
+    /// </summary>
     [Theory]
     [InlineData("abc")]
     [InlineData("!@#")]
@@ -343,6 +373,9 @@ public class R2ThresholdValidatorTests
     /// 境界値が指定された場合、検証が成功することを確認します。
     /// </summary>
     /// <param name="input">入力文字列。</param>
+    /// <summary>
+    /// ValidateWithValue において、条件 BoundaryValues の場合に ReturnsSuccess されることを検証します。
+    /// </summary>
     [Theory]
     [InlineData("0")]      // 最小境界
     [InlineData("100")]    // 最大境界

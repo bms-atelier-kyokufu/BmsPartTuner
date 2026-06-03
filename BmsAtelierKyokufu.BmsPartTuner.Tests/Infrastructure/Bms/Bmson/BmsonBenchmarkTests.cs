@@ -7,10 +7,16 @@ using Xunit.Abstractions;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Infrastructure.Bms.Bmson;
 
+/// <summary>
+/// <see cref="BmsonBenchmarkTests"/> の動作を検証するテストクラス。
+/// </summary>
 public class BmsonBenchmarkTests(ITestOutputHelper output)
 {
     private readonly ITestOutputHelper _output = output;
 
+    /// <summary>
+    /// Benchmark において、条件 Downconvert の場合に Performance されることを検証します。
+    /// </summary>
     [Fact]
     [Trait("Category", "Benchmark")]
     public void Benchmark_Downconvert_Performance()
@@ -89,6 +95,9 @@ public class BmsonBenchmarkTests(ITestOutputHelper output)
         Assert.NotEmpty(result);
     }
 
+    /// <summary>
+    /// Test において、条件 DoublePlay の場合に And されることを検証します。
+    /// </summary>
     [Fact]
     public void Test_DoublePlay_And_BpmRounding_Guardrails()
     {

@@ -9,10 +9,16 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
     /// SimulationEngine の動作検証テスト。
     /// 並列シミュレーション全体の統合仕様、早期終了などを検証します。
     /// </summary>
+    /// <summary>
+    /// <see cref="SimulationEngineTests"/> の動作を検証するテストクラス。
+    /// </summary>
     public class SimulationEngineTests
     {
         #region 統合テスト
 
+        /// <summary>
+        /// RunParallelSimulation において、条件 EmptyList の場合に ReturnsEmptyResults されることを検証します。
+        /// </summary>
         [Fact]
         public void RunParallelSimulation_EmptyList_ReturnsEmptyResults()
         {
@@ -30,6 +36,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
             Assert.All(results, r => Assert.Equal(0, r.FileCount));
         }
 
+        /// <summary>
+        /// RunParallelSimulation において、条件 SingleFile の場合に ReturnsCountOne されることを検証します。
+        /// </summary>
         [Fact]
         public void RunParallelSimulation_SingleFile_ReturnsCountOne()
         {
@@ -45,6 +54,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
             Assert.Equal(1, results[0].FileCount);
         }
 
+        /// <summary>
+        /// RunParallelSimulation において、条件 TwoDifferentFiles の場合に ReturnsCountTwo されることを検証します。
+        /// </summary>
         [Fact]
         public void RunParallelSimulation_TwoDifferentFiles_ReturnsCountTwo()
         {
@@ -61,6 +73,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
             Assert.Equal(2, results[0].FileCount); // 異なる名前・異なる波形なので統合されない
         }
 
+        /// <summary>
+        /// RunParallelSimulation において、条件 TwoIdenticalNames の場合に MergesCorrectly されることを検証します。
+        /// </summary>
         [Fact]
         public void RunParallelSimulation_TwoIdenticalNames_MergesCorrectly()
         {
@@ -83,6 +98,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
 
         #region 早期終了テスト
 
+        /// <summary>
+        /// RunParallelSimulation において、条件 Base36ConditionMet の場合に TerminatesEarly されることを検証します。
+        /// </summary>
         [Fact]
         public void RunParallelSimulation_Base36ConditionMet_TerminatesEarly()
         {

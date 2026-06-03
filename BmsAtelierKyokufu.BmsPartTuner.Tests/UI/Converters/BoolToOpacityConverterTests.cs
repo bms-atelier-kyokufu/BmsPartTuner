@@ -12,6 +12,9 @@ public class BoolToOpacityConverterTests
     private readonly BoolToOpacityConverter _converter = new();
     private readonly CultureInfo _culture = CultureInfo.InvariantCulture;
 
+    /// <summary>
+    /// Convert において、条件 True の場合に Returns0 されることを検証します。
+    /// </summary>
     [Fact]
     public void Convert_True_Returns0_5()
     {
@@ -22,6 +25,9 @@ public class BoolToOpacityConverterTests
         Assert.Equal(0.5, result);
     }
 
+    /// <summary>
+    /// Convert において、条件 False の場合に Returns1 されることを検証します。
+    /// </summary>
     [Fact]
     public void Convert_False_Returns1_0()
     {
@@ -32,6 +38,9 @@ public class BoolToOpacityConverterTests
         Assert.Equal(1.0, result);
     }
 
+    /// <summary>
+    /// Convert において、条件 NonBool の場合に Returns1 されることを検証します。
+    /// </summary>
     [Fact]
     public void Convert_NonBool_Returns1_0()
     {
@@ -42,6 +51,9 @@ public class BoolToOpacityConverterTests
         Assert.Equal(1.0, result);
     }
 
+    /// <summary>
+    /// ConvertBack において、条件 0 の場合に 5 されることを検証します。
+    /// </summary>
     [Fact]
     public void ConvertBack_0_5_ReturnsTrue()
     {
@@ -53,6 +65,9 @@ public class BoolToOpacityConverterTests
         Assert.True((bool)result);
     }
 
+    /// <summary>
+    /// ConvertBack において、条件 CloseTo0 の場合に 5 されることを検証します。
+    /// </summary>
     [Fact]
     public void ConvertBack_CloseTo0_5_ReturnsTrue()
     {
@@ -67,6 +82,9 @@ public class BoolToOpacityConverterTests
         Assert.True((bool)result);
     }
 
+    /// <summary>
+    /// ConvertBack において、条件 1 の場合に 0 されることを検証します。
+    /// </summary>
     [Fact]
     public void ConvertBack_1_0_ReturnsFalse()
     {
@@ -77,6 +95,9 @@ public class BoolToOpacityConverterTests
         Assert.False((bool)result);
     }
 
+    /// <summary>
+    /// ConvertBack において、条件 OtherValue の場合に ReturnsFalse されることを検証します。
+    /// </summary>
     [Fact]
     public void ConvertBack_OtherValue_ReturnsFalse()
     {
@@ -90,6 +111,9 @@ public class BoolToOpacityConverterTests
         Assert.False((bool)result);
     }
 
+    /// <summary>
+    /// ConvertBack において、条件 NonDouble の場合に ReturnsBindingDoNothing されることを検証します。
+    /// </summary>
     [Fact]
     public void ConvertBack_NonDouble_ReturnsBindingDoNothing()
     {

@@ -3,10 +3,16 @@ using BmsAtelierKyokufu.BmsPartTuner.Core.Helpers;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Helpers
 {
+    /// <summary>
+    /// <see cref="RadixConvertDecodeTests"/> の動作を検証するテストクラス。
+    /// </summary>
     public class RadixConvertDecodeTests
     {
         #region ZZToInt - 無効入力テスト
 
+        /// <summary>
+        /// ZZToInt において、条件 NullString の場合に ThrowsArgumentNullException されることを検証します。
+        /// </summary>
         [Fact]
         public void ZZToInt_NullString_ThrowsArgumentNullException()
         {
@@ -17,6 +23,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Helpers
             Assert.Contains("zz", ex.ParamName);
         }
 
+        /// <summary>
+        /// テスト を検証します。
+        /// </summary>
         [Theory]
         [InlineData("", AppConstants.Definition.RadixBase36)]
         [InlineData("A", AppConstants.Definition.RadixBase36)]    // 1文字
@@ -33,6 +42,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Helpers
             Assert.Contains("2文字", ex.Message);
         }
 
+        /// <summary>
+        /// テスト を検証します。
+        /// </summary>
         [Theory]
         [InlineData("!!", AppConstants.Definition.RadixBase36)]
         [InlineData("@#", AppConstants.Definition.RadixBase62)]
@@ -47,6 +59,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Helpers
             Assert.Contains("無効", ex.Message);
         }
 
+        /// <summary>
+        /// ZZToInt において、条件 Base36 の場合に LowercaseLetters されることを検証します。
+        /// </summary>
         [Theory]
         [InlineData("0a", AppConstants.Definition.RadixBase36)]  // 小文字はBase36では無効
         [InlineData("0z", AppConstants.Definition.RadixBase36)]  // 小文字はBase36では無効
@@ -61,6 +76,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Helpers
             Assert.Contains("無効", ex.Message);
         }
 
+        /// <summary>
+        /// テスト を検証します。
+        /// </summary>
         [Theory]
         [InlineData("00", 10)]
         [InlineData("ZZ", 0)]
@@ -83,6 +101,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Helpers
 
         #region 36進数変換 (Base36)
 
+        /// <summary>
+        /// テスト を検証します。
+        /// </summary>
         [Theory]
         [InlineData("00", 0)]      // 最小値
         [InlineData("01", 1)]      // 最小有効値
@@ -101,6 +122,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Helpers
             Assert.Equal(expected, result);
         }
 
+        /// <summary>
+        /// ZZToInt において、条件 DefaultRadix の場合に UsesBase36 されることを検証します。
+        /// </summary>
         [Fact]
         public void ZZToInt_DefaultRadix_UsesBase36()
         {
@@ -115,6 +139,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Helpers
 
         #region 62進数変換 (Base62)
 
+        /// <summary>
+        /// テスト を検証します。
+        /// </summary>
         [Theory]
         [InlineData("00", 0)]      // 最小値
         [InlineData("0Z", 35)]     // 大文字アルファベット最大
@@ -136,6 +163,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Helpers
 
         #region 大文字小文字の混在（BMSドメイン特有）
 
+        /// <summary>
+        /// テスト を検証します。
+        /// </summary>
         [Theory]
         [InlineData("0a", 36)]     // 小文字
         [InlineData("0A", 10)]     // 大文字（36進数でも62進数でも10）
@@ -157,6 +187,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Helpers
 
         #region All Valid Characters Tests - 全文字のテスト
 
+        /// <summary>
+        /// CharToIntLookup において、条件 AllDigits の場合に ReturnCorrectValues されることを検証します。
+        /// </summary>
         [Fact]
         public void CharToIntLookup_AllDigits_ReturnCorrectValues()
         {
@@ -169,6 +202,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Helpers
             }
         }
 
+        /// <summary>
+        /// CharToIntLookup において、条件 AllUppercase の場合に ReturnCorrectValues されることを検証します。
+        /// </summary>
         [Fact]
         public void CharToIntLookup_AllUppercase_ReturnCorrectValues()
         {
@@ -182,6 +218,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Helpers
             }
         }
 
+        /// <summary>
+        /// CharToIntLookup において、条件 AllLowercase の場合に ReturnCorrectValues されることを検証します。
+        /// </summary>
         [Fact]
         public void CharToIntLookup_AllLowercase_ReturnCorrectValues()
         {

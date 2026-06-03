@@ -1,9 +1,12 @@
-using System.IO;
+﻿using System.IO;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 using BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
 {
+    /// <summary>
+    /// <see cref="BmsDefinitionManagerTests"/> の動作を検証するテストクラス。
+    /// </summary>
     public class BmsDefinitionManagerTests : IDisposable
     {
         private readonly string _tempDir;
@@ -27,12 +30,18 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
             GC.SuppressFinalize(this);
         }
 
+        /// <summary>
+        /// Constructor において、条件 NullFilePath の場合に ThrowsArgumentNullException されることを検証します。
+        /// </summary>
         [Fact]
         public void Constructor_NullFilePath_ThrowsArgumentNullException()
         {
             Assert.Throws<ArgumentNullException>(() => new BmsDefinitionManager(null!));
         }
 
+        /// <summary>
+        /// Constructor において、条件 ValidFilePath の場合に SetsProperties されることを検証します。
+        /// </summary>
         [Fact]
         public void Constructor_ValidFilePath_SetsProperties()
         {
@@ -44,6 +53,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
             Assert.Empty(manager.MissingFiles);
         }
 
+        /// <summary>
+        /// CreateFileList において、条件 AllFilesVirtual の場合に ParsedSuccessfullyBase36 されることを検証します。
+        /// </summary>
         [Fact]
         public void CreateFileList_AllFilesVirtual_ParsedSuccessfullyBase36()
         {
@@ -82,6 +94,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
             Assert.Equal(wavData.Length, file02.FileSize);
         }
 
+        /// <summary>
+        /// CreateFileList において、条件 AllFilesVirtual の場合に ParsedSuccessfullyBase62 されることを検証します。
+        /// </summary>
         [Fact]
         public void CreateFileList_AllFilesVirtual_ParsedSuccessfullyBase62()
         {
@@ -114,6 +129,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
             Assert.Equal(2233, fileA1.NumInteger);
         }
 
+        /// <summary>
+        /// CreateFileList において、条件 WithMissingFiles の場合に AddsToMissingFilesAndExcludesFromList されることを検証します。
+        /// </summary>
         [Fact]
         public void CreateFileList_WithMissingFiles_AddsToMissingFilesAndExcludesFromList()
         {
@@ -142,6 +160,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
             Assert.Equal(expectedKickPath, file01.Name);
         }
 
+        /// <summary>
+        /// CreateFileList において、条件 WithPhysicalFiles の場合に ResolvedCorrectly されることを検証します。
+        /// </summary>
         [Fact]
         public void CreateFileList_WithPhysicalFiles_ResolvedCorrectly()
         {

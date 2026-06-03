@@ -8,6 +8,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Scenarios
     /// シミュレーションエンジンの統合テスト（インメモリ完結版）。
     /// ファイルI/Oを使用せず、メモリ内で音声データを生成してテストを実行します。
     /// </summary>
+    /// <summary>
+    /// <see cref="OptimizationScenarioTests"/> の動作を検証するテストクラス。
+    /// </summary>
     public class OptimizationScenarioTests
     {
         #region Test Helpers (In-Memory Audio Data Factory)
@@ -42,6 +45,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Scenarios
 
         #endregion
 
+        /// <summary>
+        /// RunParallelSimulation において、条件 IdenticalAndDifferentFiles の場合に GroupsCorrectly されることを検証します。
+        /// </summary>
         [Fact]
         public void RunParallelSimulation_IdenticalAndDifferentFiles_GroupsCorrectly()
         {

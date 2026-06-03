@@ -67,6 +67,9 @@ public class BmsOptimizationServiceExceptionTests : IDisposable
         assertResult?.Invoke(result);
     }
 
+    /// <summary>
+    /// ExecuteDefinitionReductionAsync において、条件 InputFileNotFound の場合に ReturnsErrorResult されることを検証します。
+    /// </summary>
     [Fact]
     public Task ExecuteDefinitionReductionAsync_InputFileNotFound_ReturnsErrorResult() =>
         RunDefinitionReductionTestAsync(new()
@@ -77,6 +80,9 @@ public class BmsOptimizationServiceExceptionTests : IDisposable
             BeforeExecute = _ => File.Delete(Path.Combine(_context.TempDirectory, "test.bms")) // Force file not found
         });
 
+    /// <summary>
+    /// ExecuteDefinitionReductionAsync において、条件 ReadOnlyOutputDirectory の場合に ReturnsErrorResult されることを検証します。
+    /// </summary>
     [Fact]
     public Task ExecuteDefinitionReductionAsync_ReadOnlyOutputDirectory_ReturnsErrorResult() =>
         RunDefinitionReductionTestAsync(new()
@@ -88,6 +94,9 @@ public class BmsOptimizationServiceExceptionTests : IDisposable
             AfterExecute = outPath => { try { File.SetAttributes(outPath, FileAttributes.Normal); File.Delete(outPath); } catch { } }
         });
 
+    /// <summary>
+    /// ExecuteDefinitionReductionAsync において、条件 PhysicalDeletionWithLockedFile の場合に ContinuesProcessing されることを検証します。
+    /// </summary>
     [Fact]
     public async Task ExecuteDefinitionReductionAsync_PhysicalDeletionWithLockedFile_ContinuesProcessing()
     {
@@ -109,10 +118,16 @@ public class BmsOptimizationServiceExceptionTests : IDisposable
         });
     }
 
+    /// <summary>
+    /// FindOptimalThresholdsAsync において、条件 AllFilesNonExistent の場合に ReturnsNull されることを検証します。
+    /// </summary>
     [Fact]
     public Task FindOptimalThresholdsAsync_AllFilesNonExistent_ReturnsNull() =>
         RunOptimalThresholdsTestAsync(dir => [Path.Combine(dir, "ghost1.wav"), Path.Combine(dir, "ghost2.wav")], Assert.Null, endDef: 10);
 
+    /// <summary>
+    /// FindOptimalThresholdsAsync において、条件 WithCorruptedWaveFiles の場合に ReturnsNull されることを検証します。
+    /// </summary>
     [Fact]
     public Task FindOptimalThresholdsAsync_WithCorruptedWaveFiles_ReturnsNull() =>
         RunOptimalThresholdsTestAsync(
@@ -120,6 +135,9 @@ public class BmsOptimizationServiceExceptionTests : IDisposable
             res => { Assert.NotNull(res); Assert.Equal(1, res.Base36Result.Count); Assert.Equal(1, res.Base62Result.Count); }
         );
 
+    /// <summary>
+    /// FindOptimalThresholdsAsync において、条件 WithCorruptedFiles の場合に ReturnsWarnings されることを検証します。
+    /// </summary>
     [Fact]
     public Task FindOptimalThresholdsAsync_WithCorruptedFiles_ReturnsWarnings() =>
         RunOptimalThresholdsTestAsync(
@@ -133,6 +151,9 @@ public class BmsOptimizationServiceExceptionTests : IDisposable
             endDef: 3
         );
 
+    /// <summary>
+    /// FindOptimalThresholdsAsync において、条件 WithMissingFiles の場合に SkipsNonExistentFiles されることを検証します。
+    /// </summary>
     [Fact]
     public Task FindOptimalThresholdsAsync_WithMissingFiles_SkipsNonExistentFiles() =>
         RunOptimalThresholdsTestAsync(
@@ -141,6 +162,9 @@ public class BmsOptimizationServiceExceptionTests : IDisposable
             endDef: 3
         );
 
+    /// <summary>
+    /// FindOptimalThresholdsAsync において、条件 WithSingleCorruptedFile の場合に ReturnsWarningWithFilename されることを検証します。
+    /// </summary>
     [Fact]
     public Task FindOptimalThresholdsAsync_WithSingleCorruptedFile_ReturnsWarningWithFilename() =>
         RunOptimalThresholdsTestAsync(
@@ -149,6 +173,9 @@ public class BmsOptimizationServiceExceptionTests : IDisposable
             endDef: 2
         );
 
+    /// <summary>
+    /// FindOptimalThresholdsAsync において、条件 WithWarnings の場合に ProcessingContinuesSuccessfully されることを検証します。
+    /// </summary>
     [Fact]
     public Task FindOptimalThresholdsAsync_WithWarnings_ProcessingContinuesSuccessfully() =>
         RunOptimalThresholdsTestAsync(
@@ -162,6 +189,9 @@ public class BmsOptimizationServiceExceptionTests : IDisposable
             endDef: 5
         );
 
+    /// <summary>
+    /// FindOptimalThresholdsAsync において、条件 WithLockedFile の場合に ReturnsWarning されることを検証します。
+    /// </summary>
     [Fact]
     public async Task FindOptimalThresholdsAsync_WithLockedFile_ReturnsWarning()
     {
@@ -176,6 +206,9 @@ public class BmsOptimizationServiceExceptionTests : IDisposable
         );
     }
 
+    /// <summary>
+    /// FindOptimalThresholdsAsync において、条件 WarningCount の場合に MatchesFailedFileCount されることを検証します。
+    /// </summary>
     [Fact]
     public Task FindOptimalThresholdsAsync_WarningCount_MatchesFailedFileCount() =>
         RunOptimalThresholdsTestAsync(
@@ -189,6 +222,9 @@ public class BmsOptimizationServiceExceptionTests : IDisposable
             endDef: 4
         );
 
+    /// <summary>
+    /// ExecuteDefinitionReductionAsync において、条件 ReadOnlyFile の場合に ContinuesWithoutCrash されることを検証します。
+    /// </summary>
     [Fact]
     public Task ExecuteDefinitionReductionAsync_ReadOnlyFile_ContinuesWithoutCrash() =>
         RunDefinitionReductionTestAsync(new()
@@ -209,6 +245,9 @@ public class BmsOptimizationServiceExceptionTests : IDisposable
             PhysicalDeletion = true
         });
 
+    /// <summary>
+    /// ExecuteDefinitionReductionAsync において、条件 MixedExistingAndMissing の場合に HandlesGracefully されることを検証します。
+    /// </summary>
     [Fact]
     public Task ExecuteDefinitionReductionAsync_MixedExistingAndMissing_HandlesGracefully() =>
         RunDefinitionReductionTestAsync(new()
@@ -226,6 +265,9 @@ public class BmsOptimizationServiceExceptionTests : IDisposable
             PhysicalDeletion = true
         });
 
+    /// <summary>
+    /// ExecuteDefinitionReductionAsync において、条件 WithException の場合に ClearsCache されることを検証します。
+    /// </summary>
     [Fact]
     public async Task ExecuteDefinitionReductionAsync_WithException_ClearsCache()
     {

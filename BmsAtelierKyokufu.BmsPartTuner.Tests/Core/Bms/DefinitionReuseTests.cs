@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 using BmsAtelierKyokufu.BmsPartTuner.Models;
 using BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers;
@@ -34,6 +34,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
 
         #region Boundary Value Tests - 境界値テスト
 
+        /// <summary>
+        /// ReductDefinition において、条件 WithBase36MaxValue の場合に ZZ されることを検証します。
+        /// </summary>
         [Fact]
         public void ReductDefinition_WithBase36MaxValue_ZZ_Success()
         {
@@ -77,6 +80,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
             Assert.True(wavDefinitions.Count >= 1, $"WAV定義が見つかりません。実際の出力: {outputContent}");
         }
 
+        /// <summary>
+        /// ReductDefinition において、条件 WithBase62MaxValue の場合に zz されることを検証します。
+        /// </summary>
         [Fact]
         public void ReductDefinition_WithBase62MaxValue_zz_Success()
         {
@@ -124,6 +130,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
 
         #region Case Sensitivity Tests - 大文字小文字混在テスト
 
+        /// <summary>
+        /// ReductDefinition において、条件 WithMixedCase の場合に HandlesCorrectly されることを検証します。
+        /// </summary>
         [Fact]
         public void ReductDefinition_WithMixedCase_HandlesCorrectly()
         {
@@ -174,6 +183,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
 
         #region Duplicate Definition Tests - 重複定義テスト
 
+        /// <summary>
+        /// ReductDefinition において、条件 WithDuplicateDefinitions の場合に UsesFirstOccurrence されることを検証します。
+        /// </summary>
         [Fact]
         public void ReductDefinition_WithDuplicateDefinitions_UsesFirstOccurrence()
         {

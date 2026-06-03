@@ -9,6 +9,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
     {
         #region RMS範囲計算テスト
 
+        /// <summary>
+        /// CalculateRmsRange において、条件 SilentAudio の場合に ReturnsZeroToThreshold されることを検証します。
+        /// </summary>
         [Fact]
         public void CalculateRmsRange_SilentAudio_ReturnsZeroToThreshold()
         {
@@ -18,6 +21,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
             Assert.True(max > 0.0f);
         }
 
+        /// <summary>
+        /// CalculateRmsRange において、条件 NormalAudio の場合に ReturnsProportionalRange されることを検証します。
+        /// </summary>
         [Fact]
         public void CalculateRmsRange_NormalAudio_ReturnsProportionalRange()
         {
@@ -28,6 +34,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
             Assert.True(min > 0.0f);
         }
 
+        /// <summary>
+        /// CalculateRmsRange において、条件 HighRmsAudio の場合に ReturnsWiderRange されることを検証します。
+        /// </summary>
         [Fact]
         public void CalculateRmsRange_HighRmsAudio_ReturnsWiderRange()
         {
@@ -39,6 +48,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
             Assert.True(range2 > range1);
         }
 
+        /// <summary>
+        /// CalculateRmsRange において、条件 VeryLowRms の場合に ReturnsNonNegativeRange されることを検証します。
+        /// </summary>
         [Fact]
         public void CalculateRmsRange_VeryLowRms_ReturnsNonNegativeRange()
         {
@@ -48,6 +60,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
             Assert.True(max > min, "RMS範囲の最大値は最小値より大きいべき");
         }
 
+        /// <summary>
+        /// CalculateRmsRange において、条件 VeryHighRms の場合に ReturnsValidRange されることを検証します。
+        /// </summary>
         [Fact]
         public void CalculateRmsRange_VeryHighRms_ReturnsValidRange()
         {
@@ -62,6 +77,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
 
         #region 閾値生成テスト
 
+        /// <summary>
+        /// GenerateThresholds において、条件 ValidRange の場合に ReturnsDescendingList されることを検証します。
+        /// </summary>
         [Fact]
         public void GenerateThresholds_ValidRange_ReturnsDescendingList()
         {
@@ -80,6 +98,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
             Assert.InRange(thresholds[^1], 0.5f, 0.7f);
         }
 
+        /// <summary>
+        /// GenerateThresholds において、条件 SingleValue の場合に ReturnsSingleElement されることを検証します。
+        /// </summary>
         [Fact]
         public void GenerateThresholds_SingleValue_ReturnsSingleElement()
         {
@@ -89,6 +110,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
             Assert.Equal(0.8f, thresholds[0]);
         }
 
+        /// <summary>
+        /// GenerateThresholds において、条件 SmallStep の場合に ReturnsMoreElements されることを検証します。
+        /// </summary>
         [Fact]
         public void GenerateThresholds_SmallStep_ReturnsMoreElements()
         {
@@ -98,6 +122,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
             Assert.True(thresholds2.Count > thresholds1.Count);
         }
 
+        /// <summary>
+        /// GenerateThresholds において、条件 VerySmallRange の場合に ReturnsAtLeastOne されることを検証します。
+        /// </summary>
         [Fact]
         public void GenerateThresholds_VerySmallRange_ReturnsAtLeastOne()
         {
@@ -108,6 +135,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
             Assert.True(thresholds.All(t => t >= 0.95f && t <= 0.96f));
         }
 
+        /// <summary>
+        /// GenerateThresholds において、条件 VerySmallStep の場合に GeneratesManyThresholds されることを検証します。
+        /// </summary>
         [Fact]
         public void GenerateThresholds_VerySmallStep_GeneratesManyThresholds()
         {
@@ -116,6 +146,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
             Assert.True(thresholds.Count >= 10);
         }
 
+        /// <summary>
+        /// GenerateThresholds において、条件 StepLargerThanRange の場合に ReturnsSingleMaxValue されることを検証します。
+        /// </summary>
         [Fact]
         public void GenerateThresholds_StepLargerThanRange_ReturnsSingleMaxValue()
         {
@@ -125,6 +158,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
             Assert.Equal(0.6f, thresholds[0]);
         }
 
+        /// <summary>
+        /// GenerateThresholds において、条件 LargeNumberOfThresholds の場合に CompletsesQuickly されることを検証します。
+        /// </summary>
         [Fact]
         public void GenerateThresholds_LargeNumberOfThresholds_CompletsesQuickly()
         {

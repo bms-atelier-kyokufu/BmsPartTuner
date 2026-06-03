@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using System.Text;
 using BmsAtelierKyokufu.BmsPartTuner.Models;
 using BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers;
@@ -8,6 +8,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
     /// <summary>
     /// AudioCacheManager の動作検証テスト。
     /// 音声ファイルの読み込み・キャッシュ管理・リソース解放の仕様を確認します。
+    /// </summary>
+    /// <summary>
+    /// <see cref="AudioCacheManagerTests"/> の動作を検証するテストクラス。
     /// </summary>
     public class AudioCacheManagerTests : IDisposable
     {
@@ -84,6 +87,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
             return path;
         }
 
+        /// <summary>
+        /// PreloadAudioData において、条件 WithValidFile の場合に LoadsData されることを検証します。
+        /// </summary>
         [Fact]
         public void PreloadAudioData_WithValidFile_LoadsData()
         {
@@ -122,18 +128,30 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
             }
         }
 
+        /// <summary>
+        /// PreloadAudioData において、条件 WithMissingFile の場合に DoesNotCrash されることを検証します。
+        /// </summary>
         [Fact]
         public void PreloadAudioData_WithMissingFile_DoesNotCrash() =>
             RunPreloadFailureTest(_ => null, "missing.wav");
 
+        /// <summary>
+        /// PreloadAudioData において、条件 WithCorruptFile の場合に DoesNotCrash されることを検証します。
+        /// </summary>
         [Fact]
         public void PreloadAudioData_WithCorruptFile_DoesNotCrash() =>
             RunPreloadFailureTest(path => { CreateDummyWav(Path.GetFileName(path), isValid: false); return null; }, "corrupt.wav");
 
+        /// <summary>
+        /// PreloadAudioData において、条件 WithZeroByteFile の場合に DoesNotCrash されることを検証します。
+        /// </summary>
         [Fact]
         public void PreloadAudioData_WithZeroByteFile_DoesNotCrash() =>
             RunPreloadFailureTest(path => { File.Create(path).Dispose(); return null; }, "empty.wav");
 
+        /// <summary>
+        /// PreloadAudioData において、条件 WithLockedFile の場合に DoesNotCrash されることを検証します。
+        /// </summary>
         [Fact]
         public void PreloadAudioData_WithLockedFile_DoesNotCrash() =>
             RunPreloadFailureTest(path =>
@@ -142,6 +160,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
                 return new FileStream(path, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
             }, "locked.wav");
 
+        /// <summary>
+        /// PreloadAudioData において、条件 ResourceManagement の場合に VerifyHandlesClosed されることを検証します。
+        /// </summary>
         [Fact]
         public void PreloadAudioData_ResourceManagement_VerifyHandlesClosed()
         {
@@ -169,6 +190,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
             }
         }
 
+        /// <summary>
+        /// PointerSoundData において、条件 Dispose の場合に NullsOutReferences されることを検証します。
+        /// </summary>
         [Fact]
         public void PointerSoundData_Dispose_NullsOutReferences_AndThrowsObjectDisposedException()
         {
@@ -192,6 +216,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
             Assert.Throws<ObjectDisposedException>(() => pointerData.GetRawSpan(0, 0, 1));
         }
 
+        /// <summary>
+        /// PreNormalizedSoundData において、条件 Dispose の場合に NullsOutLshAndSamples されることを検証します。
+        /// </summary>
         [Fact]
         public void PreNormalizedSoundData_Dispose_NullsOutLshAndSamples()
         {

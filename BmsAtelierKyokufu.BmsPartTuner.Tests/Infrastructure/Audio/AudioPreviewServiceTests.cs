@@ -4,6 +4,9 @@ using Moq;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Infrastructure.Audio;
 
+/// <summary>
+/// <see cref="AudioPreviewServiceTests"/> の動作を検証するテストクラス。
+/// </summary>
 public class AudioPreviewServiceTests
 {
     private readonly Mock<IAudioPlayerFactory> _factoryMock;
@@ -32,6 +35,9 @@ public class AudioPreviewServiceTests
         _service = new AudioPreviewService(_dispatcherMock.Object, _factoryMock.Object);
     }
 
+    /// <summary>
+    /// PreviewAudioAsync において、条件 StopsPreviousPlayback の場合に BeforePlayingNew されることを検証します。
+    /// </summary>
     [Fact]
     public async Task PreviewAudioAsync_StopsPreviousPlayback_BeforePlayingNew()
     {
@@ -67,6 +73,9 @@ public class AudioPreviewServiceTests
         _playerMock2.Verify(p => p.Play(file2), Times.Once);
     }
 
+    /// <summary>
+    /// PreviewAudioAsync において、条件 HandlesException の場合に Gracefully されることを検証します。
+    /// </summary>
     [Fact]
     public async Task PreviewAudioAsync_HandlesException_Gracefully()
     {

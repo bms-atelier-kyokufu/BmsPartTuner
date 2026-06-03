@@ -2,6 +2,9 @@
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
 {
+    /// <summary>
+    /// <see cref="WaveValidationSIMDTests"/> の動作を検証するテストクラス。
+    /// </summary>
     public class WaveValidationSIMDTests
     {
         #region Helper Methods
@@ -20,6 +23,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
 
         #region SIMD Consistency Tests - SIMD版と非SIMD版の一貫性
 
+        /// <summary>
+        /// テスト を検証します。
+        /// </summary>
         [Theory]
         [InlineData(7)]     // ベクトルサイズ未満
         [InlineData(8)]     // ベクトルサイズちょうど（AVX2）
@@ -47,6 +53,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
 
         #region Performance Characteristic Tests - パフォーマンス特性
 
+        /// <summary>
+        /// SIMD において、条件 LargeArray の場合に CompletesInReasonableTime されることを検証します。
+        /// </summary>
         [Fact]
         public void SIMD_LargeArray_CompletesInReasonableTime()
         {

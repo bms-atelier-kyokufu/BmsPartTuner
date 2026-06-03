@@ -5,10 +5,16 @@ using BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
 {
+    /// <summary>
+    /// <see cref="SimulationEngineEdgeCasesTests"/> の動作を検証するテストクラス。
+    /// </summary>
     public class SimulationEngineEdgeCasesTests
     {
         #region エッジケーステスト
 
+        /// <summary>
+        /// RunParallelSimulation において、条件 NullCache の場合に HandledGracefully されることを検証します。
+        /// </summary>
         [Fact]
         public void RunParallelSimulation_NullCache_HandledGracefully()
         {
@@ -136,6 +142,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
         /// <summary>
         /// 無音データ（すべてゼロ）のファイルでの動作検証。
         /// 相関係数が計算不能になるケースの確認。
+        /// </summary>
+        /// <summary>
+        /// RunParallelSimulation において、条件 SilentAudioData の場合に HandlesGracefully されることを検証します。
         /// </summary>
         [Fact]
         public void RunParallelSimulation_SilentAudioData_HandlesGracefully()

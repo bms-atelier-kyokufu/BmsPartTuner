@@ -14,6 +14,9 @@ public class BmsOptimizationServiceValidationTests
         _service = new BmsOptimizationService();
     }
 
+    /// <summary>
+    /// ValidateDefinitionRange において、条件 ValidInputs の場合に ReturnsSuccess されることを検証します。
+    /// </summary>
     [Theory]
     [InlineData("01", "02", true)]  // Valid: 1 to 2
     [InlineData("01", "10", true)]  // Valid: 1 to 16
@@ -29,6 +32,9 @@ public class BmsOptimizationServiceValidationTests
         }
     }
 
+    /// <summary>
+    /// テスト を検証します。
+    /// </summary>
     [Theory]
     [InlineData("", "10")]          // Empty start
     [InlineData("01", "")]          // Empty end
@@ -44,6 +50,9 @@ public class BmsOptimizationServiceValidationTests
         Assert.NotEmpty(result.Errors);
     }
 
+    /// <summary>
+    /// テスト を検証します。
+    /// </summary>
     [Theory]
     [InlineData("80", 0.80f)]       // Percentage format
     [InlineData("0.8", 0.80f)]      // Decimal format
@@ -58,6 +67,9 @@ public class BmsOptimizationServiceValidationTests
         Assert.Equal(expectedValue, result.Value, precision: 2);
     }
 
+    /// <summary>
+    /// テスト を検証します。
+    /// </summary>
     [Theory]
     [InlineData("")]                // Empty
     [InlineData("abc")]             // Non-numeric

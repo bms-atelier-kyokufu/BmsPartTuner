@@ -2,6 +2,9 @@
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Scenarios;
 
+/// <summary>
+/// <see cref="OracleData"/> の動作を検証するテストクラス。
+/// </summary>
 public class OracleData
 {
     [JsonPropertyName("test_scenario")]
@@ -17,6 +20,9 @@ public class OracleData
     public List<OracleIsolated> ExpectedIsolated { get; set; } = [];
 }
 
+/// <summary>
+/// <see cref="OracleCluster"/> の動作を検証するテストクラス。
+/// </summary>
 public class OracleCluster
 {
     [JsonPropertyName("logical_group_id")]
@@ -32,6 +38,9 @@ public class OracleCluster
     public List<string> SourceWavIds { get; set; } = [];
 }
 
+/// <summary>
+/// <see cref="OracleIsolated"/> の動作を検証するテストクラス。
+/// </summary>
 public class OracleIsolated
 {
     [JsonPropertyName("logical_group_id")]

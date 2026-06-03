@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using System.Text;
 using System.Text.Json;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
@@ -9,6 +9,9 @@ using Xunit.Abstractions;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Scenarios;
 
+/// <summary>
+/// <see cref="BmsonOptimizationIntegrationTests"/> の動作を検証するテストクラス。
+/// </summary>
 public class BmsonOptimizationIntegrationTests
 {
     private static readonly JsonSerializerOptions Options = new() { PropertyNameCaseInsensitive = true };
@@ -20,6 +23,9 @@ public class BmsonOptimizationIntegrationTests
         Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
     }
 
+    /// <summary>
+    /// DefinitionReuse において、条件 ShouldMatchV1 の場合に 0 されることを検証します。
+    /// </summary>
     [Fact]
     public void DefinitionReuse_ShouldMatchV1_0_0_0_Output()
     {
@@ -72,6 +78,9 @@ public class BmsonOptimizationIntegrationTests
         }
     }
 
+    /// <summary>
+    /// BmsonToBms において、条件 Optimization の場合に IntegrationTest されることを検証します。
+    /// </summary>
     [Fact]
     public void BmsonToBms_Optimization_IntegrationTest()
     {
@@ -145,6 +154,9 @@ public class BmsonOptimizationIntegrationTests
         if (File.Exists(optimizedBmsFilePath)) File.Delete(optimizedBmsFilePath);
     }
 
+    /// <summary>
+    /// OracleValidation において ShouldPass の場合の挙動を検証します。
+    /// </summary>
     [Fact]
     public void OracleValidation_ShouldPass()
     {
@@ -245,6 +257,9 @@ public class BmsonOptimizationIntegrationTests
         if (File.Exists(optimizedBmsFilePath)) File.Delete(optimizedBmsFilePath);
     }
 
+    /// <summary>
+    /// DiscoverHeuristicThreshold において、条件 FFT16D の場合に R2 されることを検証します。
+    /// </summary>
     [Fact]
     public void DiscoverHeuristicThreshold_FFT16D_R2_Relationship()
     {
@@ -363,6 +378,9 @@ public class BmsonOptimizationIntegrationTests
         _output.WriteLine($"Suggested Safe Distance Threshold (with 50% margin): {suggestedThreshold:F4}");
     }
 
+    /// <summary>
+    /// DiscoverHeuristicThreshold において、条件 SimHash256 の場合に R2 されることを検証します。
+    /// </summary>
     [Fact]
     public void DiscoverHeuristicThreshold_SimHash256_R2_Relationship()
     {

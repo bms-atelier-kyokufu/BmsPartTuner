@@ -4,10 +4,16 @@ using BmsAtelierKyokufu.BmsPartTuner.UI.Converters;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Tests.UI.Converters;
 
+/// <summary>
+/// <see cref="ValueToWidthConverterTests"/> の動作を検証するテストクラス。
+/// </summary>
 public class ValueToWidthConverterTests
 {
     private readonly ValueToWidthConverter _converter = new();
 
+    /// <summary>
+    /// Convert において、条件 WithValidInputs の場合に ReturnsCalculatedWidth されることを検証します。
+    /// </summary>
     [Fact]
     public void Convert_WithValidInputs_ReturnsCalculatedWidth()
     {
@@ -23,6 +29,9 @@ public class ValueToWidthConverterTests
         Assert.Equal(expected, (double)result, 2);
     }
 
+    /// <summary>
+    /// Convert において、条件 WithClampedValue の場合に ReturnsClampedWidth されることを検証します。
+    /// </summary>
     [Fact]
     public void Convert_WithClampedValue_ReturnsClampedWidth()
     {
@@ -47,6 +56,9 @@ public class ValueToWidthConverterTests
         Assert.Equal(expected, (double)result, 2);
     }
 
+    /// <summary>
+    /// Convert において、条件 WithInvalidInputs の場合に ReturnsZero されることを検証します。
+    /// </summary>
     [Fact]
     public void Convert_WithInvalidInputs_ReturnsZero()
     {
@@ -60,6 +72,9 @@ public class ValueToWidthConverterTests
         Assert.Equal(0.0, result);
     }
 
+    /// <summary>
+    /// ConvertBack において ReturnsDoNothing の場合の挙動を検証します。
+    /// </summary>
     [Fact]
     public void ConvertBack_ReturnsDoNothing()
     {

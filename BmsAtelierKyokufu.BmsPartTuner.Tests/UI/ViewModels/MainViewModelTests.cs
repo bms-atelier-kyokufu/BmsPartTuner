@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Interfaces.Audio;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Interfaces.Bms;
 using BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Audio;
@@ -11,8 +11,14 @@ using Moq;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Tests.UI.ViewModels
 {
+    /// <summary>
+    /// <see cref="MainViewModelTests"/> の動作を検証するテストクラス。
+    /// </summary>
     public class MainViewModelTests
     {
+        /// <summary>
+        /// OnInputPathChanged において、条件 WithBmsonFile の場合に DownconvertsAndLoadsWorkingBmsPath されることを検証します。
+        /// </summary>
         [Fact]
         public Task OnInputPathChanged_WithBmsonFile_DownconvertsAndLoadsWorkingBmsPath()
         {
@@ -92,6 +98,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.UI.ViewModels
             });
         }
 
+        /// <summary>
+        /// OnInputPathChanged において、条件 WithBmsonFile の場合に NoValidationError されることを検証します。
+        /// </summary>
         [Fact]
         public Task OnInputPathChanged_WithBmsonFile_NoValidationError()
         {

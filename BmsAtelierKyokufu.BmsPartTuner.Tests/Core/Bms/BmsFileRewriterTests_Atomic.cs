@@ -5,6 +5,9 @@ using BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
 {
+    /// <summary>
+    /// <see cref="BmsFileRewriterTests_Atomic"/> の動作を検証するテストクラス。
+    /// </summary>
     public class BmsFileRewriterTests_Atomic
     {
         public BmsFileRewriterTests_Atomic()
@@ -12,6 +15,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
         }
 
+        /// <summary>
+        /// WriteBmsFile において、条件 LockedTarget の場合に PreservesOriginalContent されることを検証します。
+        /// </summary>
         [Fact]
         public void WriteBmsFile_LockedTarget_PreservesOriginalContent()
         {
@@ -56,6 +62,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
             Assert.Empty(tempFiles);
         }
 
+        /// <summary>
+        /// WriteBmsFile において、条件 Success の場合に WritesToTempAndMoves されることを検証します。
+        /// </summary>
         [Fact]
         public void WriteBmsFile_Success_WritesToTempAndMoves()
         {

@@ -5,10 +5,16 @@ using BmsAtelierKyokufu.BmsPartTuner.UI.Converters;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Tests.UI.Converters;
 
+/// <summary>
+/// <see cref="ObjectToBoolConverterTests"/> の動作を検証するテストクラス。
+/// </summary>
 public class ObjectToBoolConverterTests
 {
     private readonly ObjectToBoolConverter _converter = new();
 
+    /// <summary>
+    /// Convert において、条件 WithNull の場合に ReturnsFalse されることを検証します。
+    /// </summary>
     [Fact]
     public void Convert_WithNull_ReturnsFalse()
     {
@@ -22,6 +28,9 @@ public class ObjectToBoolConverterTests
         Assert.False((bool)result);
     }
 
+    /// <summary>
+    /// Convert において、条件 WithObject の場合に ReturnsTrue されることを検証します。
+    /// </summary>
     [Fact]
     public void Convert_WithObject_ReturnsTrue()
     {
@@ -35,6 +44,9 @@ public class ObjectToBoolConverterTests
         Assert.True((bool)result);
     }
 
+    /// <summary>
+    /// ConvertBack において、条件 WithFalse の場合に ReturnsNull されることを検証します。
+    /// </summary>
     [Fact]
     public void ConvertBack_WithFalse_ReturnsNull()
     {
@@ -48,6 +60,9 @@ public class ObjectToBoolConverterTests
         Assert.Null(result);
     }
 
+    /// <summary>
+    /// ConvertBack において、条件 WithTrue の場合に ReturnsBindingDoNothing されることを検証します。
+    /// </summary>
     [Fact]
     public void ConvertBack_WithTrue_ReturnsBindingDoNothing()
     {
@@ -61,6 +76,9 @@ public class ObjectToBoolConverterTests
         Assert.Equal(Binding.DoNothing, result);
     }
 
+    /// <summary>
+    /// ConvertBack において、条件 WithNonBool の場合に ReturnsBindingDoNothing されることを検証します。
+    /// </summary>
     [Fact]
     public void ConvertBack_WithNonBool_ReturnsBindingDoNothing()
     {

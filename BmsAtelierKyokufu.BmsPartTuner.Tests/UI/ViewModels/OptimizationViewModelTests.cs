@@ -1,4 +1,4 @@
-using BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
+﻿using BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Interfaces.Bms;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Optimization;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Validation;
@@ -9,9 +9,12 @@ using BmsAtelierKyokufu.BmsPartTuner.UseCases.Dto;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Tests.UI.ViewModels
 {
-    // Moqを使わないテスト用のシンプルなフェイクサービス
+    /// <summary>
+    /// テスト用のフェイク最適化サービス。
+    /// </summary>
     internal class FakeOptimizationService : IBmsOptimizationService
     {
+        /// <inheritdoc />
         public Task<OptimizationResult?> FindOptimalThresholdsAsync(List<string> files, int startDefinition, int endDefinition, IProgress<int>? progress = null)
         {
             return Task.Run<OptimizationResult?>(async () =>
@@ -31,6 +34,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.UI.ViewModels
             });
         }
 
+        /// <inheritdoc />
         public ValidationResult<float> ValidateR2Threshold(string r2Text)
         {
             if (int.TryParse(r2Text, out var v) && v >= 0 && v <= 100)
@@ -40,6 +44,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.UI.ViewModels
             return ValidationResult<float>.Failure("invalid");
         }
 
+        /// <inheritdoc />
         public async Task<BmsOptimizationService.ReductionResult> ExecuteDefinitionReductionAsync(
             IReadOnlyList<BmsAudioFile> fileList,
             string inputPath,
@@ -59,14 +64,19 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.UI.ViewModels
             };
         }
 
+        /// <inheritdoc />
         public ValidationResult ValidateDefinitionRange(string startVal, string endVal)
         {
             return ValidationResult.Success();
         }
     }
 
+    /// <summary>
+    /// テスト用のフェイク最適化ユースケース。
+    /// </summary>
     internal class FakeOptimizationUseCase : BmsAtelierKyokufu.BmsPartTuner.UseCases.IBmsOptimizationUseCase
     {
+        /// <inheritdoc />
         public Task<OptimizationUseCaseResult<OptimizationResult>> ExecuteThresholdOptimizationAsync(ThresholdOptimizationRequest request)
         {
             if (request.BmsFileList == null || request.BmsFileList.Count == 0)
@@ -81,6 +91,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.UI.ViewModels
             }));
         }
 
+        /// <inheritdoc />
         public Task<OptimizationUseCaseResult<BmsOptimizationService.ReductionResult>> ExecuteDefinitionReductionAsync(DefinitionReductionRequest request)
         {
             if (request.R2Threshold < 0)
@@ -101,8 +112,14 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.UI.ViewModels
     /// OptimizationViewModel の動作検証テスト。
     /// 閾値最適化・定義削減の実行フロー、状態管理、エラーハンドリングを確認します。
     /// </summary>
+    /// <summary>
+    /// <see cref="OptimizationViewModelTests"/> の動作を検証するテストクラス。
+    /// </summary>
     public class OptimizationViewModelTests
     {
+        /// <summary>
+        /// 指定された設定に基づいてViewModelのテストを実行します。
+        /// </summary>
         private static Task RunViewModelTestAsync(
             IBmsOptimizationService service,
             BmsAtelierKyokufu.BmsPartTuner.UseCases.IBmsOptimizationUseCase useCase,
@@ -119,6 +136,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.UI.ViewModels
             });
         }
 
+        /// <summary>
+        /// 閾値最適化が実行されたときに、ビジー状態と進捗状況が適切に更新されることを検証します。
+        /// </summary>
         [Fact]
         public Task ExecuteThresholdOptimizationAsync_UpdatesBusyStateAndProgress() =>
             RunViewModelTestAsync(
@@ -136,6 +156,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.UI.ViewModels
                 }
             );
 
+        /// <summary>
+        /// ファイルリストが空の状態で閾値最適化を実行したときに、エラーイベントが発生し結果がnullになることを検証します。
+        /// </summary>
         [Fact]
         public Task ExecuteThresholdOptimizationAsync_EmptyFiles_RaisesErrorAndReturnsNull()
         {
@@ -153,6 +176,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.UI.ViewModels
             );
         }
 
+        /// <summary>
+        /// 有効な閾値で定義削減を実行したときに、進捗が報告され結果が出力されることを検証します。
+        /// </summary>
         [Fact]
         public Task ExecuteDefinitionReductionAsync_ValidatesThresholdAndReportsResult()
         {
@@ -166,6 +192,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.UI.ViewModels
             );
         }
 
+        /// <summary>
+        /// 無効な閾値で定義削減を実行したときに、エラーイベントが発生することを検証します。
+        /// </summary>
         [Fact]
         public Task ExecuteDefinitionReductionAsync_InvalidThreshold_RaisesError()
         {
@@ -181,6 +210,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.UI.ViewModels
 
         #region Priority A: State Transition Tests (UIフリーズ防止)
 
+        /// <summary>
+        /// サービス実行中に例外が発生したときに、エラー状態へ適切に遷移することを検証します。
+        /// </summary>
         [Fact]
         public Task ExecuteThresholdOptimizationAsync_ServiceThrows_TransitionsToErrorState()
         {
@@ -194,6 +226,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.UI.ViewModels
             );
         }
 
+        /// <summary>
+        /// 閾値最適化の処理中において、ビジー状態（IsBusy）の遷移順序が正しいことを検証します。
+        /// </summary>
         [Fact]
         public Task ExecuteThresholdOptimizationAsync_IsBusyTransition_CorrectOrder()
         {
@@ -207,6 +242,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.UI.ViewModels
             );
         }
 
+        /// <summary>
+        /// 閾値最適化の処理中において、進捗状況の値が正しく報告されることを検証します。
+        /// </summary>
         [Fact]
         public Task ExecuteThresholdOptimizationAsync_ProgressUpdates_ReportedCorrectly()
         {
@@ -220,6 +258,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.UI.ViewModels
             );
         }
 
+        /// <summary>
+        /// 定義削減の処理中において、ビジー状態（IsBusy）の遷移順序が正しいことを検証します。
+        /// </summary>
         [Fact]
         public Task ExecuteDefinitionReductionAsync_StateTransition_CorrectOrder()
         {
@@ -233,6 +274,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.UI.ViewModels
             );
         }
 
+        /// <summary>
+        /// サービスがnullを返却したときに、プログラムがフリーズせず適切に処理を終了することを検証します。
+        /// </summary>
         [Fact]
         public Task ExecuteThresholdOptimizationAsync_ServiceReturnsNull_HandlesGracefully() =>
             RunViewModelTestAsync(
@@ -249,21 +293,24 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.UI.ViewModels
     #region Test Doubles for State Transition Tests
 
     /// <summary>
-    /// 例外をスローするフェイクサービス（エラーハンドリングテスト用）。
+    /// 例外を意図的にスローするテスト用のフェイク最適化サービス。
     /// </summary>
     internal class ThrowingOptimizationService : IBmsOptimizationService
     {
+        /// <inheritdoc />
         public Task<OptimizationResult?> FindOptimalThresholdsAsync(
             List<string> files, int startDefinition, int endDefinition, IProgress<int>? progress = null)
         {
             throw new InvalidOperationException("Test exception");
         }
 
+        /// <inheritdoc />
         public ValidationResult<float> ValidateR2Threshold(string r2Text)
         {
             return ValidationResult<float>.Success(0.8f);
         }
 
+        /// <inheritdoc />
         public Task<BmsOptimizationService.ReductionResult> ExecuteDefinitionReductionAsync(
             IReadOnlyList<BmsAudioFile> fileList,
             string inputPath,
@@ -273,6 +320,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.UI.ViewModels
             throw new InvalidOperationException("Test exception");
         }
 
+        /// <inheritdoc />
         public ValidationResult ValidateDefinitionRange(string startVal, string endVal)
         {
             return ValidationResult.Success();
@@ -280,21 +328,24 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.UI.ViewModels
     }
 
     /// <summary>
-    /// nullを返すフェイクサービス（null処理テスト用）。
+    /// 意図的にnullを返却するテスト用のフェイク最適化サービス。
     /// </summary>
     internal class NullReturningOptimizationService : IBmsOptimizationService
     {
+        /// <inheritdoc />
         public Task<OptimizationResult?> FindOptimalThresholdsAsync(
             List<string> files, int startDefinition, int endDefinition, IProgress<int>? progress = null)
         {
             return Task.FromResult<OptimizationResult?>(null);
         }
 
+        /// <inheritdoc />
         public ValidationResult<float> ValidateR2Threshold(string r2Text)
         {
             return ValidationResult<float>.Success(0.8f);
         }
 
+        /// <inheritdoc />
         public Task<BmsOptimizationService.ReductionResult> ExecuteDefinitionReductionAsync(
             IReadOnlyList<BmsAudioFile> fileList,
             string inputPath,
@@ -309,14 +360,19 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.UI.ViewModels
             });
         }
 
+        /// <inheritdoc />
         public ValidationResult ValidateDefinitionRange(string startVal, string endVal)
         {
             return ValidationResult.Success();
         }
     }
 
+    /// <summary>
+    /// 例外を意図的にスローするテスト用のフェイク最適化ユースケース。
+    /// </summary>
     internal class ThrowingOptimizationUseCase : BmsAtelierKyokufu.BmsPartTuner.UseCases.IBmsOptimizationUseCase
     {
+        /// <inheritdoc />
         public Task<OptimizationUseCaseResult<OptimizationResult>> ExecuteThresholdOptimizationAsync(ThresholdOptimizationRequest request)
             => Task.FromResult(OptimizationUseCaseResult<OptimizationResult>.Failure("Test exception"));
 
@@ -324,8 +380,12 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.UI.ViewModels
             => Task.FromResult(OptimizationUseCaseResult<BmsOptimizationService.ReductionResult>.Failure("Test exception"));
     }
 
+    /// <summary>
+    /// 意図的にnullに相当するエラー結果を返却するテスト用のフェイク最適化ユースケース。
+    /// </summary>
     internal class NullReturningOptimizationUseCase : BmsAtelierKyokufu.BmsPartTuner.UseCases.IBmsOptimizationUseCase
     {
+        /// <inheritdoc />
         public Task<OptimizationUseCaseResult<OptimizationResult>> ExecuteThresholdOptimizationAsync(ThresholdOptimizationRequest request)
             => Task.FromResult(OptimizationUseCaseResult<OptimizationResult>.Failure("Service returned null"));
 

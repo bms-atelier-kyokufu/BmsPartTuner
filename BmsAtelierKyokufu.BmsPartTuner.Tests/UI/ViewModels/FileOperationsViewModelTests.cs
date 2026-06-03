@@ -4,8 +4,14 @@ using BmsAtelierKyokufu.BmsPartTuner.UI.ViewModels;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Tests.UI.ViewModels;
 
+/// <summary>
+/// <see cref="FileOperationsViewModelTests"/> の動作を検証するテストクラス。
+/// </summary>
 public class FileOperationsViewModelTests
 {
+    /// <summary>
+    /// OnInputPathChanged において、条件 WithBmsonFile の場合に ForcesBmsOutputExtension されることを検証します。
+    /// </summary>
     [Fact]
     public void OnInputPathChanged_WithBmsonFile_ForcesBmsOutputExtension()
     {

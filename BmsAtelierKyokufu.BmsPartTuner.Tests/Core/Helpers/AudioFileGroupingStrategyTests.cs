@@ -1,4 +1,4 @@
-using BmsAtelierKyokufu.BmsPartTuner.Core.Helpers;
+﻿using BmsAtelierKyokufu.BmsPartTuner.Core.Helpers;
 using BmsAtelierKyokufu.BmsPartTuner.Models;
 using BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers;
 
@@ -18,6 +18,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Helpers;
 /// - エッジケース（null、空リスト、巨大グループ）
 /// - キーワードマッチングの大文字小文字区別なし
 /// </para>
+/// </summary>
+/// <summary>
+/// <see cref="AudioFileGroupingStrategyTests"/> の動作を検証するテストクラス。
 /// </summary>
 public class AudioFileGroupingStrategyTests
 {
@@ -58,6 +61,9 @@ public class AudioFileGroupingStrategyTests
 
     #region GroupFiles - Traditional Tests
 
+    /// <summary>
+    /// GroupFiles において、条件 EmptyList の場合に ReturnsEmptyGroups されることを検証します。
+    /// </summary>
     [Fact]
     public void GroupFiles_EmptyList_ReturnsEmptyGroups()
     {
@@ -71,6 +77,9 @@ public class AudioFileGroupingStrategyTests
         Assert.Empty(groups);
     }
 
+    /// <summary>
+    /// GroupFiles において、条件 NullList の場合に ReturnsEmptyGroups されることを検証します。
+    /// </summary>
     [Fact]
     public void GroupFiles_NullList_ReturnsEmptyGroups()
     {
@@ -78,6 +87,9 @@ public class AudioFileGroupingStrategyTests
         Assert.Throws<NullReferenceException>(() => AudioFileGroupingStrategy.GroupFiles(audioCache, null!, 1, 10));
     }
 
+    /// <summary>
+    /// GroupFiles において、条件 SameFileSize の場合に GroupsTogether されることを検証します。
+    /// </summary>
     [Fact]
     public void GroupFiles_SameFileSize_GroupsTogether()
     {
@@ -97,6 +109,9 @@ public class AudioFileGroupingStrategyTests
         Assert.Equal(3, groups[0].Count); // 3ファイル全て
     }
 
+    /// <summary>
+    /// GroupFiles において、条件 DifferentFileSize の場合に SeparatesGroups されることを検証します。
+    /// </summary>
     [Fact]
     public void GroupFiles_DifferentFileSize_SeparatesGroups()
     {
@@ -116,6 +131,9 @@ public class AudioFileGroupingStrategyTests
         Assert.True(groups.Count >= 1); // 少なくとも1グループ
     }
 
+    /// <summary>
+    /// GroupFiles において、条件 DifferentRms の場合に SeparatesGroups されることを検証します。
+    /// </summary>
     [Fact]
     public void GroupFiles_DifferentRms_SeparatesGroups()
     {
@@ -135,6 +153,9 @@ public class AudioFileGroupingStrategyTests
         Assert.True(groups.Count >= 1);
     }
 
+    /// <summary>
+    /// GroupFiles において、条件 OutsideRange の場合に ExcludesFiles されることを検証します。
+    /// </summary>
     [Fact]
     public void GroupFiles_OutsideRange_ExcludesFiles()
     {
@@ -156,6 +177,9 @@ public class AudioFileGroupingStrategyTests
         Assert.DoesNotContain(2, allIndices); // file3 (index 2) - 範囲外
     }
 
+    /// <summary>
+    /// GroupFiles において、条件 NoCachedData の場合に ExcludesFile されることを検証します。
+    /// </summary>
     [Fact]
     public void GroupFiles_NoCachedData_ExcludesFile()
     {
@@ -179,6 +203,9 @@ public class AudioFileGroupingStrategyTests
 
     #region GroupFiles - Keyword Filter Tests
 
+    /// <summary>
+    /// GroupFiles において、条件 WithKeywords の場合に SeparatesInstruments されることを検証します。
+    /// </summary>
     [Fact]
     public void GroupFiles_WithKeywords_SeparatesInstruments()
     {
@@ -199,6 +226,9 @@ public class AudioFileGroupingStrategyTests
         Assert.True(groups.Count >= 2); // 少なくとも2つのグループ（kick, snare）
     }
 
+    /// <summary>
+    /// GroupFiles において、条件 WithKeywords の場合に CaseInsensitive されることを検証します。
+    /// </summary>
     [Fact]
     public void GroupFiles_WithKeywords_CaseInsensitive()
     {
@@ -219,6 +249,9 @@ public class AudioFileGroupingStrategyTests
         Assert.Equal(3, totalFiles); // 大文字小文字関係なく全てマッチ
     }
 
+    /// <summary>
+    /// GroupFiles において、条件 WithKeywords の場合に NoMatch されることを検証します。
+    /// </summary>
     [Fact]
     public void GroupFiles_WithKeywords_NoMatch_ExcludesFiles()
     {
@@ -239,6 +272,9 @@ public class AudioFileGroupingStrategyTests
         Assert.Equal(2, totalFiles); // cymbalは除外される
     }
 
+    /// <summary>
+    /// GroupFiles において、条件 WithEmptyKeywords の場合に UsesTraditionalGrouping されることを検証します。
+    /// </summary>
     [Fact]
     public void GroupFiles_WithEmptyKeywords_UsesTraditionalGrouping()
     {
@@ -258,6 +294,9 @@ public class AudioFileGroupingStrategyTests
         Assert.Equal(2, groups[0].Count);
     }
 
+    /// <summary>
+    /// GroupFiles において、条件 WithNullKeywords の場合に UsesTraditionalGrouping されることを検証します。
+    /// </summary>
     [Fact]
     public void GroupFiles_WithNullKeywords_UsesTraditionalGrouping()
     {
@@ -280,6 +319,9 @@ public class AudioFileGroupingStrategyTests
 
     #region Edge Cases
 
+    /// <summary>
+    /// GroupFiles において、条件 SingleFile の場合に ReturnsOneGroup されることを検証します。
+    /// </summary>
     [Fact]
     public void GroupFiles_SingleFile_ReturnsOneGroup()
     {
@@ -297,6 +339,9 @@ public class AudioFileGroupingStrategyTests
         Assert.Single(groups[0]);
     }
 
+    /// <summary>
+    /// GroupFiles において、条件 FileWithNullName の場合に HandlesGracefully されることを検証します。
+    /// </summary>
     [Fact]
     public void GroupFiles_FileWithNullName_HandlesGracefully()
     {
@@ -314,6 +359,9 @@ public class AudioFileGroupingStrategyTests
         Assert.NotEmpty(groups);
     }
 
+    /// <summary>
+    /// GroupFiles において、条件 ZeroFileSize の場合に HandlesGracefully されることを検証します。
+    /// </summary>
     [Fact]
     public void GroupFiles_ZeroFileSize_HandlesGracefully()
     {
@@ -331,6 +379,9 @@ public class AudioFileGroupingStrategyTests
         Assert.NotEmpty(groups);
     }
 
+    /// <summary>
+    /// GroupFiles において、条件 VeryHighRms の場合に HandlesGracefully されることを検証します。
+    /// </summary>
     [Fact]
     public void GroupFiles_VeryHighRms_HandlesGracefully()
     {
@@ -352,6 +403,9 @@ public class AudioFileGroupingStrategyTests
 
     #region Group Size Tests
 
+    /// <summary>
+    /// GroupFiles において ReturnsNonEmptyGroups の場合の挙動を検証します。
+    /// </summary>
     [Fact]
     public void GroupFiles_ReturnsNonEmptyGroups()
     {
@@ -370,6 +424,9 @@ public class AudioFileGroupingStrategyTests
         Assert.All(groups, g => Assert.NotEmpty(g)); // 全てのグループが空でない
     }
 
+    /// <summary>
+    /// GroupFiles において、条件 GroupIndices の場合に AreValid されることを検証します。
+    /// </summary>
     [Fact]
     public void GroupFiles_GroupIndices_AreValid()
     {
@@ -389,6 +446,9 @@ public class AudioFileGroupingStrategyTests
         Assert.All(allIndices, idx => Assert.InRange(idx, 0, files.Count - 1));
     }
 
+    /// <summary>
+    /// GroupFiles において NoFilesDuplicated の場合の挙動を検証します。
+    /// </summary>
     [Fact]
     public void GroupFiles_NoFilesDuplicated()
     {

@@ -18,6 +18,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.UI.Converters;
 /// <item><description>型の多様性: string, float, double の入力対応</description></item>
 /// </list>
 /// </summary>
+/// <summary>
+/// <see cref="CorrelationCoefficientConverterTests"/> の動作を検証するテストクラス。
+/// </summary>
 public class CorrelationCoefficientConverterTests
 {
     private readonly CorrelationCoefficientConverter _converter = new();
@@ -46,6 +49,9 @@ public class CorrelationCoefficientConverterTests
 
     #region Convert Tests - 内部値から表示値への変換
 
+    /// <summary>
+    /// テスト を検証します。
+    /// </summary>
     [Theory]
     [InlineData("0.95", "95")]
     [InlineData("0.00", "0")]
@@ -58,6 +64,9 @@ public class CorrelationCoefficientConverterTests
         AssertConvert(input, expected);
     }
 
+    /// <summary>
+    /// テスト を検証します。
+    /// </summary>
     [Theory]
     [InlineData(0.95f, "95")]
     [InlineData(0.00f, "0")]
@@ -73,6 +82,9 @@ public class CorrelationCoefficientConverterTests
         AssertConvert(input, expected);
     }
 
+    /// <summary>
+    /// テスト を検証します。
+    /// </summary>
     [Theory]
     [InlineData(0.95, "95")]
     [InlineData(0.00, "0")]
@@ -85,6 +97,9 @@ public class CorrelationCoefficientConverterTests
         AssertConvert(input, expected);
     }
 
+    /// <summary>
+    /// Convert において、条件 StringWithRounding の場合に RoundsCorrectly されることを検証します。
+    /// </summary>
     [Theory]
     [InlineData("0.955", "96")]  // 0.955 → 95.5 → 96 (四捨五入)
     [InlineData("0.944", "94")]  // 0.944 → 94.4 → 94 (四捨五入)
@@ -93,12 +108,18 @@ public class CorrelationCoefficientConverterTests
         AssertConvert(input, expected);
     }
 
+    /// <summary>
+    /// Convert において、条件 NullValue の場合に ReturnsEmptyString されることを検証します。
+    /// </summary>
     [Fact]
     public void Convert_NullValue_ReturnsEmptyString()
     {
         AssertConvert(null, string.Empty);
     }
 
+    /// <summary>
+    /// Convert において、条件 InvalidString の場合に ReturnsOriginalString されることを検証します。
+    /// </summary>
     [Fact]
     public void Convert_InvalidString_ReturnsOriginalString()
     {
@@ -106,6 +127,9 @@ public class CorrelationCoefficientConverterTests
         AssertConvert(invalidInput, invalidInput);
     }
 
+    /// <summary>
+    /// Convert において、条件 IntegerValue の場合に ReturnsToString されることを検証します。
+    /// </summary>
     [Fact]
     public void Convert_IntegerValue_ReturnsToString()
     {
@@ -117,6 +141,9 @@ public class CorrelationCoefficientConverterTests
 
     #region ConvertBack Tests - 表示値から内部値への変換
 
+    /// <summary>
+    /// テスト を検証します。
+    /// </summary>
     [Theory]
     [InlineData("95", "0.95")]
     [InlineData("0", "0.00")]
@@ -129,6 +156,9 @@ public class CorrelationCoefficientConverterTests
         AssertConvertBack(input, expected);
     }
 
+    /// <summary>
+    /// ConvertBack において、条件 EmptyOrWhitespace の場合に ReturnsDefaultValue されることを検証します。
+    /// </summary>
     [Theory]
     [InlineData("")]
     [InlineData("   ")]
@@ -138,6 +168,9 @@ public class CorrelationCoefficientConverterTests
         AssertConvertBack(input, GetExpectedDefault());
     }
 
+    /// <summary>
+    /// テスト を検証します。
+    /// </summary>
     [Theory]
     [InlineData("-10", "0.00")]   // 負の値は0にクランプ
     [InlineData("-1", "0.00")]    // 負の値は0にクランプ
@@ -148,6 +181,9 @@ public class CorrelationCoefficientConverterTests
         AssertConvertBack(input, expected);
     }
 
+    /// <summary>
+    /// テスト を検証します。
+    /// </summary>
     [Theory]
     [InlineData("0.95", "0.95")]  // 既に0-1形式
     [InlineData("0.50", "0.50")]  // 既に0-1形式
@@ -158,6 +194,9 @@ public class CorrelationCoefficientConverterTests
         AssertConvertBack(input, expected);
     }
 
+    /// <summary>
+    /// ConvertBack において、条件 DecimalDisplayValue の場合に DividesBy100 されることを検証します。
+    /// </summary>
     [Theory]
     [InlineData("50.5", "0.50")]   // 小数の表示値（1-100スケール）→ 100で割って切り捨て
     [InlineData("75.25", "0.75")]  // 小数の表示値（1-100スケール）→ 100で割る
@@ -166,6 +205,9 @@ public class CorrelationCoefficientConverterTests
         AssertConvertBack(input, expected);
     }
 
+    /// <summary>
+    /// ConvertBack において、条件 InvalidString の場合に ReturnsDefaultValue されることを検証します。
+    /// </summary>
     [Fact]
     public void ConvertBack_InvalidString_ReturnsDefaultValue()
     {
@@ -173,6 +215,9 @@ public class CorrelationCoefficientConverterTests
         AssertConvertBack(invalidInput, GetExpectedDefault());
     }
 
+    /// <summary>
+    /// ConvertBack において、条件 NonStringValue の場合に ReturnsDefaultValue されることを検証します。
+    /// </summary>
     [Fact]
     public void ConvertBack_NonStringValue_ReturnsDefaultValue()
     {
@@ -184,6 +229,9 @@ public class CorrelationCoefficientConverterTests
 
     #region Roundtrip Tests - 往復変換の一貫性
 
+    /// <summary>
+    /// テスト を検証します。
+    /// </summary>
     [Theory]
     [InlineData("0.95")]
     [InlineData("0.50")]
@@ -197,6 +245,9 @@ public class CorrelationCoefficientConverterTests
         Assert.Equal(originalInternal, roundtripInternal);
     }
 
+    /// <summary>
+    /// テスト を検証します。
+    /// </summary>
     [Theory]
     [InlineData("95")]
     [InlineData("50")]
@@ -214,6 +265,9 @@ public class CorrelationCoefficientConverterTests
 
     #region Culture Invariance Tests - カルチャ独立性
 
+    /// <summary>
+    /// テスト を検証します。
+    /// </summary>
     [Theory]
     [InlineData("de-DE")]  // ドイツ（小数点にカンマを使用）
     [InlineData("fr-FR")]  // フランス
@@ -229,6 +283,9 @@ public class CorrelationCoefficientConverterTests
 
     #region Edge Cases - エッジケース
 
+    /// <summary>
+    /// Convert において、条件 ExtremeValues の場合に HandlesCorrectly されることを検証します。
+    /// </summary>
     [Theory]
     [InlineData("0.001", "0")]     // 非常に小さい値
     [InlineData("0.999", "100")]   // 非常に大きい値（1に近い）
@@ -237,6 +294,9 @@ public class CorrelationCoefficientConverterTests
         AssertConvert(input, expected);
     }
 
+    /// <summary>
+    /// ConvertBack において、条件 VeryLongDecimal の場合に HandlesCorrectly されることを検証します。
+    /// </summary>
     [Fact]
     public void ConvertBack_VeryLongDecimal_HandlesCorrectly()
     {
@@ -244,6 +304,9 @@ public class CorrelationCoefficientConverterTests
         AssertConvertBack(input, "0.12");  // 0-1の範囲なのでそのまま使用、F2でフォーマット
     }
 
+    /// <summary>
+    /// ConvertBack において、条件 StringWithWhitespace の場合に TrimsAndConverts されることを検証します。
+    /// </summary>
     [Theory]
     [InlineData("  95  ", "0.95")]  // 前後の空白
     public void ConvertBack_StringWithWhitespace_TrimsAndConverts(string input, string expected)

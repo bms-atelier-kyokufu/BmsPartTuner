@@ -58,6 +58,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
             options.AssertResult?.Invoke(result);
         }
 
+        /// <summary>
+        /// FindOptimalThresholdsAsync において、条件 ValidFiles の場合に ReturnsResult されることを検証します。
+        /// </summary>
         [Fact]
         public Task FindOptimalThresholdsAsync_ValidFiles_ReturnsResult() =>
             RunOptimalThresholdsTestAsync(
@@ -65,14 +68,23 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
                 res => { Assert.NotNull(res); Assert.NotEmpty(res.SimulationData); Assert.True(res.Base36Result.Count > 0); }
             );
 
+        /// <summary>
+        /// FindOptimalThresholdsAsync において、条件 EmptyList の場合に ReturnsNull されることを検証します。
+        /// </summary>
         [Fact]
         public async Task FindOptimalThresholdsAsync_EmptyList_ReturnsNull() =>
             _ = await Assert.ThrowsAsync<ArgumentException>(() => _service.FindOptimalThresholdsAsync([], 1, 1));
 
+        /// <summary>
+        /// FindOptimalThresholdsAsync において、条件 NoValidFiles の場合に ReturnsNull されることを検証します。
+        /// </summary>
         [Fact]
         public Task FindOptimalThresholdsAsync_NoValidFiles_ReturnsNull() =>
             RunOptimalThresholdsTestAsync(_ => ["nonexistent.wav"], Assert.Null);
 
+        /// <summary>
+        /// ExecuteDefinitionReductionAsync において、条件 WithPhysicalDeletion の場合に OnlyDeletesUnusedFiles されることを検証します。
+        /// </summary>
         [Fact]
         public Task ExecuteDefinitionReductionAsync_WithPhysicalDeletion_OnlyDeletesUnusedFiles() =>
             RunDefinitionReductionTestAsync(new()
@@ -94,6 +106,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
                 PhysicalDeletion = true
             });
 
+        /// <summary>
+        /// ExecuteDefinitionReductionAsync において、条件 WithValidInput の場合に CalculatesReductionRate されることを検証します。
+        /// </summary>
         [Fact]
         public Task ExecuteDefinitionReductionAsync_WithValidInput_CalculatesReductionRate() =>
             RunDefinitionReductionTestAsync(new()
@@ -109,6 +124,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
                 }
             });
 
+        /// <summary>
+        /// FindOptimalThresholdsAsync において、条件 PartialFileNotFound の場合に ProcessesValidFiles されることを検証します。
+        /// </summary>
         [Fact]
         public Task FindOptimalThresholdsAsync_PartialFileNotFound_ProcessesValidFiles() =>
             RunOptimalThresholdsTestAsync(
@@ -117,6 +135,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
                 endDef: 3
             );
 
+        /// <summary>
+        /// FindOptimalThresholdsAsync において、条件 EndDefinitionZero の場合に AutoDetectsEndDefinition されることを検証します。
+        /// </summary>
         [Fact]
         public Task FindOptimalThresholdsAsync_EndDefinitionZero_AutoDetectsEndDefinition() =>
             RunOptimalThresholdsTestAsync(
@@ -125,6 +146,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
                 endDef: 0
             );
 
+        /// <summary>
+        /// FindOptimalThresholdsAsync において、条件 WithProgress の場合に ReportsProgress されることを検証します。
+        /// </summary>
         [Fact]
         public Task FindOptimalThresholdsAsync_WithProgress_ReportsProgress()
         {
@@ -136,6 +160,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
             );
         }
 
+        /// <summary>
+        /// FindOptimalThresholdsAsync において、条件 VariousRanges の場合に ProcessesCorrectly されることを検証します。
+        /// </summary>
         [Theory]
         [InlineData(1, 10)]
         [InlineData(1, 100)]
@@ -147,6 +174,9 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
                 startDef: start, endDef: end
             );
 
+        /// <summary>
+        /// ExecuteDefinitionReductionAsync において、条件 WithSelectedKeywords の場合に ProcessesFilteredFiles されることを検証します。
+        /// </summary>
         [Fact]
         public Task ExecuteDefinitionReductionAsync_WithSelectedKeywords_ProcessesFilteredFiles() =>
             RunDefinitionReductionTestAsync(new()
