@@ -2,7 +2,7 @@
 using System.Windows;
 using BmsAtelierKyokufu.BmsPartTuner.UI.Converters;
 
-namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Converters;
+namespace BmsAtelierKyokufu.BmsPartTuner.Tests.UI.Converters;
 
 public class StringNullOrEmptyConverterTests
 {

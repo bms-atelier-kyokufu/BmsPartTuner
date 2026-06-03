@@ -1,16 +1,15 @@
-﻿using System.IO;
+using System.IO;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Interfaces.Audio;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Interfaces.Bms;
 using BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Audio;
 using BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms;
 using BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Common;
 using BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers;
-using BmsAtelierKyokufu.BmsPartTuner.Tests.Infrastructure;
 using BmsAtelierKyokufu.BmsPartTuner.UI.Services;
 using BmsAtelierKyokufu.BmsPartTuner.UI.ViewModels;
 using Moq;
 
-namespace BmsAtelierKyokufu.BmsPartTuner.Tests.ViewModels
+namespace BmsAtelierKyokufu.BmsPartTuner.Tests.UI.ViewModels
 {
     public class MainViewModelTests
     {

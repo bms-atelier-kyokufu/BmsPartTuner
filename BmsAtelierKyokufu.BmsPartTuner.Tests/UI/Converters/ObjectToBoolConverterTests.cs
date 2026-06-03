@@ -3,7 +3,7 @@ using System.Globalization;
 using System.Windows.Data;
 using BmsAtelierKyokufu.BmsPartTuner.UI.Converters;
 
-namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Converters;
+namespace BmsAtelierKyokufu.BmsPartTuner.Tests.UI.Converters;
 
 public class ObjectToBoolConverterTests
 {

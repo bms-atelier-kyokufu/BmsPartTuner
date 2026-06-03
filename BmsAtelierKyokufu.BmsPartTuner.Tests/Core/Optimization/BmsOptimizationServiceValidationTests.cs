@@ -1,6 +1,6 @@
 ﻿using BmsAtelierKyokufu.BmsPartTuner.Core.Optimization;
 
-namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Services.Bms;
+namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization;
 
 /// <summary>
 /// BmsOptimizationService のバリデーション（定義範囲、R2閾値）に関するテスト。

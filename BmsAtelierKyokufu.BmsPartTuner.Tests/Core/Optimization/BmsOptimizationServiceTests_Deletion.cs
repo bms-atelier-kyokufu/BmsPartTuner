@@ -1,11 +1,11 @@
-using System.IO;
+﻿using System.IO;
 using System.Text;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Optimization;
 using BmsAtelierKyokufu.BmsPartTuner.Models;
 using BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers;
 using static BmsAtelierKyokufu.BmsPartTuner.Core.Optimization.BmsOptimizationService;
 
-namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Services.Bms
+namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
 {
     /// <summary>
     /// BmsOptimizationService の動作検証テスト。

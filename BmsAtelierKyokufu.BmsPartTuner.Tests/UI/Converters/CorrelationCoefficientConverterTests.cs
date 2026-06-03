@@ -2,7 +2,7 @@
 using BmsAtelierKyokufu.BmsPartTuner.Core;
 using BmsAtelierKyokufu.BmsPartTuner.UI.Converters;
 
-namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Converters;
+namespace BmsAtelierKyokufu.BmsPartTuner.Tests.UI.Converters;
 
 /// <summary>
 /// <para><see cref="CorrelationCoefficientConverter"/> のテストクラス。</para>

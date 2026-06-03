@@ -3,11 +3,11 @@ using BmsAtelierKyokufu.BmsPartTuner.Core.Interfaces.Bms;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Optimization;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Validation;
 using BmsAtelierKyokufu.BmsPartTuner.Models;
-using BmsAtelierKyokufu.BmsPartTuner.Tests.Infrastructure;
+using BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers;
 using BmsAtelierKyokufu.BmsPartTuner.UI.ViewModels;
 using BmsAtelierKyokufu.BmsPartTuner.UseCases.Dto;
 
-namespace BmsAtelierKyokufu.BmsPartTuner.Tests.ViewModels
+namespace BmsAtelierKyokufu.BmsPartTuner.Tests.UI.ViewModels
 {
     // Moqを使わないテスト用のシンプルなフェイクサービス
     internal class FakeOptimizationService : IBmsOptimizationService

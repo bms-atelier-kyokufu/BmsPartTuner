@@ -1,7 +1,7 @@
 ﻿using System.Windows;
 using System.Windows.Threading;
 
-namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Infrastructure
+namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
 {
     /// <summary>
     /// 最小限のWPFテストヘルパー。

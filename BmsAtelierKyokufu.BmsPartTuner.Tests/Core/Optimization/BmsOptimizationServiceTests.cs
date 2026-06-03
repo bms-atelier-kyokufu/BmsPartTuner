@@ -1,9 +1,9 @@
-using System.IO;
+﻿using System.IO;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Optimization;
 using BmsAtelierKyokufu.BmsPartTuner.Models;
 using BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers;
 
-namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Services.Bms
+namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
 {
     /// <summary>
     /// BmsOptimizationService の正常系動作検証テスト。

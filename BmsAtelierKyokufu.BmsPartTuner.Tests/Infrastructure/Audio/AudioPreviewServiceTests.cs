@@ -2,7 +2,7 @@
 using BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Audio;
 using Moq;
 
-namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Services.Audio;
+namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Infrastructure.Audio;
 
 public class AudioPreviewServiceTests
 {

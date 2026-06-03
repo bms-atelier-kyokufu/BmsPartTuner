@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace BmsAtelierKyokufu.BmsPartTuner.Tests;
+namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Scenarios;
 
 public class OracleData
 {

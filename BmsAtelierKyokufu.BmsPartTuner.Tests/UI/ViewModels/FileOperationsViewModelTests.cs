@@ -2,7 +2,7 @@
 using BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers;
 using BmsAtelierKyokufu.BmsPartTuner.UI.ViewModels;
 
-namespace BmsAtelierKyokufu.BmsPartTuner.Tests.ViewModels;
+namespace BmsAtelierKyokufu.BmsPartTuner.Tests.UI.ViewModels;
 
 public class FileOperationsViewModelTests
 {

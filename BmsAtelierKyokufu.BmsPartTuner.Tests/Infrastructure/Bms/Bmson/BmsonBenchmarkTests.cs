@@ -1,11 +1,11 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.IO;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 using BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms.Bmson;
 using BmsAtelierKyokufu.BmsPartTuner.Models.Bmson;
 using Xunit.Abstractions;
 
-namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Services.Bms;
+namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Infrastructure.Bms.Bmson;
 
 public class BmsonBenchmarkTests(ITestOutputHelper output)
 {
