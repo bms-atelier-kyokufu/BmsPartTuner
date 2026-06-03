@@ -1,0 +1,1 @@
+{{Templates/MIT.md, Copyright (c) 2002-2022 Math.NET}}

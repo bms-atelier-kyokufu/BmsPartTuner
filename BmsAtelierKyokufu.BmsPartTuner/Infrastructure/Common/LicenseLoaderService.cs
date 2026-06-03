@@ -1,11 +1,13 @@
-﻿using System.Reflection;
+using System.Reflection;
+using System.Text.RegularExpressions;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Common;
 
 /// <summary>
 /// 埋め込まれたライセンスファイルを読み込むサービス。
 /// </summary>
-public class LicenseLoaderService
+[ADRAnchor("ARCH-04", nameof(LicenseLoaderService))]
+public partial class LicenseLoaderService
 {
     /// <summary>
     /// サービスインスタンスの一意の識別子。
@@ -26,7 +28,7 @@ public class LicenseLoaderService
 
         foreach (string resourceName in resourceNames)
         {
-            if (!resourceName.StartsWith(LicenseResourcePath) || !resourceName.EndsWith(".md"))
+            if (!resourceName.StartsWith(LicenseResourcePath) || !resourceName.EndsWith(".md") || resourceName.Contains(".Templates."))
             {
                 continue;
             }
@@ -34,10 +36,40 @@ public class LicenseLoaderService
             string content = ReadResource(assembly, resourceName);
             string fileName = GetFileNameFromResourceName(resourceName);
             bool isAppLicense = fileName.Equals("AppLicense", StringComparison.OrdinalIgnoreCase);
+            bool isUnique = true;
+
+            // テンプレート指定の解析: {{Templates/MIT.md, Copyright (c) ...}}
+            // e.g. {{Templates/MIT.md, Copyright (c) 2015 Kristian Hellang}}
+            var match = LicensePlaceholderRegex().Match(content);
+            if (match.Success)
+            {
+                isUnique = false;
+                string targetFileName = match.Groups[1].Value.Replace('/', '.').Replace('\\', '.').Replace(',', '.').Trim();
+                string copyrightText = match.Groups[2].Value.Trim();
+                string targetNameWithoutExt = Path.GetFileNameWithoutExtension(targetFileName);
+
+                string? targetResourceName = resourceNames.FirstOrDefault(r =>
+                    r.StartsWith(LicenseResourcePath) &&
+                    r.Contains(targetNameWithoutExt, StringComparison.OrdinalIgnoreCase));
+
+                if (targetResourceName != null)
+                {
+                    string templateContent = ReadResource(assembly, targetResourceName);
+                    content = templateContent
+                        .Replace("# MIT License", $"# {fileName} License")
+                        .Replace("[Copyright]", copyrightText);
+                }
+            }
+
+            string displayName = isAppLicense ? "Bms Part Tuner" : fileName;
+            if (!isAppLicense && isUnique)
+            {
+                displayName += " *";
+            }
 
             licenses.Add(new LicenseInfo
             {
-                Name = isAppLicense ? "Bms Part Tuner" : fileName,
+                Name = displayName,
                 Content = content,
                 IsAppLicense = isAppLicense
             });
@@ -87,4 +119,7 @@ public class LicenseLoaderService
 
         return nameWithoutExt;
     }
+
+    [GeneratedRegex(@"\{\{\s*([^,\s}]+)\s*,\s*([^}]+)\}\}")]
+    private static partial Regex LicensePlaceholderRegex();
 }
