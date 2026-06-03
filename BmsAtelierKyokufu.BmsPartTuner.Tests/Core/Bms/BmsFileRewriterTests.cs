@@ -1,7 +1,8 @@
-﻿using System.IO;
+using System.IO;
 using System.Text;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 using BmsAtelierKyokufu.BmsPartTuner.Models;
+using BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
 {
@@ -14,39 +15,39 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
     /// </summary>
     public class BmsFileRewriterTests : IDisposable
     {
-        private readonly string _tempDir;
+        private readonly BmsTestContext _context;
+        private string TempDir => _context.TempDirectory;
         private bool _disposed;
 
         public BmsFileRewriterTests()
         {
-            _tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-            Directory.CreateDirectory(_tempDir);
+            _context = new BmsTestContext();
         }
 
         public void Dispose()
         {
             if (_disposed) return;
-            if (Directory.Exists(_tempDir))
-            {
-                try
-                {
-                    Directory.Delete(_tempDir, true);
-                }
-                catch { /* クリーンアップエラーは無視 */ }
-            }
+            _context.Dispose();
             _disposed = true;
             GC.SuppressFinalize(this);
         }
 
-        private BmsAudioFile CreateWavFile(int num, string name)
+        private BmsAudioFile CreateBmsAudioFileEntry(int num, string name)
         {
             return new BmsAudioFile
             {
                 Num = BmsAtelierKyokufu.BmsPartTuner.Core.Helpers.RadixConvert.IntToZZ(num),
                 NumInteger = num,
-                Name = Path.Combine(_tempDir, name),
+                Name = Path.Combine(TempDir, name),
                 FileSize = 1024
             };
+        }
+
+        private string RunRewriter(BmsFileRewriter rewriter, string bmsContent)
+        {
+            string bmsPath = Path.Combine(TempDir, "test.bms");
+            File.WriteAllText(bmsPath, bmsContent, Encoding.GetEncoding("shift_jis"));
+            return rewriter.ReplaceAndAlignBmsFile(bmsPath);
         }
 
         /// <summary>
@@ -57,22 +58,19 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
         {
             var fileList = new List<BmsAudioFile>
             {
-                CreateWavFile(1, "kick.wav"),
-                CreateWavFile(2, "snare.wav"),
-                CreateWavFile(3, "hat.wav")
+                CreateBmsAudioFileEntry(1, "kick.wav"),
+                CreateBmsAudioFileEntry(2, "snare.wav"),
+                CreateBmsAudioFileEntry(3, "hat.wav")
             };
 
             // 置換テーブル: 1, 2, 3 はそのまま（置換なし）
             var replaces = new int[4];
 
             var rewriter = new BmsFileRewriter(fileList, replaces, 1, 3);
-
             const string bmsContent = "#HEADER\n#WAV01 kick.wav\n#WAV02 snare.wav\n#WAV03 hat.wav\n#MAIN\n#00111:010203";
-            string bmsPath = Path.Combine(_tempDir, "test.bms");
-            File.WriteAllText(bmsPath, bmsContent, Encoding.GetEncoding("shift_jis"));
 
             // Act
-            string result = rewriter.ReplaceAndAlignBmsFile(bmsPath);
+            string result = RunRewriter(rewriter, bmsContent);
 
             // ファイルはアルファベット順にソートされる: hat.wav, kick.wav, snare.wav
             // hat.wav -> 01
@@ -100,22 +98,19 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
             var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, BmsAtelierKyokufu.BmsPartTuner.Models.ICachedSoundData>();
             var fileList = new List<BmsAudioFile>
             {
-                CreateWavFile(1, "kick1.wav"),
-                CreateWavFile(2, "kick2.wav"), // kick1に置換される
-                CreateWavFile(3, "snare.wav")
+                CreateBmsAudioFileEntry(1, "kick1.wav"),
+                CreateBmsAudioFileEntry(2, "kick2.wav"), // kick1に置換される
+                CreateBmsAudioFileEntry(3, "snare.wav")
             };
 
             var replaces = new int[4];
             replaces[2] = 1; // 2 -> 1
 
             var rewriter = new BmsFileRewriter(fileList, replaces, 1, 3);
-
             const string bmsContent = "#HEADER\n#WAV01 kick1.wav\n#WAV02 kick2.wav\n#WAV03 snare.wav\n#MAIN\n#00111:010203";
-            string bmsPath = Path.Combine(_tempDir, "test.bms");
-            File.WriteAllText(bmsPath, bmsContent, Encoding.GetEncoding("shift_jis"));
 
             // Act
-            string result = rewriter.ReplaceAndAlignBmsFile(bmsPath);
+            string result = RunRewriter(rewriter, bmsContent);
 
             // 保持されるファイル: kick1.wav, snare.wav（ソート済み）
             // kick1.wav -> 01
@@ -151,7 +146,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
             var replaces = new int[1];
             _ = new BmsFileRewriter(fileList, replaces, 0, 0);
 
-            string outputPath = Path.Combine(_tempDir, "output.bms");
+            string outputPath = Path.Combine(TempDir, "output.bms");
             const string content = "test content";
 
             BmsFileWriter.WriteBmsFile(outputPath, content);
@@ -168,17 +163,15 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
         {
             var fileList = new List<BmsAudioFile>
             {
-                CreateWavFile(1, "kick.wav")
+                CreateBmsAudioFileEntry(1, "kick.wav")
             };
             var replaces = new int[2];
             var rewriter = new BmsFileRewriter(fileList, replaces, 1, 1);
 
             // BMSにはファイルリストにない02への参照が含まれる（範囲外または未定義）
             const string bmsContent = "#HEADER\n#WAV01 kick.wav\n#MAIN\n#00111:0102";
-            string bmsPath = Path.Combine(_tempDir, "test.bms");
-            File.WriteAllText(bmsPath, bmsContent, Encoding.GetEncoding("shift_jis"));
 
-            string result = rewriter.ReplaceAndAlignBmsFile(bmsPath);
+            string result = RunRewriter(rewriter, bmsContent);
 
             // 01 -> 01
             // 02 -> マップにないたも02のまま

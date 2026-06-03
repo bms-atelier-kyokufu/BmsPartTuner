@@ -1,4 +1,4 @@
-﻿using BmsAtelierKyokufu.BmsPartTuner.Core.Helpers;
+using BmsAtelierKyokufu.BmsPartTuner.Core.Helpers;
 using BmsAtelierKyokufu.BmsPartTuner.Models;
 using BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers;
 
@@ -28,7 +28,7 @@ public class AudioFileGroupingStrategyTests
 
     #region Helper Methods
 
-    private BmsAudioFile CreateWavFile(
+    private BmsAudioFile CreateBmsAudioFileEntry(
         string fileName,
         int numInteger,
         long fileSize = 1000,
@@ -96,9 +96,9 @@ public class AudioFileGroupingStrategyTests
         // Arrange - 同じファイルサイズとRMS
         var files = new List<BmsAudioFile>
         {
-            CreateWavFile("file1.wav", 1, 1000, 0.5f),
-            CreateWavFile("file2.wav", 2, 1000, 0.5f),
-            CreateWavFile("file3.wav", 3, 1000, 0.5f)
+            CreateBmsAudioFileEntry("file1.wav", 1, 1000, 0.5f),
+            CreateBmsAudioFileEntry("file2.wav", 2, 1000, 0.5f),
+            CreateBmsAudioFileEntry("file3.wav", 3, 1000, 0.5f)
         };
 
         // Act
@@ -119,9 +119,9 @@ public class AudioFileGroupingStrategyTests
         // 実際の実装では、ファイルサイズが異なってもRMSグループキーで統合される可能性がある
         var files = new List<BmsAudioFile>
         {
-            CreateWavFile("file1.wav", 1, 1000, 0.1f),  // RMSを変えて確実に分離
-            CreateWavFile("file2.wav", 2, 2000, 0.5f),
-            CreateWavFile("file3.wav", 3, 3000, 0.9f)
+            CreateBmsAudioFileEntry("file1.wav", 1, 1000, 0.1f),  // RMSを変えて確実に分離
+            CreateBmsAudioFileEntry("file2.wav", 2, 2000, 0.5f),
+            CreateBmsAudioFileEntry("file3.wav", 3, 3000, 0.9f)
         };
 
         // Act
@@ -140,9 +140,9 @@ public class AudioFileGroupingStrategyTests
         // Arrange - 同じファイルサイズ、異なるRMS
         var files = new List<BmsAudioFile>
         {
-            CreateWavFile("file1.wav", 1, 1000, 0.1f),
-            CreateWavFile("file2.wav", 2, 1000, 0.5f),
-            CreateWavFile("file3.wav", 3, 1000, 0.9f)
+            CreateBmsAudioFileEntry("file1.wav", 1, 1000, 0.1f),
+            CreateBmsAudioFileEntry("file2.wav", 2, 1000, 0.5f),
+            CreateBmsAudioFileEntry("file3.wav", 3, 1000, 0.9f)
         };
 
         // Act
@@ -162,9 +162,9 @@ public class AudioFileGroupingStrategyTests
         // Arrange
         var files = new List<BmsAudioFile>
         {
-            CreateWavFile("file1.wav", 1, 1000, 0.5f),
-            CreateWavFile("file2.wav", 5, 1000, 0.5f), // 範囲外
-            CreateWavFile("file3.wav", 10, 1000, 0.5f)
+            CreateBmsAudioFileEntry("file1.wav", 1, 1000, 0.5f),
+            CreateBmsAudioFileEntry("file2.wav", 5, 1000, 0.5f), // 範囲外
+            CreateBmsAudioFileEntry("file3.wav", 10, 1000, 0.5f)
         };
 
         // Act
@@ -186,9 +186,9 @@ public class AudioFileGroupingStrategyTests
         // Arrange
         var files = new List<BmsAudioFile>
         {
-            CreateWavFile("file1.wav", 1, 1000, 0.5f),
-            CreateWavFile("file2.wav", 2, 1000, 0), // CachedDataなし
-            CreateWavFile("file3.wav", 3, 1000, 0.5f)
+            CreateBmsAudioFileEntry("file1.wav", 1, 1000, 0.5f),
+            CreateBmsAudioFileEntry("file2.wav", 2, 1000, 0), // CachedDataなし
+            CreateBmsAudioFileEntry("file3.wav", 3, 1000, 0.5f)
         };
 
         // Act
@@ -212,10 +212,10 @@ public class AudioFileGroupingStrategyTests
         // Arrange
         var files = new List<BmsAudioFile>
         {
-            CreateWavFile("kick_01.wav", 1, 1000, 0.5f),
-            CreateWavFile("kick_02.wav", 2, 1000, 0.5f),
-            CreateWavFile("snare_01.wav", 3, 1000, 0.5f),
-            CreateWavFile("snare_02.wav", 4, 1000, 0.5f)
+            CreateBmsAudioFileEntry("kick_01.wav", 1, 1000, 0.5f),
+            CreateBmsAudioFileEntry("kick_02.wav", 2, 1000, 0.5f),
+            CreateBmsAudioFileEntry("snare_01.wav", 3, 1000, 0.5f),
+            CreateBmsAudioFileEntry("snare_02.wav", 4, 1000, 0.5f)
         };
         var keywords = new List<string> { "kick", "snare" };
 
@@ -235,9 +235,9 @@ public class AudioFileGroupingStrategyTests
         // Arrange
         var files = new List<BmsAudioFile>
         {
-            CreateWavFile("KICK_01.wav", 1, 1000, 0.5f),
-            CreateWavFile("kick_02.wav", 2, 1000, 0.5f),
-            CreateWavFile("Kick_03.wav", 3, 1000, 0.5f)
+            CreateBmsAudioFileEntry("KICK_01.wav", 1, 1000, 0.5f),
+            CreateBmsAudioFileEntry("kick_02.wav", 2, 1000, 0.5f),
+            CreateBmsAudioFileEntry("Kick_03.wav", 3, 1000, 0.5f)
         };
         var keywords = new List<string> { "kick" };
 
@@ -258,9 +258,9 @@ public class AudioFileGroupingStrategyTests
         // Arrange
         var files = new List<BmsAudioFile>
         {
-            CreateWavFile("kick_01.wav", 1, 1000, 0.5f),
-            CreateWavFile("cymbal_01.wav", 2, 1000, 0.5f), // マッチしない
-            CreateWavFile("snare_01.wav", 3, 1000, 0.5f)
+            CreateBmsAudioFileEntry("kick_01.wav", 1, 1000, 0.5f),
+            CreateBmsAudioFileEntry("cymbal_01.wav", 2, 1000, 0.5f), // マッチしない
+            CreateBmsAudioFileEntry("snare_01.wav", 3, 1000, 0.5f)
         };
         var keywords = new List<string> { "kick", "snare" }; // cymbalは含まれない
 
@@ -281,8 +281,8 @@ public class AudioFileGroupingStrategyTests
         // Arrange
         var files = new List<BmsAudioFile>
         {
-            CreateWavFile("file1.wav", 1, 1000, 0.5f),
-            CreateWavFile("file2.wav", 2, 1000, 0.5f)
+            CreateBmsAudioFileEntry("file1.wav", 1, 1000, 0.5f),
+            CreateBmsAudioFileEntry("file2.wav", 2, 1000, 0.5f)
         };
         var emptyKeywords = new List<string>();
 
@@ -303,8 +303,8 @@ public class AudioFileGroupingStrategyTests
         // Arrange
         var files = new List<BmsAudioFile>
         {
-            CreateWavFile("file1.wav", 1, 1000, 0.5f),
-            CreateWavFile("file2.wav", 2, 1000, 0.5f)
+            CreateBmsAudioFileEntry("file1.wav", 1, 1000, 0.5f),
+            CreateBmsAudioFileEntry("file2.wav", 2, 1000, 0.5f)
         };
 
         // Act
@@ -328,7 +328,7 @@ public class AudioFileGroupingStrategyTests
         // Arrange
         var files = new List<BmsAudioFile>
         {
-            CreateWavFile("file1.wav", 1, 1000, 0.5f)
+            CreateBmsAudioFileEntry("file1.wav", 1, 1000, 0.5f)
         };
 
         // Act
@@ -349,7 +349,7 @@ public class AudioFileGroupingStrategyTests
         var files = new List<BmsAudioFile>
         {
             new() { Name = null!, NumInteger = 1, FileSize = 1000 },
-            CreateWavFile("file2.wav", 2, 1000, 0.5f)
+            CreateBmsAudioFileEntry("file2.wav", 2, 1000, 0.5f)
         };
 
         // Act
@@ -368,8 +368,8 @@ public class AudioFileGroupingStrategyTests
         // Arrange
         var files = new List<BmsAudioFile>
         {
-            CreateWavFile("file1.wav", 1, 0, 0.5f), // ファイルサイズ0
-            CreateWavFile("file2.wav", 2, 1000, 0.5f)
+            CreateBmsAudioFileEntry("file1.wav", 1, 0, 0.5f), // ファイルサイズ0
+            CreateBmsAudioFileEntry("file2.wav", 2, 1000, 0.5f)
         };
 
         // Act
@@ -388,8 +388,8 @@ public class AudioFileGroupingStrategyTests
         // Arrange
         var files = new List<BmsAudioFile>
         {
-            CreateWavFile("file1.wav", 1, 1000, 10.0f), // 異常に高いRMS
-            CreateWavFile("file2.wav", 2, 1000, 0.5f)
+            CreateBmsAudioFileEntry("file1.wav", 1, 1000, 10.0f), // 異常に高いRMS
+            CreateBmsAudioFileEntry("file2.wav", 2, 1000, 0.5f)
         };
 
         // Act
@@ -412,9 +412,9 @@ public class AudioFileGroupingStrategyTests
         // Arrange
         var files = new List<BmsAudioFile>
         {
-            CreateWavFile("file1.wav", 1, 1000, 0.5f),
-            CreateWavFile("file2.wav", 2, 1000, 0.5f),
-            CreateWavFile("file3.wav", 3, 2000, 0.5f)
+            CreateBmsAudioFileEntry("file1.wav", 1, 1000, 0.5f),
+            CreateBmsAudioFileEntry("file2.wav", 2, 1000, 0.5f),
+            CreateBmsAudioFileEntry("file3.wav", 3, 2000, 0.5f)
         };
 
         // Act
@@ -433,9 +433,9 @@ public class AudioFileGroupingStrategyTests
         // Arrange
         var files = new List<BmsAudioFile>
         {
-            CreateWavFile("file1.wav", 1, 1000, 0.5f),
-            CreateWavFile("file2.wav", 2, 1000, 0.5f),
-            CreateWavFile("file3.wav", 3, 1000, 0.5f)
+            CreateBmsAudioFileEntry("file1.wav", 1, 1000, 0.5f),
+            CreateBmsAudioFileEntry("file2.wav", 2, 1000, 0.5f),
+            CreateBmsAudioFileEntry("file3.wav", 3, 1000, 0.5f)
         };
 
         // Act
@@ -455,9 +455,9 @@ public class AudioFileGroupingStrategyTests
         // Arrange
         var files = new List<BmsAudioFile>
         {
-            CreateWavFile("file1.wav", 1, 1000, 0.5f),
-            CreateWavFile("file2.wav", 2, 1000, 0.5f),
-            CreateWavFile("file3.wav", 3, 2000, 0.5f)
+            CreateBmsAudioFileEntry("file1.wav", 1, 1000, 0.5f),
+            CreateBmsAudioFileEntry("file2.wav", 2, 1000, 0.5f),
+            CreateBmsAudioFileEntry("file3.wav", 3, 2000, 0.5f)
         };
 
         // Act

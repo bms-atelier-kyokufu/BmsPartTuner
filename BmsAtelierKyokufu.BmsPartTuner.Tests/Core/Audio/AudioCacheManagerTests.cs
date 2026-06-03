@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Text;
 using BmsAtelierKyokufu.BmsPartTuner.Models;
 using BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers;
@@ -48,42 +48,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
         private string CreateDummyWav(string fileName, bool isValid = true)
         {
             string path = Path.Combine(_tempDirectory, fileName);
-            if (isValid)
-            {
-                // テスト用の有効なWAVファイルを生成（PCM 44.1kHz mono 16bit, 1秒の無音）
-                using FileStream fs = new(path, FileMode.Create);
-                using BinaryWriter bw = new(fs);
-                const int sampleRate = 44100;
-                const int channels = 1;
-                const short bitsPerSample = 16;
-                const int dataSize = sampleRate * channels * (bitsPerSample / 8); // 1 second
-                const int fileSize = 36 + dataSize;
-
-                // RIFFヘッダー
-                bw.Write(Encoding.ASCII.GetBytes("RIFF"));
-                bw.Write(fileSize);
-                bw.Write(Encoding.ASCII.GetBytes("WAVE"));
-
-                // fmtチャンク
-                bw.Write(Encoding.ASCII.GetBytes("fmt "));
-                bw.Write(16); // chunk size
-                bw.Write((short)1); // PCM
-                bw.Write((short)channels);
-                bw.Write(sampleRate);
-                bw.Write(sampleRate * channels * (bitsPerSample / 8)); // byte rate
-                bw.Write((short)(channels * (bitsPerSample / 8))); // block align
-                bw.Write(bitsPerSample);
-
-                // dataチャンク
-                bw.Write(Encoding.ASCII.GetBytes("data"));
-                bw.Write(dataSize);
-                bw.Write(new byte[dataSize]); // 無音
-            }
-            else
-            {
-                // WAVファイルを模した無効なテキストファイルを生成
-                File.WriteAllText(path, "This is not a WAV file but has .wav extension.");
-            }
+            BmsTestWavHelper.CreateDummyWavFile(path, writeToDisk: true, durationSeconds: 1, isValid: isValid);
             return path;
         }
 

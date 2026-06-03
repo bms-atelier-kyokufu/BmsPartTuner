@@ -14,28 +14,49 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
         /// </summary>
         /// <param name="filePath">作成するファイルの保存先パス。</param>
         /// <param name="writeToDisk">ディスクへ書き出す場合は <c>true</c>、仮想メモリ上に登録する場合は <c>false</c>。</param>
-        public static void CreateDummyWavFile(string filePath, bool writeToDisk = true)
+        /// <param name="durationSeconds">生成する無音データの長さ（秒）。</param>
+        /// <param name="isValid">有効なWAVファイルを生成する場合は <c>true</c>。無効なテキストファイルを生成する場合は <c>false</c>。</param>
+        public static void CreateDummyWavFile(string filePath, bool writeToDisk = true, int durationSeconds = 0, bool isValid = true)
         {
-            byte[] wavHeader = new byte[44];
+            if (!isValid)
+            {
+                if (writeToDisk)
+                {
+                    File.WriteAllText(filePath, "This is not a WAV file but has .wav extension.");
+                }
+                else
+                {
+                    VirtualAudioRegistry.AddFile(Path.GetFileName(filePath), Encoding.UTF8.GetBytes("This is not a WAV file but has .wav extension."));
+                }
+                return;
+            }
+
+            const int sampleRate = 44100;
+            const int channels = 1;
+            const short bitsPerSample = 16;
+            int dataSize = durationSeconds * sampleRate * channels * (bitsPerSample / 8);
+            int fileSize = 36 + dataSize;
+
+            byte[] wavHeader = new byte[44 + dataSize];
 
             // RIFF
             Encoding.ASCII.GetBytes("RIFF").CopyTo(wavHeader, 0);
-            BitConverter.GetBytes(36).CopyTo(wavHeader, 4); // ChunkSize (36 + data size 0)
+            BitConverter.GetBytes(fileSize).CopyTo(wavHeader, 4);
             Encoding.ASCII.GetBytes("WAVE").CopyTo(wavHeader, 8);
 
             // fmt
             Encoding.ASCII.GetBytes("fmt ").CopyTo(wavHeader, 12);
-            BitConverter.GetBytes(16).CopyTo(wavHeader, 16); // Subchunk1Size
-            BitConverter.GetBytes((short)1).CopyTo(wavHeader, 20); // AudioFormat (PCM)
-            BitConverter.GetBytes((short)1).CopyTo(wavHeader, 22); // NumChannels
-            BitConverter.GetBytes(44100).CopyTo(wavHeader, 24); // SampleRate
-            BitConverter.GetBytes(44100 * 2).CopyTo(wavHeader, 28); // ByteRate
-            BitConverter.GetBytes((short)2).CopyTo(wavHeader, 32); // BlockAlign
-            BitConverter.GetBytes((short)16).CopyTo(wavHeader, 34); // BitsPerSample
+            BitConverter.GetBytes(16).CopyTo(wavHeader, 16);
+            BitConverter.GetBytes((short)1).CopyTo(wavHeader, 20);
+            BitConverter.GetBytes((short)channels).CopyTo(wavHeader, 22);
+            BitConverter.GetBytes(sampleRate).CopyTo(wavHeader, 24);
+            BitConverter.GetBytes(sampleRate * channels * (bitsPerSample / 8)).CopyTo(wavHeader, 28);
+            BitConverter.GetBytes((short)(channels * (bitsPerSample / 8))).CopyTo(wavHeader, 32);
+            BitConverter.GetBytes(bitsPerSample).CopyTo(wavHeader, 34);
 
             // data
             Encoding.ASCII.GetBytes("data").CopyTo(wavHeader, 36);
-            BitConverter.GetBytes(0).CopyTo(wavHeader, 40); // Subchunk2Size
+            BitConverter.GetBytes(dataSize).CopyTo(wavHeader, 40);
 
             if (writeToDisk)
             {
