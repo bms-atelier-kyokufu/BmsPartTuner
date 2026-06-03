@@ -11,25 +11,21 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Infrastructure.Bms.Bmson;
 /// </summary>
 public class BmsScoreGeneratorTests
 {
-    private static BmsonFormat CreateBaseBmson()
+    private static BmsonBuilder CreateBaseBuilder(BmsFamilyTestContext context)
     {
-        return new BmsonFormat
-        {
-            Info = new BmsonInfo
-            {
-                Resolution = 240,
-                InitBpm = 130,
-                Title = "Test Title",
-                Genre = "Test Genre",
-                Artist = "Test Artist",
-                Level = 5,
-                JudgeRank = 50, // Normal rank
-                Total = 200
-            }
-        };
+        return new BmsonBuilder(context)
+            .WithInfo(
+                resolution: 240,
+                initBpm: 130,
+                title: "Test Title",
+                genre: "Test Genre",
+                artist: "Test Artist",
+                level: 5,
+                judgeRank: 50,
+                total: 200);
     }
 
-    private string GenerateBms(BmsonFormat bmson, string tempDir)
+    private static string GenerateBms(BmsonFormat bmson, string tempDir)
     {
         bmson = BmsonSanitizer.Sanitize(bmson);
 
@@ -47,21 +43,17 @@ public class BmsScoreGeneratorTests
     [Fact]
     public void GenerateBmsText_ChordNotes_PushedToBgmChannel()
     {
-        using var context = new BmsTestContext();
+        using var context = new BmsFamilyTestContext();
         var tempDir = context.TempDirectory;
         BmsTestWavHelper.CreateSilenceWavFile(Path.Combine(tempDir, "bgm.wav"), 0.1, 2);
 
-        var bmson = CreateBaseBmson();
-        bmson.SoundChannels.Add(new BmsonSoundChannel
-        {
-            Name = "bgm.wav",
-            Notes =
-            [
+        var bmson = CreateBaseBuilder(context)
+            .AddSoundChannel("bgm.wav",
                 new BmsonNote { X = 1, Y = 0, C = false }, // 1音目
                 new BmsonNote { X = 1, Y = 0, C = true }   // 2音目 (和音 - C=trueで同一ブロック)
-            ]
-        });
-        bmson.Lines.Add(new BmsonLineEvent { Y = 960 });
+            )
+            .AddLine(960)
+            .Build();
 
         string result = GenerateBms(bmson, tempDir);
 
@@ -75,20 +67,16 @@ public class BmsScoreGeneratorTests
     [Fact]
     public void GenerateBmsText_LongNote_PlacedOnLnChannel()
     {
-        using var context = new BmsTestContext();
+        using var context = new BmsFamilyTestContext();
         var tempDir = context.TempDirectory;
         BmsTestWavHelper.CreateSilenceWavFile(Path.Combine(tempDir, "ln.wav"), 0.1, 2);
 
-        var bmson = CreateBaseBmson();
-        bmson.SoundChannels.Add(new BmsonSoundChannel
-        {
-            Name = "ln.wav",
-            Notes =
-            [
+        var bmson = CreateBaseBuilder(context)
+            .AddSoundChannel("ln.wav",
                 new BmsonNote { X = 1, Y = 0, L = 240, C = false }
-            ]
-        });
-        bmson.Lines.Add(new BmsonLineEvent { Y = 960 });
+            )
+            .AddLine(960)
+            .Build();
 
         string result = GenerateBms(bmson, tempDir);
 
@@ -101,20 +89,16 @@ public class BmsScoreGeneratorTests
     [Fact]
     public void GenerateBmsText_DuplicateBpmEvents_MergedAndRounded()
     {
-        using var context = new BmsTestContext();
+        using var context = new BmsFamilyTestContext();
         var tempDir = context.TempDirectory;
         BmsTestWavHelper.CreateSilenceWavFile(Path.Combine(tempDir, "bgm.wav"), 0.1, 2);
 
-        var bmson = CreateBaseBmson();
-        bmson.BpmEvents.Add(new BmsonBpmEvent { Y = 240, Bpm = 145.1234 });
-        bmson.BpmEvents.Add(new BmsonBpmEvent { Y = 480, Bpm = 145.1226 });
-
-        bmson.SoundChannels.Add(new BmsonSoundChannel
-        {
-            Name = "bgm.wav",
-            Notes = [new BmsonNote { X = 1, Y = 0, C = false }]
-        });
-        bmson.Lines.Add(new BmsonLineEvent { Y = 960 });
+        var bmson = CreateBaseBuilder(context)
+            .AddBpmEvent(240, 145.1234)
+            .AddBpmEvent(480, 145.1226)
+            .AddSoundChannel("bgm.wav", new BmsonNote { X = 1, Y = 0, C = false })
+            .AddLine(960)
+            .Build();
 
         string result = GenerateBms(bmson, tempDir);
 
@@ -125,37 +109,31 @@ public class BmsScoreGeneratorTests
     /// <summary>
     /// GenerateBmsText において、条件 TotalValue の場合に ApproachB されることを検証します。
     /// </summary>
-    [Fact]
-    public void GenerateBmsText_TotalValue_ApproachB()
+    [Theory]
+    [InlineData(100, false, null)]
+    [InlineData(80, true, "#TOTAL 208")]
+    public void GenerateBmsText_TotalValue_ApproachB(double total, bool shouldContain, string? expectedSubstring)
     {
-        using var context = new BmsTestContext();
+        using var context = new BmsFamilyTestContext();
         var tempDir = context.TempDirectory;
         BmsTestWavHelper.CreateSilenceWavFile(Path.Combine(tempDir, "bgm.wav"), 0.1, 2);
 
-        // 1. total = 100 (デフォルト値)
-        var bmsonDefault = CreateBaseBmson();
-        bmsonDefault = bmsonDefault with { Info = bmsonDefault.Info with { Total = 100 } };
-        bmsonDefault.SoundChannels.Add(new BmsonSoundChannel
+        var bmson = CreateBaseBuilder(context)
+            .WithInfo(total: total)
+            .AddSoundChannel("bgm.wav", new BmsonNote { X = 1, Y = 0, C = false })
+            .AddLine(960)
+            .Build();
+
+        string result = GenerateBms(bmson, tempDir);
+
+        if (shouldContain)
         {
-            Name = "bgm.wav",
-            Notes = [new BmsonNote { X = 1, Y = 0, C = false }]
-        });
-        bmsonDefault.Lines.Add(new BmsonLineEvent { Y = 960 });
-
-        string resultDefault = GenerateBms(bmsonDefault, tempDir);
-        Assert.DoesNotContain("#TOTAL", resultDefault);
-
-        // 2. total = 80 (カスタム値)
-        var bmsonCustom = CreateBaseBmson();
-        bmsonCustom = bmsonCustom with { Info = bmsonCustom.Info with { Total = 80 } };
-        bmsonCustom.SoundChannels.Add(new BmsonSoundChannel
+            Assert.NotNull(expectedSubstring);
+            Assert.Contains(expectedSubstring, result);
+        }
+        else
         {
-            Name = "bgm.wav",
-            Notes = [new BmsonNote { X = 1, Y = 0, C = false }]
-        });
-        bmsonCustom.Lines.Add(new BmsonLineEvent { Y = 960 });
-
-        string resultCustom = GenerateBms(bmsonCustom, tempDir);
-        Assert.Contains("#TOTAL 208", resultCustom);
+            Assert.DoesNotContain("#TOTAL", result);
+        }
     }
 }

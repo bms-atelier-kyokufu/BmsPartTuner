@@ -25,7 +25,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
             RunWithSounds(data1, data2, (sound1, sound2) => assertCorrelation(FastWaveCompare.GetCorrelation(sound1, sound2)), channels);
 
         private static MockCachedSoundData CreateMockSound(float[] data, int sampleRate = 44100, int bitDepth = 16) =>
-            new MockCachedSoundData([data], sampleRate, bitDepth);
+            new([data], sampleRate, bitDepth);
 
         public static TheoryData<float[], float[], float, bool, string> GetIsMatchTestData()
         {
@@ -97,19 +97,20 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
 
         public static TheoryData<float[], string> GetIsMatchEdgeCaseTestData()
         {
-            var data = new TheoryData<float[], string>();
+            var data = new TheoryData<float[], string>
+            {
+                // ConstantValueData
+                { [.. Enumerable.Repeat(0.5f, 4)], "ConstantValueData" },
 
-            // ConstantValueData
-            data.Add([.. Enumerable.Repeat(0.5f, 4)], "ConstantValueData");
+                // LargeAmplitude
+                { [.. Enumerable.Repeat(1.0f, 4)], "LargeAmplitude" },
 
-            // LargeAmplitude
-            data.Add([.. Enumerable.Repeat(1.0f, 4)], "LargeAmplitude");
+                // TinyAmplitude
+                { [.. Enumerable.Range(1, 4).Select(i => i * 1e-7f)], "TinyAmplitude" },
 
-            // TinyAmplitude
-            data.Add([.. Enumerable.Range(1, 4).Select(i => i * 1e-7f)], "TinyAmplitude");
-
-            // SpecialFloatValues
-            data.Add([0.1f, float.NaN, 0.3f, 0.4f], "SpecialFloatValues");
+                // SpecialFloatValues
+                { [0.1f, float.NaN, 0.3f, 0.4f], "SpecialFloatValues" }
+            };
 
             return data;
         }

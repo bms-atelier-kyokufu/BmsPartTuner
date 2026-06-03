@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using BmsAtelierKyokufu.BmsPartTuner.Core.Attributes;
 using BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers;
 using Xunit.Abstractions;
 

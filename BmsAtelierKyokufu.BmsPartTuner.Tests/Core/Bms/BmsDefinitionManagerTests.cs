@@ -9,13 +9,13 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
     /// </summary>
     public class BmsDefinitionManagerTests : IDisposable
     {
-        private readonly BmsTestContext _context;
+        private readonly BmsFamilyTestContext _context;
         private string TmpDir => _context.TempDirectory;
         private bool _disposed;
 
         public BmsDefinitionManagerTests()
         {
-            _context = new BmsTestContext();
+            _context = new BmsFamilyTestContext();
         }
 
         public void Dispose()
@@ -76,23 +76,23 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
             var snareName = GetUniqueWavFileName("snare");
             var bmsContent = $"\n#WAV01 {kickName}\n#WAV02 {snareName}\n";
 
-            var setup = SetupVirtualFiles(kickName, snareName, false, bmsContent);
-            var fileList = setup.Manager.CreateFileList();
+            var (Manager, WavData, ExpectedKickPath, ExpectedSnarePath) = SetupVirtualFiles(kickName, snareName, false, bmsContent);
+            var fileList = Manager.CreateFileList();
 
             Assert.Equal(2, fileList.Count);
-            Assert.Empty(setup.Manager.MissingFiles);
+            Assert.Empty(Manager.MissingFiles);
 
             var file01 = fileList.FirstOrDefault(f => f.Num == "01");
             Assert.NotNull(file01);
             Assert.Equal(1, file01.NumInteger);
-            Assert.Equal(setup.ExpectedKickPath, file01.Name);
-            Assert.Equal(setup.WavData.Length, file01.FileSize);
+            Assert.Equal(ExpectedKickPath, file01.Name);
+            Assert.Equal(WavData.Length, file01.FileSize);
 
             var file02 = fileList.FirstOrDefault(f => f.Num == "02");
             Assert.NotNull(file02);
             Assert.Equal(2, file02.NumInteger);
-            Assert.Equal(setup.ExpectedSnarePath, file02.Name);
-            Assert.Equal(setup.WavData.Length, file02.FileSize);
+            Assert.Equal(ExpectedSnarePath, file02.Name);
+            Assert.Equal(WavData.Length, file02.FileSize);
         }
 
         /// <summary>
@@ -106,15 +106,15 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
             // Contains lower case (a1) which triggers Base62
             var bmsContent = $"\n#WAV01 {kickName}\n#WAVa1 {snareName}\n";
 
-            var setup = SetupVirtualFiles(kickName, snareName, false, bmsContent);
-            var fileList = setup.Manager.CreateFileList();
+            var (Manager, WavData, ExpectedKickPath, ExpectedSnarePath) = SetupVirtualFiles(kickName, snareName, false, bmsContent);
+            var fileList = Manager.CreateFileList();
 
             Assert.Equal(2, fileList.Count);
-            Assert.Empty(setup.Manager.MissingFiles);
+            Assert.Empty(Manager.MissingFiles);
 
             var fileA1 = fileList.FirstOrDefault(f => f.Num == "a1");
             Assert.NotNull(fileA1);
-            Assert.Equal(setup.ExpectedSnarePath, fileA1.Name);
+            Assert.Equal(ExpectedSnarePath, fileA1.Name);
             // Verify it has calculated the integer value based on Base62 radix (62)
             Assert.Equal(2233, fileA1.NumInteger);
         }
@@ -129,16 +129,16 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
             var snareName = GetUniqueWavFileName("snare");
             var bmsContent = $"\n#WAV01 {kickName}\n#WAV02 {snareName}\n";
 
-            var setup = SetupVirtualFiles(kickName, snareName, true, bmsContent);
-            var fileList = setup.Manager.CreateFileList();
+            var (Manager, WavData, ExpectedKickPath, ExpectedSnarePath) = SetupVirtualFiles(kickName, snareName, true, bmsContent);
+            var fileList = Manager.CreateFileList();
 
             Assert.Single(fileList);
-            Assert.Single(setup.Manager.MissingFiles);
-            Assert.Equal(snareName, setup.Manager.MissingFiles[0]);
+            Assert.Single(Manager.MissingFiles);
+            Assert.Equal(snareName, Manager.MissingFiles[0]);
 
             var file01 = fileList.FirstOrDefault(f => f.Num == "01");
             Assert.NotNull(file01);
-            Assert.Equal(setup.ExpectedKickPath, file01.Name);
+            Assert.Equal(ExpectedKickPath, file01.Name);
         }
 
         /// <summary>

@@ -1,5 +1,4 @@
 using System.IO;
-using System.Text;
 using BmsAtelierKyokufu.BmsPartTuner.Models;
 using BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers;
 

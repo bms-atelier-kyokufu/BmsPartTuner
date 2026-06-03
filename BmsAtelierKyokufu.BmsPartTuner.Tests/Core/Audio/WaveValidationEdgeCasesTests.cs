@@ -63,7 +63,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
         [MemberData(nameof(GetEdgeCaseTestData))]
         public void CalculatePearsonCorrelation_Scenarios_ReturnsExpected(float[] wav1, float[] wav2, float expected, bool useScalar, string scenario)
         {
-            Action<float> assertFunc = correlation => Assert.True(
+            void assertFunc(float correlation) => Assert.True(
                 Math.Abs(correlation - expected) <= Tolerance,
                 $"Scenario '{scenario}' failed. Expected {expected}, got {correlation}");
 
