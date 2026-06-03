@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Optimization;
 using BmsAtelierKyokufu.BmsPartTuner.Models;
 using BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers;
@@ -8,65 +8,8 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization;
 /// <summary>
 /// BmsOptimizationService の異常系、エラーハンドリング、警告処理に関するテスト。
 /// </summary>
-public class BmsOptimizationServiceExceptionTests : IDisposable
+public class BmsOptimizationServiceExceptionTests : BmsOptimizationServiceTestBase
 {
-    private readonly BmsTestContext _context;
-    private readonly BmsOptimizationService _service;
-    private bool _disposed;
-
-    public BmsOptimizationServiceExceptionTests()
-    {
-        _context = new BmsTestContext();
-        _service = new BmsOptimizationService();
-    }
-
-    public void Dispose()
-    {
-        if (_disposed) return;
-        _context?.Dispose();
-        _disposed = true;
-        GC.SuppressFinalize(this);
-    }
-
-    private async Task RunDefinitionReductionTestAsync(ReductionTestOptions options)
-    {
-        var builder = _context.CreateBuilder();
-        options.BuildBms?.Invoke(builder);
-        string inputBmsPath = builder.Build("test.bms");
-        string outputBmsPath = Path.Combine(_context.TempDirectory, "output.bms");
-        var files = options.CreateFiles?.Invoke(_context.TempDirectory) ?? [];
-
-        options.BeforeExecute?.Invoke(outputBmsPath);
-
-        try
-        {
-            var result = await _service.ExecuteDefinitionReductionAsync(
-                files,
-                inputBmsPath,
-                outputBmsPath,
-                new DefinitionReductionOptions
-                {
-                    R2Threshold = options.Threshold ?? 0.95f,
-                    StartDefinition = options.StartDef,
-                    EndDefinition = options.EndDef,
-                    IsPhysicalDeletionEnabled = options.PhysicalDeletion,
-                    SelectedKeywords = options.Keywords
-                });
-            options.AssertResult?.Invoke(result);
-        }
-        finally
-        {
-            options.AfterExecute?.Invoke(outputBmsPath);
-        }
-    }
-
-    private async Task RunOptimalThresholdsTestAsync(Func<string, List<string>> setupFiles, Action<OptimizationResult?> assertResult, int startDef = 1, int endDef = 1)
-    {
-        var files = setupFiles?.Invoke(_context.TempDirectory) ?? [];
-        var result = await _service.FindOptimalThresholdsAsync(files, startDef, endDef);
-        assertResult?.Invoke(result);
-    }
-
     /// <summary>
     /// ExecuteDefinitionReductionAsync において、条件 InputFileNotFound の場合に ReturnsErrorResult されることを検証します。
     /// </summary>
@@ -77,7 +20,7 @@ public class BmsOptimizationServiceExceptionTests : IDisposable
             BuildBms = _ => { },
             CreateFiles = dir => [new() { Num = "01", NumInteger = 1, Name = BmsTestWavHelper.CreateValidWavFile(Path.Combine(dir, "test.wav")) }],
             AssertResult = res => { Assert.NotNull(res); Assert.False(res.IsSuccess); Assert.NotNull(res.ErrorMessage); },
-            BeforeExecute = _ => File.Delete(Path.Combine(_context.TempDirectory, "test.bms")) // Force file not found
+            BeforeExecute = _ => File.Delete(Path.Combine(Context.TempDirectory, "test.bms")) // Force file not found
         });
 
     /// <summary>
@@ -100,8 +43,8 @@ public class BmsOptimizationServiceExceptionTests : IDisposable
     [Fact]
     public async Task ExecuteDefinitionReductionAsync_PhysicalDeletionWithLockedFile_ContinuesProcessing()
     {
-        var file1 = BmsTestWavHelper.CreateValidWavFile(Path.Combine(_context.TempDirectory, "locked.wav"));
-        var file2 = BmsTestWavHelper.CreateValidWavFile(Path.Combine(_context.TempDirectory, "normal.wav"));
+        var file1 = BmsTestWavHelper.CreateValidWavFile(Path.Combine(Context.TempDirectory, "locked.wav"));
+        var file2 = BmsTestWavHelper.CreateValidWavFile(Path.Combine(Context.TempDirectory, "normal.wav"));
 
         await using var fs = new FileStream(file1, FileMode.Open, FileAccess.Read, FileShare.Read);
 
@@ -195,8 +138,8 @@ public class BmsOptimizationServiceExceptionTests : IDisposable
     [Fact]
     public async Task FindOptimalThresholdsAsync_WithLockedFile_ReturnsWarning()
     {
-        var validFile = BmsTestWavHelper.CreateValidWavFile(Path.Combine(_context.TempDirectory, "valid.wav"));
-        var lockedFile = BmsTestWavHelper.CreateValidWavFile(Path.Combine(_context.TempDirectory, "locked.wav"));
+        var validFile = BmsTestWavHelper.CreateValidWavFile(Path.Combine(Context.TempDirectory, "valid.wav"));
+        var lockedFile = BmsTestWavHelper.CreateValidWavFile(Path.Combine(Context.TempDirectory, "locked.wav"));
         await using var fs = new FileStream(lockedFile, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
 
         await RunOptimalThresholdsTestAsync(
@@ -236,9 +179,9 @@ public class BmsOptimizationServiceExceptionTests : IDisposable
                 var f2 = Path.Combine(dir, "readonly_unused.wav"); BmsTestWavHelper.CreateValidWavFile(f2);
                 return [new() { Name = f1, NumInteger = 1, Num = "01", FileSize = new FileInfo(f1).Length }, new() { Name = f2, NumInteger = 2, Num = "02", FileSize = new FileInfo(f2).Length }];
             },
-            AssertResult = res => { Assert.True(res.IsSuccess); Assert.Equal(1, res.OptimizedCount); Assert.True(File.Exists(Path.Combine(_context.TempDirectory, "readonly_unused.wav"))); },
-            BeforeExecute = _ => File.SetAttributes(Path.Combine(_context.TempDirectory, "readonly_unused.wav"), FileAttributes.ReadOnly),
-            AfterExecute = _ => { if (File.Exists(Path.Combine(_context.TempDirectory, "readonly_unused.wav"))) File.SetAttributes(Path.Combine(_context.TempDirectory, "readonly_unused.wav"), FileAttributes.Normal); },
+            AssertResult = res => { Assert.True(res.IsSuccess); Assert.Equal(1, res.OptimizedCount); Assert.True(File.Exists(Path.Combine(Context.TempDirectory, "readonly_unused.wav"))); },
+            BeforeExecute = _ => File.SetAttributes(Path.Combine(Context.TempDirectory, "readonly_unused.wav"), FileAttributes.ReadOnly),
+            AfterExecute = _ => { if (File.Exists(Path.Combine(Context.TempDirectory, "readonly_unused.wav"))) File.SetAttributes(Path.Combine(Context.TempDirectory, "readonly_unused.wav"), FileAttributes.Normal); },
             Threshold = 0.99f,
             StartDef = 1,
             EndDef = 2,
@@ -289,7 +232,7 @@ public class BmsOptimizationServiceExceptionTests : IDisposable
             BuildBms = _ => { },
             CreateFiles = _ => [new() { Name = "nonexistent.wav", Num = "01", NumInteger = 1 }],
             AssertResult = res => Assert.False(res.IsSuccess),
-            BeforeExecute = _ => File.Delete(Path.Combine(_context.TempDirectory, "test.bms")),
+            BeforeExecute = _ => File.Delete(Path.Combine(Context.TempDirectory, "test.bms")),
             Threshold = 0.5f,
             StartDef = 1,
             EndDef = 1,

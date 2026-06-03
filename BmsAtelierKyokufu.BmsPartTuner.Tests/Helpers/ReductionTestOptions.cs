@@ -57,5 +57,15 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
         /// フィルタリング等に使用するキーワードのリスト。
         /// </summary>
         public IEnumerable<string>? Keywords { get; set; }
+
+        /// <summary>
+        /// 入力BMSファイルのファイル名。
+        /// </summary>
+        public string? InputBmsName { get; set; }
+
+        /// <summary>
+        /// 出力BMSファイルのファイル名。
+        /// </summary>
+        public string? OutputBmsName { get; set; }
     }
 }
