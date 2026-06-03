@@ -15,7 +15,13 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
         /// <param name="samples">オーディオサンプルの配列。</param>
         /// <param name="channels">チャンネル数（デフォルトは 1）。</param>
         /// <returns>生成された <see cref="MockCachedSoundData"/>。</returns>
-        public static MockCachedSoundData CreatePreNormalizedSoundData(float[] samples, int channels = 1)
+        public static MockCachedSoundData CreatePreNormalizedSoundData(
+            float[] samples,
+            int channels = 1,
+            bool disableCascadeClassifiers = false,
+            string filePath = "test.wav",
+            int sampleRate = 44100,
+            int bitDepth = 16)
         {
             float[][] samplesPerChannel = new float[channels][];
             int samplesPerCh = samples.Length / channels;
@@ -29,7 +35,10 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
                 }
             }
 
-            return new MockCachedSoundData(samplesPerChannel, 44100, 16);
+            return new MockCachedSoundData(samplesPerChannel, sampleRate, bitDepth, filePath)
+            {
+                DisableCascadeClassifiers = disableCascadeClassifiers
+            };
         }
 
         /// <summary>

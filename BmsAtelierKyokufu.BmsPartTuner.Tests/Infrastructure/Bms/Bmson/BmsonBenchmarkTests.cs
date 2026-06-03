@@ -25,7 +25,7 @@ public class BmsonBenchmarkTests(ITestOutputHelper output)
         using var context = new BmsFamilyTestContext();
 
         // 1. ダミーの BmsonFormat を作成
-        var bmson = new BmsonBuilder(context)
+        var bmson = context.CreateBuilder<BmsonBuilder>()
             .WithInfo(resolution: 240, initBpm: 130)
             .AddBpmEvents(Enumerable.Range(1, 100).Select(i => new BmsonBpmEvent { Y = i * 1000, Bpm = 130 + (i % 10) }))
             .AddStopEvents(Enumerable.Range(1, 50).Select(i => new BmsonStopEvent { Y = i * 2000, Duration = 240 }))
@@ -69,56 +69,29 @@ public class BmsonBenchmarkTests(ITestOutputHelper output)
     [Trait("Category", "Benchmark")]
     public void Benchmark_Downconvert_OverlappingNotes()
     {
+        using var context = new BmsFamilyTestContext();
+
         // 1. ダミーの BmsonFormat を作成
-        var bmson = new BmsonFormat
-        {
-            Info = new BmsonInfo
-            {
-                Resolution = 240,
-                InitBpm = 130
-            }
-        };
-
-        // BPMイベントを100個ほど追加
-        for (int i = 1; i <= 100; i++)
-        {
-            bmson.BpmEvents.Add(new BmsonBpmEvent { Y = i * 1000, Bpm = 130 + (i % 10) });
-        }
-
-        // STOPイベントを50個ほど追加
-        for (int i = 1; i <= 50; i++)
-        {
-            bmson.StopEvents.Add(new BmsonStopEvent { Y = i * 2000, Duration = 240 });
-        }
-
-        // 小節線
-        for (int i = 1; i <= 200; i++)
-        {
-            bmson.Lines.Add(new BmsonLineEvent { Y = i * 960 });
-        }
-
-        // サウンドチャンネルを 10 個作成し、それぞれ 10000 ノートを配置
-        // 同一タイミング (Y = 0) で重複があり、かつ C = true とする（O(N^2)の最悪ケースをシミュレート）
-        for (int chIdx = 0; chIdx < 10; chIdx++)
-        {
-            var channel = new BmsonSoundChannel
-            {
-                Name = $"bgm_{chIdx}.wav",
-                Notes = []
-            };
-
-            for (int noteIdx = 0; noteIdx < 10000; noteIdx++)
-            {
-                channel.Notes.Add(new BmsonNote
+        var bmson = context.CreateBuilder<BmsonBuilder>()
+            .WithInfo(resolution: 240, initBpm: 130)
+            .AddBpmEvents(Enumerable.Range(1, 100)
+                .Select(i => new BmsonBpmEvent { Y = i * 1000, Bpm = 130 + (i % 10) }))
+            .AddStopEvents(Enumerable.Range(1, 50)
+                .Select(i => new BmsonStopEvent { Y = i * 2000, Duration = 240 }))
+            .AddLines(Enumerable.Range(1, 200)
+                .Select(i => new BmsonLineEvent { Y = i * 960 }))
+            .AddSoundChannels(Enumerable.Range(0, 10)
+                .Select(chIdx => new BmsonSoundChannel
                 {
-                    X = 0, // BGM
-                    Y = 0, // すべて同じタイミング！
-                    C = noteIdx > 0
-                });
-            }
-
-            bmson.SoundChannels.Add(channel);
-        }
+                    Name = $"bgm_{chIdx}.wav",
+                    Notes = [.. Enumerable.Range(0, 10000).Select(noteIdx => new BmsonNote
+                    {
+                        X = 0, // BGM
+                        Y = 0, // すべて同じタイミング！
+                        C = noteIdx > 0
+                    })]
+                }))
+            .Build();
 
         // 2. 依存コンポーネントの作成
         var timeCalc = new PulseToBmsTimeCalculator(bmson.Info.Resolution, bmson.Lines);
@@ -150,7 +123,7 @@ public class BmsonBenchmarkTests(ITestOutputHelper output)
         using var context = new BmsFamilyTestContext();
 
         // 1. ダミーの BmsonFormat を作成
-        var bmson = new BmsonBuilder(context)
+        var bmson = context.CreateBuilder<BmsonBuilder>()
             .WithInfo(resolution: 240, initBpm: 130.0004) // 130 に丸められるはず
             .AddBpmEvent(240, 145.1234)
             .AddBpmEvent(480, 145.1226)

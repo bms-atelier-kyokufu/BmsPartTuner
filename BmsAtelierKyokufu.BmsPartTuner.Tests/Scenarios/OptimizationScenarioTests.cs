@@ -1,4 +1,4 @@
-﻿using BmsAtelierKyokufu.BmsPartTuner.Core.Optimization;
+using BmsAtelierKyokufu.BmsPartTuner.Core.Optimization;
 using BmsAtelierKyokufu.BmsPartTuner.Models;
 using BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers;
 
@@ -28,19 +28,6 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Scenarios
             if (currentRms == 0) return samples;
             float scale = targetRms / currentRms;
             return [.. samples.Select(s => s * scale)];
-        }
-
-        /// <summary>
-        /// メモリ内音声データを生成するヘルパーメソッド。
-        /// 実際の.wavファイルを読み込まずにテストを実行します。
-        /// </summary>
-        private static MockCachedSoundData CreateMockAudioData(float[] samples)
-        {
-            float[][] channels = [samples];
-            return new MockCachedSoundData(channels, 44100, 16)
-            {
-                DisableCascadeClassifiers = true
-            };
         }
 
         #endregion
@@ -78,10 +65,10 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Scenarios
                 samplesD[i] = (float)Math.Cos(i * 0.2);
             samplesD = NormalizeToRms(samplesD, targetRms);
 
-            audioCache["A.wav"] = CreateMockAudioData(samplesA);
-            audioCache["B.wav"] = CreateMockAudioData(samplesB);
-            audioCache["C.wav"] = CreateMockAudioData(samplesC);
-            audioCache["D.wav"] = CreateMockAudioData(samplesD);
+            audioCache["A.wav"] = BmsTestAudioHelper.CreatePreNormalizedSoundData(samplesA, disableCascadeClassifiers: true);
+            audioCache["B.wav"] = BmsTestAudioHelper.CreatePreNormalizedSoundData(samplesB, disableCascadeClassifiers: true);
+            audioCache["C.wav"] = BmsTestAudioHelper.CreatePreNormalizedSoundData(samplesC, disableCascadeClassifiers: true);
+            audioCache["D.wav"] = BmsTestAudioHelper.CreatePreNormalizedSoundData(samplesD, disableCascadeClassifiers: true);
 
             var fileList = new List<BmsAudioFile>
             {
