@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.IO;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 using BmsAtelierKyokufu.BmsPartTuner.Models;
@@ -29,7 +29,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
                 new() { Num = "03", NumInteger = 3, Name = unique, FileSize = new FileInfo(unique).Length }
             };
 
-            var bmsFile = _context.CreateBuilder()
+            var bmsFile = _context.CreateBuilder<BmsBuilder>()
                 .WithHeader("TITLE", "Physical Deletion Test")
                 .WithWav("01", "identical1.wav", createFile: false)
                 .WithWav("02", "identical2.wav", createFile: false)
@@ -78,7 +78,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
                 new() { Num = "02", NumInteger = 2, Name = file2, FileSize = new FileInfo(file2).Length }
             };
 
-            var bmsFile = _context.CreateBuilder()
+            var bmsFile = _context.CreateBuilder<BmsBuilder>()
                 .WithHeader("TITLE", "No Deletion Test")
                 .WithWav("01", "keep1.wav", createFile: false)
                 .WithWav("02", "keep2.wav", createFile: false)
@@ -123,7 +123,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
                 new() { Num = "02", NumInteger = 2, Name = file2, FileSize = new FileInfo(file2).Length }
             };
 
-            var bmsFile = _context.CreateBuilder()
+            var bmsFile = _context.CreateBuilder<BmsBuilder>()
                 .WithHeader("TITLE", "Unused List Test")
                 .WithWav("01", "used.wav", createFile: false)
                 .WithWav("02", "unused.wav", createFile: false)

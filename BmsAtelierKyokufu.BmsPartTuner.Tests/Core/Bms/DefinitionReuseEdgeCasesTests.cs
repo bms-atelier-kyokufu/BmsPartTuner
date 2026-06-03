@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 using BmsAtelierKyokufu.BmsPartTuner.Models;
 using BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers;
@@ -24,7 +24,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
                 (3, "sound3.wav")
             );
 
-            var bmsFile = _context.CreateBuilder()
+            var bmsFile = _context.CreateBuilder<BmsBuilder>()
                 .WithHeader("TITLE", "Threshold 0 Test")
                 .WithWav("01", "sound1.wav", createFile: false)
                 .WithWav("02", "sound2.wav", createFile: false)
@@ -69,7 +69,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
                 (2, "diff2.wav")
             );
 
-            var bmsFile = _context.CreateBuilder()
+            var bmsFile = _context.CreateBuilder<BmsBuilder>()
                 .WithHeader("TITLE", "Threshold 1 Test")
                 .WithWav("01", "diff1.wav", createFile: false)
                 .WithWav("02", "diff2.wav", createFile: false)
@@ -123,7 +123,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
             // Arrange: ファイルが1つだけの場合
             var fileList = BmsTestDefinitionHelper.CreateBmsDefinitionManagerWithMemoryWav(36, (1, "single.wav"));
 
-            var bmsFile = _context.CreateBuilder()
+            var bmsFile = _context.CreateBuilder<BmsBuilder>()
                 .WithHeader("TITLE", "Single File Test")
                 .WithWav("01", "single.wav", createFile: false)
                 .AddMainData(11, "01")
@@ -172,7 +172,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
                 (3, "kick_light.wav")
             );
 
-            var bmsFile = _context.CreateBuilder()
+            var bmsFile = _context.CreateBuilder<BmsBuilder>()
                 .WithHeader("TITLE", "Keyword Test")
                 .WithWav("01", "kick_heavy.wav", createFile: false)
                 .WithWav("02", "snare_light.wav", createFile: false)
@@ -215,7 +215,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
             var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, BmsAtelierKyokufu.BmsPartTuner.Models.ICachedSoundData>();
             // Arrange
             var fileList = BmsTestDefinitionHelper.CreateBmsDefinitionManagerWithMemoryWav(36, (1, "progress.wav"));
-            var bmsFile = _context.CreateBuilder()
+            var bmsFile = _context.CreateBuilder<BmsBuilder>()
                 .WithHeader("TITLE", "Progress Test")
                 .WithWav("01", "progress.wav", createFile: false)
                 .AddMainData(11, "01")

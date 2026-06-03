@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 using BmsAtelierKyokufu.BmsPartTuner.Models;
 using BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers;
@@ -48,7 +48,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
                 (1295, "sound_1295.wav")  // ZZ
             );
 
-            var bmsFile = _context.CreateBuilder()
+            var bmsFile = _context.CreateBuilder<BmsBuilder>()
                 .WithHeader("TITLE", "Base36 Boundary Test")
                 .WithWav("ZY", "sound_1294.wav", createFile: false)
                 .WithWav("ZZ", "sound_1295.wav", createFile: false)
@@ -94,7 +94,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
                 (3843, "sound_3843.wav")  // zz
             );
 
-            var bmsFile = _context.CreateBuilder()
+            var bmsFile = _context.CreateBuilder<BmsBuilder>()
                 .WithHeader("TITLE", "Base62 Boundary Test")
                 .WithWav("zy", "sound_3842.wav", createFile: false)
                 .WithWav("zz", "sound_3843.wav", createFile: false)
@@ -144,7 +144,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
                 (2, "snare.wav")
             );
 
-            var bmsFile = _context.CreateBuilder()
+            var bmsFile = _context.CreateBuilder<BmsBuilder>()
                 .WithHeader("TITLE", "Mixed Case Test")
                 .Build("test_mixed.bms");
 
@@ -197,7 +197,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
                 (1, "kick2.wav")  // 同じ番号
             );
 
-            var bmsFile = _context.CreateBuilder()
+            var bmsFile = _context.CreateBuilder<BmsBuilder>()
                 .WithHeader("TITLE", "Duplicate Test")
                 .Build("test_dup.bms");
 

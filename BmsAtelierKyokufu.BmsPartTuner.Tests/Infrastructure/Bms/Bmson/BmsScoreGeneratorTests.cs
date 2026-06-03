@@ -9,22 +9,8 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Infrastructure.Bms.Bmson;
 /// <summary>
 /// <see cref="BmsScoreGeneratorTests"/> の動作を検証するテストクラス。
 /// </summary>
-public class BmsScoreGeneratorTests
+    public class BmsScoreGeneratorTests
 {
-    private static BmsonBuilder CreateBaseBuilder(BmsFamilyTestContext context)
-    {
-        return new BmsonBuilder(context)
-            .WithInfo(
-                resolution: 240,
-                initBpm: 130,
-                title: "Test Title",
-                genre: "Test Genre",
-                artist: "Test Artist",
-                level: 5,
-                judgeRank: 50,
-                total: 200);
-    }
-
     private static string GenerateBms(BmsonFormat bmson, string tempDir)
     {
         bmson = BmsonSanitizer.Sanitize(bmson);
@@ -47,7 +33,7 @@ public class BmsScoreGeneratorTests
         var tempDir = context.TempDirectory;
         BmsTestWavHelper.CreateSilenceWavFile(Path.Combine(tempDir, "bgm.wav"), 0.1, 2);
 
-        var bmson = CreateBaseBuilder(context)
+        var bmson = context.CreateBaseBuilder<BmsonBuilder>()
             .AddSoundChannel("bgm.wav",
                 new BmsonNote { X = 1, Y = 0, C = false }, // 1音目
                 new BmsonNote { X = 1, Y = 0, C = true }   // 2音目 (和音 - C=trueで同一ブロック)
@@ -71,7 +57,7 @@ public class BmsScoreGeneratorTests
         var tempDir = context.TempDirectory;
         BmsTestWavHelper.CreateSilenceWavFile(Path.Combine(tempDir, "ln.wav"), 0.1, 2);
 
-        var bmson = CreateBaseBuilder(context)
+        var bmson = context.CreateBaseBuilder<BmsonBuilder>()
             .AddSoundChannel("ln.wav",
                 new BmsonNote { X = 1, Y = 0, L = 240, C = false }
             )
@@ -93,7 +79,7 @@ public class BmsScoreGeneratorTests
         var tempDir = context.TempDirectory;
         BmsTestWavHelper.CreateSilenceWavFile(Path.Combine(tempDir, "bgm.wav"), 0.1, 2);
 
-        var bmson = CreateBaseBuilder(context)
+        var bmson = context.CreateBaseBuilder<BmsonBuilder>()
             .AddBpmEvent(240, 145.1234)
             .AddBpmEvent(480, 145.1226)
             .AddSoundChannel("bgm.wav", new BmsonNote { X = 1, Y = 0, C = false })
@@ -118,7 +104,7 @@ public class BmsScoreGeneratorTests
         var tempDir = context.TempDirectory;
         BmsTestWavHelper.CreateSilenceWavFile(Path.Combine(tempDir, "bgm.wav"), 0.1, 2);
 
-        var bmson = CreateBaseBuilder(context)
+        var bmson = context.CreateBaseBuilder<BmsonBuilder>()
             .WithInfo(total: total)
             .AddSoundChannel("bgm.wav", new BmsonNote { X = 1, Y = 0, C = false })
             .AddLine(960)

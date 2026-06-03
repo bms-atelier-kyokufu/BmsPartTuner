@@ -11,8 +11,10 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
     /// コンストラクタでテストコンテキストを受け取ります。
     /// </remarks>
     /// <param name="context">関連付ける <see cref="BmsFamilyTestContext"/>。</param>
-    public class BmsBuilder(BmsFamilyTestContext context) : IBmsFamilyBuilder
+    public class BmsBuilder(BmsFamilyTestContext context) : IBmsFamilyBuilder<BmsBuilder>
     {
+        public static BmsBuilder Create(BmsFamilyTestContext context) => new(context);
+
         private readonly BmsFamilyTestContext _context = context;
         private readonly StringBuilder _headerContent = new();
         private readonly StringBuilder _wavDefinitions = new();

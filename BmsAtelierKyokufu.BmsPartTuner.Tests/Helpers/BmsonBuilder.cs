@@ -7,8 +7,10 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
     /// <see cref="BmsonFormat"/> オブジェクトを流れるようなインターフェースで構築するためのビルダー。
     /// <see cref="IBmsFamilyBuilder"/> インターフェースを実装し、<see cref="BmsBuilder"/> とのインターフェースの共通化を図ります。
     /// </summary>
-    public class BmsonBuilder(BmsFamilyTestContext context) : IBmsFamilyBuilder
+    public class BmsonBuilder(BmsFamilyTestContext context) : IBmsFamilyBuilder<BmsonBuilder>
     {
+        public static BmsonBuilder Create(BmsFamilyTestContext context) => new(context);
+
         private readonly BmsFamilyTestContext _context = context;
         private int _resolution = 240;
         private double _initBpm = 130.0;

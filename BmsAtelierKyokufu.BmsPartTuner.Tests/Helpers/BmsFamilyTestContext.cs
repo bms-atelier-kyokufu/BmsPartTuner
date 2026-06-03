@@ -27,12 +27,28 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
         public string TempDirectory { get; }
 
         /// <summary>
-        /// このコンテキストに関連付けられた新しい <see cref="BmsBuilder"/> インスタンスを作成します。
+        /// 指定されたビルダー型のインスタンスを作成します。
         /// </summary>
-        /// <returns>BMSファイルの流れるような構築を行うビルダーインスタンス。</returns>
-        public BmsBuilder CreateBuilder()
+        public TBuilder CreateBuilder<TBuilder>() where TBuilder : class, IBmsFamilyBuilder<TBuilder>
         {
-            return new BmsBuilder(this);
+            return TBuilder.Create(this);
+        }
+
+        /// <summary>
+        /// ベースとなる共通曲情報（ヘッダー）が設定済みのビルダーインスタンスを作成します。
+        /// </summary>
+        public TBuilder CreateBaseBuilder<TBuilder>() where TBuilder : class, IBmsFamilyBuilder<TBuilder>
+        {
+            var builder = CreateBuilder<TBuilder>();
+            builder.WithHeader("TITLE", "Test Title");
+            builder.WithHeader("GENRE", "Test Genre");
+            builder.WithHeader("ARTIST", "Test Artist");
+            builder.WithHeader("BPM", "130");
+            builder.WithHeader("PLAYLEVEL", "5");
+            builder.WithHeader("RANK", "1"); // 1=50 in Bmson
+            builder.WithHeader("TOTAL", "200");
+            builder.WithHeader("RESOLUTION", "240");
+            return builder;
         }
 
         /// <summary>

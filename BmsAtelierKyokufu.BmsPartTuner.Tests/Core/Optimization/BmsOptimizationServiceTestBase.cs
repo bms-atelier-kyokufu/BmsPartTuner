@@ -44,7 +44,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
         /// </summary>
         protected async Task RunDefinitionReductionTestAsync(ReductionTestOptions options)
         {
-            var builder = Context.CreateBuilder();
+            var builder = Context.CreateBaseBuilder<BmsBuilder>();
             options.BuildBms?.Invoke(builder);
             string inputBmsName = options.InputBmsName ?? "test.bms";
             string outputBmsName = options.OutputBmsName ?? "output.bms";

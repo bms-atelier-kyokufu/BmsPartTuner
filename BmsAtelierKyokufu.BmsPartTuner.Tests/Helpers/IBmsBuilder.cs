@@ -11,4 +11,12 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
         IBmsFamilyBuilder AddMainData(int measure, int channel, string data);
         IBmsFamilyBuilder AddMainData(int channel, string data);
     }
+
+    /// <summary>
+    /// 型安全にビルダーインスタンスを作成できる、ジェネリック対応の共通インターフェース。
+    /// </summary>
+    public interface IBmsFamilyBuilder<TSelf> : IBmsFamilyBuilder where TSelf : class, IBmsFamilyBuilder<TSelf>
+    {
+        static abstract TSelf Create(BmsFamilyTestContext context);
+    }
 }

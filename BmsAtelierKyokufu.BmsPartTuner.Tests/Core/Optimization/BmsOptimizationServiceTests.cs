@@ -1,4 +1,5 @@
 using System.IO;
+using BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
 {
@@ -13,7 +14,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
         [Fact]
         public Task FindOptimalThresholdsAsync_ValidFiles_ReturnsResult() =>
             RunOptimalThresholdsTestAsync(
-                dir => { Context.CreateBuilder().WithWav(1, "test1.wav"); return [Path.Combine(dir, "test1.wav")]; },
+                dir => { Context.CreateBaseBuilder<BmsBuilder>().WithWav(1, "test1.wav"); return [Path.Combine(dir, "test1.wav")]; },
                 res => { Assert.NotNull(res); Assert.NotEmpty(res.SimulationData); Assert.True(res.Base36Result.Count > 0); }
             );
 
@@ -39,7 +40,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
             RunDefinitionReductionTestAsync(new()
             {
                 InputBmsName = "input.bms",
-                BuildBms = b => b.WithHeader("GENRE", "Test").WithWav(1, "used1.wav").WithWav(2, "used2.wav").WithWav(3, "unused1.wav").WithWav(4, "unused2.wav").AddMainData(0, 11, "0102"),
+                BuildBms = b => b.WithWav(1, "used1.wav").WithWav(2, "used2.wav").WithWav(3, "unused1.wav").WithWav(4, "unused2.wav").AddMainData(0, 11, "0102"),
                 CreateFiles = dir => [
                     new() { Name = Path.Combine(dir, "used1.wav"), Num = "01", NumInteger = 1 },
                     new() { Name = Path.Combine(dir, "used2.wav"), Num = "02", NumInteger = 2 },
@@ -64,7 +65,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
             RunDefinitionReductionTestAsync(new()
             {
                 InputBmsName = "input.bms",
-                BuildBms = b => b.WithHeader("GENRE", "Test").WithWav(1, "test1.wav").AddMainData(0, 11, "01"),
+                BuildBms = b => b.WithWav(1, "test1.wav").AddMainData(0, 11, "01"),
                 CreateFiles = dir => [new() { Name = Path.Combine(dir, "test1.wav"), Num = "01", NumInteger = 1 }],
                 AssertResult = res =>
                 {
@@ -81,7 +82,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
         [Fact]
         public Task FindOptimalThresholdsAsync_PartialFileNotFound_ProcessesValidFiles() =>
             RunOptimalThresholdsTestAsync(
-                dir => { Context.CreateBuilder().WithWav(1, "valid.wav"); return [Path.Combine(dir, "valid.wav"), "nonexistent1.wav", "nonexistent2.wav"]; },
+                dir => { Context.CreateBaseBuilder<BmsBuilder>().WithWav(1, "valid.wav"); return [Path.Combine(dir, "valid.wav"), "nonexistent1.wav", "nonexistent2.wav"]; },
                 res => { Assert.NotNull(res); Assert.NotEmpty(res.SimulationData); },
                 endDef: 3
             );
@@ -92,7 +93,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
         [Fact]
         public Task FindOptimalThresholdsAsync_EndDefinitionZero_AutoDetectsEndDefinition() =>
             RunOptimalThresholdsTestAsync(
-                dir => { Context.CreateBuilder().WithWav(1, "test1.wav").WithWav(2, "test2.wav"); return [Path.Combine(dir, "test1.wav"), Path.Combine(dir, "test2.wav")]; },
+                dir => { Context.CreateBaseBuilder<BmsBuilder>().WithWav(1, "test1.wav").WithWav(2, "test2.wav"); return [Path.Combine(dir, "test1.wav"), Path.Combine(dir, "test2.wav")]; },
                 res => { Assert.NotNull(res); Assert.NotEmpty(res.SimulationData); },
                 endDef: 0
             );
@@ -105,7 +106,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
         {
             var progressValues = new List<int>();
             return RunOptimalThresholdsTestAsync(
-                dir => { Context.CreateBuilder().WithWav(1, "test1.wav"); return [Path.Combine(dir, "test1.wav")]; },
+                dir => { Context.CreateBaseBuilder<BmsBuilder>().WithWav(1, "test1.wav"); return [Path.Combine(dir, "test1.wav")]; },
                 _ => Assert.NotEmpty(progressValues),
                 progress: new Progress<int>(p => progressValues.Add(p))
             );
@@ -120,7 +121,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
         [InlineData(10, 50)]
         public Task FindOptimalThresholdsAsync_VariousRanges_ProcessesCorrectly(int start, int end) =>
             RunOptimalThresholdsTestAsync(
-                dir => { Context.CreateBuilder().WithWav(1, $"test_{start}_{end}.wav"); return [Path.Combine(dir, $"test_{start}_{end}.wav")]; },
+                dir => { Context.CreateBaseBuilder<BmsBuilder>().WithWav(1, $"test_{start}_{end}.wav"); return [Path.Combine(dir, $"test_{start}_{end}.wav")]; },
                 Assert.NotNull,
                 startDef: start, endDef: end
             );
@@ -133,7 +134,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
             RunDefinitionReductionTestAsync(new()
             {
                 InputBmsName = "input.bms",
-                BuildBms = b => b.WithHeader("GENRE", "Test").WithWav(1, "kick.wav").WithWav(2, "snare.wav").AddMainData(0, 11, "0102"),
+                BuildBms = b => b.WithWav(1, "kick.wav").WithWav(2, "snare.wav").AddMainData(0, 11, "0102"),
                 CreateFiles = dir => [
                     new() { Name = Path.Combine(dir, "kick.wav"), Num = "01", NumInteger = 1 },
                     new() { Name = Path.Combine(dir, "snare.wav"), Num = "02", NumInteger = 2 }
