@@ -15,13 +15,13 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
     /// </summary>
     public class BmsFileRewriterTests : IDisposable
     {
-        private readonly BmsTestContext _context;
+        private readonly BmsFamilyTestContext _context;
         private string TempDir => _context.TempDirectory;
         private bool _disposed;
 
         public BmsFileRewriterTests()
         {
-            _context = new BmsTestContext();
+            _context = new BmsFamilyTestContext();
         }
 
         public void Dispose()

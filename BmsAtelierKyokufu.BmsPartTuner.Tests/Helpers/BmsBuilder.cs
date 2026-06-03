@@ -2,75 +2,18 @@ using System.IO;
 using System.Text;
 using BmsAtelierKyokufu.BmsPartTuner.Core;
 
-[assembly: Xunit.CollectionBehavior(DisableTestParallelization = true)]
-
 namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
 {
-    /// <summary>
-    /// テスト用の一時的なBMSファイル環境を管理するヘルパークラス。
-    /// 一時ディレクトリを作成し、破棄（Dispose）時に自動的にクリーンアップを行います。
-    /// </summary>
-    public class BmsTestContext : IDisposable
-    {
-        private bool _disposed;
-
-        /// <summary>
-        /// <see cref="BmsTestContext"/> クラスの新しいインスタンスを初期化し、一時ディレクトリを作成します。
-        /// </summary>
-        public BmsTestContext()
-        {
-            TempDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-            Directory.CreateDirectory(TempDirectory);
-        }
-
-        /// <summary>
-        /// テスト用の一時ディレクトリのパス。
-        /// </summary>
-        public string TempDirectory { get; }
-
-        /// <summary>
-        /// このコンテキストに関連付けられた新しい <see cref="BmsFileBuilder"/> インスタンスを作成します。
-        /// </summary>
-        /// <returns>BMSファイルの流れるような構築を行うビルダーインスタンス。</returns>
-        public BmsFileBuilder CreateBuilder()
-        {
-            return new BmsFileBuilder(this);
-        }
-
-        /// <summary>
-        /// 一時ディレクトリの削除および各種オーディオリソースの登録解除を行い、リソースを解放します。
-        /// </summary>
-        public void Dispose()
-        {
-            if (_disposed) return;
-            try
-            {
-                if (Directory.Exists(TempDirectory))
-                {
-                    Directory.Delete(TempDirectory, true);
-                }
-            }
-            catch
-            {
-                // ベストエフォートでのクリーンアップ。ファイル使用中等のエラーは無視します。
-            }
-            AudioRegistry.Instance.Clear();
-            VirtualAudioRegistry.Clear();
-            _disposed = true;
-            GC.SuppressFinalize(this);
-        }
-    }
-
     /// <summary>
     /// BMSファイルおよび関連するダミーアセットを流れるように構築するためのビルダー。
     /// </summary>
     /// <remarks>
     /// コンストラクタでテストコンテキストを受け取ります。
     /// </remarks>
-    /// <param name="context">関連付ける <see cref="BmsTestContext"/>。</param>
-    public class BmsFileBuilder(BmsTestContext context)
+    /// <param name="context">関連付ける <see cref="BmsFamilyTestContext"/>。</param>
+    public class BmsBuilder(BmsFamilyTestContext context) : IBmsFamilyBuilder
     {
-        private readonly BmsTestContext _context = context;
+        private readonly BmsFamilyTestContext _context = context;
         private readonly StringBuilder _headerContent = new();
         private readonly StringBuilder _wavDefinitions = new();
         private readonly StringBuilder _mainData = new();
@@ -85,7 +28,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
         /// <param name="key">キー名。</param>
         /// <param name="value">値。</param>
         /// <returns>このビルダーのインスタンス。</returns>
-        public BmsFileBuilder WithHeader(string key, string value)
+        public BmsBuilder WithHeader(string key, string value)
         {
             _headerContent.AppendLine($"#{key} {value}");
             return this;
@@ -99,7 +42,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
         /// <param name="createFile">ダミーファイルを生成するかどうか。</param>
         /// <param name="writeToDisk">ディスクに書き出すかどうか。偽の場合は仮想レジストリ登録のみ。</param>
         /// <returns>このビルダーのインスタンス。</returns>
-        public BmsFileBuilder WithWav(int index, string filename, bool createFile = true, bool writeToDisk = true)
+        public BmsBuilder WithWav(int index, string filename, bool createFile = true, bool writeToDisk = true)
         {
             string indexStr = ToBmsIndex(index);
             _wavDefinitions.AppendLine($"#WAV{indexStr} {filename}");
@@ -118,7 +61,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
         /// <param name="createFile">ダミーファイルを生成するかどうか。</param>
         /// <param name="writeToDisk">ディスクに書き出すかどうか。偽の場合は仮想レジストリ登録のみ。</param>
         /// <returns>このビルダーのインスタンス。</returns>
-        public BmsFileBuilder WithWav(string indexStr, string filename, bool createFile = true, bool writeToDisk = true)
+        public BmsBuilder WithWav(string indexStr, string filename, bool createFile = true, bool writeToDisk = true)
         {
             _wavDefinitions.AppendLine($"#WAV{indexStr} {filename}");
             if (createFile)
@@ -135,7 +78,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
         /// <param name="channel">チャンネル番号（例: BGMの場合は 11）。</param>
         /// <param name="data">データ文字列（例: "01020102"）。</param>
         /// <returns>このビルダーのインスタンス。</returns>
-        public BmsFileBuilder AddMainData(int measure, int channel, string data)
+        public BmsBuilder AddMainData(int measure, int channel, string data)
         {
             _mainData.AppendLine($"#{measure:D3}{channel:D2}:{data}");
             return this;
@@ -147,7 +90,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
         /// <param name="channel">チャンネル番号。</param>
         /// <param name="data">データ文字列。</param>
         /// <returns>このビルダーのインスタンス。</returns>
-        public BmsFileBuilder AddMainData(int channel, string data)
+        public BmsBuilder AddMainData(int channel, string data)
         {
             return AddMainData(1, channel, data);
         }
@@ -157,7 +100,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
         /// </summary>
         /// <param name="encoding">適用するエンコーディング。</param>
         /// <returns>このビルダーのインスタンス。</returns>
-        public BmsFileBuilder WithEncoding(Encoding encoding)
+        public BmsBuilder WithEncoding(Encoding encoding)
         {
             _encoding = encoding;
             return this;
@@ -168,7 +111,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
         /// </summary>
         /// <param name="noise">追加するノイズ文字列。</param>
         /// <returns>このビルダーのインスタンス。</returns>
-        public BmsFileBuilder AddNoise(string noise)
+        public BmsBuilder AddNoise(string noise)
         {
             _mainData.AppendLine(noise);
             return this;
@@ -219,5 +162,12 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
 
             return result;
         }
+
+        // Explicit implementations of IBmsBuilder return type mappings
+        IBmsFamilyBuilder IBmsFamilyBuilder.WithHeader(string key, string value) => WithHeader(key, value);
+        IBmsFamilyBuilder IBmsFamilyBuilder.WithWav(int index, string filename, bool createFile, bool writeToDisk) => WithWav(index, filename, createFile, writeToDisk);
+        IBmsFamilyBuilder IBmsFamilyBuilder.WithWav(string indexStr, string filename, bool createFile, bool writeToDisk) => WithWav(indexStr, filename, createFile, writeToDisk);
+        IBmsFamilyBuilder IBmsFamilyBuilder.AddMainData(int measure, int channel, string data) => AddMainData(measure, channel, data);
+        IBmsFamilyBuilder IBmsFamilyBuilder.AddMainData(int channel, string data) => AddMainData(channel, data);
     }
 }

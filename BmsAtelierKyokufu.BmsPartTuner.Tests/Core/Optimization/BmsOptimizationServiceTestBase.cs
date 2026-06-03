@@ -11,13 +11,13 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
     /// </summary>
     public abstract class BmsOptimizationServiceTestBase : IDisposable
     {
-        protected readonly BmsTestContext Context;
+        protected readonly BmsFamilyTestContext Context;
         protected readonly BmsOptimizationService Service;
         private bool _disposed;
 
         protected BmsOptimizationServiceTestBase()
         {
-            Context = new BmsTestContext();
+            Context = new BmsFamilyTestContext();
             Service = new BmsOptimizationService();
         }
 

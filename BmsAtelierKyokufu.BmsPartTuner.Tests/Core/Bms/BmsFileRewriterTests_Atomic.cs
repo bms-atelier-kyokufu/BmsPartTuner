@@ -22,7 +22,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
         public void WriteBmsFile_LockedTarget_PreservesOriginalContent()
         {
             var audioCache = new System.Collections.Concurrent.ConcurrentDictionary<string, BmsAtelierKyokufu.BmsPartTuner.Models.ICachedSoundData>();
-            using var context = new BmsTestContext();
+            using var context = new BmsFamilyTestContext();
 
             string bmsPath = Path.Combine(context.TempDirectory, "atomic_test.bms");
             const string originalContent = "Original Content";
@@ -58,7 +58,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
         [Fact]
         public void WriteBmsFile_Success_WritesToTempAndMoves()
         {
-            using var context = new BmsTestContext();
+            using var context = new BmsFamilyTestContext();
 
             string bmsPath = Path.Combine(context.TempDirectory, "atomic_success.bms");
             const string content = "Success Content";

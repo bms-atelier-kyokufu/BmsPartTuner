@@ -18,7 +18,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.UI.ViewModels
     {
         private class MainViewModelTestFixture : IDisposable
         {
-            public BmsTestContext Context { get; }
+            public BmsFamilyTestContext Context { get; }
             public string SettingsPath { get; }
             public Mock<IBmsOptimizationService> OptimizationServiceMock { get; } = new();
             public Mock<BmsAtelierKyokufu.BmsPartTuner.UseCases.IBmsOptimizationUseCase> OptimizationUseCaseMock { get; } = new();
@@ -30,7 +30,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.UI.ViewModels
 
             public MainViewModelTestFixture()
             {
-                Context = new BmsTestContext();
+                Context = new BmsFamilyTestContext();
                 SettingsPath = Path.Combine(Context.TempDirectory, "setting.json");
 
                 FileSystemServiceMock.Setup(f => f.FileExists(It.IsAny<string>())).Returns(true);

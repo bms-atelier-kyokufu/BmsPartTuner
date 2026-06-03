@@ -11,7 +11,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
         /// <summary>
         /// テスト用BMSファイルを構築するためのコールバック処理。
         /// </summary>
-        public Action<BmsFileBuilder>? BuildBms { get; set; }
+        public Action<BmsBuilder>? BuildBms { get; set; }
 
         /// <summary>
         /// テスト用のオーディオファイル定義リストを作成するためのコールバック処理。

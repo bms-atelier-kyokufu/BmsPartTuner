@@ -16,12 +16,12 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
     /// </summary>
     public partial class DefinitionReuseTests : IDisposable
     {
-        private readonly BmsTestContext _context;
+        private readonly BmsFamilyTestContext _context;
         private bool _disposed;
 
         public DefinitionReuseTests()
         {
-            _context = new BmsTestContext();
+            _context = new BmsFamilyTestContext();
         }
 
         public void Dispose()
