@@ -24,75 +24,72 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
         private static void RunCorrelationTest(float[] data1, float[] data2, Action<float> assertCorrelation, int channels = 1) =>
             RunWithSounds(data1, data2, (sound1, sound2) => assertCorrelation(FastWaveCompare.GetCorrelation(sound1, sound2)), channels);
 
-        private static MockCachedSoundData CreateMockSound(float[] data, int sampleRate = 44100, int bitDepth = 16) =>
-            new([data], sampleRate, bitDepth);
-
         public static TheoryData<float[], float[], float, bool, string> GetIsMatchTestData()
         {
-            var data = new TheoryData<float[], float[], float, bool, string>();
             var baseData4 = Enumerable.Range(1, 4).Select(i => i * 0.1f).ToArray();
             var baseData2 = Enumerable.Range(1, 2).Select(i => i * 0.1f).ToArray();
             var baseData3 = Enumerable.Range(1, 3).Select(i => i * 0.1f).ToArray();
             var volumeData4 = Enumerable.Range(1, 4).Select(i => i * 0.05f).ToArray();
             var invertedData4 = Enumerable.Range(1, 4).Select(i => -i * 0.1f).ToArray();
 
-            // ExactMatch (完全一致)
-            data.Add(baseData4, baseData4, 0.99f, true, "ExactMatch");
+            return new TheoryData<float[], float[], float, bool, string>
+            {
+                // ExactMatch (完全一致)
+                (baseData4, baseData4, 0.99f, true, "ExactMatch"),
 
-            // DifferentLengths (長さ不一致)
-            data.Add(baseData2, baseData3, 0.1f, false, "DifferentLengths");
+                // DifferentLengths (長さ不一致)
+                (baseData2, baseData3, 0.1f, false, "DifferentLengths"),
 
-            // Silence (無音)
-            data.Add(new float[4], new float[4], 0.9f, true, "Silence");
+                // Silence (無音)
+                (new float[4], new float[4], 0.9f, true, "Silence"),
 
-            // NearSilence (ほぼ無音)
-            data.Add([1e-6f, -1e-6f], [1e-6f, -1e-6f], 0.99f, true, "NearSilence");
+                // NearSilence (ほぼ無音)
+                ([1e-6f, -1e-6f], [1e-6f, -1e-6f], 0.99f, true, "NearSilence"),
 
-            // VolumeDifference (音量差)
-            data.Add(baseData4, volumeData4, 0.99f, true, "VolumeDifference");
+                // VolumeDifference (音量差)
+                (baseData4, volumeData4, 0.99f, true, "VolumeDifference"),
 
-            // InvertedPhase (逆位相)
-            data.Add(baseData4, invertedData4, 0.9f, false, "InvertedPhase");
+                // InvertedPhase (逆位相)
+                (baseData4, invertedData4, 0.9f, false, "InvertedPhase"),
 
-            // SmallDataNonSIMDPath (SIMD対象外の短いデータ)
-            data.Add(baseData2, baseData2, 0.99f, true, "SmallDataNonSIMDPath");
+                // SmallDataNonSIMDPath (SIMD対象外の短いデータ)
+                (baseData2, baseData2, 0.99f, true, "SmallDataNonSIMDPath"),
 
-            // WithNormalizedWaveform (ノーマライズ済み波形)
-            data.Add(baseData4, baseData4, 0.99f, true, "WithNormalizedWaveform");
+                // WithNormalizedWaveform (ノーマライズ済み波形)
+                (baseData4, baseData4, 0.99f, true, "WithNormalizedWaveform"),
 
-            // MinimalData (最小データ数)
-            data.Add([0.5f], [0.5f], 0.99f, true, "MinimalData");
-
-            return data;
+                // MinimalData (最小データ数)
+                ([0.5f], [0.5f], 0.99f, true, "MinimalData")
+            };
         }
 
         public static TheoryData<float[], float[], float, string> GetCorrelationTestData()
         {
-            var data = new TheoryData<float[], float[], float, string>();
             var baseData = Enumerable.Range(1, 4).Select(i => i * 0.1f).ToArray();
             var invertedData = Enumerable.Range(1, 4).Select(i => -i * 0.1f).ToArray();
 
-            data.Add(baseData, baseData, 1.0f, "ExactMatch");
-            data.Add(baseData, invertedData, -1.0f, "InvertedPhase");
-
-            return data;
+            return new TheoryData<float[], float[], float, string>
+            {
+                (baseData, baseData, 1.0f, "ExactMatch"),
+                (baseData, invertedData, -1.0f, "InvertedPhase")
+            };
         }
 
         public static TheoryData<float[], float[], float, float, string> GetCorrelationRangeTestData()
         {
-            var data = new TheoryData<float[], float[], float, float, string>();
-
             // SimilarButNotIdentical (類似しているが不完全一致)
             var similar1 = Enumerable.Range(1, 8).Select(i => i * 0.1f).ToArray();
             var similar2 = Enumerable.Range(1, 8).Select(i => (i * 0.1f) + (i % 2 == 1 ? 0.01f : -0.01f)).ToArray();
-            data.Add(similar1, similar2, 0.9f, 1.0f, "SimilarButNotIdentical");
 
             // UncorrelatedData (無相関)
             var uncorrelated1 = Enumerable.Range(0, 8).Select(i => i % 2 == 0 ? 1.0f : 0.0f).ToArray();
             var uncorrelated2 = Enumerable.Range(0, 8).Select(i => i % 2 == 0 ? 0.0f : 1.0f).ToArray();
-            data.Add(uncorrelated1, uncorrelated2, -1.01f, 1.0f, "UncorrelatedData");
 
-            return data;
+            return new TheoryData<float[], float[], float, float, string>
+            {
+                (similar1, similar2, 0.9f, 1.0f, "SimilarButNotIdentical"),
+                (uncorrelated1, uncorrelated2, -1.01f, 1.0f, "UncorrelatedData")
+            };
         }
 
         public static TheoryData<float[], string> GetIsMatchEdgeCaseTestData()
@@ -137,8 +134,8 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
         public void IsMatch_FormatMismatch_ReturnsFalse(int sr1, int bd1, int sr2, int bd2, string scenario)
         {
             float[] data = [0.1f, 0.2f, 0.3f, 0.4f];
-            using var sound1 = CreateMockSound(data, sampleRate: sr1, bitDepth: bd1);
-            using var sound2 = CreateMockSound(data, sampleRate: sr2, bitDepth: bd2);
+            using var sound1 = BmsTestAudioHelper.CreatePreNormalizedSoundData(data, sampleRate: sr1, bitDepth: bd1);
+            using var sound2 = BmsTestAudioHelper.CreatePreNormalizedSoundData(data, sampleRate: sr2, bitDepth: bd2);
             Assert.False(FastWaveCompare.IsMatch(sound1, sound2, 0.1f), $"Scenario '{scenario}' failed.");
         }
 
@@ -207,8 +204,8 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
         public void GetCorrelation_FormatMismatch_ReturnsZero()
         {
             float[] data = [0.1f, 0.2f, 0.3f, 0.4f];
-            using var sound1 = CreateMockSound(data, sampleRate: 44100);
-            using var sound2 = CreateMockSound(data, sampleRate: 48000);
+            using var sound1 = BmsTestAudioHelper.CreatePreNormalizedSoundData(data, sampleRate: 44100);
+            using var sound2 = BmsTestAudioHelper.CreatePreNormalizedSoundData(data, sampleRate: 48000);
             Assert.Equal(0.0f, FastWaveCompare.GetCorrelation(sound1, sound2));
         }
 

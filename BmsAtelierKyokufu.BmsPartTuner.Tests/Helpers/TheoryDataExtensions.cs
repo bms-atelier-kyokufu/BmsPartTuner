@@ -46,5 +46,45 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers
         {
             data.Add(wav1, wav2, minExpected, maxExpected);
         }
+
+        /// <summary>
+        /// タプル形式（2要素）でのコレクション初期化子による追加をサポートします。
+        /// </summary>
+        public static void Add<T1, T2>(
+            this TheoryData<T1, T2> data,
+            (T1, T2) item)
+        {
+            data.Add(item.Item1, item.Item2);
+        }
+
+        /// <summary>
+        /// タプル形式（3要素）でのコレクション初期化子による追加をサポートします。
+        /// </summary>
+        public static void Add<T1, T2, T3>(
+            this TheoryData<T1, T2, T3> data,
+            (T1, T2, T3) item)
+        {
+            data.Add(item.Item1, item.Item2, item.Item3);
+        }
+
+        /// <summary>
+        /// タプル形式（4要素）でのコレクション初期化子による追加をサポートします。
+        /// </summary>
+        public static void Add<T1, T2, T3, T4>(
+            this TheoryData<T1, T2, T3, T4> data,
+            (T1, T2, T3, T4) item)
+        {
+            data.Add(item.Item1, item.Item2, item.Item3, item.Item4);
+        }
+
+        /// <summary>
+        /// タプル形式（5要素）でのコレクション初期化子による追加をサポートします。
+        /// </summary>
+        public static void Add<T1, T2, T3, T4, T5>(
+            this TheoryData<T1, T2, T3, T4, T5> data,
+            (T1, T2, T3, T4, T5) item)
+        {
+            data.Add(item.Item1, item.Item2, item.Item3, item.Item4, item.Item5);
+        }
     }
 }
