@@ -1370,8 +1370,8 @@
 <tr>
 <td style="text-align: left;"><strong>無音トリミング</strong></td>
 <td style="text-align: left;"><span class="arithmatex">\(\mathcal{O}(N \cdot W)\)</span></td>
-<td style="text-align: left;"><span class="arithmatex">\(\mathcal{O}(N)\)</span></td>
-<td style="text-align: left;">局所エネルギーの累積和系列 (第2章)</td>
+<td style="text-align: left;"><span class="arithmatex">\(\mathcal{O}(N)\)</span>（特徴抽出）<br><span class="arithmatex">\(\mathcal{O}(1)\)</span>（音声スライス時）</td>
+<td style="text-align: left;">局所エネルギーの累積和系列 ＆ EnergyMap (第2章)</td>
 </tr>
 <tr>
 <td style="text-align: left;"><strong>ペアワイズ比較空間</strong></td>
@@ -1402,6 +1402,12 @@
 <td style="text-align: left;"><span class="arithmatex">\(\mathcal{O}(k \cdot \vert \mathcal{D}_{\text{valid}} \vert)\)</span></td>
 <td style="text-align: left;"><span class="arithmatex">\(\mathcal{O}(k \log(\max R))\)</span></td>
 <td style="text-align: left;">ユークリッドの互除法による動的解像度決定 (第1章)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>逆変換：音声スライス計算</strong></td>
+<td style="text-align: left;"><span class="arithmatex">\(\mathcal{O}(K^2)\)</span></td>
+<td style="text-align: left;"><span class="arithmatex">\(\mathcal{O}(K)\)</span></td>
+<td style="text-align: left;">逆順DPによる時間状態伝搬 (第1章)</td>
 </tr>
 <tr>
 <td style="text-align: left;"><strong>逆変換：チャンネル彩色</strong></td>

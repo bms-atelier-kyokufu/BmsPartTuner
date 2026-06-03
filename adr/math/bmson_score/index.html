@@ -689,6 +689,45 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#mathcalok-dp" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        音声スライス区間計算の <span class="arithmatex">\(\mathcal{O}(K)\)</span> 動的計画法（DP）
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="音声スライス区間計算の \(\mathcal{O}(K)\) 動的計画法（DP）">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        課題
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dp" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        数学的解決策 (逆順DPによる状態伝搬)
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -723,6 +762,37 @@ T_{actual} = T_{default} \cdot \left( \frac{T_{\%}}{100.0} \right)
 \]</div>
 <p><strong>設計判断 (Why this algorithm?)</strong>
 bmsonの仕様では <code>total</code> 値は「IIDXのデフォルトゲージ回復量（100%）」に対するパーセンテージで指定されます。BMS（#TOTAL）には絶対値の回復量を実数で出力する必要があるため、ノーツ数からデフォルト回復量を逆算して適用しています。</p>
+<h2 id="mathcalok-dp">音声スライス区間計算の <span class="arithmatex">\(\mathcal{O}(K)\)</span> 動的計画法（DP）<a class="headerlink" href="#mathcalok-dp" title="Permanent link">&para;</a></h2>
+<h3 id="_1">課題<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h3>
+<p>同じサウンドチャンネル（同一WAV定義）内で、複数のノーツが連続して配置される場合、後続ノーツの再生開始タイミングまでが現ノーツの切り出しデュレーションとなります。</p>
+<p>以前のアルゴリズムでは、チャンネル内の同一ブロック（<code>C = true</code> で接続された連続するノーツ）を順方向に走査し、各ノーツに対して「次に時間（Y）が大きくなるノーツ」をブロック内で前方探索していました。</p>
+<ul>
+<li>ブロック内のノーツ数を <span class="arithmatex">\(K\)</span> とすると、通常の単調増加配置では前方探索が1周目で <code>break</code> するため <span class="arithmatex">\(\mathcal{O}(K)\)</span> となります。</li>
+<li>しかし、<strong>同一タイミングに密集して配置されている（重複配置）</strong>最悪ケースでは、前方探索が常にブロック末尾まで回り切ってしまい、1ブロックあたりの処理時間が <span class="arithmatex">\(\mathcal{O}(K^2)\)</span> の二乗オーダーに悪化する重大なパフォーマンスボトルネックが存在しました。</li>
+</ul>
+<h3 id="dp">数学的解決策 (逆順DPによる状態伝搬)<a class="headerlink" href="#dp" title="Permanent link">&para;</a></h3>
+<p>二重ループによる前方探索を排除するため、ブロック内のノーツを<strong>逆順つまり末尾から先頭へ</strong>に走査し、次に発音されるタイミング <span class="arithmatex">\(nextSec\)</span> を動的に伝搬・更新するDP(動的計画法)的なアルゴリズムを採用しました。</p>
+<ol>
+<li>
+<p><strong>初期状態</strong>:
+   ブロック末尾の <span class="arithmatex">\(nextSec\)</span> を、次のブロックの開始時間（または無限大）とする：
+   $<span class="arithmatex">\(nextSec = nextBlockStartSec\)</span>$</p>
+</li>
+<li>
+<p><strong>逆順ループ (<span class="arithmatex">\(depth = Count-1 \to 0\)</span>):</strong>
+   各ノーツ <span class="arithmatex">\(n = allNotes[Start + depth]\)</span> について、デュレーション <span class="arithmatex">\(dSec\)</span> は次式で決定される：
+   $<span class="arithmatex">\(dSec = nextSec - Time(n.Y)\)</span>$</p>
+<p>次のループ（1つ手前のノーツ）へ状態を伝搬する際、手前のノーツの <span class="arithmatex">\(Y\)</span> 座標が現在のノーツより小さい場合にのみ、<span class="arithmatex">\(nextSec\)</span> を現在の再生時間で更新する：</p>
+<div class="arithmatex">\[
+nextSec = \begin{cases}
+Time(n.Y) &amp; \text{if } allNotes[Start + depth - 1].Y &lt; n.Y \\
+nextSec &amp; \text{otherwise}
+\end{cases}
+\]</div>
+</li>
+</ol>
+<p>これにより、同一タイミングにノーツが重複して配置されている場合でも <span class="arithmatex">\(nextSec\)</span> の不必要な更新が抑制され、一度の走査で正しくすべてのノーツのデュレーションが <span class="arithmatex">\(\mathcal{O}(K)\)</span> の線形時間で決定されます。
+実証ベンチマークでは、100,000ノーツの重複配置において、変換時間が <strong>680 ms から 156 ms (ウォーム時 16 ms)</strong> へと劇的に短縮されました。</p>
 
 
 

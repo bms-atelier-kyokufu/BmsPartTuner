@@ -631,6 +631,45 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#143-mathcalok" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        1.4.3 音声スライス区間計算における逆順動的計画法による <span class="arithmatex">\(\mathcal{O}(K)\)</span> 最適化
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.4.3 音声スライス区間計算における逆順動的計画法による \(\mathcal{O}(K)\) 最適化">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mathcalok2" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        順方向探索における最悪計算量 <span class="arithmatex">\(\mathcal{O}(K^2)\)</span> の課題
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mathcalok" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        逆順動的計画法による線形時間 <span class="arithmatex">\(\mathcal{O}(K)\)</span> 状態伝搬
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1032,6 +1071,45 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#143-mathcalok" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        1.4.3 音声スライス区間計算における逆順動的計画法による <span class="arithmatex">\(\mathcal{O}(K)\)</span> 最適化
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.4.3 音声スライス区間計算における逆順動的計画法による \(\mathcal{O}(K)\) 最適化">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mathcalok2" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        順方向探索における最悪計算量 <span class="arithmatex">\(\mathcal{O}(K^2)\)</span> の課題
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mathcalok" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        逆順動的計画法による線形時間 <span class="arithmatex">\(\mathcal{O}(K)\)</span> 状態伝搬
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1070,10 +1148,12 @@
 <p>本章では、オブジェクト指向型かつ制限のないタイムライン構造を持つ <code>bmson</code> フォーマットから、古典的でありながら強固な格子の制約構造を持つ <code>BMS</code> フォーマットへのダウンコンバートを実行する際、時間軸およびオブジェクト配置において発生する誤差を数学的に最小化する最適化理論を提案する。</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p><strong>本章における主要な略称・用語</strong>
-- <strong>GC</strong>: ガベージコレクション (Garbage Collection)
-- <strong>LCM</strong>: 最小公倍数 (Least Common Multiple)
-- <strong>Sweep-Line</strong>: 走査線アルゴリズム</p>
+<p><strong>本章における主要な略称・用語</strong></p>
+<ul>
+<li><strong>GC</strong>: ガベージコレクション (Garbage Collection)</li>
+<li><strong>LCM</strong>: 最小公倍数 (Least Common Multiple)</li>
+<li><strong>Sweep-Line</strong>: 走査線アルゴリズム</li>
+</ul>
 </div>
 <h2 id="11">1.1 変換問題の数理的定式化と形式の定義<a class="headerlink" href="#11" title="Permanent link">&para;</a></h2>
 <p>bmsonとBMSは、データを配置する空間の数学的定義が根底から異なる。</p>
@@ -1123,7 +1203,7 @@ BMS上の任意の音符オブジェクトは、ある整数分割数（解像�
 <div class="language-csharp highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1">// 【疑似コード】ポインタ（フラット配列）構造を用いた GC-Free 彩色アルゴリズム</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="k">public</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nc">BmsonToBmsConverter</span><span class="w"> </span><span class="p">{</span>
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">    </span><span class="c1">// BMSの最大チャンネル数（36進数「01」〜「ZZ」の1296個）</span>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">    </span><span class="k">private</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">MAX_CHANNELS</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1296</span><span class="p">;</span><span class="w"> </span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">    </span><span class="k">private</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">MAX_CHANNELS</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1296</span><span class="p">;</span>
 </span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>
 </span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">    </span><span class="k">public</span><span class="w"> </span><span class="n">BmsData</span><span class="w"> </span><span class="nf">DownConvert</span><span class="p">(</span><span class="n">BmsonData</span><span class="w"> </span><span class="n">bmson</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 </span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">        </span><span class="kt">var</span><span class="w"> </span><span class="n">bms</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">BmsData</span><span class="p">();</span>
@@ -1133,7 +1213,7 @@ BMS上の任意の音符オブジェクトは、ある整数分割数（解像�
 </span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>
 </span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="w">        </span><span class="c1">// 【極限最適化】動的リストを排除し、固定長配列をポインタとして扱う</span>
 </span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="w">        </span><span class="c1">// 各チャンネルの「占有終了時刻」のみを記録する。初期値は 0（空き）</span>
-</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="w">        </span><span class="kt">double</span><span class="p">[]</span><span class="w"> </span><span class="n">channelEndTimes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="kt">double</span><span class="p">[</span><span class="n">MAX_CHANNELS</span><span class="p">];</span><span class="w"> </span>
+</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="w">        </span><span class="kt">double</span><span class="p">[]</span><span class="w"> </span><span class="n">channelEndTimes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="kt">double</span><span class="p">[</span><span class="n">MAX_CHANNELS</span><span class="p">];</span>
 </span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>
 </span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">sortedEvents</span><span class="p">.</span><span class="n">Length</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="o">++</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 </span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a><span class="w">            </span><span class="kt">var</span><span class="w"> </span><span class="n">ev</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sortedEvents</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
@@ -1148,7 +1228,7 @@ BMS上の任意の音符オブジェクトは、ある整数分割数（解像�
 </span><span id="__span-0-26"><a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a><span class="w">                </span><span class="p">}</span>
 </span><span id="__span-0-27"><a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a><span class="w">            </span><span class="p">}</span>
 </span><span id="__span-0-28"><a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a>
-</span><span id="__span-0-29"><a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a><span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">assignedChannel</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span>
+</span><span id="__span-0-29"><a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a><span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">assignedChannel</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
 </span><span id="__span-0-30"><a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a><span class="w">                </span><span class="k">throw</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="nf">Exception</span><span class="p">(</span><span class="s">&quot;BMS Specification Limit Exceeded: チャンネル枯渇&quot;</span><span class="p">);</span>
 </span><span id="__span-0-31"><a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a>
 </span><span id="__span-0-32"><a id="__codelineno-0-32" name="__codelineno-0-32" href="#__codelineno-0-32"></a><span class="w">            </span><span class="c1">// BMSオブジェクトの生成</span>
@@ -1175,6 +1255,40 @@ BMS上の任意の音符オブジェクトは、ある整数分割数（解像�
    オブジェクト指向のようにデータと振る舞いをカプセル化してヒープに散在させると、メモリアクセスの際に深刻なキャッシュミスが発生する。これを防ぐため、データを一次元の連続配列に分割し、プログラムはインデックスだけを持ち回る。
    これにより、状態遷移に必要なメモリ領域はL1キャッシュのラインに完全に適合し、CPUのメモリスループットが極限まで引き出される。</li>
 </ol>
+<h3 id="143-mathcalok">1.4.3 音声スライス区間計算における逆順動的計画法による <span class="arithmatex">\(\mathcal{O}(K)\)</span> 最適化<a class="headerlink" href="#143-mathcalok" title="Permanent link">&para;</a></h3>
+<p>BMSは、1つのサウンドチャンネルで直前に発音された音声が次の発音イベントによって強制的に遮断（または上書き）される仕様を持つ。
+したがって、bmsonの長い音源をBMS用にスライスする際、各音符オブジェクト <span class="arithmatex">\(n_i\)</span> の「切り出しデュレーション（長さ）」は、「次に同じチャンネルで発音される音符 <span class="arithmatex">\(n_j\)</span> の開始時刻との差分」として決定される。</p>
+<h4 id="mathcalok2">順方向探索における最悪計算量 <span class="arithmatex">\(\mathcal{O}(K^2)\)</span> の課題<a class="headerlink" href="#mathcalok2" title="Permanent link">&para;</a></h4>
+<p>同じブロック（WAV定義）内の音符イベント数を <span class="arithmatex">\(K\)</span> とする。
+各音符 <span class="arithmatex">\(n_i\)</span>（<span class="arithmatex">\(0 \le i &lt; K\)</span>）に対し、順方向に走査して「自身より後に発音され、かつ開始時刻が厳密に未来（<span class="arithmatex">\(n_j.\text{Y} &gt; n_i.\text{Y}\)</span>）となる最初のノーツ <span class="arithmatex">\(n_j\)</span>」を探索する素朴な実装を考える。</p>
+<ul>
+<li>通常のノーツが時間順に並んでいる配置では、次のインデックス <span class="arithmatex">\(j = i+1\)</span> で即座に条件を満たすため、内側ループは 1 回で打ち切られて全体の計算量は <span class="arithmatex">\(\mathcal{O}(K)\)</span> となる。</li>
+<li>しかし、<strong>同一タイミングに多数のノーツが配置されている（重複配置）</strong>最悪ケースでは、内側ループが毎回ブロックの末尾（<span class="arithmatex">\(j = K-1\)</span>）まで回りきってしまう。これにより、全体の時間計算量が <span class="arithmatex">\(\mathcal{O}(K^2)\)</span> の二乗オーダーへと悪化し、巨大な密集譜面において処理時間が爆発するボトルネックとなっていた。</li>
+</ul>
+<h4 id="mathcalok">逆順動的計画法による線形時間 <span class="arithmatex">\(\mathcal{O}(K)\)</span> 状態伝搬<a class="headerlink" href="#mathcalok" title="Permanent link">&para;</a></h4>
+<p>この問題を解決するため、同一ブロック内の走査順を反転し、末尾から先頭へと逆順に状態を伝搬する動的計画法的アプローチを採用した。</p>
+<p>各音符 <span class="arithmatex">\(n_i\)</span> について、次に発音されるタイミングを保持する伝搬状態を <span class="arithmatex">\(nextSec\)</span> とする。</p>
+<ol>
+<li>
+<p><strong>境界条件 (初期値)</strong>:
+   ブロックの末尾ノーツの <span class="arithmatex">\(nextSec\)</span> は、次のブロックの開始時刻（存在しない場合は <span class="arithmatex">\(\infty\)</span>）とする。
+   $<span class="arithmatex">\(nextSec_K = nextBlockStartSec\)</span>$</p>
+</li>
+<li>
+<p><strong>状態遷移公式 (逆順走査 <span class="arithmatex">\(i = K-1 \to 0\)</span>):</strong>
+   各ノーツ <span class="arithmatex">\(n_i\)</span> のデュレーション <span class="arithmatex">\(d_i\)</span> は、現在の伝搬状態 <span class="arithmatex">\(nextSec_{i+1}\)</span> から一意に定まる。
+   $<span class="arithmatex">\(d_i = nextSec_{i+1} - Time(n_i.\text{Y})\)</span>$</p>
+<p>次に、1つ手前のノーツ <span class="arithmatex">\(n_{i-1}\)</span> へ向けて状態を更新する。手前のノーツが現在のノーツより時間的に前に位置する場合のみ、伝搬時間を更新する。</p>
+<div class="arithmatex">\[
+nextSec_i = \begin{cases}
+Time(n_i.\text{Y}) &amp; \text{if } n_{i-1}.\text{Y} &lt; n_i.\text{Y} \\
+nextSec_{i+1} &amp; \text{otherwise}
+\end{cases}
+\]</div>
+</li>
+</ol>
+<p>この更新則により、同一タイミングに密集したノーツ群においては <span class="arithmatex">\(nextSec\)</span> の値が更新されず伝搬され続けるため、二重ループを完全に排除した 1 パス（<span class="arithmatex">\(\mathcal{O}(K)\)</span>）走査で、全ノーツの正確な切り出し区間を線形時間で決定できるようになった。
+実証ベンチマーク（100,000ノーツの最悪重複配置）では、この最適化により変換処理時間が <strong>680 ms から 156 ms (ウォーム時 16 ms)</strong> へと劇的に短縮され、アルゴリズムの頑健性が証明された。</p>
 <h2 id="15-references">1.5 参考文献 (References)<a class="headerlink" href="#15-references" title="Permanent link">&para;</a></h2>
 <ul>
 <li>Cormen, T. H., Leiserson, C. E., Rivest, R. L., &amp; Stein, C. (2009). <em>Introduction to Algorithms</em> (3rd ed.). MIT Press.</li>

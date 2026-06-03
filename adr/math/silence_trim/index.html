@@ -726,12 +726,27 @@ E_{k-1} = E_k - x^2_{k+W-1} + x^2_{k-1}
 <p><strong>設計判断 (Why this algorithm?)</strong>
 BMS用に切り出された音声（スライス）は、元のステムデータが長すぎるため、末尾に大量の無音が含まれることが多くあります。これを取り除く際、サンプルごとに全スキャンすると計算量が膨大になります。
 そのため、当初は O(1) のスライディングウィンドウ法を用いて高速にトリミングを行うアルゴリズムを採用していました。</p>
-<p>さらに最近の限界最適化（Phase 4）により、以下のハードウェアレベルのアプローチを追加しています。
-1. <strong>ゼロアロケーション (Span)</strong>:
-   <code>byte[]</code> の音声データを <code>MemoryMarshal.Cast&lt;byte, short&gt;</code> によって <code>ReadOnlySpan&lt;short&gt;</code> としてキャストし、不要な配列のコピーや境界チェックのオーバーヘッドを完全に排除しました。
-2. <strong>Native SIMD (AVX2) による一括計算</strong>:
-   <code>System.Runtime.Intrinsics.X86.Avx2</code> の専用命令 <code>Avx2.MultiplyAddAdjacent</code> (<code>_mm256_madd_epi16</code>) を採用しました。これは「隣接する16bit整数のペアを掛けて足す」というまさに <code>(L*L + R*R)</code> のエネルギー計算のために作られたような命令であり、1クロックで8フレーム（16サンプル）のエネルギーを同時算出します。
-   このベクトル化により、スライディングウィンドウの差分更新よりもさらに圧倒的に速い「ブロック一括計算」でのトリミングを実現しています。</p>
+<p>さらに最近の限界最適化により、以下のレイヤーでの最適化を追加しています。</p>
+<ol>
+<li>
+<p><strong>ゼロアロケーション (Span)</strong>:
+   <code>byte[]</code> の音声データを <code>MemoryMarshal.Cast&lt;byte, short&gt;</code> によって <code>ReadOnlySpan&lt;short&gt;</code> としてキャストし、不要な配列のコピーや境界チェックのオーバーヘッドを完全に排除しました。</p>
+</li>
+<li>
+<p><strong>Native SIMD (AVX2) による一括計算</strong>:
+   <code>System.Runtime.Intrinsics.X86.Avx2</code> の専用命令 <code>Avx2.MultiplyAddAdjacent</code> (<code>_mm256_madd_epi16</code>) を採用しました。これは「隣接する16bit整数のペアを掛けて足す」という <code>(L*L + R*R)</code> のエネルギー計算のために作られたような命令であり、1クロックで8フレーム（16サンプル）のエネルギーを同時算出します。</p>
+</li>
+<li>
+<p><strong>エネルギーマップ（EnergyMap）の事前計算と <span class="arithmatex">\(\mathcal{O}(1)\)</span> スキャン</strong>:
+   トリミング要求ごとに毎回 PCM データを走査する設計を見直し、ファイルロード時に一度だけ音声全体のエネルギー情報を粗い解像度（256フレーム単位）のマップ配列として保持する設計へとアップグレードしました。</p>
+<ul>
+<li><strong>ロード時の事前計算</strong>:
+  <code>CachedAudioSource</code> デコード直後に、上記の AVX2 SIMD ベクトル化を用いて 256フレームブロックごとにエネルギーの総和を計算し、<code>long[] EnergyMap</code> として事前計算・キャッシュします。</li>
+<li><strong>スライス処理時の <span class="arithmatex">\(\mathcal{O}(1)\)</span> 化</strong>:
+  <code>SilenceTrimmer.TrimSilenceFromEnd</code> では、PCMデータ自体を一切スキャンせず、キャッシュされた <code>EnergyMap</code> のインデックス参照のみで無音検出を行います。ウィンドウ（1024フレーム）に相当する連続した 4 ブロック分のエネルギーの総和が閾値 <span class="arithmatex">\(\theta\)</span> 未満であるかを逆順にチェックするだけで済むため、トリミングのスキャン計算量が実質的に <span class="arithmatex">\(\mathcal{O}(1)\)</span> の定数時間に削減され、メモリアクセスの局所性も極めて高まりました。</li>
+</ul>
+</li>
+</ol>
 
 
 
