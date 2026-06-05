@@ -1,6 +1,5 @@
 namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms.Bmson;
 
-using BmsAtelierKyokufu.BmsPartTuner.Core.Context;
 
 /// <summary>
 /// BmsonのデータモデルとスライスされたWAVから、BMSファイルのテキストを生成するジェネレータ。
@@ -762,5 +761,4 @@ public class BmsScoreGenerator(
         return false;
     }
 }
-
 

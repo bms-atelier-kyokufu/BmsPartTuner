@@ -5,7 +5,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms
     {
         public Task<string> GenerateBmsTextAsync(string bmsonPath, bool keyNotesOnly = false, IProgress<int>? progress = null, System.Threading.CancellationToken cancellationToken = default)
         {
-            return Task.Run(() => BmsonIntegrationFacade.GenerateBmsText(bmsonPath, keyNotesOnly, new OperationContext(cancellationToken, progress)), cancellationToken);
+            return Task.Run(() => BmsonIntegrationFacade.GenerateBmsText(bmsonPath, keyNotesOnly, new OperationContext(progress, cancellationToken)), cancellationToken);
         }
     }
 }

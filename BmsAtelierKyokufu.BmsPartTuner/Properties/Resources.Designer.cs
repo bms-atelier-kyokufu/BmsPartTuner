@@ -8,6 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
+using BmsAtelierKyokufu.BmsPartTuner.Properties;
 namespace BmsAtelierKyokufu.BmsPartTuner.Properties
 {
     /// <summary>
@@ -42,7 +43,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Properties
             {
                 if (object.ReferenceEquals(resourceMan, null))
                 {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("BmsAtelierKyokufu.BmsPartTuner.Properties.Resources", typeof(Resources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;

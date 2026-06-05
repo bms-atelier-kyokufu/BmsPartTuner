@@ -1,5 +1,4 @@
 using System.Windows.Media.Animation;
-using BmsAtelierKyokufu.BmsPartTuner.UI.ViewModels;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.UI.Services;
 

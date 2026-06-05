@@ -30,7 +30,7 @@ public interface IOperationContext
 /// OperationContext の新しいインスタンスを初期化します。
 /// </remarks>
 [ADRAnchor("ARCH-05", nameof(OperationContext))]
-public sealed class OperationContext(CancellationToken cancellationToken = default, IProgress<int>? progress = null) : IOperationContext
+public sealed class OperationContext(IProgress<int>? progress = null, CancellationToken cancellationToken = default) : IOperationContext
 {
     private readonly IProgress<int>? _progress = progress;
 

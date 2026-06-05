@@ -1,6 +1,4 @@
-﻿using BmsAtelierKyokufu.BmsPartTuner.UI.Services;
-
-namespace BmsAtelierKyokufu.BmsPartTuner.UI.Views.Dialogs.Settings
+﻿namespace BmsAtelierKyokufu.BmsPartTuner.UI.Views.Dialogs.Settings
 {
     /// <summary>
     /// AboutTab.xaml の相互作用ロジックを提供します。

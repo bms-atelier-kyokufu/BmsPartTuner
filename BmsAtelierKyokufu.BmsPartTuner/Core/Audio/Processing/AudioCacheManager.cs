@@ -22,7 +22,7 @@ internal sealed class AudioCacheManager
     /// <returns>読み込みに失敗したファイルパスのリストと、オーディオキャッシュのタプル。</returns>
     public static (List<string> FailedFiles, ConcurrentDictionary<string, ICachedSoundData> Cache) PreloadAudioData(
         IReadOnlyList<BmsAudioFile> fileList,
-        BmsAtelierKyokufu.BmsPartTuner.Core.Context.IOperationContext? opContext = null,
+        IOperationContext? opContext = null,
         NormalizationMode normalizationMode = Models.NormalizationMode.None,
         bool extractFeatures = true)
     {
@@ -174,7 +174,7 @@ internal sealed class AudioCacheManager
         ConcurrentBag<string> failedFiles,
         ConcurrentDictionary<string, ICachedSoundData> audioCache,
         bool extractFeatures,
-        BmsAtelierKyokufu.BmsPartTuner.Core.Context.IOperationContext? opContext)
+        IOperationContext? opContext)
     {
         int success = 0;
         int fail = 0;
@@ -251,5 +251,4 @@ internal sealed class AudioCacheManager
         }
     }
 }
-
 

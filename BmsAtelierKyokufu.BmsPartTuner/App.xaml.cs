@@ -1,6 +1,4 @@
 using BmsAtelierKyokufu.BmsPartTuner.Extensions;
-using BmsAtelierKyokufu.BmsPartTuner.UI.Services;
-using BmsAtelierKyokufu.BmsPartTuner.UI.Views.Windows;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Win32;
@@ -115,4 +113,3 @@ namespace BmsAtelierKyokufu.BmsPartTuner
         }
     }
 }
-

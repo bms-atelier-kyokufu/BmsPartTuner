@@ -1,5 +1,4 @@
-﻿using BmsAtelierKyokufu.BmsPartTuner.Core.Validation;
-using ValidationResult = BmsAtelierKyokufu.BmsPartTuner.Core.Validation.ValidationResult;
+﻿using ValidationResult = BmsAtelierKyokufu.BmsPartTuner.Core.Validation.ValidationResult;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Core.Interfaces.Common;
 
@@ -37,4 +36,3 @@ public class InputValidationService : IInputValidationService
         return R2ThresholdValidator.ValidateWithValue(r2Text);
     }
 }
-

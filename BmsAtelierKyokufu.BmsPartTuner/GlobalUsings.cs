@@ -18,6 +18,7 @@ global using System.Windows.Controls;
 global using System.Windows.Input;
 global using System.Windows.Media;
 global using System.Windows.Threading;
+
 global using BmsAtelierKyokufu.BmsPartTuner.Core;
 global using BmsAtelierKyokufu.BmsPartTuner.Core.Attributes;
 global using BmsAtelierKyokufu.BmsPartTuner.Core.Audio;
@@ -28,18 +29,28 @@ global using BmsAtelierKyokufu.BmsPartTuner.Core.Audio.Virtual;
 global using BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 global using BmsAtelierKyokufu.BmsPartTuner.Core.Context;
 global using BmsAtelierKyokufu.BmsPartTuner.Core.Helpers;
+global using BmsAtelierKyokufu.BmsPartTuner.Core.Interfaces.Audio;
 global using BmsAtelierKyokufu.BmsPartTuner.Core.Interfaces.Bms;
 global using BmsAtelierKyokufu.BmsPartTuner.Core.Interfaces.Common;
 global using BmsAtelierKyokufu.BmsPartTuner.Core.Messages;
 global using BmsAtelierKyokufu.BmsPartTuner.Core.Optimization;
+global using BmsAtelierKyokufu.BmsPartTuner.Core.Validation;
+global using BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Audio;
 global using BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms;
 global using BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Common;
 global using BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Diagnostics;
 global using BmsAtelierKyokufu.BmsPartTuner.Models;
 global using BmsAtelierKyokufu.BmsPartTuner.Models.Bmson;
+global using BmsAtelierKyokufu.BmsPartTuner.UI.Services;
+global using BmsAtelierKyokufu.BmsPartTuner.UI.ViewModels;
+global using BmsAtelierKyokufu.BmsPartTuner.UI.Views.Controls;
+global using BmsAtelierKyokufu.BmsPartTuner.UI.Views.Windows;
+global using BmsAtelierKyokufu.BmsPartTuner.UseCases.Dto;
+
 global using CommunityToolkit.Mvvm.ComponentModel;
 global using CommunityToolkit.Mvvm.Input;
 global using CommunityToolkit.Mvvm.Messaging;
+
 using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("BmsAtelierKyokufu.BmsPartTuner.Tests")]

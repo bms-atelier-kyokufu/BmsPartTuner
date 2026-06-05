@@ -1,5 +1,3 @@
-using BmsAtelierKyokufu.BmsPartTuner.UI.ViewModels;
-
 namespace BmsAtelierKyokufu.BmsPartTuner.UI.Controllers;
 
 /// <summary>
@@ -412,4 +410,3 @@ public class AppController(
 
     #endregion
 }
-

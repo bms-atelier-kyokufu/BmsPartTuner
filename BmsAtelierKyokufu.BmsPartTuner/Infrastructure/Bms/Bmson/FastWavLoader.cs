@@ -1,8 +1,6 @@
 namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms.Bmson;
 
-using System;
 using System.Buffers.Binary;
-using System.IO;
 
 /// <summary>
 /// 標準的な 16-bit, 44.1kHz, ステレオ の WAV ファイルを
@@ -104,4 +102,3 @@ internal static class FastWavLoader
                bitsPerSample == BitsPerSample16;
     }
 }
-

@@ -1,5 +1,3 @@
-using BmsAtelierKyokufu.BmsPartTuner.UI.Services;
-using BmsAtelierKyokufu.BmsPartTuner.UI.Views.Windows;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Extensions

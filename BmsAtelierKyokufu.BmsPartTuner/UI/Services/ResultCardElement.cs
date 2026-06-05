@@ -1,6 +1,4 @@
-﻿using BmsAtelierKyokufu.BmsPartTuner.UI.ViewModels;
-
-namespace BmsAtelierKyokufu.BmsPartTuner.UI.Services
+﻿namespace BmsAtelierKyokufu.BmsPartTuner.UI.Services
 {
     /// <summary>
     /// 結果カードUI要素（ViewModelドリブン）です。

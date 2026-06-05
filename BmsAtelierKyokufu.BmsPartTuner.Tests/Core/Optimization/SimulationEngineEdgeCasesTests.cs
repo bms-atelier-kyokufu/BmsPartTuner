@@ -242,7 +242,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
             var audioCache = new ConcurrentDictionary<string, ICachedSoundData>();
             var progressValues = new List<int>();
             var progress = new SyncProgress<int>(progressValues.Add);
-            var opContext = new BmsAtelierKyokufu.BmsPartTuner.Core.Context.OperationContext(default, progress);
+            var opContext = new BmsAtelierKyokufu.BmsPartTuner.Core.Context.OperationContext(progress);
 
             var fileList = new List<BmsAudioFile>
             {

@@ -1,6 +1,5 @@
 namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms.Bmson.Pipeline;
 
-using BmsAtelierKyokufu.BmsPartTuner.Core.Context;
 
 /// <summary>
 /// BMSON変換パイプラインの実行コンテキスト。

@@ -409,13 +409,13 @@ internal class ParallelAudioComparisonEngine(AudioComparisonParameters parameter
     private class ComparisonContext(
         float r2Threshold,
         int totalFiles,
-        BmsAtelierKyokufu.BmsPartTuner.Core.Context.IOperationContext? opContext)
+        IOperationContext? opContext)
     {
         private int _processedCount;
 
         public float R2Threshold { get; } = r2Threshold;
         public int TotalFiles { get; } = totalFiles;
-        public BmsAtelierKyokufu.BmsPartTuner.Core.Context.IOperationContext? OperationContext { get; } = opContext;
+        public IOperationContext? OperationContext { get; } = opContext;
 
         /// <summary>
         /// 処理済みファイル数を thread-safe にインクリメントし、必要に応じて進捗状況を報告します。
@@ -443,5 +443,4 @@ internal class ParallelAudioComparisonEngine(AudioComparisonParameters parameter
 
     #endregion
 }
-
 

@@ -1,5 +1,4 @@
 using System.Reflection;
-using BmsAtelierKyokufu.BmsPartTuner.UI.Views.Windows;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Common
 {

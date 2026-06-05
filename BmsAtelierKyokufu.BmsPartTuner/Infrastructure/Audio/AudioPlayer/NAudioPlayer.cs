@@ -1,4 +1,3 @@
-using BmsAtelierKyokufu.BmsPartTuner.Core.Interfaces.Audio;
 using NAudio.Wave;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Audio.AudioPlayer;
