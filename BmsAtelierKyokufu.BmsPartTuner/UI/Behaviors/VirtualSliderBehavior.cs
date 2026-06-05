@@ -1,4 +1,4 @@
-﻿using BmsAtelierKyokufu.BmsPartTuner.Infrastructure.UI;
+using BmsAtelierKyokufu.BmsPartTuner.Infrastructure.UI;
 using Microsoft.Xaml.Behaviors;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.UI.Behaviors
@@ -299,7 +299,8 @@ namespace BmsAtelierKyokufu.BmsPartTuner.UI.Behaviors
             _dragStartPos = e.GetPosition(AssociatedObject);
             _lastAppliedX = _dragStartPos.X;
 
-            if (double.TryParse(AssociatedObject.Text, out double currentValue))
+            var cleanText = new string(AssociatedObject.Text?.Where(c => char.IsDigit(c) || c == '.' || c == '-').ToArray());
+            if (double.TryParse(cleanText, out double currentValue))
             {
                 _dragStartValue = currentValue;
             }
