@@ -62,10 +62,6 @@ public partial class LicenseLoaderService
             }
 
             string displayName = isAppLicense ? "Bms Part Tuner" : fileName;
-            if (!isAppLicense && isUnique)
-            {
-                displayName += " *";
-            }
 
             licenses.Add(new LicenseInfo
             {
