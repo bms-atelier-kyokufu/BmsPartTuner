@@ -1,6 +1,6 @@
 ---
 adr-id: ARCH-05
-title: OperationContext と Top-Level Offloading
+title: OperationContext と最上位でのTask.Run
 date: 2026-06-06
 status: accepted
 ---
