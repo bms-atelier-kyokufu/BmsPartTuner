@@ -23,7 +23,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
         /// </remarks>
         [Fact]
         [Trait("Category", "Benchmark")]
-        public void Benchmark_FastWaveCompare_IsMatch()
+        public void Benchmark_FastWaveCompare_IsMatch_Verify()
         {
             // CI環境 (GitHub Actions) では実行速度が不安定でベンチマークの基準を満たせないことがあるためスキップ
             if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("GITHUB_ACTIONS")))
