@@ -463,6 +463,12 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
         Notification.HideSlideConfirmation();
     }
 
+    [RelayCommand]
+    private void CancelSlideConfirmationInternal()
+    {
+        HideSlideConfirmation();
+    }
+
     public string Error => Optimization.Error;
 
     public string this[string columnName]

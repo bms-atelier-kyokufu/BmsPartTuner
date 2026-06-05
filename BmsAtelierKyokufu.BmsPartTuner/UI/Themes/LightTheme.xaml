@@ -109,4 +109,8 @@
     <!--  Drag Speed Brushes  -->
     <SolidColorBrush x:Key="M3DragSpeedFastBrush" Color="#CB6120" />
     <SolidColorBrush x:Key="M3DragSpeedFineBrush" Color="#2F968D" />
+
+    <!--  ListViewItem Brushes  -->
+    <SolidColorBrush x:Key="ListViewItemHoverBrush" Color="#15000000" />
+    <SolidColorBrush x:Key="ListViewItemSelectedBrush" Color="#92BFDB" />
 </ResourceDictionary>

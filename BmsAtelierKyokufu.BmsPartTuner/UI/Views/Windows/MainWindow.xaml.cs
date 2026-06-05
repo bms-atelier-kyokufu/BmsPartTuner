@@ -1,4 +1,4 @@
-﻿using BmsAtelierKyokufu.BmsPartTuner.Infrastructure;
+using BmsAtelierKyokufu.BmsPartTuner.Infrastructure;
 using BmsAtelierKyokufu.BmsPartTuner.UI.Services;
 using BmsAtelierKyokufu.BmsPartTuner.UI.ViewModels;
 using BmsAtelierKyokufu.BmsPartTuner.UI.Views.Controls;
@@ -278,6 +278,48 @@ namespace BmsAtelierKyokufu.BmsPartTuner.UI.Views.Windows
         {
             base.OnClosed(e);
             (_viewModel as IDisposable)?.Dispose();
+        }
+
+        private void ListViewItem_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is ListViewItem item && item.DataContext is BmsAudioFile file)
+            {
+                // If the click is directly on the Play/Stop button, let the button handle it.
+                if (e.OriginalSource is DependencyObject depObj)
+                {
+                    if (FindVisualParent<Button>(depObj) != null)
+                    {
+                        return;
+                    }
+                }
+
+                var isPlaying = _viewModel.BmsDefinitionManager.IsAudioPlaying &&
+                                string.Equals(Path.GetFileName(file.Name), _viewModel.BmsDefinitionManager.PlayingFileName, StringComparison.OrdinalIgnoreCase);
+
+                if (isPlaying)
+                {
+                    _viewModel.BmsDefinitionManager.StopPlayback();
+                    e.Handled = true;
+                }
+                else
+                {
+                    // If it is already selected but not playing, selection change won't trigger playback.
+                    // So we manually start preview if it's already selected.
+                    if (_viewModel.BmsDefinitionManager.SelectedFile == file)
+                    {
+                        _ = _viewModel.BmsDefinitionManager.PlayAudioFileAsync(file);
+                        e.Handled = true;
+                    }
+                }
+            }
+        }
+
+        private static T? FindVisualParent<T>(DependencyObject child) where T : DependencyObject
+        {
+            DependencyObject parentObject = VisualTreeHelper.GetParent(child);
+            if (parentObject == null) return null;
+            if (parentObject is T parent) return parent;
+            return FindVisualParent<T>(parentObject);
         }
     }
 }

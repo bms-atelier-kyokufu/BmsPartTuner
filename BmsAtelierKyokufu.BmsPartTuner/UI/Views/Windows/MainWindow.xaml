@@ -21,6 +21,7 @@
         <ResourceDictionary>
             <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
             <converters:InverseBooleanConverter x:Key="InverseBooleanConverter" />
+            <converters:FilePlayingConverter x:Key="FilePlayingConverter" />
         </ResourceDictionary>
     </Window.Resources>
 
@@ -231,22 +232,43 @@
                             Visibility="{Binding Notification.IsSlideConfirmationVisible, Converter={StaticResource InverseBooleanConverter}}" />
 
                         <!--  スライド確認UI (上書き時のみ表示)  -->
-                        <controls:SlideConfirmationControl
-                            x:Name="SlideConfirmation"
-                            Direction="{Binding Optimization.SlideDirection}"
-                            SlideCancelled="SlideConfirmation_Cancelled"
-                            SlideCompleted="SlideConfirmation_Completed"
-                            SlideInstructionText="{Binding Optimization.SlideInstructionText}"
-                            Visibility="{Binding Notification.IsSlideConfirmationVisible, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                        <Grid Visibility="{Binding Notification.IsSlideConfirmationVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <controls:SlideConfirmationControl
+                                x:Name="SlideConfirmation"
+                                Direction="{Binding Optimization.SlideDirection}"
+                                SlideCancelled="SlideConfirmation_Cancelled"
+                                SlideCompleted="SlideConfirmation_Completed"
+                                SlideInstructionText="{Binding Optimization.SlideInstructionText}" />
+
+                            <!--  キャンセルボタン  -->
+                            <Button
+                                Grid.Column="1"
+                                Margin="8,0,0,0"
+                                Width="44"
+                                Height="44"
+                                Command="{Binding CancelSlideConfirmationInternalCommand}"
+                                Style="{StaticResource M3IconButton}"
+                                ToolTip="キャンセル">
+                                <TextBlock
+                                    FontSize="20"
+                                    Foreground="{DynamicResource M3OnSurfaceVariantBrush}"
+                                    Text="✕" />
+                            </Button>
+                        </Grid>
                     </Grid>
                 </StackPanel>
                 <!--  #endregion  -->
 
                 <!--  #region ファイルリスト  -->
-                <DockPanel>
+                <DockPanel IsEnabled="{Binding IsGlobalProgressVisible, Converter={StaticResource InverseBooleanConverter}}">
                     <!--  ファイルリスト ヘッダー＆フィルターエリア  -->
                     <StackPanel Margin="0,0,0,10" DockPanel.Dock="Top">
-                        <TextBlock Text="📂 ファイルプレビュー (確認用)" FontSize="18" FontWeight="SemiBold" Foreground="{DynamicResource M3OnSurfaceBrush}" Margin="0,0,0,4" />
+                        <TextBlock Text="ファイルプレビュー (確認用)" FontSize="18" FontWeight="SemiBold" Foreground="{DynamicResource M3OnSurfaceBrush}" Margin="0,0,0,4" />
                         <TextBlock Text="※ リストでの絞り込みや選択は処理に影響しません" FontSize="12" Foreground="{DynamicResource M3OutlineBrush}" Margin="0,0,0,16" />
 
                         <Grid Margin="0,0,0,12">
@@ -285,6 +307,64 @@
                             </Button>
                         </Grid>
 
+                        <!--  楽器選択モード切り替えとラベル  -->
+                        <Grid Margin="0,0,0,8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock
+                                Text="楽器フィルター"
+                                VerticalAlignment="Center"
+                                FontSize="14"
+                                FontWeight="Medium"
+                                Foreground="{DynamicResource M3OnSurfaceBrush}" />
+
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock
+                                    Text="マルチ選択"
+                                    VerticalAlignment="Center"
+                                    Margin="0,0,8,0"
+                                    FontSize="12">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Foreground" Value="{DynamicResource M3OutlineBrush}" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding BmsDefinitionManager.IsSingleChipSelection}" Value="False">
+                                                    <Setter Property="Foreground" Value="{DynamicResource M3OnSurfaceBrush}" />
+                                                    <Setter Property="FontWeight" Value="SemiBold" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+
+                                <ToggleButton
+                                    IsChecked="{Binding BmsDefinitionManager.IsSingleChipSelection, Mode=TwoWay}"
+                                    Style="{StaticResource M3ToggleSwitch}"
+                                    ToolTip="オンにするとシングル選択、オフにするとマルチ選択になります。" />
+
+                                <TextBlock
+                                    Text="シングル選択"
+                                    VerticalAlignment="Center"
+                                    Margin="8,0,0,0"
+                                    FontSize="12">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Foreground" Value="{DynamicResource M3OutlineBrush}" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding BmsDefinitionManager.IsSingleChipSelection}" Value="True">
+                                                    <Setter Property="Foreground" Value="{DynamicResource M3OnSurfaceBrush}" />
+                                                    <Setter Property="FontWeight" Value="SemiBold" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                            </StackPanel>
+                        </Grid>
+
                         <!--  Smart Filter Chips (Instrument-based)  -->
                         <controls:SmartFilterChips
                             x:Name="FilterChipsControl"
@@ -297,8 +377,14 @@
                     <!--  ファイルリスト  -->
                     <ListView
                         x:Name="FilesListView"
+                        SelectionMode="Single"
                         ItemsSource="{Binding BmsDefinitionManager.FileListItems}"
                         SelectedItem="{Binding BmsDefinitionManager.SelectedFile}">
+                        <ListView.ItemContainerStyle>
+                            <Style TargetType="ListViewItem" BasedOn="{StaticResource {x:Type ListViewItem}}">
+                                <EventSetter Event="PreviewMouseLeftButtonDown" Handler="ListViewItem_PreviewMouseLeftButtonDown" />
+                            </Style>
+                        </ListView.ItemContainerStyle>
                         <ListView.View>
                             <GridView>
                                 <GridViewColumn
@@ -307,8 +393,61 @@
                                     Header="No." />
                                 <GridViewColumn
                                     Width="450"
-                                    DisplayMemberBinding="{Binding Name}"
-                                    Header="ファイル名" />
+                                    Header="ファイル名">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Grid Width="430" Background="Transparent">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock
+                                                    Grid.Column="0"
+                                                    VerticalAlignment="Center"
+                                                    Text="{Binding Name}"
+                                                    TextTrimming="CharacterEllipsis"
+                                                    ToolTip="{Binding Name}" />
+                                                <Button
+                                                    Grid.Column="1"
+                                                    Width="28"
+                                                    Height="28"
+                                                    Command="{Binding DataContext.BmsDefinitionManager.TogglePlaybackCommand, RelativeSource={RelativeSource AncestorType=ListView}}"
+                                                    CommandParameter="{Binding}"
+                                                    ToolTip="再生/停止">
+                                                    <Button.Tag>
+                                                        <MultiBinding Converter="{StaticResource FilePlayingConverter}">
+                                                            <Binding Path="Name" />
+                                                            <Binding Path="DataContext.BmsDefinitionManager.PlayingFileName" RelativeSource="{RelativeSource AncestorType=ListView}" />
+                                                        </MultiBinding>
+                                                    </Button.Tag>
+                                                    <Button.Style>
+                                                        <Style TargetType="Button" BasedOn="{StaticResource M3IconButton}">
+                                                            <Setter Property="Visibility" Value="Collapsed" />
+                                                            <Setter Property="Content" Value="▶" />
+                                                            <Setter Property="FontSize" Value="12" />
+                                                            <Setter Property="Foreground" Value="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ListViewItem}}" />
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=ListViewItem}}" Value="True">
+                                                                    <Setter Property="Visibility" Value="Visible" />
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="True">
+                                                                    <Setter Property="Visibility" Value="Visible" />
+                                                                </DataTrigger>
+                                                                <MultiDataTrigger>
+                                                                    <MultiDataTrigger.Conditions>
+                                                                        <Condition Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="True" />
+                                                                        <Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=ListViewItem}}" Value="True" />
+                                                                    </MultiDataTrigger.Conditions>
+                                                                    <Setter Property="Content" Value="■" />
+                                                                </MultiDataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Button.Style>
+                                                </Button>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
                             </GridView>
                         </ListView.View>
                     </ListView>

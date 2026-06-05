@@ -53,6 +53,7 @@ public class AudioPreviewService(BmsPartTuner.UI.Services.IUIThreadDispatcher di
                     try
                     {
                         _currentPlayer = _playerFactory.CreatePlayer();
+                        _currentPlayer.PlaybackStopped += OnCurrentPlayerPlaybackStopped;
                         _currentPlayer.Play(filePath);
 
                         NotifyStateChanged(Path.GetFileName(filePath), isPlaying: true);
@@ -82,9 +83,25 @@ public class AudioPreviewService(BmsPartTuner.UI.Services.IUIThreadDispatcher di
         _cancellationTokenSource?.Dispose();
         _cancellationTokenSource = null;
 
-        _currentPlayer?.Stop();
-        _currentPlayer?.Dispose();
-        _currentPlayer = null;
+        if (_currentPlayer != null)
+        {
+            _currentPlayer.PlaybackStopped -= OnCurrentPlayerPlaybackStopped;
+            _currentPlayer.Stop();
+            _currentPlayer.Dispose();
+            _currentPlayer = null;
+            NotifyStateChanged(null, isPlaying: false);
+        }
+    }
+
+    private void OnCurrentPlayerPlaybackStopped(object? sender, EventArgs e)
+    {
+        _dispatcher.InvokeAsync(() =>
+        {
+            if (sender == _currentPlayer)
+            {
+                NotifyStateChanged(null, isPlaying: false);
+            }
+        });
     }
 
     public void Dispose()

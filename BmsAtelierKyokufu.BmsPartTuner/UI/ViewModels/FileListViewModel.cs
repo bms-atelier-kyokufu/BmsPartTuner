@@ -51,6 +51,24 @@ public partial class FileListViewModel : ObservableObject, IDisposable
     public partial ObservableCollection<FileListFilterService.SelectableFilterChip> FilterChips { get; set; } = [];
 
     /// <summary>
+    /// 現在再生中の音声ファイル名。
+    /// </summary>
+    [ObservableProperty]
+    public partial string? PlayingFileName { get; set; }
+
+    /// <summary>
+    /// 音声が再生中かどうかを表すフラグ。
+    /// </summary>
+    [ObservableProperty]
+    public partial bool IsAudioPlaying { get; set; }
+
+    /// <summary>
+    /// チップ選択モードがシングル選択かどうか。
+    /// </summary>
+    [ObservableProperty]
+    public partial bool IsSingleChipSelection { get; set; }
+
+    /// <summary>
     /// 読み込まれたBMSファイルの定義マネージャー。
     /// </summary>
     public BmsDefinitionManager? BmsFileList => _bmsFileList;
@@ -91,6 +109,53 @@ public partial class FileListViewModel : ObservableObject, IDisposable
         if (value != null)
         {
             _ = _audioPreviewService.PreviewAudioAsync(value.Name);
+        }
+    }
+
+    partial void OnIsSingleChipSelectionChanged(bool value)
+    {
+        if (value)
+        {
+            // シングル選択モード移行時、現在複数選択されている場合は最初の1つだけ残して他を非選択にする
+            bool foundFirst = false;
+            foreach (var chip in FilterChips)
+            {
+                if (chip.IsSelected)
+                {
+                    if (!foundFirst)
+                    {
+                        foundFirst = true;
+                    }
+                    else
+                    {
+                        chip.IsSelected = false;
+                    }
+                }
+            }
+            NotifySelectedKeywordsChanged();
+        }
+    }
+
+    partial void OnFilterChipsChanged(ObservableCollection<FileListFilterService.SelectableFilterChip> value)
+    {
+        if (value != null && IsSingleChipSelection)
+        {
+            // シングル選択モードのとき、新たに読み込まれたチップセットでも最初の1つだけ選択状態にし、残りは非選択にする
+            bool foundFirst = false;
+            foreach (var chip in value)
+            {
+                if (chip.IsSelected)
+                {
+                    if (!foundFirst)
+                    {
+                        foundFirst = true;
+                    }
+                    else
+                    {
+                        chip.IsSelected = false;
+                    }
+                }
+            }
         }
     }
 
@@ -170,7 +235,29 @@ public partial class FileListViewModel : ObservableObject, IDisposable
     {
         if (chip == null) return;
 
-        chip.IsSelected = !chip.IsSelected;
+        if (IsSingleChipSelection)
+        {
+            if (chip.IsSelected)
+            {
+                chip.IsSelected = false;
+            }
+            else
+            {
+                // 他のチップを非選択にしてから、対象のチップを選択状態にする
+                foreach (var other in FilterChips)
+                {
+                    if (other != chip && other.IsSelected)
+                    {
+                        other.IsSelected = false;
+                    }
+                }
+                chip.IsSelected = true;
+            }
+        }
+        else
+        {
+            chip.IsSelected = !chip.IsSelected;
+        }
         NotifySelectedKeywordsChanged();
     }
 
@@ -246,8 +333,49 @@ public partial class FileListViewModel : ObservableObject, IDisposable
 
     private void OnAudioPlaybackStateChanged(object? sender, AudioPreviewService.PlaybackStateChangedEventArgs e)
     {
+        IsAudioPlaying = e.IsPlaying;
+        PlayingFileName = e.IsPlaying ? e.FileName : null;
         AudioPlaybackStateChanged?.Invoke(sender, e);
         WeakReferenceMessenger.Default.Send(new AudioPlaybackStateChangedMessage(e.IsLoading, e.IsPlaying, e.FileName));
+    }
+
+    /// <summary>
+    /// 音声ファイルの再生を停止します。
+    /// </summary>
+    public void StopPlayback()
+    {
+        _audioPreviewService.StopCurrentPlayback();
+    }
+
+    /// <summary>
+    /// 指定された音声ファイルを非同期に再生します。
+    /// </summary>
+    public async Task PlayAudioFileAsync(BmsAudioFile file)
+    {
+        if (file == null) return;
+        await _audioPreviewService.PreviewAudioAsync(file.Name);
+    }
+
+    /// <summary>
+    /// 再生・停止の状態を切り替えるトグルコマンド。
+    /// </summary>
+    [RelayCommand]
+    private async Task TogglePlaybackAsync(BmsAudioFile? file)
+    {
+        if (file == null) return;
+
+        var currentFileName = Path.GetFileName(file.Name);
+        var isPlaying = IsAudioPlaying && string.Equals(currentFileName, PlayingFileName, StringComparison.OrdinalIgnoreCase);
+
+        if (isPlaying)
+        {
+            StopPlayback();
+        }
+        else
+        {
+            SelectedFile = file;
+            await PlayAudioFileAsync(file);
+        }
     }
 
     /// <summary>
