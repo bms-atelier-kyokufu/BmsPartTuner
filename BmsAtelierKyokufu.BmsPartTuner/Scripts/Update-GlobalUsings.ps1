@@ -47,13 +47,26 @@ param (
 # Helper class definitions for C# global using and FQN refactoring
 # ==============================================================================
 
+<#*
+ * ファイルの読み書きやエンコーディングの判定を行うためのユーティリティクラス。
+ #>
 class FileUtils {
+    <#*
+     * 指定されたファイルの文字エンコーディング（UTF-8 BOMの有無）を自動判定します。
+     * @param {string} FilePath 対象ファイルのパス
+     * @returns {System.Text.Encoding} UTF-8（BOMの有無に応じたインスタンス）
+     #>
     static [System.Text.Encoding] GetEncoding([string]$FilePath) {
         $bytes = [System.IO.File]::ReadAllBytes($FilePath)
         $hasBom = $bytes.Length -ge 3 -and $bytes[0] -eq 0xEF -and $bytes[1] -eq 0xBB -and $bytes[2] -eq 0xBF
         return [System.Text.UTF8Encoding]::new($hasBom)
     }
 
+    <#*
+     * 指定されたテキスト内の改行コード（CRLFまたはLF）を検出し、最適な改行文字を返します。
+     * @param {string} Content 対象テキスト
+     * @returns {string} 改行文字列（\r\n または \n）
+     #>
     static [string] GetNewline([string]$Content) {
         if ($Content -match "`r`n") { return "`r`n" }
         if ($Content -match "`n") { return "`n" }
@@ -61,15 +74,24 @@ class FileUtils {
     }
 }
 
-# Manages Git safety backups before executing destructive refactoring operations
+<#*
+ * 破壊的なリファクタリング操作を実行する前に、Gitの状態を確認しバックアップコミットを作成するマネージャー。
+ #>
 class GitBackupManager {
     [string]$TargetDir
 
+    <#*
+     * コンストラクタ
+     * @param {string} targetDir 対象ディレクトリのパス
+     #>
     GitBackupManager([string]$targetDir) {
         $this.TargetDir = $targetDir
     }
 
-    # Commits all dirty working tree changes to a temporary safe commit
+    <#*
+     * 未コミットの変更がある場合に、自動的に退避用のコミット（wip: auto-saved...）を作成します。
+     * @returns {void}
+     #>
     [void]CreateSafetyCommit() {
         Write-Host "Checking Git status..."
         $gitStatus = git -C $this.TargetDir status --porcelain 2>$null
@@ -87,7 +109,9 @@ class GitBackupManager {
     }
 }
 
-# Scans target directory and indexes namespaces and custom class/struct/enum definitions
+<#*
+ * 対象ディレクトリ内の C# プロジェクトファイルをスキャンし、定義されている独自の型や名前空間をインデックス化するクラス。
+ #>
 class CsharpProject {
     [string]$TargetDir
     [string]$GlobalUsingsPath
@@ -96,6 +120,11 @@ class CsharpProject {
     $NsToTypes          # Dictionary[string, HashSet[string]]
     $KnownNamespaces    # HashSet[string] (case-insensitive)
 
+    <#*
+     * コンストラクタ
+     * @param {string} targetDir 対象ディレクトリのパス
+     * @param {string} globalUsingsPath GlobalUsings.csのファイルパス
+     #>
     CsharpProject([string]$targetDir, [string]$globalUsingsPath) {
         $this.TargetDir = $targetDir
         $this.GlobalUsingsPath = $globalUsingsPath
@@ -106,7 +135,10 @@ class CsharpProject {
         $this.KnownNamespaces = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
     }
 
-    # Performs recursive scanning on target directory
+    <#*
+     * 対象ディレクトリ配下の C# ファイルを再帰的にスキャンし、名前空間や定義されているクラス・構造体・インターフェース名などを解析します。
+     * @returns {void}
+     #>
     [void]Scan() {
         $rawFiles = Get-ChildItem -Path $this.TargetDir -Filter *.cs -Recurse
         if ($null -eq $rawFiles) {
@@ -159,15 +191,24 @@ class CsharpProject {
     }
 }
 
-# Reduces fully qualified class names to short names while adding required using statements
+<#*
+ * C#コード内の完全修飾名（FQN）を短い型名に削減し、必要な using 宣言を追加するクラス。
+ #>
 class FqnReducer {
     $Project    # CsharpProject reference
 
+    <#*
+     * コンストラクタ
+     * @param {CsharpProject} project C#プロジェクトの解析情報
+     #>
     FqnReducer($project) {
         $this.Project = $project
     }
 
-    # Reduces FQNs inside registered project files
+    <#*
+     * プロジェクト内のファイルに対してFQNの削減処理を行い、変更されたファイルのリストを返します。
+     * @returns {System.Collections.Generic.List[System.IO.FileInfo]} 変更があったファイルのリスト
+     #>
     [System.Collections.Generic.List[System.IO.FileInfo]]ReduceFqns() {
         $modifiedFiles = [System.Collections.Generic.List[System.IO.FileInfo]]::new()
         
@@ -181,6 +222,13 @@ class FqnReducer {
         return $modifiedFiles
     }
 
+    <#*
+     * 単一のファイルに対してFQNの置換と必要な using 宣言の挿入を行います。
+     * @param {System.IO.FileInfo} file 対象のファイルオブジェクト
+     * @param {regex} fqnRegex FQN検出用の正規表現
+     * @param {System.Collections.Generic.List[System.IO.FileInfo]} modifiedFiles 変更されたファイルの追跡リスト
+     * @returns {void}
+     #>
     [void]ProcessFile([System.IO.FileInfo]$file, [regex]$fqnRegex, [System.Collections.Generic.List[System.IO.FileInfo]]$modifiedFiles) {
         $encoding = [FileUtils]::GetEncoding($file.FullName)
         $content = [System.IO.File]::ReadAllText($file.FullName, $encoding)
@@ -196,6 +244,13 @@ class FqnReducer {
         }
     }
 
+    <#*
+     * テキスト内のFQNを検出し、短い型名に置換します。また、追加すべき名前空間を収集します。
+     * @param {string} content ファイルの全テキスト内容
+     * @param {regex} fqnRegex FQN検出用の正規表現
+     * @param {System.Collections.Generic.HashSet[string]} usingsToAdd 追加すべき名前空間を格納するセット
+     * @returns {string} FQN置換後のテキスト
+     #>
     [string]ReplaceFqns([string]$content, [regex]$fqnRegex, [System.Collections.Generic.HashSet[string]]$usingsToAdd) {
         $matches = $fqnRegex.Matches($content)
         
@@ -227,6 +282,15 @@ class FqnReducer {
         return $content
     }
 
+    <#*
+     * 置換後のテキストに不足している using 宣言を挿入し、適切なエンコーディングでファイルに保存します。
+     * @param {System.IO.FileInfo} file 対象のファイルオブジェクト
+     * @param {string} content 置換後のファイル内容
+     * @param {string} originalContent 置換前のファイル内容（改行コード判定用）
+     * @param {System.Text.Encoding} encoding ファイルの保存エンコーディング
+     * @param {System.Collections.Generic.HashSet[string]} usingsToAdd 追加すべき名前空間のセット
+     * @returns {void}
+     #>
     [void]InsertUsingsAndSave([System.IO.FileInfo]$file, [string]$content, [string]$originalContent, [System.Text.Encoding]$encoding, [System.Collections.Generic.HashSet[string]]$usingsToAdd) {
         $lines = [System.Collections.Generic.List[string]]::new()
         $rawLines = $content -split '\r?\n'
@@ -271,17 +335,28 @@ class FqnReducer {
     }
 }
 
-# Performs global using promotion/demotion logic and cleans redundant using directives
+<#*
+ * グローバル using の昇格・降格ロジックを制御し、重複する using 宣言のクリーンアップを行うクラス。
+ #>
 class GlobalUsingsManager {
     $Project            # CsharpProject reference
     [int]$Threshold
 
+    <#*
+     * コンストラクタ
+     * @param {CsharpProject} project C#プロジェクトの解析情報
+     * @param {int} threshold グローバル using への昇格に必要なファイル数の閾値
+     #>
     GlobalUsingsManager($project, [int]$threshold) {
         $this.Project = $project
         $this.Threshold = $threshold
     }
 
-    # Core logic to audit using frequency, modify GlobalUsings.cs, and deduplicate
+    <#*
+     * グローバル using の昇格・降格、GlobalUsings.cs の書き換え、および重複する通常の using 宣言のクリーンアップを実行します。
+     * @param {System.Collections.Generic.List[System.IO.FileInfo]} modifiedFiles FQN削減処理で既に変更されたファイルのリスト
+     * @returns {void}
+     #>
     [void]UpdateGlobalUsings([System.Collections.Generic.List[System.IO.FileInfo]]$modifiedFiles) {
         $usingCounts = $this.CountInternalUsings()
         
@@ -299,6 +374,10 @@ class GlobalUsingsManager {
         $this.CleanRedundantUsings($globalUsings, $modifiedFiles)
     }
 
+    <#*
+     * プロジェクト内の各ファイルで使用されている名前空間の出現頻度をカウントします。
+     * @returns {System.Collections.Generic.Dictionary[string, int]} 名前空間と出現回数のマッピング
+     #>
     [System.Collections.Generic.Dictionary[string, int]]CountInternalUsings() {
         Write-Host "Analyzing using statements usage frequency for global promotion..."
         $usingCounts = [System.Collections.Generic.Dictionary[string, int]]::new([System.StringComparer]::Ordinal)
@@ -321,6 +400,12 @@ class GlobalUsingsManager {
         return $usingCounts
     }
 
+    <#*
+     * 既存の GlobalUsings.cs ファイルからグローバル using 宣言を解析して読み込みます。
+     * @param {System.Text.Encoding} encoding ファイルのエンコーディング
+     * @param {System.Collections.Generic.HashSet[string]} globalUsings 解析した名前空間を追加するセット
+     * @returns {System.Collections.Generic.List[string]} 行ごとの全テキスト内容
+     #>
     [System.Collections.Generic.List[string]]ParseGlobalUsings([System.Text.Encoding]$encoding, [System.Collections.Generic.HashSet[string]]$globalUsings) {
         $lines = [System.Collections.Generic.List[string]]::new()
         [void]$lines.AddRange([System.IO.File]::ReadAllLines($this.Project.GlobalUsingsPath, $encoding))
@@ -334,6 +419,13 @@ class GlobalUsingsManager {
         return $lines
     }
 
+    <#*
+     * 出現回数が閾値以上の名前空間をグローバル using に昇格し、行リストに追加します。
+     * @param {System.Collections.Generic.Dictionary[string, int]} usingCounts 名前空間の出現頻度
+     * @param {System.Collections.Generic.HashSet[string]} globalUsings 現在のグローバル using の名前空間セット
+     * @param {System.Collections.Generic.List[string]} globalUsingsLines GlobalUsings.cs の行リスト
+     * @returns {bool} 昇格が行われた場合は $true
+     #>
     [bool]PromoteFrequentUsings([System.Collections.Generic.Dictionary[string, int]]$usingCounts, [System.Collections.Generic.HashSet[string]]$globalUsings, [System.Collections.Generic.List[string]]$globalUsingsLines) {
         $promotedAny = $false
         foreach ($ns in $usingCounts.Keys) {
@@ -363,6 +455,12 @@ class GlobalUsingsManager {
         return $promotedAny
     }
 
+    <#*
+     * プロジェクト内で一度も使用されなくなったグローバル using を検出し、降格（削除）します。
+     * @param {System.Collections.Generic.HashSet[string]} globalUsings 現在のグローバル using の名前空間セット
+     * @param {System.Collections.Generic.List[string]} globalUsingsLines GlobalUsings.cs の行リスト
+     * @returns {bool} 降格が行われた場合は $true
+     #>
     [bool]DemoteUnusedGlobalUsings([System.Collections.Generic.HashSet[string]]$globalUsings, [System.Collections.Generic.List[string]]$globalUsingsLines) {
         Write-Host "Scanning for unused global usings..."
         $demotedAny = $false
@@ -413,15 +511,142 @@ class GlobalUsingsManager {
         return $demotedAny
     }
 
+    <#*
+     * GlobalUsings.cs の行リストをヘッダー部分、フッター部分、およびグローバル using 宣言の部分に分割します。
+     * @param {System.Collections.Generic.List[string]} globalUsingsLines 全行リスト
+     * @returns {hashtable} HeaderLines, FooterLines, GlobalUsings を含むハッシュテーブル
+     #>
+    [hashtable]ParseGlobalUsingSections([System.Collections.Generic.List[string]]$globalUsingsLines) {
+        $headerLines = [System.Collections.Generic.List[string]]::new()
+        $footerLines = [System.Collections.Generic.List[string]]::new()
+        $globalUsings = [System.Collections.Generic.List[string]]::new()
+
+        $firstGlobalUsingIndex = -1
+        for ($i = 0; $i -lt $globalUsingsLines.Count; $i++) {
+            if ($globalUsingsLines[$i] -match '^\s*global\s+using\s+') {
+                $firstGlobalUsingIndex = $i
+                break
+            }
+        }
+
+        if ($firstGlobalUsingIndex -eq -1) {
+            $footerLines.AddRange($globalUsingsLines)
+        } else {
+            for ($i = 0; $i -lt $firstGlobalUsingIndex; $i++) {
+                [void]$headerLines.Add($globalUsingsLines[$i])
+            }
+            for ($i = $firstGlobalUsingIndex; $i -lt $globalUsingsLines.Count; $i++) {
+                $line = $globalUsingsLines[$i]
+                if ($line -match '^\s*global\s+using\s+([^;]+);') {
+                    $ns = $Matches[1].Trim()
+                    [void]$globalUsings.Add($ns)
+                } else {
+                    if ($line.Trim() -ne "") {
+                        [void]$footerLines.Add($line)
+                    }
+                }
+            }
+        }
+
+        return @{
+            HeaderLines = $headerLines
+            FooterLines = $footerLines
+            GlobalUsings = $globalUsings
+        }
+    }
+
+    <#*
+     * グローバル using 宣言をルート名前空間（例：System、BmsAtelierKyokufu など）ごとにグループ化します。
+     * @param {System.Collections.Generic.List[string]} globalUsings グローバル using のリスト
+     * @returns {System.Collections.Generic.Dictionary[string, System.Collections.Generic.List[string]]} ルート名前空間と行リストのマッピング
+     #>
+    [System.Collections.Generic.Dictionary[string, System.Collections.Generic.List[string]]]GroupGlobalUsings([System.Collections.Generic.List[string]]$globalUsings) {
+        $groups = [System.Collections.Generic.Dictionary[string, System.Collections.Generic.List[string]]]::new([System.StringComparer]::OrdinalIgnoreCase)
+
+        foreach ($ns in $globalUsings) {
+            $cleanNs = $ns -replace '^\s*static\s+', ''
+            if ($cleanNs -match '=\s*(.+)$') {
+                $cleanNs = $Matches[1].Trim()
+            }
+            $root = ($cleanNs -split '\.')[0].Trim()
+
+            if (-not $groups.ContainsKey($root)) {
+                $groups[$root] = [System.Collections.Generic.List[string]]::new()
+            }
+            [void]$groups[$root].Add("global using $ns;")
+        }
+        return $groups
+    }
+
+    <#*
+     * ヘッダー、グループ化・ソートされたグローバル using、およびフッターを整形された行リストとして組み立てます。
+     * @param {System.Collections.Generic.List[string]} headerLines ヘッダー行
+     * @param {System.Collections.Generic.Dictionary[string, System.Collections.Generic.List[string]]} groups グループ化された using
+     * @param {System.Collections.Generic.List[string]} footerLines フッター行
+     * @returns {System.Collections.Generic.List[string]} 整形された全行リスト
+     #>
+    [System.Collections.Generic.List[string]]FormatGlobalUsingsLines([System.Collections.Generic.List[string]]$headerLines, [System.Collections.Generic.Dictionary[string, System.Collections.Generic.List[string]]]$groups, [System.Collections.Generic.List[string]]$footerLines) {
+        $sortedKeys = [System.Collections.Generic.List[string]]::new($groups.Keys)
+        $sortedKeys.Sort([System.StringComparer]::OrdinalIgnoreCase)
+
+        $newLines = [System.Collections.Generic.List[string]]::new()
+        
+        while ($headerLines.Count -gt 0 -and $headerLines[$headerLines.Count - 1].Trim() -eq "") {
+            $headerLines.RemoveAt($headerLines.Count - 1)
+        }
+        [void]$newLines.AddRange($headerLines)
+        if ($newLines.Count -gt 0 -and $sortedKeys.Count -gt 0) {
+            [void]$newLines.Add("")
+        }
+
+        for ($i = 0; $i -lt $sortedKeys.Count; $i++) {
+            $key = $sortedKeys[$i]
+            $groupList = $groups[$key]
+            $groupList.Sort([System.StringComparer]::OrdinalIgnoreCase)
+            
+            [void]$newLines.AddRange($groupList)
+            
+            if ($i -lt $sortedKeys.Count - 1) {
+                [void]$newLines.Add("")
+            }
+        }
+
+        if ($footerLines.Count -gt 0) {
+            if ($newLines.Count -gt 0) {
+                [void]$newLines.Add("")
+            }
+            [void]$newLines.AddRange($footerLines)
+        }
+        return $newLines
+    }
+
+    <#*
+     * 昇格・降格が適用されたグローバル using リストをグループ化・ソートして GlobalUsings.cs に保存します。
+     * @param {System.Text.Encoding} encoding ファイルのエンコーディング
+     * @param {System.Collections.Generic.List[string]} globalUsingsLines 更新された行リスト
+     * @returns {void}
+     #>
     [void]SaveGlobalUsings([System.Text.Encoding]$encoding, [System.Collections.Generic.List[string]]$globalUsingsLines) {
+        $sections = $this.ParseGlobalUsingSections($globalUsingsLines)
+        $groups = $this.GroupGlobalUsings($sections.GlobalUsings)
+        $newLines = $this.FormatGlobalUsingsLines($sections.HeaderLines, $groups, $sections.FooterLines)
+
         $globalUsingsRaw = [System.IO.File]::ReadAllText($this.Project.GlobalUsingsPath, $encoding)
         $globalUsingsNewline = [FileUtils]::GetNewline($globalUsingsRaw)
         
-        $newGlobalUsingsText = [string]::Join($globalUsingsNewline, [string[]]$globalUsingsLines.ToArray())
+        $newGlobalUsingsText = [string]::Join($globalUsingsNewline, [string[]]$newLines.ToArray())
+        $newGlobalUsingsText = $newGlobalUsingsText.TrimEnd() + $globalUsingsNewline
+
         [System.IO.File]::WriteAllText($this.Project.GlobalUsingsPath, $newGlobalUsingsText, $encoding)
-        Write-Host "Updated GlobalUsings.cs successfully."
+        Write-Host "Updated, sorted, and grouped GlobalUsings.cs successfully."
     }
 
+    <#*
+     * グローバル using に昇格されたため冗長となった、各 C# ファイル内の通常の using 宣言を削除します。
+     * @param {System.Collections.Generic.HashSet[string]} globalUsings 有効なグローバル using のセット
+     * @param {System.Collections.Generic.List[System.IO.FileInfo]} modifiedFiles 変更ファイルリスト
+     * @returns {void}
+     #>
     [void]CleanRedundantUsings([System.Collections.Generic.HashSet[string]]$globalUsings, [System.Collections.Generic.List[System.IO.FileInfo]]$modifiedFiles) {
         Write-Host "Removing redundant normal using statements..."
         $totalRemoved = 0
