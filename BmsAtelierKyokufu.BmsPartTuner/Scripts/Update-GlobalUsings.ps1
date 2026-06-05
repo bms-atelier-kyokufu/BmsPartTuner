@@ -1,3 +1,36 @@
+<#
+.SYNOPSIS
+    C# プロジェクト内の using 宣言および完全修飾名 (FQN) を整理し、頻出する名前空間を GlobalUsings.cs に昇格します。
+
+.DESCRIPTION
+    このスクリプトは、指定されたディレクトリ以下の C# ファイル (*.cs) をスキャンし、以下の処理を実行します。
+    1. Git のクリーン状態を確認し、未コミットの変更がある場合は自動的に退避用のコミット (wip: auto-saved...) を作成します。
+    2. プロジェクト内で定義されている独自の型と名前空間、およびプロジェクト内の FQN と using 宣言を解析します。
+    3. 指定された閾値 (PromotionThreshold) 以上のファイルで使われている名前空間を GlobalUsings.cs にまとめ、グローバル using として定義します。
+    4. 各 C# ファイルから、GlobalUsings.cs に移行した using 宣言を削除します。
+    5. 各 C# ファイル内の FQN (例: System.IO.File) を、名前空間を省略した形式 (例: File) に置換・削減します。
+    6. UTF-8 BOM を適切に検出・維持してファイルの読み書きを行い、文字化けを防ぎます。
+
+.PARAMETER TargetDir
+    スキャンおよびクリーンアップ対象となるプロジェクトのルートディレクトリパス。
+    指定しない場合、スクリプトが存在するディレクトリの親ディレクトリが自動的に使用されます。
+
+.PARAMETER GlobalUsingsPath
+    GlobalUsings.cs を作成・更新するファイルのフルパス。
+    指定しない場合、対象ディレクトリ内で最初に見つかった C# プロジェクトディレクトリ配下に 'GlobalUsings.cs' として配置されます。
+
+.PARAMETER PromotionThreshold
+    名前空間をグローバル using に昇格させるための閾値（出現ファイル数）。デフォルトは 3 です。
+    例えば 3 を指定した場合、3 つ以上のファイルで using もしくは FQN として現れる名前空間が GlobalUsings.cs に昇格されます。
+
+.EXAMPLE
+    PS C:\> .\Update-GlobalUsings.ps1
+    デフォルトのディレクトリに対して、閾値 3 で実行します。
+
+.EXAMPLE
+    PS C:\> .\Update-GlobalUsings.ps1 -TargetDir "C:\MyProject" -PromotionThreshold 5
+    "C:\MyProject" ディレクトリ配下を対象に、5 つ以上のファイルで使われている名前空間をグローバル using に昇格させます。
+#>
 [CmdletBinding()]
 param (
     [Parameter(Position = 0)]
@@ -13,6 +46,20 @@ param (
 # ==============================================================================
 # Helper class definitions for C# global using and FQN refactoring
 # ==============================================================================
+
+class FileUtils {
+    static [System.Text.Encoding] GetEncoding([string]$FilePath) {
+        $bytes = [System.IO.File]::ReadAllBytes($FilePath)
+        $hasBom = $bytes.Length -ge 3 -and $bytes[0] -eq 0xEF -and $bytes[1] -eq 0xBB -and $bytes[2] -eq 0xBF
+        return [System.Text.UTF8Encoding]::new($hasBom)
+    }
+
+    static [string] GetNewline([string]$Content) {
+        if ($Content -match "`r`n") { return "`r`n" }
+        if ($Content -match "`n") { return "`n" }
+        return [Environment]::NewLine
+    }
+}
 
 # Manages Git safety backups before executing destructive refactoring operations
 class GitBackupManager {
@@ -44,7 +91,7 @@ class GitBackupManager {
 class CsharpProject {
     [string]$TargetDir
     [string]$GlobalUsingsPath
-    $CsFiles            # ArrayList of FileInfo objects
+    $CsFiles            # List[FileInfo]
     $TypeToNs           # Dictionary[string, string] (case-sensitive)
     $NsToTypes          # Dictionary[string, HashSet[string]]
     $KnownNamespaces    # HashSet[string] (case-insensitive)
@@ -53,10 +100,10 @@ class CsharpProject {
         $this.TargetDir = $targetDir
         $this.GlobalUsingsPath = $globalUsingsPath
         
-        $this.CsFiles = New-Object System.Collections.ArrayList
-        $this.TypeToNs = New-Object 'System.Collections.Generic.Dictionary[string, string]' -ArgumentList @([System.StringComparer]::Ordinal)
-        $this.NsToTypes = New-Object 'System.Collections.Generic.Dictionary[string, System.Collections.Generic.HashSet[string]]' -ArgumentList @([System.StringComparer]::Ordinal)
-        $this.KnownNamespaces = New-Object 'System.Collections.Generic.HashSet[string]' -ArgumentList @([System.StringComparer]::OrdinalIgnoreCase)
+        $this.CsFiles = [System.Collections.Generic.List[System.IO.FileInfo]]::new()
+        $this.TypeToNs = [System.Collections.Generic.Dictionary[string, string]]::new([System.StringComparer]::Ordinal)
+        $this.NsToTypes = [System.Collections.Generic.Dictionary[string, System.Collections.Generic.HashSet[string]]]::new([System.StringComparer]::Ordinal)
+        $this.KnownNamespaces = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
     }
 
     # Performs recursive scanning on target directory
@@ -82,11 +129,8 @@ class CsharpProject {
 
         # Parse namespaces and defined class/struct/interface names
         foreach ($file in $this.CsFiles) {
-            $fileBytes = [System.IO.File]::ReadAllBytes($file.FullName)
-            $fileHasBom = $fileBytes.Length -ge 3 -and $fileBytes[0] -eq 0xEF -and $fileBytes[1] -eq 0xBB -and $fileBytes[2] -eq 0xBF
-            $fileEncoding = if ($fileHasBom) { New-Object System.Text.UTF8Encoding($true) } else { New-Object System.Text.UTF8Encoding($false) }
-
-            $content = [System.IO.File]::ReadAllText($file.FullName, $fileEncoding)
+            $encoding = [FileUtils]::GetEncoding($file.FullName)
+            $content = [System.IO.File]::ReadAllText($file.FullName, $encoding)
             
             # Identify namespace
             $fileNamespace = $null
@@ -107,7 +151,7 @@ class CsharpProject {
                     $this.TypeToNs[$typeName] = $fileNamespace
                 }
                 if (-not $this.NsToTypes.ContainsKey($fileNamespace)) {
-                    $this.NsToTypes[$fileNamespace] = New-Object 'System.Collections.Generic.HashSet[string]' -ArgumentList @([System.StringComparer]::Ordinal)
+                    $this.NsToTypes[$fileNamespace] = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::Ordinal)
                 }
                 [void]$this.NsToTypes[$fileNamespace].Add($typeName)
             }
@@ -123,106 +167,107 @@ class FqnReducer {
         $this.Project = $project
     }
 
-    # Reducse FQNs inside registered project files
-    [System.Collections.ArrayList]ReduceFqns() {
-        $modifiedFiles = New-Object System.Collections.ArrayList
+    # Reduces FQNs inside registered project files
+    [System.Collections.Generic.List[System.IO.FileInfo]]ReduceFqns() {
+        $modifiedFiles = [System.Collections.Generic.List[System.IO.FileInfo]]::new()
         
         # Match only FQNs belonging to our own project prefix
         $fqnPattern = '(?<!namespace\s+)(?<!using\s+)(?<!global\s+using\s+)\b(BmsAtelierKyokufu\.BmsPartTuner\.(?:[A-Za-z0-9_]+\.)+)([A-Za-z0-9_]+)\b'
-        $fqnRegex = New-Object regex($fqnPattern)
+        $fqnRegex = [regex]::new($fqnPattern)
 
         foreach ($file in $this.Project.CsFiles) {
-            $fileBytes = [System.IO.File]::ReadAllBytes($file.FullName)
-            $fileHasBom = $fileBytes.Length -ge 3 -and $fileBytes[0] -eq 0xEF -and $fileBytes[1] -eq 0xBB -and $fileBytes[2] -eq 0xBF
-            $fileEncoding = if ($fileHasBom) { New-Object System.Text.UTF8Encoding($true) } else { New-Object System.Text.UTF8Encoding($false) }
-
-            $content = [System.IO.File]::ReadAllText($file.FullName, $fileEncoding)
-            $originalContent = $content
-
-            $usingsToAdd = New-Object 'System.Collections.Generic.HashSet[string]' -ArgumentList @([System.StringComparer]::Ordinal)
-            $hasReplacement = $false
-
-            $matches = $fqnRegex.Matches($content)
-            
-            # Replace backwards to prevent character offset disruption
-            for ($i = $matches.Count - 1; $i -ge 0; $i--) {
-                $m = $matches[$i]
-                $fullNs = $m.Groups[1].Value.TrimEnd('.')
-                $typeName = $m.Groups[2].Value
-
-                # Resolve context line details to ensure we are not inside a using alias directive
-                $lineStart = 0
-                if ($m.Index -gt 0) {
-                    $lastNewline = $content.LastIndexOf("`n", $m.Index - 1)
-                    if ($lastNewline -ge 0) {
-                        $lineStart = $lastNewline + 1
-                    }
-                }
-                $lineEnd = $content.IndexOf("`n", $m.Index)
-                if ($lineEnd -lt 0) { $lineEnd = $content.Length }
-                $lineText = $content.Substring($lineStart, $lineEnd - $lineStart)
-
-                # Skip replacements if FQN is on a using alias declaration line
-                if ($lineText -match '^\s*(global\s+)?using\s+[A-Za-z0-9_]+\s*=') {
-                    continue
-                }
-
-                # Apply substitution only if matching our detected target definitions
-                if ($this.Project.KnownNamespaces.Contains($fullNs) -and $this.Project.NsToTypes.ContainsKey($fullNs) -and $this.Project.NsToTypes[$fullNs].Contains($typeName)) {
-                    $content = $content.Substring(0, $m.Index) + $typeName + $content.Substring($m.Index + $m.Length)
-                    [void]$usingsToAdd.Add($fullNs)
-                    $hasReplacement = $true
-                }
-            }
-
-            if ($hasReplacement) {
-                $lines = New-Object System.Collections.ArrayList
-                $rawLines = $content -split '\r?\n'
-                [void]$lines.AddRange($rawLines)
-
-                $existingUsings = New-Object 'System.Collections.Generic.HashSet[string]' -ArgumentList @([System.StringComparer]::Ordinal)
-                $lastUsingIndex = -1
-                $namespaceIndex = -1
-                
-                # Scan for existing using and namespace locations
-                for ($j = 0; $j -lt $lines.Count; $j++) {
-                    $line = $lines[$j]
-                    if ($line -match '^\s*using\s+([^;]+);') {
-                        [void]$existingUsings.Add($Matches[1].Trim())
-                        $lastUsingIndex = $j
-                    } elseif ($line -match '^\s*namespace\s+') {
-                        $namespaceIndex = $j
-                    }
-                }
-
-                # Insert missing using directives appropriately
-                $insertedCount = 0
-                foreach ($ns in $usingsToAdd) {
-                    if (-not $existingUsings.Contains($ns)) {
-                        $usingLine = "using $ns;"
-                        if ($lastUsingIndex -ge 0) {
-                            $lines.Insert($lastUsingIndex + 1 + $insertedCount, $usingLine)
-                            $insertedCount++
-                        } elseif ($namespaceIndex -ge 0) {
-                            $lines.Insert($namespaceIndex + $insertedCount, $usingLine)
-                            $insertedCount++
-                        } else {
-                            $lines.Insert($insertedCount, $usingLine)
-                            $insertedCount++
-                        }
-                    }
-                }
-
-                $newline = if ($originalContent -contains "`r`n") { "`r`n" } elseif ($originalContent -contains "`n") { "`n" } else { [Environment]::NewLine }
-                $newText = [string]::Join($newline, [string[]]$lines.ToArray())
-                $newText = $newText -replace "^(\r?\n)+", ""
-
-                [System.IO.File]::WriteAllText($file.FullName, $newText, $fileEncoding)
-                Write-Host "Reduced FQN in: $($file.FullName)"
-                [void]$modifiedFiles.Add($file)
-            }
+            $this.ProcessFile($file, $fqnRegex, $modifiedFiles)
         }
         return $modifiedFiles
+    }
+
+    [void]ProcessFile([System.IO.FileInfo]$file, [regex]$fqnRegex, [System.Collections.Generic.List[System.IO.FileInfo]]$modifiedFiles) {
+        $encoding = [FileUtils]::GetEncoding($file.FullName)
+        $content = [System.IO.File]::ReadAllText($file.FullName, $encoding)
+        $originalContent = $content
+
+        $usingsToAdd = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::Ordinal)
+        $content = $this.ReplaceFqns($content, $fqnRegex, $usingsToAdd)
+
+        if ($usingsToAdd.Count -gt 0) {
+            $this.InsertUsingsAndSave($file, $content, $originalContent, $encoding, $usingsToAdd)
+            Write-Host "Reduced FQN in: $($file.FullName)"
+            [void]$modifiedFiles.Add($file)
+        }
+    }
+
+    [string]ReplaceFqns([string]$content, [regex]$fqnRegex, [System.Collections.Generic.HashSet[string]]$usingsToAdd) {
+        $matches = $fqnRegex.Matches($content)
+        
+        for ($i = $matches.Count - 1; $i -ge 0; $i--) {
+            $m = $matches[$i]
+            $fullNs = $m.Groups[1].Value.TrimEnd('.')
+            $typeName = $m.Groups[2].Value
+
+            $lineStart = 0
+            if ($m.Index -gt 0) {
+                $lastNewline = $content.LastIndexOf("`n", $m.Index - 1)
+                if ($lastNewline -ge 0) {
+                    $lineStart = $lastNewline + 1
+                }
+            }
+            $lineEnd = $content.IndexOf("`n", $m.Index)
+            if ($lineEnd -lt 0) { $lineEnd = $content.Length }
+            $lineText = $content.Substring($lineStart, $lineEnd - $lineStart)
+
+            if ($lineText -match '^\s*(global\s+)?using\s+[A-Za-z0-9_]+\s*=') {
+                continue
+            }
+
+            if ($this.Project.KnownNamespaces.Contains($fullNs) -and $this.Project.NsToTypes.ContainsKey($fullNs) -and $this.Project.NsToTypes[$fullNs].Contains($typeName)) {
+                $content = $content.Substring(0, $m.Index) + $typeName + $content.Substring($m.Index + $m.Length)
+                [void]$usingsToAdd.Add($fullNs)
+            }
+        }
+        return $content
+    }
+
+    [void]InsertUsingsAndSave([System.IO.FileInfo]$file, [string]$content, [string]$originalContent, [System.Text.Encoding]$encoding, [System.Collections.Generic.HashSet[string]]$usingsToAdd) {
+        $lines = [System.Collections.Generic.List[string]]::new()
+        $rawLines = $content -split '\r?\n'
+        [void]$lines.AddRange($rawLines)
+
+        $existingUsings = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::Ordinal)
+        $lastUsingIndex = -1
+        $namespaceIndex = -1
+        
+        for ($j = 0; $j -lt $lines.Count; $j++) {
+            $line = $lines[$j]
+            if ($line -match '^\s*using\s+([^;]+);') {
+                [void]$existingUsings.Add($Matches[1].Trim())
+                $lastUsingIndex = $j
+            } elseif ($line -match '^\s*namespace\s+') {
+                $namespaceIndex = $j
+            }
+        }
+
+        $insertedCount = 0
+        foreach ($ns in $usingsToAdd) {
+            if (-not $existingUsings.Contains($ns)) {
+                $usingLine = "using $ns;"
+                if ($lastUsingIndex -ge 0) {
+                    $lines.Insert($lastUsingIndex + 1 + $insertedCount, $usingLine)
+                    $insertedCount++
+                } elseif ($namespaceIndex -ge 0) {
+                    $lines.Insert($namespaceIndex + $insertedCount, $usingLine)
+                    $insertedCount++
+                } else {
+                    $lines.Insert($insertedCount, $usingLine)
+                    $insertedCount++
+                }
+            }
+        }
+
+        $newline = [FileUtils]::GetNewline($originalContent)
+        $newText = [string]::Join($newline, [string[]]$lines.ToArray())
+        $newText = $newText -replace "^(\r?\n)+", ""
+
+        [System.IO.File]::WriteAllText($file.FullName, $newText, $encoding)
     }
 }
 
@@ -237,17 +282,30 @@ class GlobalUsingsManager {
     }
 
     # Core logic to audit using frequency, modify GlobalUsings.cs, and deduplicate
-    [void]UpdateGlobalUsings([System.Collections.ArrayList]$modifiedFiles) {
+    [void]UpdateGlobalUsings([System.Collections.Generic.List[System.IO.FileInfo]]$modifiedFiles) {
+        $usingCounts = $this.CountInternalUsings()
+        
+        $globalUsings = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::Ordinal)
+        $globalUsingsEncoding = [FileUtils]::GetEncoding($this.Project.GlobalUsingsPath)
+        $globalUsingsLines = $this.ParseGlobalUsings($globalUsingsEncoding, $globalUsings)
+
+        $promotedAny = $this.PromoteFrequentUsings($usingCounts, $globalUsings, $globalUsingsLines)
+        $demotedAny = $this.DemoteUnusedGlobalUsings($globalUsings, $globalUsingsLines)
+
+        if ($promotedAny -or $demotedAny) {
+            $this.SaveGlobalUsings($globalUsingsEncoding, $globalUsingsLines)
+        }
+
+        $this.CleanRedundantUsings($globalUsings, $modifiedFiles)
+    }
+
+    [System.Collections.Generic.Dictionary[string, int]]CountInternalUsings() {
         Write-Host "Analyzing using statements usage frequency for global promotion..."
-        $usingCounts = New-Object 'System.Collections.Generic.Dictionary[string, int]' -ArgumentList @([System.StringComparer]::Ordinal)
+        $usingCounts = [System.Collections.Generic.Dictionary[string, int]]::new([System.StringComparer]::Ordinal)
 
-        # Count references of internal usings
         foreach ($file in $this.Project.CsFiles) {
-            $fileBytes = [System.IO.File]::ReadAllBytes($file.FullName)
-            $fileHasBom = $fileBytes.Length -ge 3 -and $fileBytes[0] -eq 0xEF -and $fileBytes[1] -eq 0xBB -and $fileBytes[2] -eq 0xBF
-            $fileEncoding = if ($fileHasBom) { New-Object System.Text.UTF8Encoding($true) } else { New-Object System.Text.UTF8Encoding($false) }
-
-            $lines = [System.IO.File]::ReadAllLines($file.FullName, $fileEncoding)
+            $encoding = [FileUtils]::GetEncoding($file.FullName)
+            $lines = [System.IO.File]::ReadAllLines($file.FullName, $encoding)
             foreach ($line in $lines) {
                 if ($line -match '^\s*using\s+([^;]+);') {
                     $ns = $Matches[1].Trim()
@@ -260,31 +318,29 @@ class GlobalUsingsManager {
                 }
             }
         }
+        return $usingCounts
+    }
 
-        # Analyze current contents of GlobalUsings.cs
-        $globalUsings = New-Object 'System.Collections.Generic.HashSet[string]' -ArgumentList @([System.StringComparer]::Ordinal)
-        $globalUsingsBytes = [System.IO.File]::ReadAllBytes($this.Project.GlobalUsingsPath)
-        $globalUsingsHasBom = $globalUsingsBytes.Length -ge 3 -and $globalUsingsBytes[0] -eq 0xEF -and $globalUsingsBytes[1] -eq 0xBB -and $globalUsingsBytes[2] -eq 0xBF
-        $globalUsingsEncoding = if ($globalUsingsHasBom) { New-Object System.Text.UTF8Encoding($true) } else { New-Object System.Text.UTF8Encoding($false) }
+    [System.Collections.Generic.List[string]]ParseGlobalUsings([System.Text.Encoding]$encoding, [System.Collections.Generic.HashSet[string]]$globalUsings) {
+        $lines = [System.Collections.Generic.List[string]]::new()
+        [void]$lines.AddRange([System.IO.File]::ReadAllLines($this.Project.GlobalUsingsPath, $encoding))
 
-        $globalUsingsLines = New-Object System.Collections.ArrayList
-        [void]$globalUsingsLines.AddRange([System.IO.File]::ReadAllLines($this.Project.GlobalUsingsPath, $globalUsingsEncoding))
-
-        foreach ($line in $globalUsingsLines) {
+        foreach ($line in $lines) {
             if ($line -match '^\s*global\s+using\s+([^;]+);') {
                 $ns = $Matches[1].Trim()
                 [void]$globalUsings.Add($ns)
             }
         }
+        return $lines
+    }
 
-        # Promote usings that surpass the threshold count
+    [bool]PromoteFrequentUsings([System.Collections.Generic.Dictionary[string, int]]$usingCounts, [System.Collections.Generic.HashSet[string]]$globalUsings, [System.Collections.Generic.List[string]]$globalUsingsLines) {
         $promotedAny = $false
         foreach ($ns in $usingCounts.Keys) {
             $count = $usingCounts[$ns]
             if ($count -ge $this.Threshold -and -not $globalUsings.Contains($ns)) {
                 Write-Host "Promoting namespace to GlobalUsings: $ns (Used in $count files)"
                 
-                # Determine standard position to insert new global usings
                 $insertIndex = -1
                 for ($k = 0; $k -lt $globalUsingsLines.Count; $k++) {
                     $line = $globalUsingsLines[$k]
@@ -304,11 +360,13 @@ class GlobalUsingsManager {
                 $promotedAny = $true
             }
         }
+        return $promotedAny
+    }
 
-        # Demote (remove) global usings that are no longer referenced in project
+    [bool]DemoteUnusedGlobalUsings([System.Collections.Generic.HashSet[string]]$globalUsings, [System.Collections.Generic.List[string]]$globalUsingsLines) {
         Write-Host "Scanning for unused global usings..."
         $demotedAny = $false
-        $usingsToDemote = New-Object 'System.Collections.Generic.HashSet[string]' -ArgumentList @([System.StringComparer]::Ordinal)
+        $usingsToDemote = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::Ordinal)
 
         foreach ($ns in $globalUsings) {
             if (-not $this.Project.KnownNamespaces.Contains($ns)) {
@@ -319,12 +377,9 @@ class GlobalUsingsManager {
                 $typesInNs = $this.Project.NsToTypes[$ns]
                 $typeUsed = $false
                 
-                # Check for usage in any of the registered project CS files
                 foreach ($file in $this.Project.CsFiles) {
-                    $fileBytes = [System.IO.File]::ReadAllBytes($file.FullName)
-                    $fileHasBom = $fileBytes.Length -ge 3 -and $fileBytes[0] -eq 0xEF -and $fileBytes[1] -eq 0xBB -and $fileBytes[2] -eq 0xBF
-                    $fileEncoding = if ($fileHasBom) { New-Object System.Text.UTF8Encoding($true) } else { New-Object System.Text.UTF8Encoding($false) }
-                    $fileText = [System.IO.File]::ReadAllText($file.FullName, $fileEncoding)
+                    $encoding = [FileUtils]::GetEncoding($file.FullName)
+                    $fileText = [System.IO.File]::ReadAllText($file.FullName, $encoding)
 
                     foreach ($t in $typesInNs) {
                         if ($fileText -match "\b$t\b") {
@@ -343,7 +398,6 @@ class GlobalUsingsManager {
             }
         }
 
-        # Cleanup demoted items from GlobalUsings.cs array
         if ($demotedAny) {
             for ($k = $globalUsingsLines.Count - 1; $k -ge 0; $k--) {
                 $line = $globalUsingsLines[$k]
@@ -356,29 +410,27 @@ class GlobalUsingsManager {
                 }
             }
         }
+        return $demotedAny
+    }
 
-        # Save GlobalUsings.cs back to file
-        if ($promotedAny -or $demotedAny) {
-            $globalUsingsRaw = [System.IO.File]::ReadAllText($this.Project.GlobalUsingsPath, $globalUsingsEncoding)
-            $globalUsingsNewline = if ($globalUsingsRaw -contains "`r`n") { "`r`n" } elseif ($globalUsingsRaw -contains "`n") { "`n" } else { [Environment]::NewLine }
-            
-            $newGlobalUsingsText = [string]::Join($globalUsingsNewline, [string[]]$globalUsingsLines.ToArray())
-            [System.IO.File]::WriteAllText($this.Project.GlobalUsingsPath, $newGlobalUsingsText, $globalUsingsEncoding)
-            Write-Host "Updated GlobalUsings.cs successfully."
-        }
+    [void]SaveGlobalUsings([System.Text.Encoding]$encoding, [System.Collections.Generic.List[string]]$globalUsingsLines) {
+        $globalUsingsRaw = [System.IO.File]::ReadAllText($this.Project.GlobalUsingsPath, $encoding)
+        $globalUsingsNewline = [FileUtils]::GetNewline($globalUsingsRaw)
+        
+        $newGlobalUsingsText = [string]::Join($globalUsingsNewline, [string[]]$globalUsingsLines.ToArray())
+        [System.IO.File]::WriteAllText($this.Project.GlobalUsingsPath, $newGlobalUsingsText, $encoding)
+        Write-Host "Updated GlobalUsings.cs successfully."
+    }
 
-        # Clean redundant normal using statements from C# files
+    [void]CleanRedundantUsings([System.Collections.Generic.HashSet[string]]$globalUsings, [System.Collections.Generic.List[System.IO.FileInfo]]$modifiedFiles) {
         Write-Host "Removing redundant normal using statements..."
         $totalRemoved = 0
         $modifiedFilesCount = 0
 
         foreach ($file in $this.Project.CsFiles) {
-            $fileBytes = [System.IO.File]::ReadAllBytes($file.FullName)
-            $fileHasBom = $fileBytes.Length -ge 3 -and $fileBytes[0] -eq 0xEF -and $fileBytes[1] -eq 0xBB -and $fileBytes[2] -eq 0xBF
-            $fileEncoding = if ($fileHasBom) { New-Object System.Text.UTF8Encoding($true) } else { New-Object System.Text.UTF8Encoding($false) }
-
-            $lines = [System.IO.File]::ReadAllLines($file.FullName, $fileEncoding)
-            $newLines = New-Object System.Collections.ArrayList
+            $encoding = [FileUtils]::GetEncoding($file.FullName)
+            $lines = [System.IO.File]::ReadAllLines($file.FullName, $encoding)
+            $newLines = [System.Collections.Generic.List[string]]::new()
             $fileRemovedCount = 0
 
             foreach ($line in $lines) {
@@ -394,13 +446,13 @@ class GlobalUsingsManager {
             }
 
             if ($fileRemovedCount -gt 0 -or $modifiedFiles.Contains($file)) {
-                $rawText = [System.IO.File]::ReadAllText($file.FullName, $fileEncoding)
-                $newline = if ($rawText -contains "`r`n") { "`r`n" } elseif ($rawText -contains "`n") { "`n" } else { [Environment]::NewLine }
+                $rawText = [System.IO.File]::ReadAllText($file.FullName, $encoding)
+                $newline = [FileUtils]::GetNewline($rawText)
 
                 $newText = [string]::Join($newline, [string[]]$newLines.ToArray())
                 $newText = $newText -replace "^(\r?\n)+", ""
 
-                [System.IO.File]::WriteAllText($file.FullName, $newText, $fileEncoding)
+                [System.IO.File]::WriteAllText($file.FullName, $newText, $encoding)
                 Write-Host "Cleaned: $($file.FullName) (Removed $fileRemovedCount redundant using(s))"
                 $modifiedFilesCount++
             }
