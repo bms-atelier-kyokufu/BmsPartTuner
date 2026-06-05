@@ -170,7 +170,7 @@ public partial class FileListViewModel : ObservableObject, IDisposable
     /// <summary>
     /// 指定されたパスのBMS/bmsonファイルを読み込み、リストとフィルタを初期化します。
     /// </summary>
-    public async Task LoadBmsFileAsync(string bmsFilePath, string? bmsContent = null)
+    public async Task LoadBmsFileAsync(string bmsFilePath, string? bmsContent = null, System.Threading.CancellationToken cancellationToken = default)
     {
         s_logger.WriteDebug($"=== FileListViewModel.LoadBmsFileAsync Started for {Path.GetFileName(bmsFilePath)} ===");
         var timerTotal = s_logger.StartTimer();
@@ -178,11 +178,13 @@ public partial class FileListViewModel : ObservableObject, IDisposable
         {
             var (bmsFileList, fileList, instrumentGroups) = await Task.Run(() =>
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 var timer = s_logger.StartTimer();
                 var manager = new BmsDefinitionManager(bmsFilePath, bmsContent);
                 var list = manager.CreateFileList();
                 s_logger.WriteDebug($"BmsDefinitionManager construction and CreateFileList: {timer.Lap("BmsDefinitionManager construction and CreateFileList")} ms");
 
+                cancellationToken.ThrowIfCancellationRequested();
                 var chips = _filterService?.GenerateFilterChips(list) ?? [];
                 var groups = chips
                     .Select(static c => new InstrumentNameDetectionService.InstrumentGroup
@@ -195,7 +197,7 @@ public partial class FileListViewModel : ObservableObject, IDisposable
                 s_logger.WriteDebug($"FilterChips and InstrumentGroups generation: {timer.Lap("FilterChips and InstrumentGroups generation")} ms");
 
                 return (manager, list, groups);
-            });
+            }, cancellationToken);
 
             // UIスレッド上でプロパティを更新
             _bmsFileList = bmsFileList;

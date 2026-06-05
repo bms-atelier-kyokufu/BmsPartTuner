@@ -41,9 +41,157 @@
             Value="{Binding GlobalProgressValue}"
             Visibility="{Binding IsGlobalProgressVisible, Converter={StaticResource BooleanToVisibilityConverter}}" />
 
+        <!--  キャンセルバナー (Google UX準拠、プログレスバーの直下に配置)  -->
+        <Border
+            Height="40"
+            Margin="0,4,0,0"
+            VerticalAlignment="Top"
+            HorizontalAlignment="Center"
+            Background="{DynamicResource M3SurfaceContainerHighestBrush}"
+            BorderBrush="{DynamicResource M3OutlineBrush}"
+            BorderThickness="1"
+            CornerRadius="8"
+            Padding="12,0"
+            Panel.ZIndex="1000"
+            Visibility="{Binding IsGlobalProgressVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <Border.Resources>
+                <Style x:Key="M3DestructiveTextButton" TargetType="Button" BasedOn="{StaticResource M3TextButton}">
+                    <Setter Property="Foreground" Value="{DynamicResource M3ErrorBrush}" />
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="Button">
+                                <Grid>
+                                    <Border
+                                        Padding="{TemplateBinding Padding}"
+                                        Background="{TemplateBinding Background}"
+                                        CornerRadius="8">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    </Border>
+                                    <Border
+                                        x:Name="StateLayer"
+                                        Background="{DynamicResource M3ErrorBrush}"
+                                        CornerRadius="8"
+                                        IsHitTestVisible="False"
+                                        Opacity="0" />
+                                </Grid>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Trigger.EnterActions>
+                                            <BeginStoryboard>
+                                                <Storyboard>
+                                                    <DoubleAnimation
+                                                        Storyboard.TargetName="StateLayer"
+                                                        Storyboard.TargetProperty="Opacity"
+                                                        To="0.08"
+                                                        Duration="0:0:0.1">
+                                                        <DoubleAnimation.EasingFunction>
+                                                            <CubicEase EasingMode="EaseOut" />
+                                                        </DoubleAnimation.EasingFunction>
+                                                    </DoubleAnimation>
+                                                </Storyboard>
+                                            </BeginStoryboard>
+                                        </Trigger.EnterActions>
+                                        <Trigger.ExitActions>
+                                            <BeginStoryboard>
+                                                <Storyboard>
+                                                    <DoubleAnimation
+                                                        Storyboard.TargetName="StateLayer"
+                                                        Storyboard.TargetProperty="Opacity"
+                                                        To="0"
+                                                        Duration="0:0:0.1">
+                                                        <DoubleAnimation.EasingFunction>
+                                                            <CubicEase EasingMode="EaseOut" />
+                                                        </DoubleAnimation.EasingFunction>
+                                                    </DoubleAnimation>
+                                                </Storyboard>
+                                            </BeginStoryboard>
+                                        </Trigger.ExitActions>
+                                    </Trigger>
+                                    <Trigger Property="IsPressed" Value="True">
+                                        <Trigger.EnterActions>
+                                            <BeginStoryboard>
+                                                <Storyboard>
+                                                    <DoubleAnimation
+                                                        Storyboard.TargetName="StateLayer"
+                                                        Storyboard.TargetProperty="Opacity"
+                                                        To="0.12"
+                                                        Duration="0:0:0.05" />
+                                                </Storyboard>
+                                            </BeginStoryboard>
+                                        </Trigger.EnterActions>
+                                        <Trigger.ExitActions>
+                                            <BeginStoryboard>
+                                                <Storyboard>
+                                                    <DoubleAnimation
+                                                        Storyboard.TargetName="StateLayer"
+                                                        Storyboard.TargetProperty="Opacity"
+                                                        To="0.08"
+                                                        Duration="0:0:0.1" />
+                                                </Storyboard>
+                                            </BeginStoryboard>
+                                        </Trigger.ExitActions>
+                                    </Trigger>
+                                    <Trigger Property="IsEnabled" Value="False">
+                                        <Setter Property="Opacity" Value="0.38" />
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </Border.Resources>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,16,0">
+                    <TextBlock
+                        Text="⌛"
+                        FontSize="14"
+                        Foreground="{DynamicResource M3PrimaryBrush}"
+                        Margin="0,0,8,0"
+                        VerticalAlignment="Center" />
+                    <TextBlock
+                        Text="{Binding StatusMessage}"
+                        FontSize="13"
+                        Foreground="{DynamicResource M3OnSurfaceBrush}"
+                        VerticalAlignment="Center"
+                        TextTrimming="CharacterEllipsis"
+                        MaxWidth="600" />
+                    <TextBlock
+                        Text="{Binding GlobalProgressValue, StringFormat=' ({0}%)'}"
+                        FontSize="13"
+                        FontWeight="SemiBold"
+                        Foreground="{DynamicResource M3PrimaryBrush}"
+                        VerticalAlignment="Center">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Visibility" Value="Visible" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsGlobalProgressIndeterminate}" Value="True">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </StackPanel>
+
+                <Button
+                    Grid.Column="1"
+                    Command="{Binding CancelActiveTaskCommand}"
+                    Content="キャンセル"
+                    Style="{StaticResource M3DestructiveTextButton}"
+                    VerticalAlignment="Center"
+                    Height="32"
+                    Padding="8,0" />
+            </Grid>
+        </Border>
+
         <!--  メイングリッド: 3カラムレイアウト  -->
         <!--  メイングリッド: 3カラムレイアウト  -->
-        <Grid>
+        <Grid IsEnabled="{Binding IsGlobalProgressVisible, Converter={StaticResource InverseBooleanConverter}}">
             <Grid.ColumnDefinitions>
                 <!--  左: メイン操作エリア (可変)  -->
                 <ColumnDefinition Width="*" MinWidth="500" />
@@ -265,7 +413,7 @@
                 <!--  #endregion  -->
 
                 <!--  #region ファイルリスト  -->
-                <DockPanel IsEnabled="{Binding IsGlobalProgressVisible, Converter={StaticResource InverseBooleanConverter}}">
+                <DockPanel>
                     <!--  ファイルリスト ヘッダー＆フィルターエリア  -->
                     <StackPanel Margin="0,0,0,10" DockPanel.Dock="Top">
                         <TextBlock Text="ファイルプレビュー (確認用)" FontSize="18" FontWeight="SemiBold" Foreground="{DynamicResource M3OnSurfaceBrush}" Margin="0,0,0,4" />

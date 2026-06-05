@@ -22,7 +22,7 @@ public class AppController(
     public string? LastDownconvertedBmsonPath { get; private set; }
     public bool IsDownconverting { get; private set; }
 
-    public async Task ExecuteThresholdOptimizationAsync()
+    public async Task ExecuteThresholdOptimizationAsync(CancellationToken cancellationToken = default)
     {
         var inputPath = GetAndValidateInputPath();
         if (string.IsNullOrEmpty(inputPath)) return;
@@ -47,7 +47,8 @@ public class AppController(
                 inputToUse,
                 files,
                 startDef,
-                endDef);
+                endDef,
+                cancellationToken);
 
             HandleOptimizationResult(result);
         }
@@ -63,7 +64,7 @@ public class AppController(
         _mainViewModel.GlobalProgressValue = percent;
     }
 
-    public async Task ExecuteReductionAsync()
+    public async Task ExecuteReductionAsync(CancellationToken cancellationToken = default)
     {
         var inputToUse = WorkingBmsPath ?? _mainViewModel.FileOperations.InputPath;
 
@@ -81,16 +82,16 @@ public class AppController(
             return;
         }
 
-        await ExecuteDefinitionReductionInternalAsync(inputToUse);
+        await ExecuteDefinitionReductionInternalAsync(inputToUse, cancellationToken);
     }
 
-    public async Task ExecuteDefinitionReductionAfterConfirmationAsync()
+    public async Task ExecuteDefinitionReductionAfterConfirmationAsync(CancellationToken cancellationToken = default)
     {
         var inputToUse = WorkingBmsPath ?? _mainViewModel.FileOperations.InputPath;
-        await ExecuteDefinitionReductionInternalAsync(inputToUse);
+        await ExecuteDefinitionReductionInternalAsync(inputToUse, cancellationToken);
     }
 
-    private async Task ExecuteDefinitionReductionInternalAsync(string? inputToUse)
+    private async Task ExecuteDefinitionReductionInternalAsync(string? inputToUse, CancellationToken cancellationToken = default)
     {
         var selectedKeywords = _mainViewModel.BmsDefinitionManager.GetSelectedKeywords();
 
@@ -99,7 +100,16 @@ public class AppController(
             inputToUse,
             _mainViewModel.FileOperations.OutputPath,
             WorkingBmsContent,
-            selectedKeywords);
+            selectedKeywords,
+            cancellationToken);
+
+        // If cancellation was requested, skip further processing and clear busy flag.
+        if (cancellationToken.IsCancellationRequested)
+        {
+            // Ensure UI reflects cancellation; status will be set by OptimizationViewModel.
+            _mainViewModel.IsBusy = false;
+            return;
+        }
 
         if (string.Equals(inputToUse, _mainViewModel.FileOperations.OutputPath, StringComparison.OrdinalIgnoreCase))
         {
@@ -108,7 +118,7 @@ public class AppController(
                 _mainViewModel.IsBusy = true;
                 _mainViewModel.IsGlobalProgressIndeterminate = true;
                 _mainViewModel.StatusMessage = "リストを再読み込み中...";
-                await _mainViewModel.BmsDefinitionManager.LoadBmsFileAsync(inputToUse);
+                await _mainViewModel.BmsDefinitionManager.LoadBmsFileAsync(inputToUse, cancellationToken: cancellationToken);
                 _mainViewModel.IsGlobalProgressIndeterminate = false;
                 _mainViewModel.IsBusy = false;
                 _mainViewModel.StatusMessage = "準備完了";
@@ -139,42 +149,76 @@ public class AppController(
     {
         if (path != null && _fileSystemService.FileExists(path))
         {
+            var cts = new System.Threading.CancellationTokenSource();
+            _mainViewModel.SetActiveCts(cts);
+
             var extension = Path.GetExtension(path);
-            if (string.Equals(extension, ".bmson", StringComparison.OrdinalIgnoreCase))
+            try
             {
-                // すでにダウンコンバート済みの同じファイルなら再変換をスキップ
-                if (string.Equals(path, LastDownconvertedBmsonPath, StringComparison.OrdinalIgnoreCase) && WorkingBmsContent != null)
+                if (string.Equals(extension, ".bmson", StringComparison.OrdinalIgnoreCase))
                 {
+                    // すでにダウンコンバート済みの同じファイルなら再変換をスキップ
+                    if (string.Equals(path, LastDownconvertedBmsonPath, StringComparison.OrdinalIgnoreCase) && WorkingBmsContent != null)
+                    {
+                        _mainViewModel.IsBusy = true;
+                        _mainViewModel.IsGlobalProgressIndeterminate = true;
+                        _mainViewModel.StatusMessage = "リストを読み込み中...";
+                        await _mainViewModel.BmsDefinitionManager.LoadBmsFileAsync(path, WorkingBmsContent, cts.Token);
+                        _mainViewModel.IsGlobalProgressIndeterminate = false;
+                        _mainViewModel.IsBusy = false;
+                        _mainViewModel.StatusMessage = "準備完了";
+                        return;
+                    }
+
+                    if (IsDownconverting) return;
+
+                    await DownconvertBmsonAsync(path, cts.Token);
+                }
+                else
+                {
+                    VirtualAudioRegistry.Clear();
+                    ClearProcessedAudioRegistryIfDirectoryChanged(path);
+
+                    WorkingBmsPath = path;
+                    WorkingBmsContent = null;
+                    LastDownconvertedBmsonPath = null; // 別のファイルが来たらクリア
+
                     _mainViewModel.IsBusy = true;
                     _mainViewModel.IsGlobalProgressIndeterminate = true;
                     _mainViewModel.StatusMessage = "リストを読み込み中...";
-                    await _mainViewModel.BmsDefinitionManager.LoadBmsFileAsync(path, WorkingBmsContent);
+                    await _mainViewModel.BmsDefinitionManager.LoadBmsFileAsync(path, cancellationToken: cts.Token);
                     _mainViewModel.IsGlobalProgressIndeterminate = false;
                     _mainViewModel.IsBusy = false;
                     _mainViewModel.StatusMessage = "準備完了";
-                    return;
                 }
-
-                if (IsDownconverting) return;
-
-                await DownconvertBmsonAsync(path);
             }
-            else
+            catch (System.OperationCanceledException)
             {
+                // キャンセル＝そのファイルはいらない → キャッシュ・状態・UIパスを全て破棄する
+                AudioRegistry.Instance.Clear();
                 VirtualAudioRegistry.Clear();
-                ClearProcessedAudioRegistryIfDirectoryChanged(path);
-
-                WorkingBmsPath = path;
+                WorkingBmsPath = null;
                 WorkingBmsContent = null;
-                LastDownconvertedBmsonPath = null; // 別のファイルが来たらクリア
-
-                _mainViewModel.IsBusy = true;
-                _mainViewModel.IsGlobalProgressIndeterminate = true;
-                _mainViewModel.StatusMessage = "リストを読み込み中...";
-                await _mainViewModel.BmsDefinitionManager.LoadBmsFileAsync(path);
+                LastDownconvertedBmsonPath = null;
+                _mainViewModel.BmsDefinitionManager.FileListItems.Clear();
+                _mainViewModel.FileOperations.InputPath = string.Empty;
+                _mainViewModel.FileOperations.OutputPath = string.Empty;
                 _mainViewModel.IsGlobalProgressIndeterminate = false;
                 _mainViewModel.IsBusy = false;
-                _mainViewModel.StatusMessage = "準備完了";
+                _mainViewModel.StatusMessage = "読み込みがキャンセルされました";
+                _mainViewModel.ShowToast("ファイルの読み込みがキャンセルされました", "✕", false);
+            }
+            catch (System.Exception ex)
+            {
+                _mainViewModel.IsGlobalProgressIndeterminate = false;
+                _mainViewModel.IsBusy = false;
+                _mainViewModel.StatusMessage = "読み込みエラー";
+                _mainViewModel.ShowToast($"読み込みエラー: {ex.Message}", "⚠", true);
+            }
+            finally
+            {
+                _mainViewModel.SetActiveCts(null);
+                cts.Dispose();
             }
         }
         else
@@ -194,7 +238,7 @@ public class AppController(
         }
     }
 
-    private async Task DownconvertBmsonAsync(string path)
+    private async Task DownconvertBmsonAsync(string path, System.Threading.CancellationToken cancellationToken)
     {
         IsDownconverting = true;
         _mainViewModel.IsBusy = true;
@@ -217,17 +261,23 @@ public class AppController(
                 });
 
                 _mainViewModel.IsGlobalProgressIndeterminate = true;
-                string bmsText = await _bmsonConversionService.GenerateBmsTextAsync(path, keyNotesOnly: false, progress);
+                cancellationToken.ThrowIfCancellationRequested();
+                string bmsText = await _bmsonConversionService.GenerateBmsTextAsync(path, keyNotesOnly: false, progress, cancellationToken);
 
                 WorkingBmsPath = path;
                 WorkingBmsContent = bmsText;
                 LastDownconvertedBmsonPath = path; // 成功時にパスを記憶
 
                 _mainViewModel.StatusMessage = "リストを構築中...";
-                await _mainViewModel.BmsDefinitionManager.LoadBmsFileAsync(path, bmsText);
+                cancellationToken.ThrowIfCancellationRequested();
+                await _mainViewModel.BmsDefinitionManager.LoadBmsFileAsync(path, bmsText, cancellationToken);
                 _mainViewModel.IsGlobalProgressIndeterminate = false;
             }
             _mainViewModel.ShowToast($"bmsonをダウンコンバートしました: {Path.GetFileName(path)}", "📁", false);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
         }
         catch (Exception ex)
         {

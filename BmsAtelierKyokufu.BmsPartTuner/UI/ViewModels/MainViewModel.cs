@@ -21,6 +21,7 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
     private readonly IFileSystemService _fileSystemService;
     private readonly AppController _appController;
     private bool _disposed;
+    private System.Threading.CancellationTokenSource? _activeCts;
 
     /// <summary>ファイル操作ViewModel。</summary>
     public FileOperationsViewModel FileOperations { get; }
@@ -78,6 +79,7 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
         UpdateGlobalProgressVisibility();
         NotifyCanExecuteReductionChanged();
         NotifyCanExecuteThresholdOptimizationChanged();
+        CancelActiveTaskCommand.NotifyCanExecuteChanged();
     }
 
     /// <summary>
@@ -225,9 +227,27 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
     }
 
     [RelayCommand(CanExecute = nameof(CanExecuteThresholdOptimization))]
-    private Task ExecuteThresholdOptimizationAsync()
+    private async Task ExecuteThresholdOptimizationAsync()
     {
-        return _appController.ExecuteThresholdOptimizationAsync();
+        SetActiveCts(new System.Threading.CancellationTokenSource());
+        try
+        {
+            await _appController.ExecuteThresholdOptimizationAsync(_activeCts!.Token);
+        }
+        catch (System.OperationCanceledException)
+        {
+            ShowMessage("最適化処理がキャンセルされました", isError: false);
+        }
+        catch (System.Exception ex)
+        {
+            ShowMessage($"エラー: {ex.Message}", isError: true);
+        }
+        finally
+        {
+            var cts = _activeCts;
+            SetActiveCts(null);
+            cts?.Dispose();
+        }
     }
 
     private bool CanExecuteThresholdOptimization() => !Optimization.IsBusy && !IsBusy;
@@ -240,10 +260,54 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
             return;
         }
 
-        await _appController.ExecuteReductionAsync();
+        SetActiveCts(new System.Threading.CancellationTokenSource());
+        try
+        {
+            await _appController.ExecuteReductionAsync(_activeCts!.Token);
+        }
+        catch (System.OperationCanceledException)
+        {
+            ShowMessage("削減処理がキャンセルされました", isError: false);
+        }
+        catch (System.Exception ex)
+        {
+            ShowMessage($"エラー: {ex.Message}", isError: true);
+        }
+        finally
+        {
+            var cts = _activeCts;
+            SetActiveCts(null);
+            cts?.Dispose();
+        }
     }
 
     private bool CanExecuteReduction() => !Optimization.IsBusy && !_appController.IsDownconverting && !IsBusy;
+
+    public void SetActiveCts(System.Threading.CancellationTokenSource? cts)
+    {
+        _activeCts = cts;
+        CancelActiveTaskCommand.NotifyCanExecuteChanged();
+    }
+
+    [RelayCommand(CanExecute = nameof(CanCancelActiveTask))]
+    private void CancelActiveTask()
+    {
+        if (_activeCts != null)
+        {
+            try
+            {
+                // 即時UIフィードバック：キャンセル中であることを表示
+                StatusMessage = "キャンセル中...";
+                IsGlobalProgressIndeterminate = false;
+                _activeCts.Cancel();
+            }
+            catch (System.ObjectDisposedException)
+            {
+            }
+        }
+    }
+
+    private bool CanCancelActiveTask() => _activeCts != null;
 
     public void Receive(InputPathChangedMessage message)
     {
@@ -331,7 +395,10 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
         if (e.PropertyName == nameof(FileOperations.InputPath))
         {
             Optimization.ProgressValue = 0;
-            StatusMessage = "準備完了";
+            if (!IsBusy)
+            {
+                StatusMessage = "準備完了";
+            }
         }
 
         if (e.PropertyName == nameof(FileOperations.InputPath) ||
@@ -420,9 +487,27 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
         ExecuteThresholdOptimizationCommand.NotifyCanExecuteChanged();
     }
 
-    public Task ExecuteDefinitionReductionAfterConfirmationAsync()
+    public async Task ExecuteDefinitionReductionAfterConfirmationAsync()
     {
-        return _appController.ExecuteDefinitionReductionAfterConfirmationAsync();
+        SetActiveCts(new System.Threading.CancellationTokenSource());
+        try
+        {
+            await _appController.ExecuteDefinitionReductionAfterConfirmationAsync(_activeCts!.Token);
+        }
+        catch (System.OperationCanceledException)
+        {
+            ShowMessage("削減処理がキャンセルされました", isError: false);
+        }
+        catch (System.Exception ex)
+        {
+            ShowMessage($"エラー: {ex.Message}", isError: true);
+        }
+        finally
+        {
+            var cts = _activeCts;
+            SetActiveCts(null);
+            cts?.Dispose();
+        }
     }
 
     public void ShowToast(string message, string icon = "✓", bool isError = false)

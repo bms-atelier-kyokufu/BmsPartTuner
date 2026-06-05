@@ -1,3 +1,4 @@
+using BmsAtelierKyokufu.BmsPartTuner.Core.Context;
 using BmsAtelierKyokufu.BmsPartTuner.UI.Views.Controls;
 using BmsAtelierKyokufu.BmsPartTuner.UseCases;
 using BmsAtelierKyokufu.BmsPartTuner.UseCases.Dto;
@@ -262,23 +263,29 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
         string? inputPath,
         List<string> files,
         int startDefinition,
-        int endDefinition)
+        int endDefinition,
+        CancellationToken cancellationToken = default)
     {
         var loaderCts = BeginBusyState("🎵 波形データを解析中...");
         StatusMessage = "🔬 しきい値最適化シミュレーション実行中...";
 
         try
         {
+            var opContext = new OperationContext(
+                cancellationToken,
+                new ThrottledProgress<int>(_progress));
+
             var request = new ThresholdOptimizationRequest
             {
                 InputPath = inputPath,
                 BmsFileList = files,
                 StartDefinition = startDefinition,
                 EndDefinition = endDefinition,
-                Progress = _progress
+                OperationContext = opContext
             };
 
-            var result = await _optimizationUseCase.ExecuteThresholdOptimizationAsync(request);
+            // Top-Level Offloading: UIスレッドのブロックを防ぐため、ユースケース全体をバックグラウンドスレッドで実行
+            var result = await Task.Run(() => _optimizationUseCase.ExecuteThresholdOptimizationAsync(request), cancellationToken);
 
             await Application.Current.Dispatcher.InvokeAsync(() =>
             {
@@ -312,6 +319,15 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
 
             return result.Data;
         }
+        catch (OperationCanceledException)
+        {
+            await Application.Current.Dispatcher.InvokeAsync(() =>
+            {
+                IsProgressIndeterminate = false;
+                StatusMessage = "キャンセルされました";
+            });
+            throw;
+        }
         catch (Exception ex)
         {
             await Application.Current.Dispatcher.InvokeAsync(() =>
@@ -338,7 +354,7 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
                 GC.Collect();
                 GC.WaitForPendingFinalizers();
                 GC.Collect();
-            });
+            }, cancellationToken);
         }
     }
 
@@ -350,7 +366,8 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
         string? inputPath,
         string? outputPath,
         string? inputBmsContent = null,
-        IEnumerable<string>? selectedKeywords = null)
+        IEnumerable<string>? selectedKeywords = null,
+        CancellationToken cancellationToken = default)
     {
         if (bmsFileList == null)
         {
@@ -381,7 +398,7 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
             return;
         }
 
-        await ExecuteDefinitionReductionInternalAsync(bmsFileList, inputPath, outputPath, r2Result.Value, inputBmsContent, selectedKeywords);
+        await ExecuteDefinitionReductionInternalAsync(bmsFileList, inputPath, outputPath, r2Result.Value, inputBmsContent, selectedKeywords, cancellationToken);
     }
 
     private async Task ExecuteDefinitionReductionInternalAsync(
@@ -390,12 +407,17 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
         string outputPath,
         float r2Val,
         string? inputBmsContent = null,
-        IEnumerable<string>? selectedKeywords = null)
+        IEnumerable<string>? selectedKeywords = null,
+        CancellationToken cancellationToken = default)
     {
         var loaderCts = BeginBusyState("📁 ファイルを処理中...");
 
         try
         {
+            var opContext = new OperationContext(
+                cancellationToken,
+                new ThrottledProgress<int>(_progress));
+
             var request = new DefinitionReductionRequest
             {
                 BmsFileList = bmsFileList,
@@ -406,11 +428,12 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
                 EndDefinition = RadixConvert.ZZToInt(DefinitionEnd),
                 IsPhysicalDeletionEnabled = IsPhysicalDeletionEnabled,
                 InputBmsContent = inputBmsContent,
-                Progress = _progress,
-                SelectedKeywords = selectedKeywords
+                SelectedKeywords = selectedKeywords,
+                OperationContext = opContext
             };
 
-            var result = await _optimizationUseCase.ExecuteDefinitionReductionAsync(request);
+            // Top-Level Offloading: UIスレッドのブロックを防ぐため、ユースケース全体をバックグラウンドスレッドで実行
+            var result = await Task.Run(() => _optimizationUseCase.ExecuteDefinitionReductionAsync(request), cancellationToken);
 
             if (result.IsSuccess && result.Data != null)
             {
@@ -434,6 +457,19 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
                 StatusMessage = "処理エラー";
             }
         }
+        catch (OperationCanceledException)
+        {
+            // BeginInvokeを使いfire-and-forgetでUIを更新。awaitするとDispatcherキューが詰まっている場合にthrowの実行がブロックされる。
+            Application.Current?.Dispatcher.BeginInvoke(() =>
+            {
+                IsProgressIndeterminate = false;
+                ProgressValue = 0;
+                StatusMessage = "キャンセルされました";
+            });
+            // キャンセル＝このデータはいらない → AudioRegistryを破棄
+            AudioRegistry.Instance.Clear();
+            throw;
+        }
         catch (Exception ex)
         {
             ErrorOccurred?.Invoke(this, $"処理エラー: {ex.Message}");
@@ -446,7 +482,7 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
             EndBusyState(loaderCts);
             IsBusy = false;
 
-            await Task.Run(() => s_logger.WriteDebug("=== OptimizationViewModel: Clearing caches ==="));
+            await Task.Run(() => s_logger.WriteDebug("=== OptimizationViewModel: Clearing caches ==="), CancellationToken.None);
         }
     }
 
