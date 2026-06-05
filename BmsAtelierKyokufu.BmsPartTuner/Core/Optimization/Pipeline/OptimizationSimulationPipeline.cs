@@ -1,4 +1,4 @@
-﻿namespace BmsAtelierKyokufu.BmsPartTuner.Core.Optimization.Pipeline;
+namespace BmsAtelierKyokufu.BmsPartTuner.Core.Optimization.Pipeline;
 
 /// <summary>
 /// 非同期最適化シミュレーションパイプライン。
@@ -26,6 +26,7 @@ internal sealed class OptimizationSimulationPipeline
         {
             foreach (var step in _steps)
             {
+                context.OperationContext?.ThrowIfCancellationRequested();
                 s_logger.WriteDebug($"--- Step: {step.Name} ---");
                 timerStep.Lap(step.Name);
                 await step.ExecuteAsync(context);

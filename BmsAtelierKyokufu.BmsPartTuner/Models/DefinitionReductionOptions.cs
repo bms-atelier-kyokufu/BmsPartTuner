@@ -1,3 +1,5 @@
+using BmsAtelierKyokufu.BmsPartTuner.Core.Context;
+
 namespace BmsAtelierKyokufu.BmsPartTuner.Models;
 
 /// <summary>
@@ -31,12 +33,12 @@ public class DefinitionReductionOptions
     public string? InputBmsContent { get; set; }
 
     /// <summary>
-    /// 進捗通知オブジェクト。
-    /// </summary>
-    public IProgress<int>? Progress { get; set; }
-
-    /// <summary>
     /// 最適化対象から除外するキーワードのリスト。
     /// </summary>
     public IEnumerable<string>? SelectedKeywords { get; set; }
+
+    /// <summary>
+    /// キャンセルや進捗報告を管理する実行コンテキスト。
+    /// </summary>
+    public IOperationContext? OperationContext { get; set; }
 }

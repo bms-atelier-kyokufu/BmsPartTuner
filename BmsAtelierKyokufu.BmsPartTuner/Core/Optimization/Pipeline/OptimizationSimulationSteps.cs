@@ -65,11 +65,11 @@ internal sealed class PreloadAudioCacheStep : IAsyncOptimizationStep
     public string Name => PipelineStepHelper.GetStepName(nameof(PreloadAudioCacheStep));
     public Task ExecuteAsync(OptimizationSimulationContext context)
     {
-        context.Progress?.Report(5);
+        context.OperationContext?.ReportProgress(5);
 
         var (failedFiles, audioCache) = AudioCacheManager.PreloadAudioData(
             context.FileListItems,
-            new Progress<int>(p => context.Progress?.Report(5 + (p / 20))), // 5-10%
+            context.OperationContext, // Not mapping partial progress directly, rely on ThrottledProgress in ViewModel or modify OperationContext wrapper later if needed
             NormalizationMode.None,
             extractFeatures: false);
 
@@ -89,7 +89,7 @@ internal sealed class PreloadAudioCacheStep : IAsyncOptimizationStep
             }
         }
 
-        context.Progress?.Report(10);
+        context.OperationContext?.ReportProgress(10);
         return Task.CompletedTask;
     }
 }
@@ -112,14 +112,11 @@ internal sealed class RunParallelSimulationStep : IAsyncOptimizationStep
             context.StartDefinition,
             context.EndDefinition);
 
-        Progress<int> simulationProgress = new(p => context.Progress?.Report(10 + (int)(p * 0.6))); // 10-70%
-
-        var simulationResults = await Task.Run(() =>
-            simulationEngine.RunParallelSimulation(
-                0.00f,      // 最小しきい値
-                1.00f,      // 最大しきい値
-                0.01f,      // ステップ
-                simulationProgress));
+        var simulationResults = simulationEngine.RunParallelSimulation(
+            0.00f,      // 最小しきい値
+            1.00f,      // 最大しきい値
+            0.01f,      // ステップ
+            context.OperationContext);
 
         context.SimulationResults = simulationResults;
 
@@ -133,7 +130,7 @@ internal sealed class RunParallelSimulationStep : IAsyncOptimizationStep
             s_logger.WriteDebug($"File count range in results: {minCount} - {maxCount}");
         }
 
-        context.Progress?.Report(70);
+        context.OperationContext?.ReportProgress(70);
     }
 }
 
@@ -146,7 +143,7 @@ internal sealed class FindOptimalThresholdsStep : IAsyncOptimizationStep
     public string Name => PipelineStepHelper.GetStepName(nameof(FindOptimalThresholdsStep));
     public Task ExecuteAsync(OptimizationSimulationContext context)
     {
-        context.Progress?.Report(75);
+        context.OperationContext?.ReportProgress(75);
 
         // Base36とBase62の最適値を探索
         (float base36Threshold, int base36Count) = FindOptimalThreshold(context.SimulationData, AppConstants.Definition.MaxNumberBase36);
@@ -179,7 +176,7 @@ internal sealed class FindOptimalThresholdsStep : IAsyncOptimizationStep
             s_logger.WriteDebug($"Added warning to result: {warningMessage}");
         }
 
-        context.Progress?.Report(85);
+        context.OperationContext?.ReportProgress(85);
         return Task.CompletedTask;
     }
 

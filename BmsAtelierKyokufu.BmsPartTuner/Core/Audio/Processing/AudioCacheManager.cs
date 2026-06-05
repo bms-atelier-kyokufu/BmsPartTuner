@@ -23,7 +23,7 @@ internal sealed class AudioCacheManager
     /// <returns>読み込みに失敗したファイルパスのリストと、オーディオキャッシュのタプル。</returns>
     public static (List<string> FailedFiles, ConcurrentDictionary<string, ICachedSoundData> Cache) PreloadAudioData(
         IReadOnlyList<BmsAudioFile> fileList,
-        IProgress<int>? progress,
+        BmsAtelierKyokufu.BmsPartTuner.Core.Context.IOperationContext? opContext = null,
         NormalizationMode normalizationMode = Models.NormalizationMode.None,
         bool extractFeatures = true)
     {
@@ -41,7 +41,7 @@ internal sealed class AudioCacheManager
         if (totalFiles == 0)
         {
             s_logger.WriteDebug("WARNING: No files to preload");
-            progress?.Report(AppConstants.Progress.PreloadComplete);
+            opContext?.ReportProgress(AppConstants.Progress.PreloadComplete);
             return (new List<string>(), audioCache);
         }
 
@@ -61,11 +61,13 @@ internal sealed class AudioCacheManager
             int processedCount = 0;
             _ = Parallel.ForEach(fileList, new ParallelOptions
             {
-                MaxDegreeOfParallelism = Environment.ProcessorCount
+                MaxDegreeOfParallelism = Environment.ProcessorCount,
+                CancellationToken = opContext?.CancellationToken ?? CancellationToken.None
             }, file =>
             {
+                opContext?.ThrowIfCancellationRequested();
                 var singleBatch = new[] { file };
-                var (batchSuccess, batchFail) = LoadBatch(singleBatch, normalizationMode, failedFiles, audioCache, extractFeatures);
+                var (batchSuccess, batchFail) = LoadBatch(singleBatch, normalizationMode, failedFiles, audioCache, extractFeatures, opContext);
 
                 Interlocked.Add(ref successCount, batchSuccess);
                 Interlocked.Add(ref failCount, batchFail);
@@ -78,7 +80,7 @@ internal sealed class AudioCacheManager
                 }
 
                 int percentage = (int)((float)currentCount / totalFiles * AppConstants.Progress.PreloadComplete);
-                progress?.Report(percentage);
+                opContext?.ReportProgress(percentage);
 
 
             });
@@ -94,10 +96,12 @@ internal sealed class AudioCacheManager
 
             _ = Parallel.ForEach(batches, new ParallelOptions
             {
-                MaxDegreeOfParallelism = Math.Min(4, Environment.ProcessorCount)
+                MaxDegreeOfParallelism = Math.Min(4, Environment.ProcessorCount),
+                CancellationToken = opContext?.CancellationToken ?? CancellationToken.None
             }, batch =>
             {
-                var (batchSuccess, batchFail) = LoadBatch(batch, normalizationMode, failedFiles, audioCache, extractFeatures);
+                opContext?.ThrowIfCancellationRequested();
+                var (batchSuccess, batchFail) = LoadBatch(batch, normalizationMode, failedFiles, audioCache, extractFeatures, opContext);
 
                 Interlocked.Add(ref successCount, batchSuccess);
                 Interlocked.Add(ref failCount, batchFail);
@@ -110,7 +114,7 @@ internal sealed class AudioCacheManager
                 }
 
                 int percentage = (int)((float)currentBatch / batches.Count * AppConstants.Progress.PreloadComplete);
-                progress?.Report(percentage);
+                opContext?.ReportProgress(percentage);
 
                 // ループのたびに5秒経過していないかチェックし、経過していれば停止・レポート
 
@@ -170,12 +174,14 @@ internal sealed class AudioCacheManager
         NormalizationMode normalizationMode,
         ConcurrentBag<string> failedFiles,
         ConcurrentDictionary<string, ICachedSoundData> audioCache,
-        bool extractFeatures)
+        bool extractFeatures,
+        BmsAtelierKyokufu.BmsPartTuner.Core.Context.IOperationContext? opContext)
     {
         int success = 0;
         int fail = 0;
         foreach (var file in batch)
         {
+            opContext?.ThrowIfCancellationRequested();
             try
             {
                 if (AudioRegistry.Instance.TryGet(file.Name, out var cachedData))
@@ -191,6 +197,11 @@ internal sealed class AudioCacheManager
                     AudioRegistry.Instance.Register(file.Name, newCachedData);
                     success++;
                 }
+            }
+            catch (OperationCanceledException)
+            {
+                // キャンセル要求を握りつぶさずに再スローする
+                throw;
             }
             catch (Exception ex)
             {

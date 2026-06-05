@@ -1,4 +1,4 @@
-﻿namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms.Pipeline;
+namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms.Pipeline;
 
 /// <summary>
 /// 処理範囲を決定し、統計用クラスを初期化するステップ。
@@ -27,15 +27,15 @@ internal sealed class PreloadAudioDataStep : IDefinitionReductionStep
     public string Name => PipelineStepHelper.GetStepName(nameof(PreloadAudioDataStep));
     public void Execute(DefinitionReductionContext context)
     {
-        var progress = context.Options.Progress ?? new Progress<int>();
+        var opContext = context.Options.OperationContext;
 
         var (_, loadedCache) = AudioCacheManager.PreloadAudioData(
             context.FileList,
-            progress,
+            opContext,
             context.NormalizationMode);
 
         context.AudioCache = loadedCache;
-        progress.Report(AppConstants.Progress.PreloadComplete);
+        opContext?.ReportProgress(AppConstants.Progress.PreloadComplete);
     }
 }
 
@@ -47,7 +47,7 @@ internal sealed class CreateReplaceTableStep : IDefinitionReductionStep
     public string Name => PipelineStepHelper.GetStepName(nameof(CreateReplaceTableStep));
     public void Execute(DefinitionReductionContext context)
     {
-        var progress = context.Options.Progress ?? new Progress<int>();
+        var opContext = context.Options.OperationContext;
 
         // ファイルをグループ化して比較対象を絞り込む
         var groups = AudioFileGroupingStrategy.GroupFiles(
@@ -66,9 +66,9 @@ internal sealed class CreateReplaceTableStep : IDefinitionReductionStep
             context.RangeManager.EndPoint);
 
         var comparisonEngine = new ParallelAudioComparisonEngine(parameters);
-        comparisonEngine.CompareGroups(groups, context.Options.R2Threshold, progress);
+        comparisonEngine.CompareGroups(groups, context.Options.R2Threshold, opContext);
 
-        progress.Report(AppConstants.Progress.ComparisonComplete);
+        opContext?.ReportProgress(AppConstants.Progress.ComparisonComplete);
     }
 }
 
@@ -80,7 +80,7 @@ internal sealed class RewriteBmsFileStep : IDefinitionReductionStep
     public string Name => PipelineStepHelper.GetStepName(nameof(RewriteBmsFileStep));
     public void Execute(DefinitionReductionContext context)
     {
-        var progress = context.Options.Progress ?? new Progress<int>();
+        var opContext = context.Options.OperationContext;
 
         context.Rewriter = new BmsFileRewriter(
             context.FileList,
@@ -91,7 +91,7 @@ internal sealed class RewriteBmsFileStep : IDefinitionReductionStep
 
         context.RewriteData = context.Rewriter.ReplaceAndAlignBmsFile(context.InputBmsFileName);
 
-        progress.Report(AppConstants.Progress.RewriteComplete);
+        opContext?.ReportProgress(AppConstants.Progress.RewriteComplete);
     }
 }
 

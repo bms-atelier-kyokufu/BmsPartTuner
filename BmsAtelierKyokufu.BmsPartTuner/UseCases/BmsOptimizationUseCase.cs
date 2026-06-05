@@ -42,11 +42,11 @@ public class BmsOptimizationUseCase(IBmsOptimizationService optimizationService)
 
         try
         {
-            var result = await Task.Run(() => _optimizationService.FindOptimalThresholdsAsync(
+            var result = await _optimizationService.FindOptimalThresholdsAsync(
                 files,
                 request.StartDefinition,
                 request.EndDefinition,
-                request.Progress));
+                request.OperationContext);
 
             if (result != null)
             {
@@ -54,6 +54,10 @@ public class BmsOptimizationUseCase(IBmsOptimizationService optimizationService)
             }
 
             return OptimizationUseCaseResult<OptimizationResult>.Failure("最適化に失敗しました");
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
         }
         catch (Exception ex)
         {
@@ -91,8 +95,8 @@ public class BmsOptimizationUseCase(IBmsOptimizationService optimizationService)
                     EndDefinition = request.EndDefinition,
                     IsPhysicalDeletionEnabled = request.IsPhysicalDeletionEnabled,
                     InputBmsContent = request.InputBmsContent,
-                    Progress = request.Progress,
-                    SelectedKeywords = request.SelectedKeywords
+                    SelectedKeywords = request.SelectedKeywords,
+                    OperationContext = request.OperationContext
                 });
 
             if (result.IsSuccess)
@@ -101,6 +105,10 @@ public class BmsOptimizationUseCase(IBmsOptimizationService optimizationService)
             }
 
             return OptimizationUseCaseResult<BmsOptimizationService.ReductionResult>.Failure($"処理エラー: {result.ErrorMessage}");
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
         }
         catch (Exception ex)
         {

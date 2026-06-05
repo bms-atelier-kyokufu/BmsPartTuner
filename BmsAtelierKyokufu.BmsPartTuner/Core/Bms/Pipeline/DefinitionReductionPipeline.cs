@@ -1,4 +1,4 @@
-﻿namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms.Pipeline;
+namespace BmsAtelierKyokufu.BmsPartTuner.Core.Bms.Pipeline;
 
 /// <summary>
 /// BMS定義削減パイプライン。
@@ -28,11 +28,12 @@ internal sealed class DefinitionReductionPipeline
         var timerTotal = s_logger.StartTimer();
         var timerStep = s_logger.StartTimer();
 
-        var progress = context.Options.Progress ?? new Progress<int>();
-        progress.Report(0);
+        var opContext = context.Options.OperationContext;
+        opContext?.ReportProgress(0);
 
         foreach (var step in _steps)
         {
+            context.Options.OperationContext?.ThrowIfCancellationRequested();
             timerStep.Lap(step.Name);
 
             step.Execute(context);
@@ -40,7 +41,7 @@ internal sealed class DefinitionReductionPipeline
             s_logger.WriteDebug($"{step.Name}: {timerStep.Lap(step.Name)} ms");
         }
 
-        progress.Report(AppConstants.Progress.Complete);
+        opContext?.ReportProgress(AppConstants.Progress.Complete);
 
         long totalElapsed = timerTotal.Lap("Total");
         s_logger.WriteDebug($"=== DefinitionReductionPipeline completed in {totalElapsed} ms ({totalElapsed / 1000.0:F2}s) ===");

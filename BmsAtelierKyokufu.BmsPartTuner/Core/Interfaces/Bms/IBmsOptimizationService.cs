@@ -1,4 +1,6 @@
-﻿namespace BmsAtelierKyokufu.BmsPartTuner.Core.Interfaces.Bms
+using BmsAtelierKyokufu.BmsPartTuner.Core.Context;
+
+namespace BmsAtelierKyokufu.BmsPartTuner.Core.Interfaces.Bms
 {
     /// <summary>
     /// BMSファイルの定義最適化やしきい値シミュレーションなどの機能を提供するサービスのインターフェース。
@@ -13,7 +15,7 @@
             List<string> files,
             int startDefinition,
             int endDefinition,
-            IProgress<int>? progress = null);
+            IOperationContext? context = null);
 
         /// <summary>
         /// 提供された音声ファイルリストとオプションに基づき、BMSの定義削減処理を実行します。

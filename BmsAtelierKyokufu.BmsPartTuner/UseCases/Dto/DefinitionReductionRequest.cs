@@ -1,4 +1,6 @@
-﻿namespace BmsAtelierKyokufu.BmsPartTuner.UseCases.Dto;
+using BmsAtelierKyokufu.BmsPartTuner.Core.Context;
+
+namespace BmsAtelierKyokufu.BmsPartTuner.UseCases.Dto;
 
 public class DefinitionReductionRequest
 {
@@ -11,5 +13,5 @@ public class DefinitionReductionRequest
     public int StartDefinition { get; set; }
     public int EndDefinition { get; set; }
     public bool IsPhysicalDeletionEnabled { get; set; }
-    public IProgress<int>? Progress { get; set; }
+    public IOperationContext? OperationContext { get; set; }
 }

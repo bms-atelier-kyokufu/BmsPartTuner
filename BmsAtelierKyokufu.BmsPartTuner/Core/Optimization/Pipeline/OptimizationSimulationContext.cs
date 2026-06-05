@@ -1,3 +1,5 @@
+using BmsAtelierKyokufu.BmsPartTuner.Core.Context;
+
 namespace BmsAtelierKyokufu.BmsPartTuner.Core.Optimization.Pipeline;
 
 /// <summary>
@@ -8,13 +10,13 @@ internal sealed class OptimizationSimulationContext(
     List<string> filePaths,
     int startDefinition,
     int endDefinition,
-    IProgress<int>? progress)
+    IOperationContext? operationContext = null)
 {
     // 入力
     public List<string> FilePaths { get; } = filePaths ?? throw new ArgumentNullException(nameof(filePaths));
     public int StartDefinition { get; } = startDefinition;
     public int EndDefinition { get; set; } = endDefinition;
-    public IProgress<int>? Progress { get; } = progress;
+    public IOperationContext? OperationContext { get; } = operationContext;
 
     // 中間状態
     public List<BmsAudioFile> FileListItems { get; } = [];

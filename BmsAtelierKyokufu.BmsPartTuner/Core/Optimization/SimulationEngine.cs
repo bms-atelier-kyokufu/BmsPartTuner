@@ -1,4 +1,6 @@
-﻿namespace BmsAtelierKyokufu.BmsPartTuner.Core.Optimization;
+using BmsAtelierKyokufu.BmsPartTuner.Core.Context;
+
+namespace BmsAtelierKyokufu.BmsPartTuner.Core.Optimization;
 
 /// <summary>
 /// 複数のしきい値で並列シミュレーションを実行するエンジンです。
@@ -91,7 +93,7 @@ internal class SimulationEngine(
         float rangeMin,
         float rangeMax,
         float step,
-        IProgress<int>? progress)
+        IOperationContext? opContext = null)
     {
         IReadOnlyList<float> thresholds = GenerateThresholds(rangeMin, rangeMax, step);
         var results = new List<SimulationPoint>();
@@ -130,6 +132,7 @@ internal class SimulationEngine(
         // 順次実行（しきい値降順）
         foreach (var threshold in thresholds)
         {
+            opContext?.ThrowIfCancellationRequested();
             try
             {
                 int fileCount = SimulateThreshold(threshold, groups);
@@ -160,7 +163,7 @@ internal class SimulationEngine(
                 if (completed % 10 == 0)
                 {
                     int percentage = (int)((float)completed / total * 70);
-                    progress?.Report(percentage);
+                    opContext?.ReportProgress(percentage);
                 }
             }
             catch (Exception ex)
@@ -207,7 +210,7 @@ internal class SimulationEngine(
         }
 
         // 進捗を70%に設定（完了）
-        progress?.Report(70);
+        opContext?.ReportProgress(70);
 
         return results;
     }

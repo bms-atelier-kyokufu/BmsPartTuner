@@ -1,3 +1,4 @@
+using BmsAtelierKyokufu.BmsPartTuner.Core.Context;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Validation;
 using ValidationResult = BmsAtelierKyokufu.BmsPartTuner.Core.Validation.ValidationResult;
 namespace BmsAtelierKyokufu.BmsPartTuner.Core.Optimization;
@@ -35,7 +36,7 @@ public class BmsOptimizationService : IBmsOptimizationService
         List<string> files,
         int startDefinition,
         int endDefinition,
-        IProgress<int>? progress = null)
+        IOperationContext? opContext = null)
     {
         if (files == null || files.Count == 0)
             throw new ArgumentException("ファイルリストが空です", nameof(files));
@@ -47,7 +48,7 @@ public class BmsOptimizationService : IBmsOptimizationService
             files,
             startDefinition,
             endDefinition,
-            progress);
+            opContext);
 
         var pipeline = new Pipeline.OptimizationSimulationPipeline()
             .AddStep(new Pipeline.LoadValidFilesStep())
@@ -72,7 +73,7 @@ public class BmsOptimizationService : IBmsOptimizationService
             s_logger.WriteDebug($"Memory used: {memoryUsed / 1024.0 / 1024.0:F2} MB");
         }
 
-        context.Progress?.Report(100);
+        context.OperationContext?.ReportProgress(100);
 
         s_logger.WriteDebug("=== Clearing audio cache ===");
         if (context.AudioCache != null)
@@ -161,7 +162,8 @@ public class BmsOptimizationService : IBmsOptimizationService
         long memoryBefore = GC.GetTotalMemory(false);
 
         // 音声データの事前ロード（キャッシュ構築）
-        var (FailedFiles, Cache) = AudioCacheManager.PreloadAudioData(fileList, options.Progress);
+        // スレッド管理（Top-Level Offloading）はViewModel層で行うため、ここではTask.Runを使用しない
+        var (FailedFiles, Cache) = AudioCacheManager.PreloadAudioData(fileList, options.OperationContext);
         var audioCache = Cache;
         s_logger.WriteDebug($"AudioCacheManager.PreloadAudioData: {timer.Lap("AudioCacheManager.PreloadAudioData")} ms");
 
@@ -191,36 +193,33 @@ public class BmsOptimizationService : IBmsOptimizationService
 
         try
         {
-            await Task.Run(() =>
-            {
-                // isPhysicalDeletionEnabledは常にfalseを渡す
-                // Why: ここでtrueを渡すとDefinitionReuse内でファイルが削除されてしまい、
-                //      直後のサービス側の削除ループで「ファイルなし」と判定され、削除数がカウントできないため。
-                //      物理削除はサービス側で一元管理する。
-                dr.ReductDefinition(
-                    inputPath,
-                    outputPath,
-                    new DefinitionReductionOptions
-                    {
-                        R2Threshold = options.R2Threshold,
-                        StartDefinition = options.StartDefinition,
-                        EndDefinition = options.EndDefinition,
-                        IsPhysicalDeletionEnabled = false,
-                        InputBmsContent = options.InputBmsContent,
-                        Progress = options.Progress ?? new Progress<int>(),
-                        SelectedKeywords = options.SelectedKeywords
-                    });
-
-                // 物理削除処理
-                if (options.IsPhysicalDeletionEnabled)
+            // isPhysicalDeletionEnabledは常にfalseを渡す
+            // Why: ここでtrueを渡すとDefinitionReuse内でファイルが削除されてしまい、
+            //      直後のサービス側の削除ループで「ファイルなし」と判定され、削除数がカウントできないため。
+            //      物理削除はサービス側で一元管理する。
+            dr.ReductDefinition(
+                inputPath,
+                outputPath,
+                new DefinitionReductionOptions
                 {
-                    var timerDelete = s_logger.StartTimer();
-                    List<string> unusedFiles = dr.GetUnusedFilePaths();
-                    deletedFilesCount = DeleteUnusedFiles(unusedFiles);
-                    s_logger.WriteDebug($"DeleteUnusedFiles: {timerDelete.Lap("DeleteUnusedFiles")} ms");
-                }
-            });
-            s_logger.WriteDebug($"dr.ReductDefinition Task.Run total: {timer.Lap("dr.ReductDefinition Task.Run total")} ms");
+                    R2Threshold = options.R2Threshold,
+                    StartDefinition = options.StartDefinition,
+                    EndDefinition = options.EndDefinition,
+                    IsPhysicalDeletionEnabled = false,
+                    InputBmsContent = options.InputBmsContent,
+                    SelectedKeywords = options.SelectedKeywords,
+                    OperationContext = options.OperationContext
+                });
+
+            // 物理削除処理
+            if (options.IsPhysicalDeletionEnabled)
+            {
+                var timerDelete = s_logger.StartTimer();
+                List<string> unusedFiles = dr.GetUnusedFilePaths();
+                deletedFilesCount = DeleteUnusedFiles(unusedFiles);
+                s_logger.WriteDebug($"DeleteUnusedFiles: {timerDelete.Lap("DeleteUnusedFiles")} ms");
+            }
+            s_logger.WriteDebug($"dr.ReductDefinition total: {timer.Lap("dr.ReductDefinition total")} ms");
 
             var totalElapsed = timerTotal.Lap("Total");
             long memoryUsed = Math.Max(0, GC.GetTotalMemory(false) - memoryBefore);
@@ -262,6 +261,11 @@ public class BmsOptimizationService : IBmsOptimizationService
         catch (UnauthorizedAccessException)
         {
             return errorResult("ファイルへのアクセスが拒否されました");
+        }
+        catch (OperationCanceledException)
+        {
+            // キャンセル要求を握りつぶさずに再スローする
+            throw;
         }
         catch (Exception ex)
         {

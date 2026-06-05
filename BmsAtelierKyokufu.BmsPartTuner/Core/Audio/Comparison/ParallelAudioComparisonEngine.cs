@@ -1,3 +1,5 @@
+using BmsAtelierKyokufu.BmsPartTuner.Core.Context;
+
 namespace BmsAtelierKyokufu.BmsPartTuner.Core.Audio.Comparison;
 /// <summary>
 /// 並列オーディオ比較エンジンの実行パラメーター。
@@ -120,8 +122,7 @@ internal class ParallelAudioComparisonEngine(AudioComparisonParameters parameter
     public void CompareGroups(
         IReadOnlyList<IReadOnlyList<int>> groups,
         float r2Threshold,
-        IProgress<int> progress,
-        CancellationToken cancellationToken = default)
+        IOperationContext? opContext = null)
     {
         int totalFiles = groups.Sum(g => g.Count);
         int totalComparisons = 0;
@@ -130,10 +131,10 @@ internal class ParallelAudioComparisonEngine(AudioComparisonParameters parameter
         var parallelOptions = new ParallelOptions
         {
             MaxDegreeOfParallelism = Environment.ProcessorCount,
-            CancellationToken = cancellationToken
+            CancellationToken = opContext?.CancellationToken ?? CancellationToken.None
         };
 
-        var context = new ComparisonContext(r2Threshold, totalFiles, progress, cancellationToken);
+        var context = new ComparisonContext(r2Threshold, totalFiles, opContext);
         var timer = s_logger.StartTimer();
 
         try
@@ -317,7 +318,7 @@ internal class ParallelAudioComparisonEngine(AudioComparisonParameters parameter
             // 対角線走査: 距離 d (1 から N-1 まで)
             for (int d = 1; d < inRangeCount; d++)
             {
-                context.CancellationToken.ThrowIfCancellationRequested();
+                context.OperationContext?.ThrowIfCancellationRequested();
 
                 for (int i = 0; i < inRangeCount - d; i++)
                 {
@@ -412,15 +413,13 @@ internal class ParallelAudioComparisonEngine(AudioComparisonParameters parameter
     private class ComparisonContext(
         float r2Threshold,
         int totalFiles,
-        IProgress<int> progress,
-        CancellationToken cancellationToken)
+        BmsAtelierKyokufu.BmsPartTuner.Core.Context.IOperationContext? opContext)
     {
         private int _processedCount;
 
         public float R2Threshold { get; } = r2Threshold;
         public int TotalFiles { get; } = totalFiles;
-        public IProgress<int> Progress { get; } = progress;
-        public CancellationToken CancellationToken { get; } = cancellationToken;
+        public BmsAtelierKyokufu.BmsPartTuner.Core.Context.IOperationContext? OperationContext { get; } = opContext;
 
         /// <summary>
         /// 処理済みファイル数を thread-safe にインクリメントし、必要に応じて進捗状況を報告します。
@@ -431,7 +430,7 @@ internal class ParallelAudioComparisonEngine(AudioComparisonParameters parameter
             if (current % 100 == 0 || current == TotalFiles)
             {
                 int percentage = AppConstants.Progress.PreloadComplete + (int)((float)current / TotalFiles * ProgressPhase2Range);
-                Progress.Report(percentage);
+                OperationContext?.ReportProgress(percentage);
             }
         }
     }
