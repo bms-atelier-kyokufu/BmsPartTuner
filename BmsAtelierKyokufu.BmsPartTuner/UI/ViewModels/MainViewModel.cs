@@ -16,6 +16,7 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
     IRecipient<ValidationErrorMessage>,
     IRecipient<MediaPlaybackErrorMessage>
 {
+    private static readonly Logger<MainViewModel> s_logger = new();
     private readonly AudioPreviewService _audioPreviewService;
     private readonly IBmsonConversionService _bmsonConversionService;
     private readonly IFileSystemService _fileSystemService;
@@ -236,6 +237,7 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
         }
         catch (System.OperationCanceledException)
         {
+            s_logger.WriteDebug($"[Cancel] ExecuteThresholdOptimizationAsync: Cancellation successfully completed at {System.DateTime.Now:O}");
             ShowMessage("最適化処理がキャンセルされました", isError: false);
         }
         finally
@@ -263,6 +265,7 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
         }
         catch (System.OperationCanceledException)
         {
+            s_logger.WriteDebug($"[Cancel] ExecuteReductionAsync: Cancellation successfully completed at {System.DateTime.Now:O}");
             ShowMessage("削減処理がキャンセルされました", isError: false);
         }
         catch (System.Exception ex)
@@ -292,10 +295,12 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
         {
             try
             {
+                s_logger.WriteDebug("[Cancel] Cancel button pressed by user");
                 // 即時UIフィードバック：キャンセル中であることを表示
                 StatusMessage = "キャンセル中...";
                 IsGlobalProgressIndeterminate = false;
                 _activeCts.Cancel();
+                s_logger.WriteDebug("[Cancel] Cancellation signal sent successfully to CancellationTokenSource");
             }
             catch (System.ObjectDisposedException)
             {

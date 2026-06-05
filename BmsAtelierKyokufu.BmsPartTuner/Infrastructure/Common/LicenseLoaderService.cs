@@ -36,14 +36,12 @@ public partial class LicenseLoaderService
             string content = ReadResource(assembly, resourceName);
             string fileName = GetFileNameFromResourceName(resourceName);
             bool isAppLicense = fileName.Equals("AppLicense", StringComparison.OrdinalIgnoreCase);
-            bool isUnique = true;
 
             // テンプレート指定の解析: {{Templates/MIT.md, Copyright (c) ...}}
             // e.g. {{Templates/MIT.md, Copyright (c) 2015 Kristian Hellang}}
             var match = LicensePlaceholderRegex().Match(content);
             if (match.Success)
             {
-                isUnique = false;
                 string targetFileName = match.Groups[1].Value.Replace('/', '.').Replace('\\', '.').Replace(',', '.').Trim();
                 string copyrightText = match.Groups[2].Value.Trim();
                 string targetNameWithoutExt = Path.GetFileNameWithoutExtension(targetFileName);

@@ -265,8 +265,8 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
         int endDefinition,
         CancellationToken cancellationToken = default)
     {
-        var loaderCts = BeginBusyState("🎵 波形データを解析中...");
-        StatusMessage = "🔬 しきい値最適化シミュレーション実行中...";
+        var loaderCts = BeginBusyState("波形データを解析中...");
+        StatusMessage = "しきい値最適化シミュレーション実行中...";
 
         try
         {
@@ -320,6 +320,7 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
         }
         catch (OperationCanceledException)
         {
+            s_logger.WriteDebug($"[Cancel] OptimizationViewModel.ExecuteThresholdOptimizationAsync: Caught OperationCanceledException at {System.DateTime.Now:O}");
             await Application.Current.Dispatcher.InvokeAsync(() =>
             {
                 IsProgressIndeterminate = false;
@@ -441,6 +442,7 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
         }
         catch (OperationCanceledException)
         {
+            s_logger.WriteDebug($"[Cancel] OptimizationViewModel.ExecuteDefinitionReductionAsync: Caught OperationCanceledException at {System.DateTime.Now:O}");
             await Application.Current.Dispatcher.InvokeAsync(() =>
             {
                 IsProgressIndeterminate = false;
