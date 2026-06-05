@@ -1,4 +1,5 @@
 using BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
+using BmsAtelierKyokufu.BmsPartTuner.Core.Context;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Interfaces.Bms;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Optimization;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Validation;
@@ -15,13 +16,13 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.UI.ViewModels
     internal class FakeOptimizationService : IBmsOptimizationService
     {
         /// <inheritdoc />
-        public Task<OptimizationResult?> FindOptimalThresholdsAsync(List<string> files, int startDefinition, int endDefinition, IProgress<int>? progress = null, CancellationToken cancellationToken = default)
+        public Task<OptimizationResult?> FindOptimalThresholdsAsync(List<string> files, int startDefinition, int endDefinition, IOperationContext? opContext = null)
         {
             return Task.Run<OptimizationResult?>(async () =>
             {
                 for (int i = 0; i <= 100; i += 25)
                 {
-                    progress?.Report(i);
+                    opContext?.ReportProgress(i);
                     await Task.Delay(5);
                 }
                 return new OptimizationResult
@@ -299,7 +300,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.UI.ViewModels
     {
         /// <inheritdoc />
         public Task<OptimizationResult?> FindOptimalThresholdsAsync(
-            List<string> files, int startDefinition, int endDefinition, IProgress<int>? progress = null, CancellationToken cancellationToken = default)
+            List<string> files, int startDefinition, int endDefinition, IOperationContext? opContext = null)
         {
             throw new InvalidOperationException("Test exception");
         }
@@ -334,7 +335,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.UI.ViewModels
     {
         /// <inheritdoc />
         public Task<OptimizationResult?> FindOptimalThresholdsAsync(
-            List<string> files, int startDefinition, int endDefinition, IProgress<int>? progress = null, CancellationToken cancellationToken = default)
+            List<string> files, int startDefinition, int endDefinition, IOperationContext? opContext = null)
         {
             return Task.FromResult<OptimizationResult?>(null);
         }

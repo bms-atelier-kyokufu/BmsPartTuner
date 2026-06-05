@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 using BmsAtelierKyokufu.BmsPartTuner.Models;
 using BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers;
@@ -45,7 +45,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
                     StartDefinition = 1,
                     EndDefinition = 3,
                     IsPhysicalDeletionEnabled = false,
-                    Progress = new Progress<int>()
+                    OperationContext = new BmsAtelierKyokufu.BmsPartTuner.Core.Context.OperationContext(default, new Progress<int>())
                 }
             );
 
@@ -89,7 +89,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
                     StartDefinition = 1,
                     EndDefinition = 2,
                     IsPhysicalDeletionEnabled = false,
-                    Progress = new Progress<int>()
+                    OperationContext = new BmsAtelierKyokufu.BmsPartTuner.Core.Context.OperationContext(default, new Progress<int>())
                 }
             );
 
@@ -144,7 +144,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
                         StartDefinition = 1,
                         EndDefinition = 1,
                         IsPhysicalDeletionEnabled = false,
-                        Progress = new Progress<int>()
+                        OperationContext = new BmsAtelierKyokufu.BmsPartTuner.Core.Context.OperationContext(default, new Progress<int>())
                     }
                 );
             });
@@ -193,7 +193,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
                     StartDefinition = 1,
                     EndDefinition = 3,
                     IsPhysicalDeletionEnabled = false,
-                    Progress = new Progress<int>(),
+                    OperationContext = new BmsAtelierKyokufu.BmsPartTuner.Core.Context.OperationContext(default, new Progress<int>()),
                     SelectedKeywords = ["kick"]
                 }
             );
@@ -225,7 +225,8 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
             var dr = new DefinitionReuse(fileList, audioCache);
 
             var progressReports = new List<int>();
-            var progress = new SyncProgress<int>(p => progressReports.Add(p));
+            var progress = new SyncProgress<int>(progressReports.Add);
+            var opContext = new BmsAtelierKyokufu.BmsPartTuner.Core.Context.OperationContext(default, progress);
 
             // Act
             dr.ReductDefinition(
@@ -237,7 +238,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
                     StartDefinition = 1,
                     EndDefinition = 1,
                     IsPhysicalDeletionEnabled = false,
-                    Progress = progress
+                    OperationContext = opContext
                 }
             );
 

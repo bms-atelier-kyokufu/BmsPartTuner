@@ -32,10 +32,10 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
         /// <summary>
         /// 最適なしきい値検索の検証を実行する共通メソッド。
         /// </summary>
-        protected async Task RunOptimalThresholdsTestAsync(Func<string, List<string>> setupFiles, Action<OptimizationResult?> assertResult, int startDef = 1, int endDef = 1, IProgress<int>? progress = null)
+        protected async Task RunOptimalThresholdsTestAsync(Func<string, List<string>> setupFiles, Action<OptimizationResult?> assertResult, int startDef = 1, int endDef = 1, BmsAtelierKyokufu.BmsPartTuner.Core.Context.IOperationContext? OperationContext = null)
         {
             var files = setupFiles?.Invoke(Context.TempDirectory) ?? [];
-            var result = await Service.FindOptimalThresholdsAsync(files, startDef, endDef, progress);
+            var result = await Service.FindOptimalThresholdsAsync(files, startDef, endDef, OperationContext);
             assertResult?.Invoke(result);
         }
 

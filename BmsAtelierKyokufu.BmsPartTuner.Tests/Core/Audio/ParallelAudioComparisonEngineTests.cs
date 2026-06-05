@@ -1,4 +1,4 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 using BmsAtelierKyokufu.BmsPartTuner.Models;
 using BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers;
 
@@ -42,7 +42,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
             // 並列処理エンジンの仕様確認
             // 置換が発生しない（ユニークな）ファイルは、処理済みマークとして
             // 置換テーブルに「自分自身のID」が設定されます（0=未処理 ではありません）。
-            engine.CompareGroups(groups, 0.99f, new Progress<int>());
+            engine.CompareGroups(groups, 0.99f, new BmsAtelierKyokufu.BmsPartTuner.Core.Context.OperationContext(default, new Progress<int>()));
 
             // 2は1と同一なので1に置換される
             Assert.Equal(1, replaceTable[2]);
@@ -75,7 +75,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
             var engine = new ParallelAudioComparisonEngine(parameters);
 
             // 類似度が高い場合、2は1に置換される
-            engine.CompareGroups(groups, 0.90f, new Progress<int>());
+            engine.CompareGroups(groups, 0.90f, new BmsAtelierKyokufu.BmsPartTuner.Core.Context.OperationContext(default, new Progress<int>()));
 
             Assert.Equal(1, replaceTable[2]);
         }
@@ -105,7 +105,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Audio
                 fileList, audioCache, replaceTable, 1, fileList.Count - 1));
 
             // 類似度が低い場合、置換は発生せず各自のIDでマークされる
-            engine.CompareGroups(groups, 0.99f, new Progress<int>());
+            engine.CompareGroups(groups, 0.99f, new BmsAtelierKyokufu.BmsPartTuner.Core.Context.OperationContext(default, new Progress<int>()));
 
             Assert.Equal(1, replaceTable[1]);
             Assert.Equal(2, replaceTable[2]);

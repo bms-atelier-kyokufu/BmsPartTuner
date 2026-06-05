@@ -242,6 +242,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
             var audioCache = new ConcurrentDictionary<string, ICachedSoundData>();
             var progressValues = new List<int>();
             var progress = new SyncProgress<int>(progressValues.Add);
+            var opContext = new BmsAtelierKyokufu.BmsPartTuner.Core.Context.OperationContext(default, progress);
 
             var fileList = new List<BmsAudioFile>
             {
@@ -249,7 +250,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
             };
             var engine = new SimulationEngine(fileList, audioCache, 1, 1);
 
-            engine.RunParallelSimulation(0.1f, 0.5f, 0.1f, progress);
+            engine.RunParallelSimulation(0.1f, 0.5f, 0.1f, opContext);
 
             Assert.Contains(70, progressValues);
         }
