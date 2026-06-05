@@ -52,34 +52,35 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "adr", "adr", "{815BE85F-822
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "math", "math", "{8997F72E-9094-4A4D-9116-2F079C8DE03D}"
 	ProjectSection(SolutionItems) = preProject
-		docs\adr\math\audio_compare.md = docs\adr\math\audio_compare.md
-		docs\adr\math\bmson_score.md = docs\adr\math\bmson_score.md
-		docs\adr\math\fft_alignment.md = docs\adr\math\fft_alignment.md
-		docs\adr\math\lsh_cache.md = docs\adr\math\lsh_cache.md
-		docs\adr\math\silence_trim.md = docs\adr\math\silence_trim.md
-		docs\adr\math\simulation.md = docs\adr\math\simulation.md
+		docs\adr\math\m_01_audio_compare.md = docs\adr\math\m_01_audio_compare.md
+		docs\adr\math\m_07_bmson_score.md = docs\adr\math\m_07_bmson_score.md
+		docs\adr\math\m_03_fft_alignment.md = docs\adr\math\m_03_fft_alignment.md
+		docs\adr\math\m_05_lsh_cache.md = docs\adr\math\m_05_lsh_cache.md
+		docs\adr\math\m_06_silence_trim.md = docs\adr\math\m_06_silence_trim.md
+		docs\adr\math\m_04_simulation.md = docs\adr\math\m_04_simulation.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "perf", "perf", "{54CB78BE-CD11-4087-9564-25F790D622C4}"
 	ProjectSection(SolutionItems) = preProject
-		docs\adr\perf\audio_grouping.md = docs\adr\perf\audio_grouping.md
-		docs\adr\perf\audio_slice_cache.md = docs\adr\perf\audio_slice_cache.md
-		docs\adr\perf\file_rewrite.md = docs\adr\perf\file_rewrite.md
-		docs\adr\perf\flyweight_sound.md = docs\adr\perf\flyweight_sound.md
-		docs\adr\perf\logger.md = docs\adr\perf\logger.md
-		docs\adr\perf\next_gen_optimization.md = docs\adr\perf\next_gen_optimization.md
-		docs\adr\perf\parallel_audio.md = docs\adr\perf\parallel_audio.md
-		docs\adr\perf\radix_convert.md = docs\adr\perf\radix_convert.md
-		docs\adr\perf\storage_detect.md = docs\adr\perf\storage_detect.md
-		docs\adr\perf\update_service.md = docs\adr\perf\update_service.md
-		docs\adr\perf\view_model.md = docs\adr\perf\view_model.md
+		docs\adr\perf\opt_09_audio_grouping.md = docs\adr\perf\opt_09_audio_grouping.md
+		docs\adr\perf\opt_10_audio_slice_cache.md = docs\adr\perf\opt_10_audio_slice_cache.md
+		docs\adr\perf\opt_06_file_rewrite.md = docs\adr\perf\opt_06_file_rewrite.md
+		docs\adr\perf\opt_05_flyweight_sound.md = docs\adr\perf\opt_05_flyweight_sound.md
+		docs\adr\perf\opt_03_logger.md = docs\adr\perf\opt_03_logger.md
+		docs\adr\perf\opt_11_next_gen_optimization.md = docs\adr\perf\opt_11_next_gen_optimization.md
+		docs\adr\perf\opt_01_parallel_audio.md = docs\adr\perf\opt_01_parallel_audio.md
+		docs\adr\perf\opt_04_radix_convert.md = docs\adr\perf\opt_04_radix_convert.md
+		docs\adr\perf\opt_02_storage_detect.md = docs\adr\perf\opt_02_storage_detect.md
+		docs\adr\perf\opt_08_update_service.md = docs\adr\perf\opt_08_update_service.md
+		docs\adr\perf\opt_07_view_model.md = docs\adr\perf\opt_07_view_model.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "arch", "arch", "{D1097E82-557E-415C-B786-F19767EEA9D3}"
 	ProjectSection(SolutionItems) = preProject
-		docs\adr\arch\immutable_domain_models.md = docs\adr\arch\immutable_domain_models.md
-		docs\adr\arch\pipeline_architecture.md = docs\adr\arch\pipeline_architecture.md
-		docs\adr\arch\procedural_hotpath.md = docs\adr\arch\procedural_hotpath.md
+		docs\adr\arch\arch_02_immutable_domain_models.md = docs\adr\arch\arch_02_immutable_domain_models.md
+		docs\adr\arch\arch_01_pipeline_architecture.md = docs\adr\arch\arch_01_pipeline_architecture.md
+		docs\adr\arch\arch_03_procedural_hotpath.md = docs\adr\arch\arch_03_procedural_hotpath.md
+		docs\adr\arch\arch_04_shared_license_templates.md = docs\adr\arch\arch_04_shared_license_templates.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "img", "img", "{2CD22421-E81D-49CC-9003-8B35EB0D3B0E}"
