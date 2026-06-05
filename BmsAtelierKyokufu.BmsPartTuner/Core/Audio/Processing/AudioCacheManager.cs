@@ -198,11 +198,6 @@ internal sealed class AudioCacheManager
                     success++;
                 }
             }
-            catch (OperationCanceledException)
-            {
-                // キャンセル要求を握りつぶさずに再スローする
-                throw;
-            }
             catch (Exception ex)
             {
                 s_logger.WriteDebug($"[AudioCacheManager] Exception loading {Path.GetFileName(file.Name)}: {ex.Message}");

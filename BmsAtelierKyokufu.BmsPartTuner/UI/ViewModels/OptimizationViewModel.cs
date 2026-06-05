@@ -1,4 +1,3 @@
-using BmsAtelierKyokufu.BmsPartTuner.Core.Context;
 using BmsAtelierKyokufu.BmsPartTuner.UI.Views.Controls;
 using BmsAtelierKyokufu.BmsPartTuner.UseCases;
 using BmsAtelierKyokufu.BmsPartTuner.UseCases.Dto;
@@ -328,23 +327,6 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
             });
             throw;
         }
-        catch (Exception ex)
-        {
-            await Application.Current.Dispatcher.InvokeAsync(() =>
-            {
-                IsProgressIndeterminate = false;
-                ErrorOccurred?.Invoke(this, $"最適化エラー: {ex.Message}");
-                WeakReferenceMessenger.Default.Send(new OptimizationErrorMessage($"最適化エラー: {ex.Message}"));
-                StatusMessage = "最適化エラー";
-            });
-
-            s_logger.WriteDebug("=== ExecuteThresholdOptimizationAsync Exception ===");
-            s_logger.WriteDebug($"Exception Type: {ex.GetType().FullName}");
-            s_logger.WriteDebug($"Message: {ex.Message}");
-            s_logger.WriteDebug($"StackTrace: {ex.StackTrace}");
-
-            return null;
-        }
         finally
         {
             EndBusyState(loaderCts);
@@ -459,8 +441,7 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
         }
         catch (OperationCanceledException)
         {
-            // BeginInvokeを使いfire-and-forgetでUIを更新。awaitするとDispatcherキューが詰まっている場合にthrowの実行がブロックされる。
-            Application.Current?.Dispatcher.BeginInvoke(() =>
+            await Application.Current.Dispatcher.InvokeAsync(() =>
             {
                 IsProgressIndeterminate = false;
                 ProgressValue = 0;
@@ -469,13 +450,6 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
             // キャンセル＝このデータはいらない → AudioRegistryを破棄
             AudioRegistry.Instance.Clear();
             throw;
-        }
-        catch (Exception ex)
-        {
-            ErrorOccurred?.Invoke(this, $"処理エラー: {ex.Message}");
-            WeakReferenceMessenger.Default.Send(new OptimizationErrorMessage($"処理エラー: {ex.Message}"));
-            StatusMessage = "処理エラー";
-            s_logger.WriteDebug($"ExecuteDefinitionReductionInternalAsync Exception: {ex}");
         }
         finally
         {

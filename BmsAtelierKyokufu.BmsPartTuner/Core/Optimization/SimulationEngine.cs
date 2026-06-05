@@ -1,5 +1,3 @@
-using BmsAtelierKyokufu.BmsPartTuner.Core.Context;
-
 namespace BmsAtelierKyokufu.BmsPartTuner.Core.Optimization;
 
 /// <summary>
@@ -55,22 +53,14 @@ internal class SimulationEngine(
 
         Parallel.ForEach(thresholds, parallelOptions, threshold =>
         {
-            try
-            {
-                int fileCount = SimulateThreshold(threshold, groups);
-                results.Add(new SimulationPoint(threshold, fileCount));
+            int fileCount = SimulateThreshold(threshold, groups);
+            results.Add(new SimulationPoint(threshold, fileCount));
 
-                int current = System.Threading.Interlocked.Increment(ref completed);
+            int current = System.Threading.Interlocked.Increment(ref completed);
 
-                // 進捗を0.0～1.0の範囲で報告（0.0～0.7は計算、0.7～1.0は統計用）
-                double percentage = (double)current / total * 0.7;
-                progress?.Report(percentage);
-            }
-            catch (Exception ex)
-            {
-                s_logger.WriteDebug($"ERROR: Simulation failed at threshold={threshold:F2}: {ex.Message}");
-                s_logger.WriteDebug($"  StackTrace: {ex.StackTrace}");
-            }
+            // 進捗を0.0～1.0の範囲で報告（0.0～0.7は計算、0.7～1.0は統計用）
+            double percentage = (double)current / total * 0.7;
+            progress?.Report(percentage);
         });
 
         s_logger.WriteDebug("=== RunParallelSimulationDetailed Complete ===");
@@ -133,43 +123,35 @@ internal class SimulationEngine(
         foreach (var threshold in thresholds)
         {
             opContext?.ThrowIfCancellationRequested();
-            try
+            int fileCount = SimulateThreshold(threshold, groups);
+            results.Add(new SimulationPoint(threshold, fileCount));
+
+            completed++;
+
+            // Base62条件チェック
+            if (!base62Found && fileCount <= Base62Limit)
             {
-                int fileCount = SimulateThreshold(threshold, groups);
-                results.Add(new SimulationPoint(threshold, fileCount));
-
-                completed++;
-
-                // Base62条件チェック
-                if (!base62Found && fileCount <= Base62Limit)
-                {
-                    base62Found = true;
-                    base62Threshold = threshold;
-                    s_logger.WriteDebug($"=== Base62 condition met at threshold={threshold:F2} ===");
-                    s_logger.WriteDebug($"File count: {fileCount} <= {Base62Limit}");
-                }
-
-                // Base36条件チェック
-                if (!base36Found && fileCount <= Base36Limit)
-                {
-                    base36Found = true;
-                    base36Threshold = threshold;
-                    s_logger.WriteDebug($"=== Base36 condition met at threshold={threshold:F2} ===");
-                    s_logger.WriteDebug($"File count: {fileCount} <= {Base36Limit}");
-                    s_logger.WriteDebug($"Skipping remaining {total - completed} simulations");
-                    break;
-                }
-
-                if (completed % 10 == 0)
-                {
-                    int percentage = (int)((float)completed / total * 70);
-                    opContext?.ReportProgress(percentage);
-                }
+                base62Found = true;
+                base62Threshold = threshold;
+                s_logger.WriteDebug($"=== Base62 condition met at threshold={threshold:F2} ===");
+                s_logger.WriteDebug($"File count: {fileCount} <= {Base62Limit}");
             }
-            catch (Exception ex)
+
+            // Base36条件チェック
+            if (!base36Found && fileCount <= Base36Limit)
             {
-                s_logger.WriteDebug($"ERROR: Simulation failed at threshold={threshold:F2}: {ex.Message}");
-                s_logger.WriteDebug($"  StackTrace: {ex.StackTrace}");
+                base36Found = true;
+                base36Threshold = threshold;
+                s_logger.WriteDebug($"=== Base36 condition met at threshold={threshold:F2} ===");
+                s_logger.WriteDebug($"File count: {fileCount} <= {Base36Limit}");
+                s_logger.WriteDebug($"Skipping remaining {total - completed} simulations");
+                break;
+            }
+
+            if (completed % 10 == 0)
+            {
+                int percentage = (int)((float)completed / total * 70);
+                opContext?.ReportProgress(percentage);
             }
         }
 
@@ -402,31 +384,24 @@ internal class SimulationEngine(
         ref int comparisons,
         ref int matches)
     {
-        try
-        {
-            _audioCache.TryGetValue(_fileList[iIdx].Name, out var cachedData1);
-            _audioCache.TryGetValue(_fileList[jIdx].Name, out var cachedData2);
+        _audioCache.TryGetValue(_fileList[iIdx].Name, out var cachedData1);
+        _audioCache.TryGetValue(_fileList[jIdx].Name, out var cachedData2);
 
-            if (cachedData1 != null && cachedData2 != null)
+        if (cachedData1 != null && cachedData2 != null)
+        {
+            System.Threading.Interlocked.Increment(ref comparisons);
+
+            bool isMatch = FastWaveCompare.IsMatch(
+                cachedData1,
+                cachedData2,
+                threshold);
+
+            if (isMatch)
             {
-                System.Threading.Interlocked.Increment(ref comparisons);
-
-                bool isMatch = FastWaveCompare.IsMatch(
-                    cachedData1,
-                    cachedData2,
-                    threshold);
-
-                if (isMatch)
-                {
-                    // Union-Find: 統合
-                    uf.Union(iVal, jVal);
-                    System.Threading.Interlocked.Increment(ref matches);
-                }
+                // Union-Find: 統合
+                uf.Union(iVal, jVal);
+                System.Threading.Interlocked.Increment(ref matches);
             }
-        }
-        catch (Exception ex)
-        {
-            s_logger.WriteDebug($"ERROR: Audio comparison failed [{iIdx}] vs [{jIdx}]: {ex.Message}");
         }
     }
 

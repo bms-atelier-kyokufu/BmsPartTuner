@@ -159,9 +159,13 @@ internal sealed class PhysicalDeletionStep : IDefinitionReductionStep
                     s_logger.WriteDebug($"Deleted: {file.Name}");
                 }
             }
-            catch (Exception ex)
+            catch (IOException ex)
             {
-                s_logger.WriteDebug($"Failed to delete {file.Name}: {ex.Message}");
+                s_logger.WriteDebug($"Failed to delete {file.Name} (IO Error): {ex.Message}");
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                s_logger.WriteDebug($"Failed to delete {file.Name} (Access Denied): {ex.Message}");
             }
         }
         s_logger.WriteDebug($"=== Physical Deletion Complete: {deletedCount}/{unusedFiles.Count} files deleted ===");

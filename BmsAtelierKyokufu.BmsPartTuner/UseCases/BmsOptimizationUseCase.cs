@@ -40,29 +40,18 @@ public class BmsOptimizationUseCase(IBmsOptimizationService optimizationService)
             return OptimizationUseCaseResult<OptimizationResult>.Failure("有効なファイルパスが見つかりません");
         }
 
-        try
-        {
-            var result = await _optimizationService.FindOptimalThresholdsAsync(
-                files,
-                request.StartDefinition,
-                request.EndDefinition,
-                request.OperationContext);
+        var result = await _optimizationService.FindOptimalThresholdsAsync(
+            files,
+            request.StartDefinition,
+            request.EndDefinition,
+            request.OperationContext);
 
-            if (result != null)
-            {
-                return OptimizationUseCaseResult<OptimizationResult>.Success(result);
-            }
+        if (result != null)
+        {
+            return OptimizationUseCaseResult<OptimizationResult>.Success(result);
+        }
 
-            return OptimizationUseCaseResult<OptimizationResult>.Failure("最適化に失敗しました");
-        }
-        catch (OperationCanceledException)
-        {
-            throw;
-        }
-        catch (Exception ex)
-        {
-            return OptimizationUseCaseResult<OptimizationResult>.Failure($"最適化エラー: {ex.Message}");
-        }
+        return OptimizationUseCaseResult<OptimizationResult>.Failure("最適化に失敗しました");
     }
 
     public async Task<OptimizationUseCaseResult<BmsOptimizationService.ReductionResult>> ExecuteDefinitionReductionAsync(DefinitionReductionRequest request)
@@ -82,37 +71,26 @@ public class BmsOptimizationUseCase(IBmsOptimizationService optimizationService)
             return OptimizationUseCaseResult<BmsOptimizationService.ReductionResult>.Failure("出力先を指定してください");
         }
 
-        try
-        {
-            var result = await _optimizationService.ExecuteDefinitionReductionAsync(
-                request.BmsFileList.GetFileList(),
-                request.InputPath.Trim('"'),
-                request.OutputPath.Trim('"'),
-                new DefinitionReductionOptions
-                {
-                    R2Threshold = request.R2Threshold,
-                    StartDefinition = request.StartDefinition,
-                    EndDefinition = request.EndDefinition,
-                    IsPhysicalDeletionEnabled = request.IsPhysicalDeletionEnabled,
-                    InputBmsContent = request.InputBmsContent,
-                    SelectedKeywords = request.SelectedKeywords,
-                    OperationContext = request.OperationContext
-                });
-
-            if (result.IsSuccess)
+        var result = await _optimizationService.ExecuteDefinitionReductionAsync(
+            request.BmsFileList.GetFileList(),
+            request.InputPath.Trim('"'),
+            request.OutputPath.Trim('"'),
+            new DefinitionReductionOptions
             {
-                return OptimizationUseCaseResult<BmsOptimizationService.ReductionResult>.Success(result);
-            }
+                R2Threshold = request.R2Threshold,
+                StartDefinition = request.StartDefinition,
+                EndDefinition = request.EndDefinition,
+                IsPhysicalDeletionEnabled = request.IsPhysicalDeletionEnabled,
+                InputBmsContent = request.InputBmsContent,
+                SelectedKeywords = request.SelectedKeywords,
+                OperationContext = request.OperationContext
+            });
 
-            return OptimizationUseCaseResult<BmsOptimizationService.ReductionResult>.Failure($"処理エラー: {result.ErrorMessage}");
-        }
-        catch (OperationCanceledException)
+        if (result.IsSuccess)
         {
-            throw;
+            return OptimizationUseCaseResult<BmsOptimizationService.ReductionResult>.Success(result);
         }
-        catch (Exception ex)
-        {
-            return OptimizationUseCaseResult<BmsOptimizationService.ReductionResult>.Failure($"処理エラー: {ex.Message}");
-        }
+
+        return OptimizationUseCaseResult<BmsOptimizationService.ReductionResult>.Failure($"処理エラー: {result.ErrorMessage}");
     }
 }

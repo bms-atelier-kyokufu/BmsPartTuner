@@ -1,5 +1,3 @@
-using BmsAtelierKyokufu.BmsPartTuner.Core.Context;
-
 namespace BmsAtelierKyokufu.BmsPartTuner.Core.Interfaces.Bms
 {
     /// <summary>

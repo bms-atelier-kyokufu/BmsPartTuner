@@ -1,4 +1,3 @@
-using BmsAtelierKyokufu.BmsPartTuner.Core.Context;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Validation;
 using ValidationResult = BmsAtelierKyokufu.BmsPartTuner.Core.Validation.ValidationResult;
 namespace BmsAtelierKyokufu.BmsPartTuner.Core.Optimization;
@@ -262,17 +261,9 @@ public class BmsOptimizationService : IBmsOptimizationService
         {
             return errorResult("ファイルへのアクセスが拒否されました");
         }
-        catch (OperationCanceledException)
+        catch (AggregateException ae) when (ae.InnerExceptions.Any(e => e is OperationCanceledException))
         {
-            // キャンセル要求を握りつぶさずに再スローする
-            throw;
-        }
-        catch (Exception ex)
-        {
-            s_logger.WriteDebug($"ERROR in ExecuteDefinitionReductionAsync: {ex.Message}");
-            s_logger.WriteDebug($"StackTrace: {ex.StackTrace}");
-            Trace.TraceError($"Unexpected error: {ex}");
-            return errorResult($"予期しないエラーが発生しました: {ex.Message}\n{ex.StackTrace}");
+            throw new OperationCanceledException("Operation was canceled.", ae);
         }
     }
 

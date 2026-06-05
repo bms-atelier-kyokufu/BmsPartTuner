@@ -238,10 +238,6 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
         {
             ShowMessage("最適化処理がキャンセルされました", isError: false);
         }
-        catch (System.Exception ex)
-        {
-            ShowMessage($"エラー: {ex.Message}", isError: true);
-        }
         finally
         {
             var cts = _activeCts;

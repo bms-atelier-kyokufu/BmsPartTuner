@@ -33,12 +33,6 @@ internal sealed class OptimizationSimulationPipeline
                 s_logger.WriteDebug($"{step.Name} completed in {timerStep.Lap(step.Name)} ms");
             }
         }
-        catch (Exception ex)
-        {
-            s_logger.WriteDebug($"ERROR in pipeline execution: {ex.Message}");
-            s_logger.WriteDebug($"StackTrace: {ex.StackTrace}");
-            return null;
-        }
         finally
         {
             // 音声キャッシュなどのクリーンアップは別ステップで行うか、ここで行うことも可能

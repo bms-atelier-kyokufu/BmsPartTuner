@@ -1,5 +1,3 @@
-using BmsAtelierKyokufu.BmsPartTuner.Core.Context;
-
 namespace BmsAtelierKyokufu.BmsPartTuner.UseCases.Dto;
 
 public class DefinitionReductionRequest
