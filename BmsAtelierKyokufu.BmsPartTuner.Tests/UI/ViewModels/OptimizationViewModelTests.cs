@@ -1,4 +1,4 @@
-﻿using BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
+using BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Interfaces.Bms;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Optimization;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Validation;
@@ -15,7 +15,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.UI.ViewModels
     internal class FakeOptimizationService : IBmsOptimizationService
     {
         /// <inheritdoc />
-        public Task<OptimizationResult?> FindOptimalThresholdsAsync(List<string> files, int startDefinition, int endDefinition, IProgress<int>? progress = null)
+        public Task<OptimizationResult?> FindOptimalThresholdsAsync(List<string> files, int startDefinition, int endDefinition, IProgress<int>? progress = null, CancellationToken cancellationToken = default)
         {
             return Task.Run<OptimizationResult?>(async () =>
             {
@@ -299,7 +299,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.UI.ViewModels
     {
         /// <inheritdoc />
         public Task<OptimizationResult?> FindOptimalThresholdsAsync(
-            List<string> files, int startDefinition, int endDefinition, IProgress<int>? progress = null)
+            List<string> files, int startDefinition, int endDefinition, IProgress<int>? progress = null, CancellationToken cancellationToken = default)
         {
             throw new InvalidOperationException("Test exception");
         }
@@ -334,7 +334,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.UI.ViewModels
     {
         /// <inheritdoc />
         public Task<OptimizationResult?> FindOptimalThresholdsAsync(
-            List<string> files, int startDefinition, int endDefinition, IProgress<int>? progress = null)
+            List<string> files, int startDefinition, int endDefinition, IProgress<int>? progress = null, CancellationToken cancellationToken = default)
         {
             return Task.FromResult<OptimizationResult?>(null);
         }
