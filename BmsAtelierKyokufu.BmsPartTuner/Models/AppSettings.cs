@@ -22,6 +22,12 @@ public record AppSettings
     public bool IsDarkTheme { get; init; } = true;
 
     /// <summary>
+    /// 初回起動時のチュートリアルを既読したかどうか。
+    /// </summary>
+    [JsonPropertyName("hasSeenTutorial")]
+    public bool HasSeenTutorial { get; init; } = false;
+
+    /// <summary>
     /// システムテーマに追従するかどうか。
     /// <c>true</c> の場合、<see cref="IsDarkTheme"/> の値は無視されます。
     /// </summary>

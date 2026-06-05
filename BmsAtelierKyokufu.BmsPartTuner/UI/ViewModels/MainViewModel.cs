@@ -43,6 +43,9 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
     /// <summary>入力検証ViewModel。</summary>
     public InputValidationViewModel InputValidation { get; }
 
+    /// <summary>チュートリアルViewModel。</summary>
+    public TutorialViewModel Tutorial { get; }
+
     /// <summary>スライド確認要求イベント。</summary>
     public event EventHandler? SlideConfirmationRequested;
 
@@ -51,6 +54,12 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
     /// </summary>
     [ObservableProperty]
     public partial bool IsSettingsOpen { get; set; }
+
+    /// <summary>
+    /// チュートリアル画面が表示されているかどうか。
+    /// </summary>
+    [ObservableProperty]
+    public partial bool IsTutorialVisible { get; set; }
 
     /// <summary>
     /// アプリケーション全体のステータスメッセージ。
@@ -113,6 +122,7 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
         _bmsonConversionService = bmsonConversionService ?? throw new ArgumentNullException(nameof(bmsonConversionService));
         _fileSystemService = fileSystemService ?? throw new ArgumentNullException(nameof(fileSystemService));
         _audioPreviewService = audioPreviewService ?? throw new ArgumentNullException(nameof(audioPreviewService));
+        var _settingsService = settingsService ?? throw new ArgumentNullException(nameof(settingsService));
 
         _appController = new AppController(this, _bmsonConversionService, _fileSystemService);
 
@@ -124,6 +134,19 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
         Settings = new SettingsViewModel(settingsService, themeService, licenseLoaderService);
         MediaPlayback = new MediaPlaybackViewModel();
         InputValidation = new InputValidationViewModel();
+        Tutorial = new TutorialViewModel();
+
+        // チュートリアルの完了イベントを購読
+        Tutorial.TutorialCompleted += (s, e) =>
+        {
+            IsTutorialVisible = false;
+            var settings = _settingsService.Load();
+            if (!settings.HasSeenTutorial)
+            {
+                _settingsService.Save(settings with { HasSeenTutorial = true });
+            }
+        };
+
         // イベントハンドラーの代わりにMessengerを使用
         WeakReferenceMessenger.Default.RegisterAll(this);
 
@@ -134,6 +157,13 @@ public partial class MainViewModel : ObservableObject, IDataErrorInfo, IDisposab
 
         // 起動時にテーマを適用
         Settings.ApplyInitialTheme();
+
+        // チュートリアル表示判定
+        var currentSettings = _settingsService.Load();
+        if (!currentSettings.HasSeenTutorial)
+        {
+            IsTutorialVisible = true;
+        }
     }
 
     /// <summary>

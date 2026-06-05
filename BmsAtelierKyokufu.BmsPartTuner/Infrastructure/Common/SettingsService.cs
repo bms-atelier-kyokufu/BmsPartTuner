@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Common;
 
@@ -44,6 +44,14 @@ public class SettingsService
             {
                 var json = File.ReadAllText(_settingsFilePath);
                 _cachedSettings = JsonSerializer.Deserialize<AppSettings>(json) ?? new AppSettings();
+
+                // 既存のユーザー (setting.json が存在する) の場合、チュートリアルは既読とする
+                // ただし明示的に false が保存されている場合はそれに従うため、
+                // JSONに "hasSeenTutorial" キーが存在しない場合のみ true とする。
+                if (!json.Contains("\"hasSeenTutorial\""))
+                {
+                    _cachedSettings = _cachedSettings with { HasSeenTutorial = true };
+                }
             }
             else
             {
