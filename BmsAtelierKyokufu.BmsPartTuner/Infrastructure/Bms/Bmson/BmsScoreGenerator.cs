@@ -1,5 +1,7 @@
 namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms.Bmson;
 
+using BmsAtelierKyokufu.BmsPartTuner.Core.Context;
+
 /// <summary>
 /// BmsonのデータモデルとスライスされたWAVから、BMSファイルのテキストを生成するジェネレータ。
 /// </summary>
@@ -184,29 +186,30 @@ public class BmsScoreGenerator(
     }
     private Dictionary<long, YPositionData> _yDataMap = [];
 
-    public string GenerateBmsText(IProgress<int>? progress = null)
+    public string GenerateBmsText(IOperationContext? opContext = null)
     {
+        opContext?.ThrowIfCancellationRequested();
         Logger.ClearAccumulated();
         s_logger.WriteDebug("Start GenerateBmsText");
         var timer = s_logger.StartTimer();
 
-        progress?.Report(5);
+        opContext?.ReportProgress(5);
 
         // 0. Y座標データの事前計算 (次元 of 分離)
         PrecalculateYPositions();
         s_logger.WriteDebug($"PrecalculateYPositions: {timer.Lap("PrecalculateYPositions")} ms");
 
         // 音声ソースの投機的並列プリロード
-        progress?.Report(10);
-        PreloadAudioSources();
+        opContext?.ReportProgress(10);
+        PreloadAudioSources(opContext);
         s_logger.WriteDebug($"  [BmsScoreGenerator] PreloadAudioSources (Parallel): {timer.Lap("PreloadAudioSources")} ms");
 
         // 1. Choose optimal radix based on total upper bound notes
-        progress?.Report(15);
+        opContext?.ReportProgress(15);
         int totalNotesUpperBound = _bmson.SoundChannels?.Sum(static c => c.Notes?.Count ?? 0) ?? 0;
         _radix = totalNotesUpperBound <= MaxNumberBase36 ? RadixBase36 : RadixBase62;
 
-        ProcessSoundChannels(progress);
+        ProcessSoundChannels(opContext);
         s_logger.WriteDebug($"ProcessSoundChannels: {timer.Lap("ProcessSoundChannels")} ms");
         s_logger.PrintAccumulatedGrouped("AudioSliceManager Metrics (Grouped by Channel)", LogLevel.Debug);
 
@@ -214,7 +217,7 @@ public class BmsScoreGenerator(
         ProcessStopEvents();
         ProcessBgaEvents();
         ProcessMeasureLengths();
-        progress?.Report(90);
+        opContext?.ReportProgress(90);
         s_logger.WriteDebug($"Other events processing: {timer.Lap("OtherEventsProcessing")} ms");
 
         var sb = new StringBuilder(262144);
@@ -229,7 +232,7 @@ public class BmsScoreGenerator(
         WriteDataBlocks(sb);
 
         s_logger.WriteDebug($"StringBuilder formatting: {timer.Lap("StringBuilderFormatting")} ms");
-        progress?.Report(100);
+        opContext?.ReportProgress(100);
         return sb.ToString();
     }
 
@@ -455,10 +458,10 @@ public class BmsScoreGenerator(
         return blocks;
     }
 
-    private void PreloadAudioSources()
+    private void PreloadAudioSources(IOperationContext? opContext)
     {
         if (_bmson.SoundChannels == null) return;
-        var options = new ParallelOptions { MaxDegreeOfParallelism = Math.Max(1, Environment.ProcessorCount / 2) };
+        var options = new ParallelOptions { MaxDegreeOfParallelism = Math.Max(1, Environment.ProcessorCount / 2), CancellationToken = opContext?.CancellationToken ?? default };
         Parallel.ForEach(_bmson.SoundChannels, options, ch =>
         {
             if (ch.Notes == null || ch.Notes.Count == 0) return;
@@ -466,7 +469,7 @@ public class BmsScoreGenerator(
         });
     }
 
-    private void ProcessSoundChannels(IProgress<int>? progress = null)
+    private void ProcessSoundChannels(IOperationContext? opContext = null)
     {
         if (_bmson.SoundChannels == null) return;
 
@@ -479,14 +482,14 @@ public class BmsScoreGenerator(
         int totalChannels = _bmson.SoundChannels.Count;
         int processedChannels = 0;
 
-        var options = new ParallelOptions { MaxDegreeOfParallelism = Math.Max(1, Environment.ProcessorCount / 2) };
+        var options = new ParallelOptions { MaxDegreeOfParallelism = Math.Max(1, Environment.ProcessorCount / 2), CancellationToken = opContext?.CancellationToken ?? default };
         Parallel.ForEach(_bmson.SoundChannels, options, ch =>
         {
-            ProcessChannel(ch, pendingNotes, sharedNoteIndex);
-            if (progress != null)
+            ProcessChannel(ch, pendingNotes, sharedNoteIndex, opContext);
+            if (opContext != null)
             {
                 int p = Interlocked.Increment(ref processedChannels);
-                progress.Report(15 + (int)(p * 75.0 / totalChannels));
+                opContext.ReportProgress(15 + (int)(p * 75.0 / totalChannels));
             }
         });
 
@@ -497,13 +500,13 @@ public class BmsScoreGenerator(
         }
     }
 
-    private void ProcessChannel(BmsonSoundChannel ch, PendingNote[] pendingNotes, int[] sharedNoteIndex)
+    private void ProcessChannel(BmsonSoundChannel ch, PendingNote[] pendingNotes, int[] sharedNoteIndex, IOperationContext? opContext)
     {
         if (ch.Notes == null || ch.Notes.Count == 0) return;
 
         var blocks = SplitNotesIntoBlocks(ch.Notes);
 
-        var innerOptions = new ParallelOptions { MaxDegreeOfParallelism = Math.Max(1, Environment.ProcessorCount / 2) };
+        var innerOptions = new ParallelOptions { MaxDegreeOfParallelism = Math.Max(1, Environment.ProcessorCount / 2), CancellationToken = opContext?.CancellationToken ?? default };
 
         Parallel.For(0, blocks.Count, innerOptions, bIndex =>
         {
@@ -514,17 +517,18 @@ public class BmsScoreGenerator(
                 ? _yDataMap[ch.Notes[blocks[bIndex + 1].Start].Y].TimeSec
                 : double.PositiveInfinity;
 
-            ProcessBlock(ch.Name, ch.Notes, block, blockStartSec, nextBlockStartSec, pendingNotes, sharedNoteIndex);
+            ProcessBlock(ch.Name, ch.Notes, block, blockStartSec, nextBlockStartSec, pendingNotes, sharedNoteIndex, opContext);
         });
     }
 
-    private void ProcessBlock(string channelName, List<BmsonNote> allNotes, NoteBlock block, double blockStartSec, double nextBlockStartSec, PendingNote[] pendingNotes, int[] sharedNoteIndex)
+    private void ProcessBlock(string channelName, List<BmsonNote> allNotes, NoteBlock block, double blockStartSec, double nextBlockStartSec, PendingNote[] pendingNotes, int[] sharedNoteIndex, IOperationContext? opContext)
     {
         double nextSec = nextBlockStartSec;
 
         // DP (動的計画法) による逆順走査: O(K^2) -> O(K)
         for (int depth = block.Count - 1; depth >= 0; depth--)
         {
+            opContext?.ThrowIfCancellationRequested();
             int noteIndex = block.Start + depth;
             var n = allNotes[noteIndex];
 

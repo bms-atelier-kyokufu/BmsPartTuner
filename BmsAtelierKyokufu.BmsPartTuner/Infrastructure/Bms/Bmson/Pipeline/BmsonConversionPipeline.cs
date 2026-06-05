@@ -1,4 +1,4 @@
-﻿namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms.Bmson.Pipeline;
+namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms.Bmson.Pipeline;
 
 /// <summary>
 /// BMSON変換パイプライン。
@@ -35,6 +35,8 @@ public sealed class BmsonConversionPipeline
 
         foreach (var step in _steps)
         {
+            context.OperationContext?.ThrowIfCancellationRequested();
+
             // 各ステップ実行前にタイマーをリセットし、計測を開始
             timerStep.Lap(step.Name);
 

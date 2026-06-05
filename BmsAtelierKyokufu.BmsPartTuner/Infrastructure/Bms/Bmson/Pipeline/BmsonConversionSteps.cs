@@ -152,7 +152,7 @@ public sealed class BmsScoreGenerateStep : IBmsonConversionStep
             context.AudioSlicer,
             context.KeyNotesOnly);
 
-        context.ResultBmsText = generator.GenerateBmsText(context.Progress);
+        context.ResultBmsText = generator.GenerateBmsText(context.OperationContext);
 
         s_logger.LogMemoryUsage("After BmsScoreGenerator (Downconvert finished)");
     }

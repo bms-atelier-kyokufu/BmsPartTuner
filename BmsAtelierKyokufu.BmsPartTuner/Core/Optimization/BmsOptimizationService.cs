@@ -29,7 +29,6 @@ public class BmsOptimizationService : IBmsOptimizationService
     /// <param name="files">処理対象のファイルリスト。</param>
     /// <param name="startDefinition">最適化を開始する定義のインデックス。</param>
     /// <param name="endDefinition">最適化を終了する定義のインデックス。</param>
-    /// <param name="progress">進捗を報告するためのオブジェクト。</param>
     /// <returns>最適化のシミュレーション結果。エラー時はnullを返します。</returns>
     public async Task<OptimizationResult?> FindOptimalThresholdsAsync(
         List<string> files,

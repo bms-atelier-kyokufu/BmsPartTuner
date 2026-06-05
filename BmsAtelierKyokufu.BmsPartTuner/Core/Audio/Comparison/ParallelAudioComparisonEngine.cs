@@ -115,8 +115,6 @@ internal class ParallelAudioComparisonEngine(AudioComparisonParameters parameter
     /// </summary>
     /// <param name="groups">ファイルインデックスのグループリスト。</param>
     /// <param name="r2Threshold">相関係数しきい値。</param>
-    /// <param name="progress">進捗報告用のIProgress。</param>
-    /// <param name="cancellationToken">キャンセルトークン。</param>
     public void CompareGroups(
         IReadOnlyList<IReadOnlyList<int>> groups,
         float r2Threshold,

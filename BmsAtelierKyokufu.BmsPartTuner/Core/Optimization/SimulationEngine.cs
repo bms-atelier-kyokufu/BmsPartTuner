@@ -77,7 +77,6 @@ internal class SimulationEngine(
     /// <param name="rangeMin">しきい値の最小値。</param>
     /// <param name="rangeMax">しきい値の最大値。</param>
     /// <param name="step">しきい値のステップ幅。</param>
-    /// <param name="progress">進捗報告用のIProgress。</param>
     /// <returns>シミュレーション結果のリスト（しきい値降順）。</returns>
     public IReadOnlyList<SimulationPoint> RunParallelSimulation(
         float rangeMin,

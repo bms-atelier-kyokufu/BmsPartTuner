@@ -17,7 +17,6 @@ internal sealed class AudioCacheManager
     /// 読み込みに失敗したファイルは無視して処理を続行しますが、そのパスのリストを返却します。
     /// </summary>
     /// <param name="fileList">ファイルリスト。</param>
-    /// <param name="progress">進捗報告用のIProgress。</param>
     /// <param name="normalizationMode">正規化モード（デフォルト: None）。</param>
     /// <param name="extractFeatures">特徴量抽出を行うかどうか。</param>
     /// <returns>読み込みに失敗したファイルパスのリストと、オーディオキャッシュのタプル。</returns>

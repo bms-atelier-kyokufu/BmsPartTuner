@@ -1,5 +1,7 @@
 namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms.Bmson.Pipeline;
 
+using BmsAtelierKyokufu.BmsPartTuner.Core.Context;
+
 /// <summary>
 /// BMSON変換パイプラインの実行コンテキスト。
 /// 入力値、中間生成オブジェクト、最終結果を保持し、使い終わったリソースの破棄（IDisposable）を管理します。
@@ -8,9 +10,14 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Bms.Bmson.Pipeline;
 /// コンテキストを初期化します。
 /// </remarks>
 [ADRAnchor("ARCH-01", nameof(BmsonConversionContext))]
-public sealed class BmsonConversionContext(string bmsonFilePath, bool keyNotesOnly, IProgress<int>? progress = null) : IDisposable
+public sealed class BmsonConversionContext(string bmsonFilePath, bool keyNotesOnly, IOperationContext? opContext = null) : IDisposable
 {
     private bool _disposed;
+
+    /// <summary>
+    /// 非同期処理キャンセルのためのトークン、進捗報告などを束ねたコンテキスト。
+    /// </summary>
+    public IOperationContext? OperationContext { get; } = opContext;
 
     /// <summary>
     /// 入力bmsonファイルのフルパス。
@@ -21,11 +28,6 @@ public sealed class BmsonConversionContext(string bmsonFilePath, bool keyNotesOn
     /// trueの場合、BGMレーンを無視して演奏ノーツのみを抽出する。
     /// </summary>
     public bool KeyNotesOnly { get; } = keyNotesOnly;
-
-    /// <summary>
-    /// 進捗を報告するためのオブジェクト（オプション）。
-    /// </summary>
-    public IProgress<int>? Progress { get; } = progress;
 
     /// <summary>
     /// パースされたBMSONデータ。

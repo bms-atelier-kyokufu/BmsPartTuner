@@ -29,8 +29,6 @@ public interface IOperationContext
 /// <remarks>
 /// OperationContext の新しいインスタンスを初期化します。
 /// </remarks>
-/// <param name="cancellationToken">キャンセルトークン。</param>
-/// <param name="progress">進捗報告用のオブジェクト。</param>
 [ADRAnchor("ARCH-05", nameof(OperationContext))]
 public sealed class OperationContext(CancellationToken cancellationToken = default, IProgress<int>? progress = null) : IOperationContext
 {

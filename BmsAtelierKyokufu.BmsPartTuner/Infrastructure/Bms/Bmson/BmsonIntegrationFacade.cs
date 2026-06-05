@@ -18,7 +18,7 @@ public static class BmsonIntegrationFacade
     /// <param name="bmsonFilePath">入力bmsonファイルのフルパス</param>
     /// <param name="keyNotesOnly">trueの場合、BGMレーンを無視して演奏ノーツのみを抽出する</param>
     /// <returns>生成されたBMSテキスト</returns>
-    public static string GenerateBmsText(string bmsonFilePath, bool keyNotesOnly, IProgress<int>? progress = null)
+    public static string GenerateBmsText(string bmsonFilePath, bool keyNotesOnly, IOperationContext? opContext = null)
     {
         // 変換パイプラインの構築
         var pipeline = new BmsonConversionPipeline()
@@ -30,7 +30,7 @@ public static class BmsonIntegrationFacade
             .AddStep(new BmsScoreGenerateStep());
 
         // 使い終わったリソース（AudioSliceManager等）を安全に解放するため、usingを使用
-        using var context = new BmsonConversionContext(bmsonFilePath, keyNotesOnly, progress);
+        using var context = new BmsonConversionContext(bmsonFilePath, keyNotesOnly, opContext);
         return pipeline.Execute(context);
     }
 }
