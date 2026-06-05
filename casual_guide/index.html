@@ -1530,11 +1530,12 @@
 <h1 id="bms-part-tuner">BMS Part Tuner 副読本：計算を「賢くサボる」ための数学<a class="headerlink" href="#bms-part-tuner" title="Permanent link">&para;</a></h1>
 <div class="arithmatex">\[
 \begin{aligned}
-\chi(G) &amp;= \omega(G) \quad \text{and} \quad \mu_k = \mu_{k-1} + \frac{x_k - \mu_{k-1}}{k} \\
-\mathcal{O}(M^2 \cdot N^2) &amp;\longrightarrow \mathcal{O}(M \log M + N \log N)
+\chi(G) &amp;= \omega(G) &amp;&amp; \text{--- (1)} \\
+\mu_k &amp;= \mu_{k-1} + \frac{x_k - \mu_{k-1}}{k} &amp;&amp; \text{--- (2)} \\
+\mathcal{O}(M^2 \cdot N^2) &amp;\longrightarrow \mathcal{O}(M \log M + N \log N) &amp;&amp; \text{--- (3)}
 \end{aligned}
 \]</div>
-<p>離散数学の教授「えー、任意の有限音響イベント集合 <span class="arithmatex">\(M\)</span> に対する時間座標 <span class="arithmatex">\(t\)</span> の量子化において、ユークリッド互除法に基づく最適離散格子 <span class="arithmatex">\(L\)</span> への射影を行い、競合関係を記述する区間グラフ <span class="arithmatex">\(G=(V, E)\)</span> の彩色数 <span class="arithmatex">\(\chi(G)\)</span> がクリーク数 <span class="arithmatex">\(\omega(G)\)</span> に一致するとき、すなわちグラフ <span class="arithmatex">\(G\)</span> が完全グラフの補グラフである場合の空間 <span class="arithmatex">\(\mathcal{O}(1)\)</span> アロケーションフリー・パッキング数理と、確率空間における二乗累積和系列を用いた局所エネルギー評価値を適用することで、計算複雑度をこのように縮退させることが可能となり……」</p>
+<p>離散数学の教授「えー、任意の有限音響イベント集合 <span class="arithmatex">\(M\)</span> に対する時間座標 <span class="arithmatex">\(t\)</span> の量子化において、ユークリッド互除法に基づく最適離散格子 <span class="arithmatex">\(L\)</span> への射影を行い、競合関係を記述する区間グラフ <span class="arithmatex">\(G=(V, E)\)</span> の彩色数 <span class="arithmatex">\(\chi(G)\)</span> がクリーク数 <span class="arithmatex">\(\omega(G)\)</span> に一致するとき<span class="arithmatex">\((1)\)</span> 、すなわちグラフ <span class="arithmatex">\(G\)</span> が完全グラフの補グラフである場合の空間 <span class="arithmatex">\(\mathcal{O}(1)\)</span> アロケーションフリー・パッキング数理と、確率空間における二乗累積和系列を用いた局所エネルギー評価値の更新式<span class="arithmatex">\((2)\)</span>を適用することで、全体の計算複雑度をこのように縮退<span class="arithmatex">\((3)\)</span>させることが可能となり……」</p>
 <p>……。</p>
 <p>…………。</p>
 <p><strong>ええい、眠い！！！ 頭痛がする！！！ 難しい数式なんか1ミリも見たくない！！！</strong></p>
@@ -1615,19 +1616,24 @@
 <p>これは、全員の社員証を書き換えるのではなく、「各自が自分の『直属の上司』だけを覚える」という非常に賢いサボり方です。</p>
 <p>会社同士を合併するときは、一方の社長に「今日から君の社長はあっちの人ね」と伝えるだけ。たった1回の操作で、数万人の会社同士が一瞬で合併します。</p>
 <pre class="mermaid"><code>graph TD
-    subgraph with_gc ["❌ 普通のプログラム（GCでフリーズ）"]
-        処理1 --&gt; 皿1[新しいメモリを確保]
-        処理2 --&gt; 皿2[新しいメモリを確保]
-        皿1 --&gt; ゴミ箱[ゴミ箱がパンク]
-        皿2 --&gt; ゴミ箱
-        ゴミ箱 --&gt; GC((ゴミ収集車が来て&lt;br&gt;PCフリーズ！))
+    subgraph naive ["❌ 素朴な方法（全員書き換え）"]
+        direction TB
+        社員A1[社員1] --&gt; 会社A[名札: 会社A]
+        社員A2[社員2] --&gt; 会社A
+        社員B1[社員3] --&gt; 会社B[名札: 会社B]
+        社員B2[社員4] --&gt; 会社B
+        会社B -.-&gt; |全員の名札を書き換え| 会社A
+        note1[合併のたびに全員分書き換えてフリーズ]
     end</code></pre>
 <pre class="mermaid"><code>graph TD
-    subgraph with_arraypool ["✨ BMS Part Tuner（ArrayPool）"]
-        棚[最初からある『固定のメモリ』を使い回す]
-        処理A --&gt; 棚
-        処理B --&gt; 棚
-        棚 --&gt; |上書きして使うので&lt;br&gt;ゴミが出ない！| 爆速((GC発生ゼロ！&lt;br&gt;限界スピードを維持))
+    subgraph uf ["✨ Union-Find（社長だけ繋ぎ替え）"]
+        direction TB
+        社員1[社員1] --&gt; 社長A((社長A))
+        社員2[社員2] --&gt; 社長A
+        社員3[社員3] --&gt; 社長B((社長B))
+        社員4[社員4] --&gt; 社長B
+        社長B --&gt; |「私のボスは社長A」| 社長A
+        note2[社長同士を繋ぐだけ！社員は動かない]
     end</code></pre>
 <p>さらに、このUnion-FindにはPCの限界を引き出す「2つのチート級の工夫」が組み込まれています。</p>
 <h4 id="1">工夫1：ランクによる結合（下剋上の禁止）<a class="headerlink" href="#1" title="Permanent link">&para;</a></h4>
@@ -1642,14 +1648,13 @@
         佐藤さん1[平社員 佐藤] --&gt; 係長1[係長]
         係長1 --&gt; 部長1[部長]
         部長1 --&gt; 社長1((社長))
-    end
-
+    end</code></pre>
+<pre class="mermaid"><code>graph TD
     subgraph after["経路圧縮後（直通ホットライン完成！）"]
         佐藤さん2[平社員 佐藤] ==&gt;|次から一瞬で繋がる！| 社長2((社長))
         係長2[係長] ==&gt;|ついでに直通に書き換え！| 社長2
         部長2[部長] --&gt; 社長2
-    end
-</code></pre>
+    end</code></pre>
 <p>次に同じ人が社長を探すときは、間に誰も挟まず「一瞬」で社長にたどり着くことができます。</p>
 <h3 id="_4">宇宙一成長が遅い関数「アッカーマン関数の逆関数」<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h3>
 <p>この「ランク結合」と「経路圧縮（直通ホットライン）」を組み合わせると、処理スピードはどれくらい速くなるのでしょうか？</p>
