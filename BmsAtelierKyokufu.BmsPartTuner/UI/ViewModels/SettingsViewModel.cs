@@ -1,5 +1,4 @@
 ﻿using System.Reflection;
-using BmsAtelierKyokufu.BmsPartTuner.UI.Services;
 using Microsoft.Win32;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.UI.ViewModels;
@@ -287,4 +286,3 @@ public partial class SettingsViewModel : ObservableObject
         SelectedLicense = null;
     }
 }
-

@@ -1,4 +1,3 @@
-using BmsAtelierKyokufu.BmsPartTuner.Infrastructure.Audio;
 namespace BmsAtelierKyokufu.BmsPartTuner.UI.ViewModels;
 
 /// <summary>
@@ -417,5 +416,4 @@ public partial class FileListViewModel : ObservableObject, IDisposable
         GC.SuppressFinalize(this);
     }
 }
-
 

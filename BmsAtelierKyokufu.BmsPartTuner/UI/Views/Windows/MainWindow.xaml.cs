@@ -1,7 +1,4 @@
 using BmsAtelierKyokufu.BmsPartTuner.Infrastructure;
-using BmsAtelierKyokufu.BmsPartTuner.UI.Services;
-using BmsAtelierKyokufu.BmsPartTuner.UI.ViewModels;
-using BmsAtelierKyokufu.BmsPartTuner.UI.Views.Controls;
 
 namespace BmsAtelierKyokufu.BmsPartTuner.UI.Views.Windows
 {

@@ -1,6 +1,4 @@
-using BmsAtelierKyokufu.BmsPartTuner.UI.Views.Controls;
 using BmsAtelierKyokufu.BmsPartTuner.UseCases;
-using BmsAtelierKyokufu.BmsPartTuner.UseCases.Dto;
 namespace BmsAtelierKyokufu.BmsPartTuner.UI.ViewModels;
 
 /// <summary>
@@ -271,8 +269,8 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
         try
         {
             var opContext = new OperationContext(
-                cancellationToken,
-                new ThrottledProgress<int>(_progress));
+                new ThrottledProgress<int>(_progress),
+                cancellationToken);
 
             var request = new ThresholdOptimizationRequest
             {
@@ -398,8 +396,8 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
         try
         {
             var opContext = new OperationContext(
-                cancellationToken,
-                new ThrottledProgress<int>(_progress));
+                new ThrottledProgress<int>(_progress),
+                cancellationToken);
 
             var request = new DefinitionReductionRequest
             {
@@ -520,4 +518,3 @@ public partial class OptimizationViewModel : ObservableObject, IDataErrorInfo
         public float Threshold { get; set; }
     }
 }
-
