@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 using BmsAtelierKyokufu.BmsPartTuner.Models;
 using BmsAtelierKyokufu.BmsPartTuner.Tests.Helpers;
@@ -68,7 +68,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
                     StartDefinition = 1294,
                     EndDefinition = 1295,
                     IsPhysicalDeletionEnabled = false,
-                    OperationContext = new BmsAtelierKyokufu.BmsPartTuner.Core.Context.OperationContext(default, new Progress<int>())
+                    OperationContext = new BmsAtelierKyokufu.BmsPartTuner.Core.Context.OperationContext(new Progress<int>())
                 }
             );
 
@@ -114,7 +114,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
                     StartDefinition = 3842,
                     EndDefinition = 3843,
                     IsPhysicalDeletionEnabled = false,
-                    OperationContext = new BmsAtelierKyokufu.BmsPartTuner.Core.Context.OperationContext(default, new Progress<int>())
+                    OperationContext = new BmsAtelierKyokufu.BmsPartTuner.Core.Context.OperationContext(new Progress<int>())
                 }
             );
 
@@ -170,7 +170,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
                         StartDefinition = 1,
                         EndDefinition = 2,
                         IsPhysicalDeletionEnabled = false,
-                        OperationContext = new BmsAtelierKyokufu.BmsPartTuner.Core.Context.OperationContext(default, new Progress<int>())
+                        OperationContext = new BmsAtelierKyokufu.BmsPartTuner.Core.Context.OperationContext(new Progress<int>())
                     }
                 );
             });
@@ -223,7 +223,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
                         StartDefinition = 1,
                         EndDefinition = 1,
                         IsPhysicalDeletionEnabled = false,
-                        OperationContext = new BmsAtelierKyokufu.BmsPartTuner.Core.Context.OperationContext(default, new Progress<int>())
+                        OperationContext = new BmsAtelierKyokufu.BmsPartTuner.Core.Context.OperationContext(new Progress<int>())
                     }
                 );
             });

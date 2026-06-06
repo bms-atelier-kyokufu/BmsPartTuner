@@ -108,7 +108,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Optimization
             return RunOptimalThresholdsTestAsync(
                 dir => { Context.CreateBaseBuilder<BmsBuilder>().WithWav(1, "test1.wav"); return [Path.Combine(dir, "test1.wav")]; },
                 _ => Assert.NotEmpty(progressValues),
-                OperationContext: new BmsAtelierKyokufu.BmsPartTuner.Core.Context.OperationContext(default, new Progress<int>(p => progressValues.Add(p)))
+                OperationContext: new BmsAtelierKyokufu.BmsPartTuner.Core.Context.OperationContext(new Progress<int>(p => progressValues.Add(p)))
             );
         }
 

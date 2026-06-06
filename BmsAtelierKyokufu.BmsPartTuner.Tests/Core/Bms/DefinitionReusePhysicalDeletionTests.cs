@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.IO;
 using BmsAtelierKyokufu.BmsPartTuner.Core.Bms;
 using BmsAtelierKyokufu.BmsPartTuner.Models;
@@ -50,7 +50,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
                     StartDefinition = 1,
                     EndDefinition = 3,
                     IsPhysicalDeletionEnabled = true,
-                    OperationContext = new BmsAtelierKyokufu.BmsPartTuner.Core.Context.OperationContext(default, new Progress<int>())
+                    OperationContext = new BmsAtelierKyokufu.BmsPartTuner.Core.Context.OperationContext(new Progress<int>())
                 }
             );
 
@@ -98,7 +98,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
                     StartDefinition = 1,
                     EndDefinition = 2,
                     IsPhysicalDeletionEnabled = false,
-                    OperationContext = new BmsAtelierKyokufu.BmsPartTuner.Core.Context.OperationContext(default, new Progress<int>())
+                    OperationContext = new BmsAtelierKyokufu.BmsPartTuner.Core.Context.OperationContext(new Progress<int>())
                 }
             );
 
@@ -143,7 +143,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.Tests.Core.Bms
                     StartDefinition = 1,
                     EndDefinition = 2,
                     IsPhysicalDeletionEnabled = false,
-                    OperationContext = new BmsAtelierKyokufu.BmsPartTuner.Core.Context.OperationContext(default, new Progress<int>())
+                    OperationContext = new BmsAtelierKyokufu.BmsPartTuner.Core.Context.OperationContext(new Progress<int>())
                 }
             );
 
