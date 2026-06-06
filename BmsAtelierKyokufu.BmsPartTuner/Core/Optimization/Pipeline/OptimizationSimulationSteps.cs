@@ -46,7 +46,10 @@ internal sealed class LoadValidFilesStep : IAsyncOptimizationStep
         int originalCount = context.FileListItems.Count;
         if (originalCount == 0)
         {
-            throw new InvalidOperationException("有効なファイルが見つかりません");
+            // 有効なファイルが見つからない場合はパイプラインを中断する
+            // (BmsOptimizationService 側で事前チェック済みのため通常ここには到達しない)
+            s_logger.WriteDebug("LoadValidFilesStep: No valid files found. Skipping pipeline.");
+            return Task.CompletedTask;
         }
 
         context.EndDefinition = context.StartDefinition + originalCount - 1;

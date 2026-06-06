@@ -53,33 +53,51 @@ public class BmsOptimizationService : IBmsOptimizationService
             .AddStep(new Pipeline.RunParallelSimulationStep())
             .AddStep(new Pipeline.FindOptimalThresholdsStep());
 
-        var result = await pipeline.ExecuteAsync(context);
-
-        if (result != null)
+        // 予測可能なドメインエラー: 有効ファイルが1件もない場合は例外を使わずnullで表現する
+        // (ADR-06: ドメインエラーは Result パターン / 早期 return で表現)
+        if (!files.Any(File.Exists))
         {
-            // メモリ計測と完了
-            long totalElapsed = timerTotal.Lap("Total");
-            long currentMemory = GC.GetTotalMemory(false);
-            long memoryUsed = Math.Max(0, currentMemory - memoryBefore);
-
-            result.ExecutionTime = TimeSpan.FromMilliseconds(totalElapsed);
-            result.MemoryUsedBytes = memoryUsed;
-
-            s_logger.WriteDebug($"Base36 optimal: Threshold={result.Base36Result.Threshold:F2}, Count={result.Base36Result.Count}");
-            s_logger.WriteDebug($"Base62 optimal: Threshold={result.Base62Result.Threshold:F2}, Count={result.Base62Result.Count}");
-            s_logger.WriteDebug($"Memory used: {memoryUsed / 1024.0 / 1024.0:F2} MB");
+            s_logger.WriteDebug("FindOptimalThresholdsAsync: No valid files exist. Returning null.");
+            return null;
         }
 
-        context.OperationContext?.ReportProgress(100);
-
-        s_logger.WriteDebug("=== Clearing audio cache ===");
-        if (context.AudioCache != null)
+        try
         {
-            CleanupAudioCache(context.FileListItems, context.AudioCache);
-        }
-        context.FileListItems.Clear();
+            var result = await pipeline.ExecuteAsync(context);
 
-        return result;
+            if (result != null)
+            {
+                // メモリ計測と完了
+                long totalElapsed = timerTotal.Lap("Total");
+                long currentMemory = GC.GetTotalMemory(false);
+                long memoryUsed = Math.Max(0, currentMemory - memoryBefore);
+
+                result.ExecutionTime = TimeSpan.FromMilliseconds(totalElapsed);
+                result.MemoryUsedBytes = memoryUsed;
+
+                s_logger.WriteDebug($"Base36 optimal: Threshold={result.Base36Result.Threshold:F2}, Count={result.Base36Result.Count}");
+                s_logger.WriteDebug($"Base62 optimal: Threshold={result.Base62Result.Threshold:F2}, Count={result.Base62Result.Count}");
+                s_logger.WriteDebug($"Memory used: {memoryUsed / 1024.0 / 1024.0:F2} MB");
+            }
+
+            context.OperationContext?.ReportProgress(100);
+            return result;
+        }
+        catch (AggregateException ae) when (ae.InnerExceptions.Any(e => e is OperationCanceledException))
+        {
+            // Parallel 内からのキャンセルを OperationCanceledException に変換して伝播させる
+            throw new OperationCanceledException("Operation was canceled.", ae);
+        }
+        finally
+        {
+            // キャンセル・例外・正常終了いずれの場合もリソースを確実に解放する
+            s_logger.WriteDebug("=== Clearing audio cache ===");
+            if (context.AudioCache != null)
+            {
+                CleanupAudioCache(context.FileListItems, context.AudioCache);
+            }
+            context.FileListItems.Clear();
+        }
     }
 
 
