@@ -10,7 +10,6 @@ namespace BmsAtelierKyokufu.BmsPartTuner.UI.Views.Controls
 
     /// <summary>
     /// スライド確認UIコントロール
-    /// M3準拠のプログレッシブ・フィル実装
     /// </summary>
     [ExcludeFromCodeCoverage]
     public partial class SlideConfirmationControl : UserControl
@@ -160,12 +159,14 @@ namespace BmsAtelierKyokufu.BmsPartTuner.UI.Views.Controls
             {
                 SlideThumb.HorizontalAlignment = HorizontalAlignment.Right;
                 ProgressiveFill.HorizontalAlignment = HorizontalAlignment.Right;
+                ProgressiveFillGrid?.HorizontalAlignment = HorizontalAlignment.Right;
                 ArrowText.Text = "⬅";
             }
             else
             {
                 SlideThumb.HorizontalAlignment = HorizontalAlignment.Left;
                 ProgressiveFill.HorizontalAlignment = HorizontalAlignment.Left;
+                ProgressiveFillGrid?.HorizontalAlignment = HorizontalAlignment.Left;
                 ArrowText.Text = "➡";
             }
         }
@@ -183,6 +184,10 @@ namespace BmsAtelierKyokufu.BmsPartTuner.UI.Views.Controls
                 s_logger.WriteDebug($"Warning: SlideConfirmationControl is too small (ActualWidth={ActualWidth}, MinRequired={ThumbWidth + 20})");
             }
 
+            // Xの変更監視を登録（サムの位置、フィル幅、テキスト位置を完全に同期させる）
+            DependencyPropertyDescriptor.FromProperty(TranslateTransform.XProperty, typeof(TranslateTransform))
+                .AddValueChanged(ThumbTransform, OnThumbTransformXChanged);
+
             // Windowレベルのマウスアップイベントを監視
             var window = Window.GetWindow(this);
             window?.PreviewMouseLeftButtonUp += Window_PreviewMouseLeftButtonUp;
@@ -190,14 +195,24 @@ namespace BmsAtelierKyokufu.BmsPartTuner.UI.Views.Controls
 
         private void OnUnloaded(object sender, RoutedEventArgs e)
         {
+            // Xの変更監視を解除
+            DependencyPropertyDescriptor.FromProperty(TranslateTransform.XProperty, typeof(TranslateTransform))
+                .RemoveValueChanged(ThumbTransform, OnThumbTransformXChanged);
+
             // Windowレベルのマウスアップイベントの購読を解除
             var window = Window.GetWindow(this);
             window?.PreviewMouseLeftButtonUp -= Window_PreviewMouseLeftButtonUp;
         }
 
-        private void SlideThumb_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        private void OnThumbTransformXChanged(object? sender, EventArgs e)
         {
+            var offset = ThumbTransform.X;
+            UpdateProgressiveFill(offset);
+            UpdateTextTranslation(offset);
+        }
 
+        private void SlideConfirmationPanel_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
             // アニメーションをクリア（前回のアニメーションが残っている場合）
             ThumbTransform.BeginAnimation(TranslateTransform.XProperty, null);
             ProgressiveFill?.BeginAnimation(FrameworkElement.WidthProperty, null);
@@ -205,19 +220,19 @@ namespace BmsAtelierKyokufu.BmsPartTuner.UI.Views.Controls
 
             _isDragging = true;
             _startPoint = e.GetPosition(SlideConfirmationPanel);
-            SlideThumb.CaptureMouse();
+            SlideConfirmationPanel.CaptureMouse();
 
             e.Handled = true;
         }
 
-        private void SlideThumb_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        private void SlideConfirmationPanel_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
             if (!_isDragging) return;
             CompleteSlide();
             e.Handled = true;
         }
 
-        private void SlideThumb_MouseMove(object sender, MouseEventArgs e)
+        private void SlideConfirmationPanel_MouseMove(object sender, MouseEventArgs e)
         {
             if (!_isDragging)
             {
@@ -242,14 +257,11 @@ namespace BmsAtelierKyokufu.BmsPartTuner.UI.Views.Controls
 
             // サムの位置を更新（TranslateTransformを使用）
             ThumbTransform.X = offset;
-
-            // プログレッシブ・フィルを更新
-            UpdateProgressiveFill(offset);
         }
 
-        private void SlideThumb_MouseLeave(object sender, MouseEventArgs e)
+        private void SlideConfirmationPanel_MouseLeave(object sender, MouseEventArgs e)
         {
-            // CaptureMouse()により、マウスがサムから離れてもイベントを受け取れる
+            // CaptureMouse()により、マウスがパネルから離れてもイベントを受け取れる
         }
 
         private void Window_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
@@ -301,9 +313,55 @@ namespace BmsAtelierKyokufu.BmsPartTuner.UI.Views.Controls
             ProgressiveFill.BeginAnimation(FrameworkElement.WidthProperty, null);
 
             // 幅が負にならないように保証
-            // For R2L, offset is negative, so use Abs(offset)
-            var fillWidth = Math.Abs(offset) + ThumbWidth;
-            ProgressiveFill.Width = Math.Max(0, fillWidth);
+            if (Math.Abs(offset) < 0.1)
+            {
+                ProgressiveFill.Width = 0;
+            }
+            else
+            {
+                // For R2L, offset is negative, so use Abs(offset)
+                var fillWidth = Math.Abs(offset) + ThumbWidth;
+                ProgressiveFill.Width = Math.Max(0, fillWidth);
+            }
+        }
+
+        private void UpdateTextTranslation(double offset)
+        {
+            if (BackgroundTextTransform == null || ForegroundTextTransform == null || _maxSlideDistance <= 0) return;
+            double startOffset = -60; // 左からスライドインする初期オフセット
+
+
+            double xText;
+            if (Direction == SlideDirection.LeftToRight)
+            {
+                double transitionDistance = _maxSlideDistance / 2;
+                if (offset < transitionDistance)
+                {
+                    double progress = offset / transitionDistance;
+                    xText = startOffset * (1.0 - progress);
+                }
+                else
+                {
+                    xText = 0;
+                }
+            }
+            else // RightToLeft
+            {
+                // 右から左へのスライドでは、offsetは負、テキストは右（正のオフセット）からスライドイン
+                double transitionDistance = -_maxSlideDistance / 2;
+                if (offset > transitionDistance)
+                {
+                    double progress = offset / transitionDistance;
+                    xText = (-startOffset) * (1.0 - progress);
+                }
+                else
+                {
+                    xText = 0;
+                }
+            }
+
+            BackgroundTextTransform.X = xText;
+            ForegroundTextTransform.X = xText;
         }
 
         private void CompleteSlide()
@@ -313,7 +371,7 @@ namespace BmsAtelierKyokufu.BmsPartTuner.UI.Views.Controls
             s_logger.WriteDebug("CompleteSlide: Releasing mouse capture");
 
             // マウスキャプチャを解放（ただし_isDraggingはアニメーション完了後にリセット）
-            SlideThumb.ReleaseMouseCapture();
+            SlideConfirmationPanel.ReleaseMouseCapture();
 
             var currentOffset = ThumbTransform.X;
             var progress = _maxSlideDistance > 0 ? Math.Abs(currentOffset) / _maxSlideDistance : 0;
@@ -344,23 +402,13 @@ namespace BmsAtelierKyokufu.BmsPartTuner.UI.Views.Controls
                 EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
             };
 
-            // フィルの完了アニメーション
-            // ActualWidth - 4が負にならないように保証
-            var fillTargetWidth = Math.Max(0, ActualWidth - 4);
-            var fillAnimation = new DoubleAnimation
-            {
-                To = fillTargetWidth,
-                Duration = TimeSpan.FromMilliseconds(200),
-                EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
-            };
-
             // 完了時のバウンスエフェクト
             thumbAnimation.Completed += (s, args) =>
             {
                 var bounceAnimation = new DoubleAnimation
                 {
-                    From = 0.3,
-                    To = 0.5,
+                    From = 1.0,
+                    To = 0.8,
                     Duration = TimeSpan.FromMilliseconds(100),
                     AutoReverse = true,
                     EasingFunction = new BounceEase { Bounces = 1, EasingMode = EasingMode.EaseOut }
@@ -372,16 +420,11 @@ namespace BmsAtelierKyokufu.BmsPartTuner.UI.Views.Controls
 
                     // アニメーション完了後、状態をクリア
                     ThumbTransform.BeginAnimation(TranslateTransform.XProperty, null);
-                    ProgressiveFill?.BeginAnimation(FrameworkElement.WidthProperty, null);
                     ProgressiveFill?.BeginAnimation(UIElement.OpacityProperty, null);
 
                     // 完了位置に固定
                     ThumbTransform.X = targetX;
-                    if (ProgressiveFill != null)
-                    {
-                        ProgressiveFill.Width = Math.Max(0, fillTargetWidth);
-                        ProgressiveFill.Opacity = 0.3;
-                    }
+                    ProgressiveFill?.Opacity = 1.0;
 
                     // ドラッグ状態を確実にリセット
                     _isDragging = false;
@@ -394,7 +437,6 @@ namespace BmsAtelierKyokufu.BmsPartTuner.UI.Views.Controls
             };
 
             ThumbTransform.BeginAnimation(TranslateTransform.XProperty, thumbAnimation);
-            ProgressiveFill?.BeginAnimation(FrameworkElement.WidthProperty, fillAnimation);
         }
 
         private void AnimateCancellation()
@@ -412,30 +454,16 @@ namespace BmsAtelierKyokufu.BmsPartTuner.UI.Views.Controls
                 }
             };
 
-            // フィルのリセットアニメーション
-            var fillAnimation = new DoubleAnimation
-            {
-                To = 0,
-                Duration = TimeSpan.FromMilliseconds(300),
-                EasingFunction = new ElasticEase
-                {
-                    EasingMode = EasingMode.EaseOut,
-                    Oscillations = 2,
-                    Springiness = 8
-                }
-            };
-
             thumbAnimation.Completed += (s, args) =>
             {
                 s_logger.WriteDebug("AnimateCancellation: Animation completed, resetting state");
 
                 // アニメーション完了後、アニメーションをクリアして状態をリセット
                 ThumbTransform.BeginAnimation(TranslateTransform.XProperty, null);
-                ProgressiveFill?.BeginAnimation(FrameworkElement.WidthProperty, null);
 
                 // 明示的に初期位置に設定
                 ThumbTransform.X = 0;
-                ProgressiveFill?.Width = 0;
+                ProgressiveFill?.Opacity = 1.0;
 
                 // ドラッグ状態を確実にリセット
                 _isDragging = false;
@@ -445,7 +473,6 @@ namespace BmsAtelierKyokufu.BmsPartTuner.UI.Views.Controls
             };
 
             ThumbTransform.BeginAnimation(TranslateTransform.XProperty, thumbAnimation);
-            ProgressiveFill?.BeginAnimation(FrameworkElement.WidthProperty, fillAnimation);
         }
 
         #endregion
@@ -458,15 +485,22 @@ namespace BmsAtelierKyokufu.BmsPartTuner.UI.Views.Controls
         public void Reset()
         {
             _isDragging = false;
-            SlideThumb.ReleaseMouseCapture();
+            SlideConfirmationPanel?.ReleaseMouseCapture();
 
             // アニメーションをクリア
-            ThumbTransform.BeginAnimation(TranslateTransform.XProperty, null);
+            ThumbTransform?.BeginAnimation(TranslateTransform.XProperty, null);
             ProgressiveFill?.BeginAnimation(FrameworkElement.WidthProperty, null);
 
             // 初期位置に戻す
-            ThumbTransform.X = 0;
-            ProgressiveFill?.Width = 0;
+            ThumbTransform?.X = 0;
+            if (ProgressiveFill != null)
+            {
+                ProgressiveFill.Width = 0;
+                ProgressiveFill.Opacity = 1.0;
+            }
+
+            // テキストの位置もリセット
+            UpdateTextTranslation(0);
         }
 
         #endregion
@@ -487,4 +521,3 @@ namespace BmsAtelierKyokufu.BmsPartTuner.UI.Views.Controls
         #endregion
     }
 }
-

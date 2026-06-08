@@ -14,17 +14,37 @@
         x:Name="SlideConfirmationPanel"
         Height="44"
         Background="{DynamicResource M3WarningContainerBrush}"
-        BorderBrush="{DynamicResource M3WarningBrush}"
-        BorderThickness="2"
-        CornerRadius="12">
+        BorderThickness="0"
+        CornerRadius="12"
+        Cursor="Hand"
+        MouseLeave="SlideConfirmationPanel_MouseLeave"
+        MouseLeftButtonDown="SlideConfirmationPanel_MouseLeftButtonDown"
+        MouseLeftButtonUp="SlideConfirmationPanel_MouseLeftButtonUp"
+        MouseMove="SlideConfirmationPanel_MouseMove">
         <Grid>
-            <!--  レール背景  -->
-            <Border
-                Margin="2"
-                Background="{DynamicResource M3WarningContainerLightBrush}"
-                CornerRadius="10" />
+            <!--  レール背景およびテキストグリッド  -->
+            <Grid x:Name="RailGrid" Margin="2" IsHitTestVisible="False">
+                <!--  レール背景  -->
+                <Border
+                    Background="{DynamicResource M3WarningContainerLightBrush}"
+                    CornerRadius="10" />
 
-            <!--  プログレッシブ・フィル (左から右へ満たされる背景)  -->
+                <!--  背景テキスト (通常時・未スライド部分用、ダーク色)  -->
+                <TextBlock
+                    x:Name="BackgroundText"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    FontSize="13"
+                    FontWeight="Medium"
+                    Foreground="{DynamicResource M3OutlineBrush}"
+                    Text="{Binding SlideInstructionText, RelativeSource={RelativeSource AncestorType=UserControl}}">
+                    <TextBlock.RenderTransform>
+                        <TranslateTransform x:Name="BackgroundTextTransform" />
+                    </TextBlock.RenderTransform>
+                </TextBlock>
+            </Grid>
+
+            <!--  プログレッシブ・フィル (左から右へ満たされる背景、スライダーと同じ色)  -->
             <Border
                 x:Name="ProgressiveFill"
                 Width="0"
@@ -32,17 +52,28 @@
                 HorizontalAlignment="Left"
                 Background="{DynamicResource M3WarningBrush}"
                 CornerRadius="10"
-                Opacity="0.3" />
-
-            <!--  背景テキスト  -->
-            <TextBlock
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                FontSize="13"
-                FontWeight="Medium"
-                Foreground="{DynamicResource M3OutlineBrush}"
-                IsHitTestVisible="False"
-                Text="{Binding SlideInstructionText, RelativeSource={RelativeSource AncestorType=UserControl}}" />
+                ClipToBounds="True"
+                IsHitTestVisible="False">
+                <!--  スライドして現れる文字用のコンテナ。親コントロールと同じ幅にしておくことで位置を完全に一致させる  -->
+                <Grid
+                    x:Name="ProgressiveFillGrid"
+                    Width="{Binding ElementName=RailGrid, Path=ActualWidth}"
+                    HorizontalAlignment="Left">
+                    <!--  反転テキスト (スライド済み部分用、白色)  -->
+                    <TextBlock
+                        x:Name="ForegroundText"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        FontSize="13"
+                        FontWeight="Medium"
+                        Foreground="White"
+                        Text="{Binding SlideInstructionText, RelativeSource={RelativeSource AncestorType=UserControl}}">
+                        <TextBlock.RenderTransform>
+                            <TranslateTransform x:Name="ForegroundTextTransform" />
+                        </TextBlock.RenderTransform>
+                    </TextBlock>
+                </Grid>
+            </Border>
 
             <!--  スライダーツマミ  -->
             <Border
@@ -52,11 +83,7 @@
                 HorizontalAlignment="Left"
                 Background="{DynamicResource M3WarningBrush}"
                 CornerRadius="10"
-                Cursor="Hand"
-                MouseLeave="SlideThumb_MouseLeave"
-                MouseLeftButtonDown="SlideThumb_MouseLeftButtonDown"
-                MouseLeftButtonUp="SlideThumb_MouseLeftButtonUp"
-                MouseMove="SlideThumb_MouseMove">
+                IsHitTestVisible="False">
                 <Border.RenderTransform>
                     <TranslateTransform x:Name="ThumbTransform" />
                 </Border.RenderTransform>
